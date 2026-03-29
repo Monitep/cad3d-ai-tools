@@ -222,12 +222,12 @@ function onDown(id,fx,fy){
   else if(!J2.active) J2.press(id,fx,fy);
 }
 function onMv(id,fx,fy){
-  if(J1.tid===id) J1.move(fx,fy);
-  if(J2.tid===id) J2.move(fx,fy);
+  if(J1&&J1.tid===id) J1.move(fx,fy);
+  if(J2&&J2.tid===id) J2.move(fx,fy);
 }
 function onUp(id){
-  if(J1.tid===id) J1.release();
-  if(J2.tid===id) J2.release();
+  if(J1&&J1.tid===id) J1.release();
+  if(J2&&J2.tid===id) J2.release();
 }
 
 // ── GAME OBJECTS ───────────────────────────────────
