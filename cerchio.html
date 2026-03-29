@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Il Cerchio di Giotto</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --parchment:   #f2e8d0;
+  --parchment-dk:#e8d9b5;
+  --ink:         #1a0f00;
+  --ink-faded:   #3d2b1a;
+  --gold:        #b8860b;
+  --gold-lt:     #d4a843;
+  --gold-bright: #f0c040;
+  --red-wax:     #8b1a1a;
+  --sepia:       #704214;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--ink);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'EB Garamond', serif;
+  overflow: hidden;
+  touch-action: none;
+}
+
+/* Sfondo con texture */
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background:
+    radial-gradient(ellipse at 20% 20%, rgba(180,130,20,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 80%, rgba(180,130,20,0.06) 0%, transparent 60%),
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 2px,
+      rgba(255,255,255,0.01) 2px,
+      rgba(255,255,255,0.01) 4px
+    );
+  pointer-events:none;
+}
+
+.codex {
+  position: relative;
+  width: min(96vw, 560px);
+  background: var(--parchment);
+  border-radius: 3px;
+  box-shadow:
+    0 0 0 1px var(--gold),
+    0 0 0 6px var(--ink),
+    0 0 0 7px var(--gold),
+    0 0 40px rgba(0,0,0,0.8),
+    inset 0 0 60px rgba(180,130,0,0.08);
+  overflow: hidden;
+}
+
+/* Grain texture sulla pergamena */
+.codex::before {
+  content:'';
+  position:absolute; inset:0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.07'/%3E%3C/svg%3E");
+  pointer-events:none;
+  z-index:1;
+  border-radius:3px;
+}
+
+.inner {
+  position: relative;
+  z-index: 2;
+  padding: 20px 24px 18px;
+}
+
+/* HEADER */
+.header {
+  text-align: center;
+  border-bottom: 1px solid var(--gold);
+  padding-bottom: 14px;
+  margin-bottom: 14px;
+  position: relative;
+}
+
+.ornament {
+  color: var(--gold);
+  font-size: 18px;
+  letter-spacing: 6px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+h1 {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: clamp(17px, 4vw, 26px);
+  font-weight: 900;
+  color: var(--ink);
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  text-shadow: 1px 1px 0 rgba(180,130,0,0.3);
+}
+
+.subtitle {
+  font-style: italic;
+  font-size: clamp(11px, 2.5vw, 14px);
+  color: var(--sepia);
+  margin-top: 4px;
+  letter-spacing: 0.02em;
+}
+
+.latin-motto {
+  font-size: clamp(9px, 2vw, 11px);
+  color: var(--gold);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-top: 6px;
+}
+
+/* CANVAS AREA */
+.canvas-frame {
+  position: relative;
+  margin: 0 auto 14px;
+  width: 100%;
+  aspect-ratio: 1;
+  max-width: 440px;
+  border: 1px solid var(--gold);
+  border-radius: 2px;
+  background: #fdf6e3;
+  box-shadow:
+    inset 0 0 30px rgba(180,130,0,0.1),
+    inset 0 0 3px rgba(180,130,0,0.3);
+  overflow: hidden;
+  cursor: crosshair;
+}
+
+/* Angoli decorativi */
+.canvas-frame::before,
+.canvas-frame::after {
+  content: '✦';
+  position: absolute;
+  color: var(--gold);
+  font-size: 14px;
+  z-index: 3;
+  pointer-events: none;
+}
+.canvas-frame::before { top: 6px; left: 9px; }
+.canvas-frame::after  { bottom: 6px; right: 9px; }
+
+.corner-tl, .corner-br {
+  position: absolute;
+  color: var(--gold);
+  font-size: 14px;
+  z-index: 3;
+  pointer-events: none;
+}
+.corner-tl { top: 6px; right: 9px; }
+.corner-br { bottom: 6px; left: 9px; }
+
+canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+
+/* Istruzione centrale */
+#hint {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 2;
+  transition: opacity 0.4s ease;
+}
+
+#hint-circle {
+  width: 54%;
+  height: 54%;
+  border: 1.5px dashed rgba(176,126,11,0.3);
+  border-radius: 50%;
+  margin-bottom: 12px;
+  animation: rotate-hint 12s linear infinite;
+}
+
+@keyframes rotate-hint {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+#hint-text {
+  font-family: 'EB Garamond', serif;
+  font-style: italic;
+  font-size: clamp(12px, 3vw, 16px);
+  color: rgba(112,66,20,0.5);
+  text-align: center;
+  padding: 0 20px;
+}
+
+/* SCORE PANEL */
+#score-panel {
+  display: none;
+  text-align: center;
+  padding: 6px 0 4px;
+  animation: fadeIn 0.6s ease;
+}
+
+@keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+.score-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+/* Sigillo in cera */
+.wax-seal {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #c0392b, var(--red-wax) 60%, #5a0e0e);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  box-shadow:
+    0 4px 12px rgba(0,0,0,0.5),
+    inset 0 2px 4px rgba(255,150,130,0.3),
+    inset 0 -2px 6px rgba(0,0,0,0.4);
+  position: relative;
+  flex-shrink: 0;
+}
+
+.wax-seal::before {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,200,180,0.25);
+}
+
+.seal-score {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: clamp(22px, 5vw, 30px);
+  font-weight: 900;
+  color: #fff;
+  line-height: 1;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
+
+.seal-pct {
+  font-family: 'EB Garamond', serif;
+  font-size: 11px;
+  color: rgba(255,220,200,0.8);
+  letter-spacing: 0.1em;
+}
+
+.verdict-block {
+  text-align: left;
+  max-width: 200px;
+}
+
+.verdict-title {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: clamp(12px, 2.8vw, 15px);
+  color: var(--ink);
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.verdict-sub {
+  font-style: italic;
+  font-size: clamp(10px, 2.2vw, 13px);
+  color: var(--sepia);
+  margin-top: 3px;
+  line-height: 1.4;
+}
+
+/* Barra dettagli */
+.stats-row {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.stat {
+  text-align: center;
+}
+
+.stat-label {
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+  display: block;
+}
+
+.stat-val {
+  font-size: clamp(13px, 2.8vw, 16px);
+  color: var(--ink-faded);
+  font-weight: 500;
+}
+
+/* Pulsante */
+.btn-retry {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 9px 28px;
+  font-family: 'Cinzel Decorative', serif;
+  font-size: clamp(10px, 2.2vw, 12px);
+  font-weight: 700;
+  color: var(--parchment);
+  background: linear-gradient(135deg, var(--ink-faded), var(--ink));
+  border: 1px solid var(--gold);
+  border-radius: 2px;
+  cursor: pointer;
+  letter-spacing: 0.1em;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  transition: all 0.2s ease;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-retry:hover {
+  background: linear-gradient(135deg, var(--sepia), var(--ink-faded));
+  box-shadow: 0 2px 14px rgba(180,130,0,0.3);
+}
+
+/* FOOTER */
+.footer {
+  border-top: 1px solid rgba(180,130,0,0.4);
+  padding-top: 10px;
+  text-align: center;
+}
+
+.footer-quote {
+  font-style: italic;
+  font-size: clamp(10px, 2.3vw, 13px);
+  color: var(--sepia);
+  line-height: 1.5;
+}
+
+.footer-attr {
+  font-size: clamp(9px, 1.8vw, 11px);
+  color: var(--gold);
+  letter-spacing: 0.1em;
+  margin-top: 3px;
+}
+
+/* Animazione score */
+@keyframes sealAppear {
+  0%   { transform: scale(0) rotate(-20deg); opacity:0; }
+  60%  { transform: scale(1.12) rotate(4deg); }
+  80%  { transform: scale(0.96) rotate(-2deg); }
+  100% { transform: scale(1) rotate(0deg); opacity:1; }
+}
+
+.wax-seal.animate { animation: sealAppear 0.7s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+
+/* Shine effect sul canvas dopo giudizio */
+@keyframes canvasGlow {
+  0%   { box-shadow: inset 0 0 30px rgba(180,130,0,0.1), inset 0 0 3px rgba(180,130,0,0.3); }
+  50%  { box-shadow: inset 0 0 40px rgba(180,130,0,0.25), inset 0 0 6px rgba(180,130,0,0.5); }
+  100% { box-shadow: inset 0 0 30px rgba(180,130,0,0.1), inset 0 0 3px rgba(180,130,0,0.3); }
+}
+
+.canvas-frame.judged { animation: canvasGlow 1.2s ease; }
+
+/* Responsivo */
+@media (max-height: 700px) {
+  .inner { padding: 12px 16px 10px; }
+  h1 { font-size: 15px; }
+  .wax-seal { width: 72px; height: 72px; }
+  .seal-score { font-size: 22px; }
+}
+</style>
+</head>
+<body>
+
+<div class="codex">
+  <div class="inner">
+
+    <!-- HEADER -->
+    <div class="header">
+      <span class="ornament">— ✦ —</span>
+      <h1>Il Cerchio di Giotto</h1>
+      <div class="subtitle">L'Arte del Cerchio Perfetto</div>
+      <div class="latin-motto">Perfectum est quod nihil addi potest</div>
+    </div>
+
+    <!-- CANVAS -->
+    <div class="canvas-frame" id="canvasFrame">
+      <div class="corner-tl">✦</div>
+      <div class="corner-br">✦</div>
+      <canvas id="c"></canvas>
+      <div id="hint">
+        <div id="hint-circle"></div>
+        <div id="hint-text">Traccia un cerchio<br>con il dito o il mouse</div>
+      </div>
+    </div>
+
+    <!-- SCORE -->
+    <div id="score-panel">
+      <div class="score-row">
+        <div class="wax-seal" id="waxSeal">
+          <div class="seal-score" id="sealScore">--</div>
+          <div class="seal-pct">su 100</div>
+        </div>
+        <div class="verdict-block">
+          <div class="verdict-title" id="verdictTitle">-</div>
+          <div class="verdict-sub" id="verdictSub">-</div>
+        </div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat">
+          <span class="stat-label">Circolarità</span>
+          <span class="stat-val" id="statCirc">-</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Chiusura</span>
+          <span class="stat-val" id="statClose">-</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Regolarità</span>
+          <span class="stat-val" id="statSmooth">-</span>
+        </div>
+      </div>
+
+      <button class="btn-retry" id="retryBtn">✦ Tenta di Nuovo ✦</button>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+      <div class="footer-quote" id="footerQuote">
+        "Disegnò un cerchio a mano libera<br>così perfetto che nessun compasso avrebbe potuto fare di meglio."
+      </div>
+      <div class="footer-attr">— Vasari su Giotto, <em>Le Vite de' Più Eccellenti Pittori</em></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const canvas  = document.getElementById('c');
+const ctx     = canvas.getContext('2d');
+const frame   = document.getElementById('canvasFrame');
+const hint    = document.getElementById('hint');
+const panel   = document.getElementById('score-panel');
+const retryBtn= document.getElementById('retryBtn');
+
+let points = [];
+let drawing = false;
+let judged  = false;
+
+// Resize canvas to match display size
+function resize() {
+  const r = frame.getBoundingClientRect();
+  canvas.width  = r.width  * devicePixelRatio;
+  canvas.height = r.height * devicePixelRatio;
+  ctx.scale(devicePixelRatio, devicePixelRatio);
+}
+resize();
+window.addEventListener('resize', () => { resize(); reset(); });
+
+// ========== DRAWING ==========
+function getPos(e) {
+  const r = canvas.getBoundingClientRect();
+  const src = e.touches ? e.touches[0] : e;
+  return {
+    x: src.clientX - r.left,
+    y: src.clientY - r.top
+  };
+}
+
+function startDraw(e) {
+  if(judged) return;
+  e.preventDefault();
+  drawing = true;
+  points = [];
+  const p = getPos(e);
+  points.push(p);
+  ctx.clearRect(0, 0, canvas.width / devicePixelRatio, canvas.height / devicePixelRatio);
+  hint.style.opacity = '0';
+  ctx.beginPath();
+  ctx.moveTo(p.x, p.y);
+}
+
+function moveDraw(e) {
+  if(!drawing) return;
+  e.preventDefault();
+  const p = getPos(e);
+  points.push(p);
+  // Ridisegna tutto con stile inchiostro
+  redrawStroke();
+}
+
+function endDraw(e) {
+  if(!drawing) return;
+  e.preventDefault();
+  drawing = false;
+  if(points.length > 20) judge();
+  else { hint.style.opacity = '1'; }
+}
+
+function redrawStroke() {
+  const W = canvas.width / devicePixelRatio;
+  const H = canvas.height / devicePixelRatio;
+  ctx.clearRect(0, 0, W, H);
+  if(points.length < 2) return;
+
+  ctx.save();
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  // Tratto principale - inchiostro sepia
+  ctx.beginPath();
+  ctx.moveTo(points[0].x, points[0].y);
+  for(let i = 1; i < points.length; i++) {
+    if(i < points.length - 1) {
+      const mx = (points[i].x + points[i+1].x) / 2;
+      const my = (points[i].y + points[i+1].y) / 2;
+      ctx.quadraticCurveTo(points[i].x, points[i].y, mx, my);
+    } else {
+      ctx.lineTo(points[i].x, points[i].y);
+    }
+  }
+  ctx.strokeStyle = 'rgba(26,15,0,0.85)';
+  ctx.lineWidth = 2.2;
+  ctx.stroke();
+
+  // Alone caldo (effetto inchiostro)
+  ctx.beginPath();
+  ctx.moveTo(points[0].x, points[0].y);
+  for(let i = 1; i < points.length; i++) {
+    if(i < points.length - 1) {
+      const mx = (points[i].x + points[i+1].x) / 2;
+      const my = (points[i].y + points[i+1].y) / 2;
+      ctx.quadraticCurveTo(points[i].x, points[i].y, mx, my);
+    } else {
+      ctx.lineTo(points[i].x, points[i].y);
+    }
+  }
+  ctx.strokeStyle = 'rgba(120,70,10,0.12)';
+  ctx.lineWidth = 6;
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+// ========== JUDGE ==========
+function judge() {
+  judged = true;
+
+  // 1. Centroide
+  let cx = 0, cy = 0;
+  for(const p of points) { cx += p.x; cy += p.y; }
+  cx /= points.length; cy /= points.length;
+
+  // 2. Raggio medio
+  const dists = points.map(p => Math.sqrt((p.x-cx)**2 + (p.y-cy)**2));
+  const avgR  = dists.reduce((a,b)=>a+b,0) / dists.length;
+
+  // 3. Circolarità: deviazione standard dei raggi
+  const variance = dists.reduce((a,d) => a + (d-avgR)**2, 0) / dists.length;
+  const stdDev = Math.sqrt(variance);
+  const circScore = Math.max(0, 1 - (stdDev / avgR) * 2.5);
+
+  // 4. Chiusura: distanza tra primo e ultimo punto / diametro
+  const first = points[0], last = points[points.length-1];
+  const closeDist = Math.sqrt((first.x-last.x)**2 + (first.y-last.y)**2);
+  const closeScore = Math.max(0, 1 - closeDist / (avgR * 1.8));
+
+  // 5. Regolarità: variazione delle velocità angolari
+  const angles = points.map(p => Math.atan2(p.y-cy, p.x-cx));
+  let totalAngle = 0;
+  for(let i = 1; i < angles.length; i++) {
+    let da = angles[i] - angles[i-1];
+    if(da > Math.PI)  da -= 2*Math.PI;
+    if(da < -Math.PI) da += 2*Math.PI;
+    totalAngle += da;
+  }
+  // Penalizza se non ha fatto quasi esattamente un giro
+  const turnsScore = Math.max(0, 1 - Math.abs(Math.abs(totalAngle) - 2*Math.PI) / (2*Math.PI));
+
+  // Score finale ponderato
+  const raw = circScore * 0.55 + closeScore * 0.25 + turnsScore * 0.20;
+  const score = Math.round(raw * 100);
+
+  // Disegna cerchio ideale + feedback
+  drawJudgement(cx, cy, avgR, score);
+
+  // Mostra pannello
+  showScore(score, circScore, closeScore, turnsScore);
+}
+
+function drawJudgement(cx, cy, r, score) {
+  const hue = score >= 90 ? '#b8860b' : score >= 70 ? '#8b6914' : '#704214';
+
+  // Cerchio ideale tratteggiato
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI*2);
+  ctx.strokeStyle = hue;
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4, 6]);
+  ctx.globalAlpha = 0.45;
+  ctx.stroke();
+  ctx.restore();
+
+  // Centro
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy, 3, 0, Math.PI*2);
+  ctx.fillStyle = hue;
+  ctx.globalAlpha = 0.5;
+  ctx.fill();
+  ctx.restore();
+
+  frame.classList.add('judged');
+  setTimeout(()=> frame.classList.remove('judged'), 1200);
+}
+
+function showScore(score, circ, close, smooth) {
+  document.getElementById('sealScore').textContent = score;
+  document.getElementById('statCirc').textContent  = Math.round(circ*100)+'%';
+  document.getElementById('statClose').textContent = Math.round(close*100)+'%';
+  document.getElementById('statSmooth').textContent= Math.round(smooth*100)+'%';
+
+  const verdicts = [
+    { min:96, title:'Il Miracolo di Giotto',        sub:'Nessun compasso avrebbe potuto fare di meglio. Sei un maestro.' },
+    { min:88, title:'Maestro del Cerchio',           sub:'La tua mano è guidata da una mente geometrica superiore.' },
+    { min:78, title:'Degno Allievo',                 sub:'Buona forma. Con esercizio raggiungerai la perfezione.' },
+    { min:65, title:'Apprendista Promettente',       sub:'Il talento c\'è. La mano deve ancora obbedire alla mente.' },
+    { min:45, title:'Ancora alla Bottega',           sub:'Torna ad esercitarti. La perfezione richiede dedizione.' },
+    { min:0,  title:'Forse il Pennello Non È il Tuo Strumento', sub:'Non scoraggiarti. Anche Giotto ha cominciato dall\'inizio.' },
+  ];
+
+  const v = verdicts.find(x => score >= x.min);
+  document.getElementById('verdictTitle').textContent = v.title;
+  document.getElementById('verdictSub').textContent   = v.sub;
+
+  // Quotes in fondo
+  const quotes = [
+    { q:'"Chi ben comincia è a metà dell\'opera."', a:'— Giotto di Bondone' },
+    { q:'"O..."', a:'— Giotto (la sua risposta al Papa che chiedeva un campione del suo lavoro)' },
+    { q:'"La perfezione è una direzione, non una destinazione."', a:'— Scuola Fiorentina, XIII sec.' },
+  ];
+  const q = score >= 80 ? quotes[1] : score >= 50 ? quotes[0] : quotes[2];
+  document.getElementById('footerQuote').innerHTML = q.q;
+  document.querySelector('.footer-attr').innerHTML = q.a;
+
+  panel.style.display = 'block';
+
+  const seal = document.getElementById('waxSeal');
+  seal.classList.remove('animate');
+  void seal.offsetWidth;
+  seal.classList.add('animate');
+}
+
+function reset() {
+  judged = false;
+  drawing = false;
+  points = [];
+  const W = canvas.width / devicePixelRatio;
+  const H = canvas.height / devicePixelRatio;
+  ctx.clearRect(0, 0, W, H);
+  hint.style.opacity = '1';
+  panel.style.display = 'none';
+  frame.classList.remove('judged');
+}
+
+// ========== EVENTS ==========
+canvas.addEventListener('mousedown',  startDraw);
+canvas.addEventListener('mousemove',  moveDraw);
+canvas.addEventListener('mouseup',    endDraw);
+canvas.addEventListener('mouseleave', e => { if(drawing) endDraw(e); });
+
+canvas.addEventListener('touchstart', startDraw, { passive: false });
+canvas.addEventListener('touchmove',  moveDraw,  { passive: false });
+canvas.addEventListener('touchend',   endDraw,   { passive: false });
+
+retryBtn.addEventListener('click', reset);
+</script>
+</body>
+</html>
