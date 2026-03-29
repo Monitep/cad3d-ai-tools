@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Mandelbrot Explorer</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    background: #000;
+    overflow: hidden;
+    font-family: 'Share Tech Mono', monospace;
+    touch-action: none;
+  }
+
+  canvas {
+    display: block;
+    width: 100vw;
+    height: 100vh;
+    cursor: crosshair;
+  }
+
+  #ui {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  #header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: linear-gradient(180deg, rgba(0,0,0,0.85) 0%, transparent 100%);
+  }
+
+  #title {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: clamp(14px, 3vw, 22px);
+    letter-spacing: 0.15em;
+    color: #fff;
+    text-shadow: 0 0 20px rgba(120,220,255,0.8), 0 0 40px rgba(120,220,255,0.4);
+  }
+
+  #info {
+    font-size: clamp(9px, 1.8vw, 12px);
+    color: rgba(180,240,255,0.7);
+    text-align: right;
+    line-height: 1.6;
+  }
+
+  #controls {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    padding: 12px 16px;
+    background: linear-gradient(0deg, rgba(0,0,0,0.9) 0%, transparent 100%);
+    pointer-events: all;
+  }
+
+  .btn-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 8px;
+  }
+
+  .btn {
+    font-family: 'Orbitron', sans-serif;
+    font-size: clamp(9px, 2vw, 11px);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding: 8px 14px;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 4px;
+    background: rgba(0,0,0,0.6);
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(10px);
+    text-transform: uppercase;
+    white-space: nowrap;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--glow, rgba(120,220,255,0.15));
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .btn:hover::before, .btn:active::before { opacity: 1; }
+
+  .btn:active { transform: scale(0.95); }
+
+  .btn.palette { --glow: rgba(255,150,50,0.2); border-color: rgba(255,150,50,0.4); color: #ffbb66; }
+  .btn.reset   { --glow: rgba(255,80,80,0.2);  border-color: rgba(255,80,80,0.4);  color: #ff8888; }
+  .btn.zoom    { --glow: rgba(80,255,120,0.2); border-color: rgba(80,255,120,0.4); color: #88ffaa; }
+  .btn.julia   { --glow: rgba(220,80,255,0.2); border-color: rgba(220,80,255,0.4); color: #dd88ff; }
+  .btn.anima   { --glow: rgba(255,220,0,0.2);  border-color: rgba(255,220,0,0.4);  color: #ffee44; }
+  .btn.active  { box-shadow: 0 0 12px var(--active-glow, rgba(255,255,255,0.5)); }
+
+  #iter-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 4px;
+  }
+
+  #iter-label {
+    font-size: clamp(9px, 1.8vw, 11px);
+    color: rgba(180,240,255,0.6);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  input[type=range] {
+    -webkit-appearance: none;
+    width: clamp(100px, 30vw, 200px);
+    height: 3px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 2px;
+    outline: none;
+  }
+
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: rgba(120,220,255,0.9);
+    box-shadow: 0 0 8px rgba(120,220,255,0.8);
+    cursor: pointer;
+  }
+
+  #coords {
+    position: fixed;
+    top: 60px;
+    right: 12px;
+    font-size: clamp(8px, 1.6vw, 10px);
+    color: rgba(120,220,255,0.5);
+    text-align: right;
+    line-height: 1.8;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  #palette-name {
+    position: fixed;
+    top: 60px;
+    left: 12px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: clamp(10px, 2vw, 13px);
+    color: rgba(255,255,255,0.6);
+    pointer-events: none;
+    z-index: 10;
+    transition: opacity 0.5s;
+  }
+
+  #flash {
+    position: fixed;
+    inset: 0;
+    background: rgba(255,255,255,0);
+    pointer-events: none;
+    z-index: 20;
+    transition: background 0.1s;
+  }
+
+  #loading {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #000;
+    z-index: 100;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 18px;
+    color: rgba(120,220,255,0.8);
+    letter-spacing: 0.2em;
+    animation: pulse 1s ease-in-out infinite alternate;
+  }
+
+  @keyframes pulse { from { opacity: 0.5; } to { opacity: 1; } }
+
+  #screenshot-btn {
+    position: fixed;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    pointer-events: all;
+    z-index: 11;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  body:hover #screenshot-btn { opacity: 1; }
+
+  .wow-badge {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    font-family: 'Orbitron', sans-serif;
+    font-size: clamp(24px, 6vw, 48px);
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 0 0 30px rgba(120,220,255,1);
+    pointer-events: none;
+    z-index: 30;
+    opacity: 0;
+    transition: none;
+  }
+
+  @media (max-width: 480px) {
+    .btn { padding: 7px 10px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="loading">INITIALIZING UNIVERSE...</div>
+<div id="flash"></div>
+<div id="wow-text" class="wow-badge"></div>
+
+<canvas id="gl"></canvas>
+
+<div id="ui">
+  <div id="header">
+    <div id="title">MANDELBROT.EXP</div>
+    <div id="info">
+      <span id="zoom-display">zoom: 1x</span><br>
+      <span id="fps-display">fps: --</span>
+    </div>
+  </div>
+</div>
+
+<div id="coords">
+  <span id="cx">re: 0.000000</span><br>
+  <span id="cy">im: 0.000000</span>
+</div>
+
+<div id="palette-name">PSYCHEDELIC</div>
+
+<div id="controls">
+  <div class="btn-row">
+    <button class="btn palette" onclick="nextPalette()">🎨 PALETTE</button>
+    <button class="btn julia"   onclick="toggleJulia()">🌀 JULIA</button>
+    <button class="btn anima"   onclick="toggleAnimate()" id="animBtn">✨ ANIMATE</button>
+    <button class="btn zoom"    onclick="autoZoom()" id="zoomBtn">🔭 DEEP DIVE</button>
+    <button class="btn reset"   onclick="resetView()">↩ RESET</button>
+  </div>
+  <div class="iter-row" id="iter-row">
+    <span id="iter-label">ITERATIONS</span>
+    <input type="range" id="iter-slider" min="50" max="1000" value="256" oninput="updateIter(this.value)">
+    <span id="iter-val" style="font-size:11px;color:rgba(180,240,255,0.7);min-width:30px">256</span>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('gl');
+const gl = canvas.getContext('webgl', { antialias: false, preserveDrawingBuffer: true });
+
+const palettes = [
+  { name: 'PSYCHEDELIC',   id: 0 },
+  { name: 'FIRE & ICE',    id: 1 },
+  { name: 'NEON DREAMS',   id: 2 },
+  { name: 'DEEP OCEAN',    id: 3 },
+  { name: 'INFERNO',       id: 4 },
+  { name: 'ELECTRIC',      id: 5 },
+  { name: 'AURORA',        id: 6 },
+  { name: 'CANDY',         id: 7 },
+];
+
+let state = {
+  cx: -0.5, cy: 0,
+  zoom: 1.0,
+  maxIter: 256,
+  palette: 0,
+  julia: false,
+  juliaC: { x: -0.7, y: 0.27 },
+  animate: false,
+  animTime: 0,
+  autoZooming: false,
+  targetX: -0.5, targetY: 0, targetZoom: 1,
+  lastTime: 0, fps: 0, frameCount: 0, fpsTime: 0,
+  dragging: false, lastX: 0, lastY: 0,
+  pinching: false, lastPinchDist: 0,
+};
+
+// ========== VERTEX SHADER ==========
+const vsSource = `
+  attribute vec2 aPos;
+  void main() { gl_Position = vec4(aPos, 0.0, 1.0); }
+`;
+
+// ========== FRAGMENT SHADER ==========
+const fsSource = `
+  precision highp float;
+  uniform vec2 uResolution;
+  uniform vec2 uCenter;
+  uniform float uZoom;
+  uniform int uMaxIter;
+  uniform int uPalette;
+  uniform bool uJulia;
+  uniform vec2 uJuliaC;
+  uniform float uTime;
+
+  vec3 palette0(float t) {
+    // Psychedelic: ultra-colorful smooth banding
+    float r = 0.5 + 0.5*sin(t*6.283*1.0 + 0.0);
+    float g = 0.5 + 0.5*sin(t*6.283*0.7 + 2.094);
+    float b = 0.5 + 0.5*sin(t*6.283*1.3 + 4.189);
+    return vec3(r, g, b);
+  }
+
+  vec3 palette1(float t) {
+    // Fire & Ice
+    t = mod(t, 1.0);
+    if(t < 0.5) {
+      float s = t*2.0;
+      return mix(vec3(0.0,0.0,0.5), vec3(1.0,0.3,0.0), s);
+    } else {
+      float s = (t-0.5)*2.0;
+      return mix(vec3(1.0,0.3,0.0), vec3(1.0,1.0,0.9), s);
+    }
+  }
+
+  vec3 palette2(float t) {
+    // Neon Dreams
+    float r = 0.5+0.5*sin(t*12.566+uTime*0.5);
+    float g = 0.5+0.5*sin(t*9.42+uTime*0.3+1.0);
+    float b = 0.5+0.5*cos(t*15.7+uTime*0.7);
+    return clamp(vec3(r,g,b)*1.4, 0.0, 1.0);
+  }
+
+  vec3 palette3(float t) {
+    // Deep Ocean
+    vec3 a = vec3(0.02,0.05,0.2);
+    vec3 b = vec3(0.0,0.5,0.8);
+    vec3 c = vec3(0.0,1.0,0.8);
+    if(t < 0.5) return mix(a, b, t*2.0);
+    return mix(b, c, (t-0.5)*2.0);
+  }
+
+  vec3 palette4(float t) {
+    // Inferno
+    vec3 c0 = vec3(0.0,0.0,0.05);
+    vec3 c1 = vec3(0.5,0.0,0.1);
+    vec3 c2 = vec3(1.0,0.3,0.0);
+    vec3 c3 = vec3(1.0,1.0,0.2);
+    if(t<0.33) return mix(c0,c1,t*3.0);
+    if(t<0.66) return mix(c1,c2,(t-0.33)*3.0);
+    return mix(c2,c3,(t-0.66)*3.0);
+  }
+
+  vec3 palette5(float t) {
+    // Electric
+    float r = pow(abs(sin(t*6.283*2.0+uTime)), 2.0);
+    float g = pow(abs(sin(t*6.283*3.0+uTime*1.3+1.0)), 2.0);
+    float b = pow(abs(cos(t*6.283*1.5+uTime*0.7)), 2.0);
+    return vec3(r,g,b);
+  }
+
+  vec3 palette6(float t) {
+    // Aurora
+    float r = 0.3+0.7*abs(sin(t*6.283*0.5+1.0));
+    float g = 0.5+0.5*sin(t*6.283*1.5+uTime*0.2);
+    float b = 0.4+0.6*cos(t*6.283*1.0+uTime*0.1);
+    return clamp(vec3(r*0.4,g,b), 0.0, 1.0);
+  }
+
+  vec3 palette7(float t) {
+    // Candy
+    float r = 0.5+0.5*sin(t*6.283*2.0);
+    float g = 0.5+0.5*sin(t*6.283*3.0+2.0);
+    float b = 0.5+0.5*sin(t*6.283*1.5+4.0);
+    return vec3(r,g,b);
+  }
+
+  vec3 getColor(float t, int pal) {
+    if(pal==0) return palette0(t);
+    if(pal==1) return palette1(t);
+    if(pal==2) return palette2(t);
+    if(pal==3) return palette3(t);
+    if(pal==4) return palette4(t);
+    if(pal==5) return palette5(t);
+    if(pal==6) return palette6(t);
+    return palette7(t);
+  }
+
+  void main() {
+    vec2 uv = (gl_FragCoord.xy - uResolution*0.5) / min(uResolution.x, uResolution.y);
+    uv /= uZoom;
+    
+    vec2 c, z;
+    if(uJulia) {
+      z = uv + uCenter;
+      c = uJuliaC;
+    } else {
+      c = uv + uCenter;
+      z = vec2(0.0);
+    }
+
+    float smooth_iter = 0.0;
+    int n = 0;
+    float zx = z.x, zy = z.y;
+    float cx = c.x, cy = c.y;
+    
+    for(int i = 0; i < 1024; i++) {
+      if(i >= uMaxIter) break;
+      float x2 = zx*zx;
+      float y2 = zy*zy;
+      if(x2+y2 > 256.0) { n = i; break; }
+      zy = 2.0*zx*zy + cy;
+      zx = x2 - y2 + cx;
+      n = i+1;
+    }
+    
+    if(n == uMaxIter) {
+      gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+      return;
+    }
+
+    // Smooth coloring
+    float log_zn = log(zx*zx + zy*zy) / 2.0;
+    float nu = log(log_zn / log(2.0)) / log(2.0);
+    float t = (float(n) + 1.0 - nu) / float(uMaxIter);
+    t = mod(t * 6.0 + uTime*0.05, 1.0);
+    
+    vec3 col = getColor(t, uPalette);
+    
+    // Extra glow on boundary
+    float edge = 1.0 - float(n) / float(uMaxIter);
+    col += vec3(0.05) * (1.0 - edge);
+    
+    gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+  }
+`;
+
+// ========== INIT ==========
+function compileShader(src, type) {
+  const s = gl.createShader(type);
+  gl.shaderSource(s, src);
+  gl.compileShader(s);
+  return s;
+}
+
+const prog = gl.createProgram();
+gl.attachShader(prog, compileShader(vsSource, gl.VERTEX_SHADER));
+gl.attachShader(prog, compileShader(fsSource, gl.FRAGMENT_SHADER));
+gl.linkProgram(prog);
+gl.useProgram(prog);
+
+const buf = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+const loc = gl.getAttribLocation(prog, 'aPos');
+gl.enableVertexAttribArray(loc);
+gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+
+const uRes   = gl.getUniformLocation(prog, 'uResolution');
+const uCen   = gl.getUniformLocation(prog, 'uCenter');
+const uZoom  = gl.getUniformLocation(prog, 'uZoom');
+const uIter  = gl.getUniformLocation(prog, 'uMaxIter');
+const uPal   = gl.getUniformLocation(prog, 'uPalette');
+const uJul   = gl.getUniformLocation(prog, 'uJulia');
+const uJulC  = gl.getUniformLocation(prog, 'uJuliaC');
+const uTime  = gl.getUniformLocation(prog, 'uTime');
+
+function resize() {
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  gl.viewport(0, 0, canvas.width, canvas.height);
+}
+resize();
+window.addEventListener('resize', resize);
+
+// ========== RENDER ==========
+function render(ts) {
+  requestAnimationFrame(render);
+  
+  const dt = ts - state.lastTime;
+  state.lastTime = ts;
+  state.frameCount++;
+
+  if(ts - state.fpsTime > 500) {
+    state.fps = Math.round(state.frameCount / ((ts - state.fpsTime)/1000));
+    state.frameCount = 0;
+    state.fpsTime = ts;
+    document.getElementById('fps-display').textContent = `fps: ${state.fps}`;
+  }
+
+  if(state.animate) {
+    state.animTime += dt * 0.001;
+    if(state.julia) {
+      state.juliaC.x = -0.7 + 0.5 * Math.sin(state.animTime * 0.5);
+      state.juliaC.y = 0.27 + 0.4 * Math.cos(state.animTime * 0.3);
+    }
+  }
+
+  if(state.autoZooming) {
+    state.zoom *= 1.008;
+    document.getElementById('zoom-display').textContent = `zoom: ${state.zoom.toFixed(0)}x`;
+  }
+
+  gl.uniform2f(uRes, canvas.width, canvas.height);
+  gl.uniform2f(uCen, state.cx, state.cy);
+  gl.uniform1f(uZoom, state.zoom);
+  gl.uniform1i(uIter, state.maxIter);
+  gl.uniform1i(uPal, state.palette);
+  gl.uniform1i(uJul, state.julia ? 1 : 0);
+  gl.uniform2f(uJulC, state.juliaC.x, state.juliaC.y);
+  gl.uniform1f(uTime, state.animTime);
+
+  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+}
+requestAnimationFrame(render);
+
+// ========== CONTROLS ==========
+function nextPalette() {
+  state.palette = (state.palette + 1) % palettes.length;
+  document.getElementById('palette-name').textContent = palettes[state.palette].name;
+  showWow(palettes[state.palette].name);
+}
+
+function toggleJulia() {
+  state.julia = !state.julia;
+  const btn = document.querySelector('.btn.julia');
+  if(state.julia) {
+    btn.textContent = '🌀 MANDEL';
+    btn.classList.add('active');
+    btn.style.setProperty('--active-glow', 'rgba(220,80,255,0.6)');
+    showWow('JULIA MODE');
+  } else {
+    btn.textContent = '🌀 JULIA';
+    btn.classList.remove('active');
+    showWow('MANDELBROT');
+  }
+}
+
+function toggleAnimate() {
+  state.animate = !state.animate;
+  const btn = document.getElementById('animBtn');
+  if(state.animate) {
+    btn.textContent = '⏸ PAUSE';
+    btn.classList.add('active');
+    btn.style.setProperty('--active-glow', 'rgba(255,220,0,0.6)');
+    showWow('ANIMATE!');
+  } else {
+    btn.textContent = '✨ ANIMATE';
+    btn.classList.remove('active');
+  }
+}
+
+const deepSpots = [
+  { cx: -0.74529, cy: 0.11307, zoom: 800 },
+  { cx: -0.16070, cy: 1.03755, zoom: 1200 },
+  { cx: -0.74364, cy: 0.13182, zoom: 2000 },
+  { cx: -0.56, cy: 0.64, zoom: 600 },
+  { cx: -1.25, cy: 0.02, zoom: 400 },
+];
+let deepIdx = 0;
+
+function autoZoom() {
+  const spot = deepSpots[deepIdx % deepSpots.length];
+  deepIdx++;
+  state.autoZooming = !state.autoZooming;
+  const btn = document.getElementById('zoomBtn');
+
+  if(state.autoZooming) {
+    state.cx = spot.cx;
+    state.cy = spot.cy;
+    state.zoom = 1;
+    state.maxIter = 500;
+    document.getElementById('iter-slider').value = 500;
+    document.getElementById('iter-val').textContent = 500;
+    btn.textContent = '⏹ STOP';
+    btn.classList.add('active');
+    btn.style.setProperty('--active-glow', 'rgba(80,255,120,0.6)');
+    showWow('DEEP DIVE!');
+  } else {
+    btn.textContent = '🔭 DEEP DIVE';
+    btn.classList.remove('active');
+  }
+}
+
+function resetView() {
+  state.cx = -0.5; state.cy = 0;
+  state.zoom = 1; state.animTime = 0;
+  state.julia = false; state.animate = false; state.autoZooming = false;
+  state.maxIter = 256;
+  document.getElementById('iter-slider').value = 256;
+  document.getElementById('iter-val').textContent = 256;
+  document.getElementById('animBtn').textContent = '✨ ANIMATE';
+  document.getElementById('zoomBtn').textContent = '🔭 DEEP DIVE';
+  document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('zoom-display').textContent = 'zoom: 1x';
+  document.querySelector('.btn.julia').textContent = '🌀 JULIA';
+  showWow('RESET');
+}
+
+function updateIter(v) {
+  state.maxIter = parseInt(v);
+  document.getElementById('iter-val').textContent = v;
+}
+
+// ========== WOW EFFECT ==========
+function showWow(text) {
+  const el = document.getElementById('wow-text');
+  el.textContent = text;
+  el.style.transition = 'none';
+  el.style.transform = 'translate(-50%,-50%) scale(0)';
+  el.style.opacity = '1';
+  requestAnimationFrame(() => {
+    el.style.transition = 'transform 0.3s cubic-bezier(0.175,0.885,0.32,1.275), opacity 0.6s ease 0.4s';
+    el.style.transform = 'translate(-50%,-50%) scale(1)';
+    el.style.opacity = '0';
+  });
+}
+
+// ========== MOUSE / TOUCH ==========
+function screenToFractal(sx, sy) {
+  const W = canvas.width, H = canvas.height;
+  const mn = Math.min(W, H);
+  return {
+    x: (sx - W/2) / (mn * state.zoom) + state.cx,
+    y: (sy - H/2) / (mn * state.zoom) + state.cy
+  };
+}
+
+canvas.addEventListener('mousedown', e => {
+  if(e.button !== 0) return;
+  state.dragging = true;
+  state.lastX = e.clientX; state.lastY = e.clientY;
+});
+
+canvas.addEventListener('mousemove', e => {
+  const p = screenToFractal(e.clientX, e.clientY);
+  document.getElementById('cx').textContent = `re: ${p.x.toFixed(7)}`;
+  document.getElementById('cy').textContent = `im: ${p.y.toFixed(7)}`;
+  if(!state.dragging) return;
+  const dx = e.clientX - state.lastX;
+  const dy = e.clientY - state.lastY;
+  const mn = Math.min(canvas.width, canvas.height);
+  state.cx -= dx / (mn * state.zoom);
+  state.cy -= dy / (mn * state.zoom);
+  state.lastX = e.clientX; state.lastY = e.clientY;
+});
+
+canvas.addEventListener('mouseup', () => state.dragging = false);
+canvas.addEventListener('mouseleave', () => state.dragging = false);
+
+canvas.addEventListener('wheel', e => {
+  e.preventDefault();
+  const factor = e.deltaY < 0 ? 1.15 : 0.87;
+  const p = screenToFractal(e.clientX, e.clientY);
+  state.zoom *= factor;
+  state.cx = p.x + (state.cx - p.x) / factor;
+  state.cy = p.y + (state.cy - p.y) / factor;
+  document.getElementById('zoom-display').textContent = `zoom: ${state.zoom.toFixed(1)}x`;
+}, { passive: false });
+
+// Touch
+canvas.addEventListener('touchstart', e => {
+  e.preventDefault();
+  if(e.touches.length === 1) {
+    state.dragging = true;
+    state.lastX = e.touches[0].clientX;
+    state.lastY = e.touches[0].clientY;
+  } else if(e.touches.length === 2) {
+    state.dragging = false;
+    state.pinching = true;
+    const dx = e.touches[0].clientX - e.touches[1].clientX;
+    const dy = e.touches[0].clientY - e.touches[1].clientY;
+    state.lastPinchDist = Math.sqrt(dx*dx + dy*dy);
+  }
+}, { passive: false });
+
+canvas.addEventListener('touchmove', e => {
+  e.preventDefault();
+  if(state.dragging && e.touches.length === 1) {
+    const dx = e.touches[0].clientX - state.lastX;
+    const dy = e.touches[0].clientY - state.lastY;
+    const mn = Math.min(canvas.width, canvas.height);
+    state.cx -= dx / (mn * state.zoom);
+    state.cy -= dy / (mn * state.zoom);
+    state.lastX = e.touches[0].clientX;
+    state.lastY = e.touches[0].clientY;
+  } else if(state.pinching && e.touches.length === 2) {
+    const dx = e.touches[0].clientX - e.touches[1].clientX;
+    const dy = e.touches[0].clientY - e.touches[1].clientY;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    const factor = dist / state.lastPinchDist;
+    const mx = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+    const my = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+    const p = screenToFractal(mx, my);
+    state.zoom *= factor;
+    state.cx = p.x + (state.cx - p.x) / factor;
+    state.cy = p.y + (state.cy - p.y) / factor;
+    state.lastPinchDist = dist;
+    document.getElementById('zoom-display').textContent = `zoom: ${state.zoom.toFixed(1)}x`;
+  }
+}, { passive: false });
+
+canvas.addEventListener('touchend', e => {
+  if(e.touches.length < 2) state.pinching = false;
+  if(e.touches.length === 0) state.dragging = false;
+}, { passive: false });
+
+// Double tap/click to zoom in
+let lastTap = 0;
+canvas.addEventListener('touchend', e => {
+  const now = Date.now();
+  if(now - lastTap < 300) {
+    const t = e.changedTouches[0];
+    const p = screenToFractal(t.clientX, t.clientY);
+    state.zoom *= 3;
+    state.cx = p.x;
+    state.cy = p.y;
+    document.getElementById('zoom-display').textContent = `zoom: ${state.zoom.toFixed(1)}x`;
+    showWow('ZOOM!');
+  }
+  lastTap = now;
+}, { passive: false });
+
+canvas.addEventListener('dblclick', e => {
+  const p = screenToFractal(e.clientX, e.clientY);
+  state.zoom *= 3;
+  state.cx = p.x;
+  state.cy = p.y;
+  document.getElementById('zoom-display').textContent = `zoom: ${state.zoom.toFixed(1)}x`;
+  showWow('ZOOM!');
+});
+
+// Hide loading
+setTimeout(() => {
+  document.getElementById('loading').style.display = 'none';
+}, 400);
+
+// Keyboard shortcuts
+window.addEventListener('keydown', e => {
+  if(e.key === 'p' || e.key === 'P') nextPalette();
+  if(e.key === 'j' || e.key === 'J') toggleJulia();
+  if(e.key === 'a' || e.key === 'A') toggleAnimate();
+  if(e.key === 'd' || e.key === 'D') autoZoom();
+  if(e.key === 'r' || e.key === 'R') resetView();
+  if(e.key === '+' || e.key === '=') { state.zoom *= 1.5; }
+  if(e.key === '-') { state.zoom /= 1.5; }
+});
+</script>
+</body>
+</html>
