@@ -634,8 +634,8 @@ function screenToFractal(sx, sy) {
   const W = canvas.width, H = canvas.height;
   const mn = Math.min(W, H);
   return {
-    x: (sx - W/2) / (mn * state.zoom) + state.cx,
-    y: (sy - H/2) / (mn * state.zoom) + state.cy
+    x:  (sx - W/2) / (mn * state.zoom) + state.cx,
+    y: -(sy - H/2) / (mn * state.zoom) + state.cy   // WebGL Y è invertito rispetto a CSS
   };
 }
 
@@ -654,7 +654,7 @@ canvas.addEventListener('mousemove', e => {
   const dy = e.clientY - state.lastY;
   const mn = Math.min(canvas.width, canvas.height);
   state.cx -= dx / (mn * state.zoom);
-  state.cy -= dy / (mn * state.zoom);
+  state.cy += dy / (mn * state.zoom);
   state.lastX = e.clientX; state.lastY = e.clientY;
 });
 
@@ -694,7 +694,7 @@ canvas.addEventListener('touchmove', e => {
     const dy = e.touches[0].clientY - state.lastY;
     const mn = Math.min(canvas.width, canvas.height);
     state.cx -= dx / (mn * state.zoom);
-    state.cy -= dy / (mn * state.zoom);
+    state.cy += dy / (mn * state.zoom);
     state.lastX = e.touches[0].clientX;
     state.lastY = e.touches[0].clientY;
   } else if(state.pinching && e.touches.length === 2) {
