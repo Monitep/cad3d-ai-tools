@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="it" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,20 +7,40 @@
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
 <style>
   :root {
+    --fs: 1;
+    /* DARK */
     --bg: #050508;
-    --bg2: #0a0a10;
-    --bg3: #0f0f18;
+    --bg2: #0e0e18;
+    --bg3: #13131f;
+    --border: #2a2a45;
+    --text: #f0f0ff;
+    --muted: #8888aa;
+    --header-text: #ffffff;
     --btc: #f7931a;
     --btc-dim: #f7931a22;
-    --eth: #627eea;
-    --eth-dim: #627eea22;
+    --eth: #7b93ff;
+    --eth-dim: #7b93ff22;
     --green: #00ff88;
     --red: #ff3366;
-    --text: #e0e0ff;
-    --muted: #4a4a6a;
-    --border: #1a1a2e;
     --mono: 'Share Tech Mono', monospace;
     --sans: 'Rajdhani', sans-serif;
+  }
+
+  [data-theme="light"] {
+    --bg: #f0f0f8;
+    --bg2: #ffffff;
+    --bg3: #e8e8f5;
+    --border: #c0c0dd;
+    --text: #111122;
+    --muted: #5555775;
+    --muted: #555577;
+    --header-text: #050520;
+    --btc: #d4770f;
+    --btc-dim: #f7931a18;
+    --eth: #3a55cc;
+    --eth-dim: #3a55cc18;
+    --green: #007744;
+    --red: #cc0033;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -31,33 +51,18 @@
     font-family: var(--sans);
     min-height: 100vh;
     overflow-x: hidden;
+    transition: background 0.3s, color 0.3s;
+    font-size: calc(var(--fs) * 16px);
   }
 
-  /* Grid noise texture */
-  body::before {
+  [data-theme="dark"] body::before {
     content: '';
     position: fixed;
     inset: 0;
     background-image:
-      linear-gradient(rgba(100,100,255,0.015) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(100,100,255,0.015) 1px, transparent 1px);
+      linear-gradient(rgba(100,100,255,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(100,100,255,0.02) 1px, transparent 1px);
     background-size: 40px 40px;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  /* Scanline effect */
-  body::after {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      rgba(0,0,0,0.08) 2px,
-      rgba(0,0,0,0.08) 4px
-    );
     pointer-events: none;
     z-index: 0;
   }
@@ -70,99 +75,169 @@
     padding: 20px 16px 40px;
   }
 
-  /* HEADER */
+  /* ── HEADER ── */
   header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 0 28px;
+    padding: 16px 0 22px;
     border-bottom: 1px solid var(--border);
-    margin-bottom: 28px;
+    margin-bottom: 22px;
+    flex-wrap: wrap;
+    gap: 12px;
   }
 
   .logo {
     font-family: var(--mono);
-    font-size: 0.75rem;
-    color: var(--muted);
+    font-size: calc(var(--fs) * 1rem);
+    color: var(--header-text);
     letter-spacing: 3px;
-    text-transform: uppercase;
+    font-weight: bold;
   }
 
-  .logo span { color: var(--green); }
+  .logo .slash { color: var(--btc); }
 
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  /* STATUS */
   .status {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 7px;
     font-family: var(--mono);
-    font-size: 0.7rem;
-    color: var(--muted);
+    font-size: calc(var(--fs) * 0.8rem);
+    color: var(--text);
+    font-weight: bold;
   }
 
   .dot {
-    width: 7px; height: 7px;
+    width: 8px; height: 8px;
     border-radius: 50%;
     background: var(--green);
     animation: pulse 2s infinite;
+    flex-shrink: 0;
   }
 
   @keyframes pulse {
-    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(0,255,136,0.4); }
-    50% { opacity: 0.7; box-shadow: 0 0 0 5px rgba(0,255,136,0); }
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(0,255,136,0.5); }
+    50% { opacity: 0.8; box-shadow: 0 0 0 6px rgba(0,255,136,0); }
+  }
+
+  /* CONTROLS */
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn {
+    font-family: var(--mono);
+    font-size: calc(var(--fs) * 0.75rem);
+    padding: 5px 12px;
+    border: 1px solid var(--border);
+    background: var(--bg3);
+    color: var(--text);
+    cursor: pointer;
+    border-radius: 3px;
+    transition: all 0.2s;
+    letter-spacing: 1px;
+    white-space: nowrap;
+    font-weight: bold;
+  }
+
+  .btn:hover {
+    border-color: var(--btc);
+    color: var(--btc);
+  }
+
+  .btn.theme-btn:hover {
+    border-color: var(--eth);
+    color: var(--eth);
+  }
+
+  .font-controls {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .font-label {
+    font-family: var(--mono);
+    font-size: calc(var(--fs) * 0.7rem);
+    color: var(--muted);
+    letter-spacing: 1px;
+    margin-right: 2px;
   }
 
   /* CLOCK */
   .clock {
     text-align: center;
     font-family: var(--mono);
-    font-size: 0.7rem;
+    font-size: calc(var(--fs) * 0.85rem);
     color: var(--muted);
-    letter-spacing: 2px;
-    margin-bottom: 28px;
+    letter-spacing: 3px;
+    margin-bottom: 22px;
+    font-weight: bold;
   }
 
-  /* CARDS */
+  /* OFFLINE */
+  .offline-banner {
+    display: none;
+    background: rgba(255,51,102,0.12);
+    border: 1px solid var(--red);
+    color: var(--red);
+    font-family: var(--mono);
+    font-size: calc(var(--fs) * 0.8rem);
+    text-align: center;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 16px;
+    letter-spacing: 1px;
+    font-weight: bold;
+  }
+
+  /* ── CARDS ── */
   .cards {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 16px;
-    margin-bottom: 28px;
+    margin-bottom: 22px;
   }
 
-  @media (max-width: 520px) {
-    .cards { grid-template-columns: 1fr; }
-  }
+  @media (max-width: 520px) { .cards { grid-template-columns: 1fr; } }
 
   .card {
     background: var(--bg2);
     border: 1px solid var(--border);
-    border-radius: 4px;
+    border-radius: 6px;
     padding: 20px;
     position: relative;
     overflow: hidden;
-    transition: border-color 0.3s;
+    transition: background 0.3s, border-color 0.3s;
   }
 
   .card::before {
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0;
-    height: 2px;
+    height: 3px;
   }
 
   .card.btc::before { background: var(--btc); }
   .card.eth::before { background: var(--eth); }
 
-  .card.btc { border-color: #f7931a18; }
-  .card.eth { border-color: #627eea18; }
-
   .card-glow {
     position: absolute;
-    top: -40px; right: -40px;
-    width: 120px; height: 120px;
+    top: -50px; right: -50px;
+    width: 140px; height: 140px;
     border-radius: 50%;
-    opacity: 0.04;
-    filter: blur(30px);
+    opacity: 0.05;
+    filter: blur(40px);
   }
 
   .card.btc .card-glow { background: var(--btc); }
@@ -182,106 +257,110 @@
   }
 
   .coin-icon {
-    width: 32px; height: 32px;
+    width: calc(var(--fs) * 36px);
+    height: calc(var(--fs) * 36px);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1rem;
+    font-size: calc(var(--fs) * 1.1rem);
     font-weight: bold;
+    flex-shrink: 0;
   }
 
-  .btc .coin-icon { background: var(--btc-dim); color: var(--btc); }
-  .eth .coin-icon { background: var(--eth-dim); color: var(--eth); }
+  .btc .coin-icon { background: var(--btc-dim); color: var(--btc); border: 1px solid var(--btc); }
+  .eth .coin-icon { background: var(--eth-dim); color: var(--eth); border: 1px solid var(--eth); }
 
   .coin-label {
-    font-size: 1rem;
+    font-size: calc(var(--fs) * 1.15rem);
     font-weight: 700;
-    letter-spacing: 2px;
-    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--text);
   }
 
   .coin-full {
-    font-size: 0.65rem;
+    font-size: calc(var(--fs) * 0.72rem);
     color: var(--muted);
     font-family: var(--mono);
     margin-top: 2px;
+    letter-spacing: 1px;
+    font-weight: bold;
   }
+
+  .coin-change {
+    font-family: var(--mono);
+    font-size: calc(var(--fs) * 0.85rem);
+    padding: 4px 12px;
+    border-radius: 3px;
+    letter-spacing: 1px;
+    font-weight: bold;
+  }
+
+  .coin-change.pos { background: rgba(0,200,100,0.15); color: var(--green); border: 1px solid rgba(0,200,100,0.3); }
+  .coin-change.neg { background: rgba(255,51,102,0.15); color: var(--red); border: 1px solid rgba(255,51,102,0.3); }
 
   .coin-price {
     font-family: var(--mono);
-    font-size: 1.7rem;
+    font-size: calc(var(--fs) * 2rem);
     font-weight: normal;
-    letter-spacing: -1px;
     line-height: 1;
-    margin-bottom: 10px;
+    margin-bottom: 14px;
     transition: color 0.2s;
+    letter-spacing: -1px;
   }
 
   @media (max-width: 380px) {
-    .coin-price { font-size: 1.4rem; }
+    .coin-price { font-size: calc(var(--fs) * 1.6rem); }
   }
 
   .btc .coin-price { color: var(--btc); }
   .eth .coin-price { color: var(--eth); }
 
-  .coin-price.flash-up { animation: flashUp 0.4s ease; }
-  .coin-price.flash-down { animation: flashDown 0.4s ease; }
+  .coin-price.flash-up { animation: flashUp 0.5s ease; }
+  .coin-price.flash-down { animation: flashDown 0.5s ease; }
 
   @keyframes flashUp {
-    0% { opacity: 1; }
-    30% { color: var(--green); text-shadow: 0 0 20px var(--green); }
-    100% { opacity: 1; }
+    0%, 100% { }
+    40% { color: var(--green); text-shadow: 0 0 25px var(--green); }
   }
 
   @keyframes flashDown {
-    0% { opacity: 1; }
-    30% { color: var(--red); text-shadow: 0 0 20px var(--red); }
-    100% { opacity: 1; }
+    0%, 100% { }
+    40% { color: var(--red); text-shadow: 0 0 25px var(--red); }
   }
-
-  .coin-change {
-    font-family: var(--mono);
-    font-size: 0.75rem;
-    padding: 3px 10px;
-    border-radius: 2px;
-    letter-spacing: 1px;
-  }
-
-  .coin-change.pos { background: rgba(0,255,136,0.1); color: var(--green); }
-  .coin-change.neg { background: rgba(255,51,102,0.1); color: var(--red); }
 
   .coin-stats {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    margin-top: 14px;
+    gap: 10px;
     padding-top: 14px;
     border-top: 1px solid var(--border);
   }
 
   .stat-label {
-    font-size: 0.6rem;
+    font-size: calc(var(--fs) * 0.65rem);
     color: var(--muted);
     font-family: var(--mono);
     letter-spacing: 1px;
-    text-transform: uppercase;
     margin-bottom: 3px;
+    font-weight: bold;
   }
 
   .stat-value {
     font-family: var(--mono);
-    font-size: 0.78rem;
+    font-size: calc(var(--fs) * 0.85rem);
     color: var(--text);
+    font-weight: bold;
   }
 
-  /* CHART */
+  /* ── CHART ── */
   .chart-container {
     background: var(--bg2);
     border: 1px solid var(--border);
-    border-radius: 4px;
+    border-radius: 6px;
     padding: 20px;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
+    transition: background 0.3s;
   }
 
   .chart-header {
@@ -292,64 +371,61 @@
   }
 
   .chart-title {
-    font-size: 0.7rem;
+    font-size: calc(var(--fs) * 0.82rem);
     font-family: var(--mono);
-    color: var(--muted);
+    color: var(--text);
     letter-spacing: 2px;
-    text-transform: uppercase;
+    font-weight: bold;
   }
 
   .chart-tabs {
     display: flex;
-    gap: 4px;
+    gap: 6px;
   }
 
   .chart-tab {
     font-family: var(--mono);
-    font-size: 0.65rem;
-    padding: 3px 10px;
+    font-size: calc(var(--fs) * 0.78rem);
+    padding: 4px 14px;
     border: 1px solid var(--border);
-    background: transparent;
-    color: var(--muted);
+    background: var(--bg3);
+    color: var(--text);
     cursor: pointer;
-    border-radius: 2px;
+    border-radius: 3px;
     transition: all 0.2s;
     letter-spacing: 1px;
+    font-weight: bold;
   }
 
   .chart-tab.active.btc-tab { border-color: var(--btc); color: var(--btc); background: var(--btc-dim); }
   .chart-tab.active.eth-tab { border-color: var(--eth); color: var(--eth); background: var(--eth-dim); }
-  .chart-tab:hover { color: var(--text); }
 
-  canvas {
-    width: 100% !important;
-    height: 180px !important;
-    display: block;
-  }
+  canvas { width: 100% !important; height: 180px !important; display: block; }
 
-  /* TICKER TAPE */
+  /* ── TICKER ── */
   .ticker-wrap {
     overflow: hidden;
     background: var(--bg3);
     border: 1px solid var(--border);
     border-radius: 4px;
     padding: 10px 0;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
   }
 
   .ticker {
     display: flex;
     gap: 48px;
-    animation: scroll 20s linear infinite;
+    animation: scroll 22s linear infinite;
     white-space: nowrap;
     width: max-content;
   }
 
   .ticker-item {
     font-family: var(--mono);
-    font-size: 0.7rem;
+    font-size: calc(var(--fs) * 0.78rem);
     color: var(--muted);
     letter-spacing: 1px;
+    font-weight: bold;
   }
 
   .ticker-item span { color: var(--green); }
@@ -359,53 +435,46 @@
     to { transform: translateX(-50%); }
   }
 
-  /* FOOTER */
+  /* ── FOOTER ── */
   footer {
     text-align: center;
     font-family: var(--mono);
-    font-size: 0.6rem;
+    font-size: calc(var(--fs) * 0.72rem);
     color: var(--muted);
     letter-spacing: 2px;
     padding-top: 20px;
     border-top: 1px solid var(--border);
+    font-weight: bold;
   }
 
   footer a { color: var(--muted); text-decoration: none; }
   footer a:hover { color: var(--text); }
-
-  /* Connessione persa */
-  .offline-banner {
-    display: none;
-    background: rgba(255,51,102,0.1);
-    border: 1px solid var(--red);
-    color: var(--red);
-    font-family: var(--mono);
-    font-size: 0.7rem;
-    text-align: center;
-    padding: 8px;
-    border-radius: 4px;
-    margin-bottom: 16px;
-    letter-spacing: 1px;
-  }
 </style>
 </head>
 <body>
 <div class="container">
 
   <header>
-    <div class="logo"><span>//</span> CRYPTO TERMINAL</div>
-    <div class="status">
-      <div class="dot" id="statusDot"></div>
-      <span id="statusText">LIVE</span>
+    <div class="logo"><span class="slash">//</span> CRYPTO TERMINAL</div>
+    <div class="header-right">
+      <div class="font-controls">
+        <span class="font-label">FONT</span>
+        <button class="btn" onclick="setFont(-0.1)">A-</button>
+        <button class="btn" onclick="setFont(0)">A</button>
+        <button class="btn" onclick="setFont(+0.1)">A+</button>
+      </div>
+      <button class="btn theme-btn" onclick="toggleTheme()" id="themeBtn">☀ LIGHT</button>
+      <div class="status">
+        <div class="dot" id="statusDot"></div>
+        <span id="statusText">LIVE</span>
+      </div>
     </div>
   </header>
 
   <div class="clock" id="clock">--:--:-- UTC</div>
-
   <div class="offline-banner" id="offlineBanner">CONNESSIONE INTERROTTA - RICONNESSIONE IN CORSO...</div>
 
   <div class="cards">
-    <!-- BTC -->
     <div class="card btc">
       <div class="card-glow"></div>
       <div class="coin-header">
@@ -420,26 +489,13 @@
       </div>
       <div class="coin-price" id="btcPrice">$--,---</div>
       <div class="coin-stats">
-        <div>
-          <div class="stat-label">24H HIGH</div>
-          <div class="stat-value" id="btcHigh">--</div>
-        </div>
-        <div>
-          <div class="stat-label">24H LOW</div>
-          <div class="stat-value" id="btcLow">--</div>
-        </div>
-        <div>
-          <div class="stat-label">VOLUME</div>
-          <div class="stat-value" id="btcVol">--</div>
-        </div>
-        <div>
-          <div class="stat-label">TRADES</div>
-          <div class="stat-value" id="btcTrades">--</div>
-        </div>
+        <div><div class="stat-label">24H HIGH</div><div class="stat-value" id="btcHigh">--</div></div>
+        <div><div class="stat-label">24H LOW</div><div class="stat-value" id="btcLow">--</div></div>
+        <div><div class="stat-label">VOLUME</div><div class="stat-value" id="btcVol">--</div></div>
+        <div><div class="stat-label">TRADES</div><div class="stat-value" id="btcTrades">--</div></div>
       </div>
     </div>
 
-    <!-- ETH -->
     <div class="card eth">
       <div class="card-glow"></div>
       <div class="coin-header">
@@ -454,27 +510,14 @@
       </div>
       <div class="coin-price" id="ethPrice">$--,---</div>
       <div class="coin-stats">
-        <div>
-          <div class="stat-label">24H HIGH</div>
-          <div class="stat-value" id="ethHigh">--</div>
-        </div>
-        <div>
-          <div class="stat-label">24H LOW</div>
-          <div class="stat-value" id="ethLow">--</div>
-        </div>
-        <div>
-          <div class="stat-label">VOLUME</div>
-          <div class="stat-value" id="ethVol">--</div>
-        </div>
-        <div>
-          <div class="stat-label">TRADES</div>
-          <div class="stat-value" id="ethTrades">--</div>
-        </div>
+        <div><div class="stat-label">24H HIGH</div><div class="stat-value" id="ethHigh">--</div></div>
+        <div><div class="stat-label">24H LOW</div><div class="stat-value" id="ethLow">--</div></div>
+        <div><div class="stat-label">VOLUME</div><div class="stat-value" id="ethVol">--</div></div>
+        <div><div class="stat-label">TRADES</div><div class="stat-value" id="ethTrades">--</div></div>
       </div>
     </div>
   </div>
 
-  <!-- CHART -->
   <div class="chart-container">
     <div class="chart-header">
       <div class="chart-title">PRICE CHART // LIVE 60s</div>
@@ -486,19 +529,18 @@
     <canvas id="priceChart"></canvas>
   </div>
 
-  <!-- TICKER -->
   <div class="ticker-wrap">
-    <div class="ticker" id="ticker">
+    <div class="ticker">
       <span class="ticker-item">BTC/USDT <span id="t1">--</span></span>
       <span class="ticker-item">ETH/USDT <span id="t2">--</span></span>
       <span class="ticker-item">ETH/BTC <span id="t3">--</span></span>
-      <span class="ticker-item">MARKET <span>LIVE</span></span>
       <span class="ticker-item">SOURCE <span>BINANCE WS</span></span>
+      <span class="ticker-item">AGGIORNAMENTO <span>LIVE</span></span>
       <span class="ticker-item">BTC/USDT <span id="t4">--</span></span>
       <span class="ticker-item">ETH/USDT <span id="t5">--</span></span>
       <span class="ticker-item">ETH/BTC <span id="t6">--</span></span>
-      <span class="ticker-item">MARKET <span>LIVE</span></span>
       <span class="ticker-item">SOURCE <span>BINANCE WS</span></span>
+      <span class="ticker-item">AGGIORNAMENTO <span>LIVE</span></span>
     </div>
   </div>
 
@@ -507,78 +549,82 @@
   </footer>
 
 </div>
-
 <script>
+// ── FONT SIZE ──────────────────────────────────────────
+let fontSize = parseFloat(localStorage.getItem('cryptoFs') || '1');
+function applyFont() {
+  fontSize = Math.min(1.5, Math.max(0.7, fontSize));
+  document.documentElement.style.setProperty('--fs', fontSize);
+  localStorage.setItem('cryptoFs', fontSize);
+}
+function setFont(delta) {
+  if (delta === 0) fontSize = 1;
+  else fontSize += delta;
+  applyFont();
+  setTimeout(drawChart, 50);
+}
+applyFont();
+
+// ── THEME ──────────────────────────────────────────────
+let isDark = localStorage.getItem('cryptoTheme') !== 'light';
+function applyTheme() {
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+  document.getElementById('themeBtn').textContent = isDark ? '☀ LIGHT' : '☾ DARK';
+  localStorage.setItem('cryptoTheme', isDark ? 'dark' : 'light');
+  setTimeout(drawChart, 50);
+}
+function toggleTheme() { isDark = !isDark; applyTheme(); }
+applyTheme();
+
 // ── CLOCK ──────────────────────────────────────────────
 function updateClock() {
-  const now = new Date();
-  const h = String(now.getUTCHours()).padStart(2,'0');
-  const m = String(now.getUTCMinutes()).padStart(2,'0');
-  const s = String(now.getUTCSeconds()).padStart(2,'0');
-  document.getElementById('clock').textContent = `${h}:${m}:${s} UTC`;
+  const n = new Date();
+  const p = v => String(v).padStart(2,'0');
+  document.getElementById('clock').textContent =
+    `${p(n.getUTCHours())}:${p(n.getUTCMinutes())}:${p(n.getUTCSeconds())} UTC`;
 }
-setInterval(updateClock, 1000);
-updateClock();
+setInterval(updateClock, 1000); updateClock();
 
-// ── DATA STORE ─────────────────────────────────────────
+// ── DATA ───────────────────────────────────────────────
 const data = {
-  btc: { price: 0, prevPrice: 0, change: 0, high: 0, low: 0, vol: 0, trades: 0, history: [] },
-  eth: { price: 0, prevPrice: 0, change: 0, high: 0, low: 0, vol: 0, trades: 0, history: [] }
+  btc: { price:0, prevPrice:0, change:0, high:0, low:0, vol:0, trades:0, history:[] },
+  eth: { price:0, prevPrice:0, change:0, high:0, low:0, vol:0, trades:0, history:[] }
 };
-
 const MAX_HISTORY = 60;
 
-// ── FORMAT ─────────────────────────────────────────────
-function fmt(n, dec=2) {
-  return Number(n).toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec });
-}
-
+function fmt(n, dec=2) { return Number(n).toLocaleString('en-US',{minimumFractionDigits:dec,maximumFractionDigits:dec}); }
 function fmtVol(n) {
-  if (n >= 1e9) return (n/1e9).toFixed(2) + 'B';
-  if (n >= 1e6) return (n/1e6).toFixed(2) + 'M';
-  return (n/1e3).toFixed(2) + 'K';
+  if (n>=1e9) return (n/1e9).toFixed(2)+'B';
+  if (n>=1e6) return (n/1e6).toFixed(2)+'M';
+  return (n/1e3).toFixed(2)+'K';
 }
 
-// ── UPDATE DOM ─────────────────────────────────────────
 function updateCard(coin, d) {
-  const priceEl = document.getElementById(coin + 'Price');
-  const changeEl = document.getElementById(coin + 'Change');
-
-  const newPrice = '$' + fmt(d.price);
+  const priceEl = document.getElementById(coin+'Price');
+  const changeEl = document.getElementById(coin+'Change');
+  const newPrice = '$'+fmt(d.price);
   if (priceEl.textContent !== newPrice && d.prevPrice > 0) {
-    priceEl.classList.remove('flash-up', 'flash-down');
+    priceEl.classList.remove('flash-up','flash-down');
     void priceEl.offsetWidth;
     priceEl.classList.add(d.price >= d.prevPrice ? 'flash-up' : 'flash-down');
   }
   priceEl.textContent = newPrice;
-
   const c = d.change;
-  changeEl.textContent = (c >= 0 ? '+' : '') + fmt(c) + '%';
-  changeEl.className = 'coin-change ' + (c >= 0 ? 'pos' : 'neg');
-
-  document.getElementById(coin + 'High').textContent = '$' + fmt(d.high);
-  document.getElementById(coin + 'Low').textContent = '$' + fmt(d.low);
-  document.getElementById(coin + 'Vol').textContent = fmtVol(d.vol);
-  document.getElementById(coin + 'Trades').textContent = Number(d.trades).toLocaleString();
-
-  // Ticker
-  const idx = coin === 'btc' ? ['1','4'] : ['2','5'];
-  idx.forEach(i => {
-    const el = document.getElementById('t' + i);
-    if (el) el.textContent = '$' + fmt(d.price);
-  });
-
-  // ETH/BTC ratio
-  if (data.btc.price > 0 && data.eth.price > 0) {
-    const ratio = (data.eth.price / data.btc.price).toFixed(5);
-    ['3','6'].forEach(i => {
-      const el = document.getElementById('t' + i);
-      if (el) el.textContent = ratio;
-    });
+  changeEl.textContent = (c>=0?'+':'')+fmt(c)+'%';
+  changeEl.className = 'coin-change '+(c>=0?'pos':'neg');
+  document.getElementById(coin+'High').textContent = '$'+fmt(d.high);
+  document.getElementById(coin+'Low').textContent  = '$'+fmt(d.low);
+  document.getElementById(coin+'Vol').textContent  = fmtVol(d.vol);
+  document.getElementById(coin+'Trades').textContent = Number(d.trades).toLocaleString();
+  const idx = coin==='btc'?['1','4']:['2','5'];
+  idx.forEach(i => { const el=document.getElementById('t'+i); if(el) el.textContent='$'+fmt(d.price); });
+  if (data.btc.price>0 && data.eth.price>0) {
+    const ratio=(data.eth.price/data.btc.price).toFixed(5);
+    ['3','6'].forEach(i => { const el=document.getElementById('t'+i); if(el) el.textContent=ratio; });
   }
 }
 
-// ── CANVAS CHART ───────────────────────────────────────
+// ── CHART ──────────────────────────────────────────────
 let activeChart = 'btc';
 const canvas = document.getElementById('priceChart');
 const ctx = canvas.getContext('2d');
@@ -586,149 +632,125 @@ const ctx = canvas.getContext('2d');
 function switchChart(coin) {
   activeChart = coin;
   document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
-  document.querySelector('.' + coin + '-tab').classList.add('active');
+  document.querySelector('.'+coin+'-tab').classList.add('active');
   drawChart();
+}
+
+function getCSSVar(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 }
 
 function drawChart() {
   const dpr = window.devicePixelRatio || 1;
   const w = canvas.parentElement.clientWidth - 40;
   const h = 180;
-  canvas.width = w * dpr;
+  canvas.width  = w * dpr;
   canvas.height = h * dpr;
-  canvas.style.width = w + 'px';
-  canvas.style.height = h + 'px';
+  canvas.style.width  = w+'px';
+  canvas.style.height = h+'px';
   ctx.scale(dpr, dpr);
 
   const hist = data[activeChart].history;
   if (hist.length < 2) return;
 
-  const color = activeChart === 'btc' ? '#f7931a' : '#627eea';
-  const colorDim = activeChart === 'btc' ? 'rgba(247,147,26,' : 'rgba(98,126,234,';
+  const color    = getCSSVar(activeChart==='btc' ? '--btc' : '--eth');
+  const colorDim = activeChart==='btc' ? 'rgba(247,147,26,' : 'rgba(98,126,234,';
+  const gridColor = isDark ? 'rgba(42,42,69,0.8)' : 'rgba(192,192,221,0.5)';
+  const labelColor = getCSSVar('--muted');
 
-  const min = Math.min(...hist);
-  const max = Math.max(...hist);
-  const range = max - min || 1;
+  const min = Math.min(...hist), max = Math.max(...hist), range = max-min||1;
+  const pad = { top:20, right:10, bottom:30, left:65 };
+  const cw = w-pad.left-pad.right, ch = h-pad.top-pad.bottom;
 
-  const pad = { top: 20, right: 10, bottom: 30, left: 60 };
-  const cw = w - pad.left - pad.right;
-  const ch = h - pad.top - pad.bottom;
+  ctx.clearRect(0,0,w,h);
 
-  ctx.clearRect(0, 0, w, h);
-
-  // Grid lines
-  ctx.strokeStyle = 'rgba(26,26,46,0.8)';
-  ctx.lineWidth = 1;
-  for (let i = 0; i <= 4; i++) {
-    const y = pad.top + (ch / 4) * i;
-    ctx.beginPath();
-    ctx.moveTo(pad.left, y);
-    ctx.lineTo(w - pad.right, y);
-    ctx.stroke();
-    // Labels
-    const val = max - (range / 4) * i;
-    ctx.fillStyle = 'rgba(74,74,106,0.8)';
-    ctx.font = '9px Share Tech Mono';
+  // Grid + labels
+  for (let i=0; i<=4; i++) {
+    const y = pad.top+(ch/4)*i;
+    ctx.strokeStyle = gridColor;
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(pad.left,y); ctx.lineTo(w-pad.right,y); ctx.stroke();
+    const val = max-(range/4)*i;
+    ctx.fillStyle = labelColor;
+    ctx.font = `bold ${Math.round(fontSize*10)}px Share Tech Mono`;
     ctx.textAlign = 'right';
-    ctx.fillText('$' + fmt(val, 0), pad.left - 5, y + 3);
+    ctx.fillText('$'+fmt(val,0), pad.left-6, y+4);
   }
 
   // Gradient fill
-  const grad = ctx.createLinearGradient(0, pad.top, 0, h - pad.bottom);
-  grad.addColorStop(0, colorDim + '0.3)');
-  grad.addColorStop(1, colorDim + '0)');
-
+  const grad = ctx.createLinearGradient(0,pad.top,0,h-pad.bottom);
+  grad.addColorStop(0, colorDim+'0.25)');
+  grad.addColorStop(1, colorDim+'0)');
   ctx.beginPath();
-  hist.forEach((p, i) => {
-    const x = pad.left + (i / (MAX_HISTORY - 1)) * cw;
-    const y = pad.top + ch - ((p - min) / range) * ch;
-    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  hist.forEach((p,i) => {
+    const x = pad.left+(i/(MAX_HISTORY-1))*cw;
+    const y = pad.top+ch-((p-min)/range)*ch;
+    i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
   });
-  ctx.lineTo(pad.left + ((hist.length - 1) / (MAX_HISTORY - 1)) * cw, h - pad.bottom);
-  ctx.lineTo(pad.left, h - pad.bottom);
+  ctx.lineTo(pad.left+((hist.length-1)/(MAX_HISTORY-1))*cw, h-pad.bottom);
+  ctx.lineTo(pad.left, h-pad.bottom);
   ctx.closePath();
-  ctx.fillStyle = grad;
-  ctx.fill();
+  ctx.fillStyle = grad; ctx.fill();
 
   // Line
   ctx.beginPath();
-  ctx.strokeStyle = color;
-  ctx.lineWidth = 1.5;
-  ctx.lineJoin = 'round';
-  hist.forEach((p, i) => {
-    const x = pad.left + (i / (MAX_HISTORY - 1)) * cw;
-    const y = pad.top + ch - ((p - min) / range) * ch;
-    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.lineJoin = 'round';
+  hist.forEach((p,i) => {
+    const x = pad.left+(i/(MAX_HISTORY-1))*cw;
+    const y = pad.top+ch-((p-min)/range)*ch;
+    i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
   });
   ctx.stroke();
 
-  // Last point dot
-  if (hist.length > 0) {
-    const lx = pad.left + ((hist.length - 1) / (MAX_HISTORY - 1)) * cw;
-    const ly = pad.top + ch - ((hist[hist.length - 1] - min) / range) * ch;
-    ctx.beginPath();
-    ctx.arc(lx, ly, 4, 0, Math.PI * 2);
-    ctx.fillStyle = color;
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(lx, ly, 7, 0, Math.PI * 2);
-    ctx.fillStyle = colorDim + '0.3)';
-    ctx.fill();
+  // Dot
+  if (hist.length>0) {
+    const lx = pad.left+((hist.length-1)/(MAX_HISTORY-1))*cw;
+    const ly = pad.top+ch-((hist[hist.length-1]-min)/range)*ch;
+    ctx.beginPath(); ctx.arc(lx,ly,5,0,Math.PI*2); ctx.fillStyle=color; ctx.fill();
+    ctx.beginPath(); ctx.arc(lx,ly,9,0,Math.PI*2); ctx.fillStyle=colorDim+'0.3)'; ctx.fill();
   }
 }
 
 // ── WEBSOCKET ──────────────────────────────────────────
-let ws;
-let reconnectTimer;
-
+let ws, reconnectTimer;
 function connect() {
   try {
     ws = new WebSocket('wss://stream.binance.com:9443/stream?streams=btcusdt@ticker/ethusdt@ticker');
-
     ws.onopen = () => {
       document.getElementById('statusDot').style.background = 'var(--green)';
       document.getElementById('statusText').textContent = 'LIVE';
       document.getElementById('offlineBanner').style.display = 'none';
       clearTimeout(reconnectTimer);
     };
-
     ws.onmessage = (e) => {
-      const msg = JSON.parse(e.data);
-      const t = msg.data;
-      const coin = t.s === 'BTCUSDT' ? 'btc' : 'eth';
+      const t = JSON.parse(e.data).data;
+      const coin = t.s==='BTCUSDT'?'btc':'eth';
       const d = data[coin];
       d.prevPrice = d.price;
-      d.price = parseFloat(t.c);
+      d.price  = parseFloat(t.c);
       d.change = parseFloat(t.P);
-      d.high = parseFloat(t.h);
-      d.low = parseFloat(t.l);
-      d.vol = parseFloat(t.q);
+      d.high   = parseFloat(t.h);
+      d.low    = parseFloat(t.l);
+      d.vol    = parseFloat(t.q);
       d.trades = parseInt(t.n);
-
-      if (d.history.length >= MAX_HISTORY) d.history.shift();
+      if (d.history.length>=MAX_HISTORY) d.history.shift();
       d.history.push(d.price);
-
-      updateCard(coin, d);
+      updateCard(coin,d);
       drawChart();
     };
-
     ws.onerror = () => {
       document.getElementById('statusDot').style.background = 'var(--red)';
       document.getElementById('statusText').textContent = 'ERROR';
       document.getElementById('offlineBanner').style.display = 'block';
     };
-
     ws.onclose = () => {
       document.getElementById('statusDot').style.background = 'var(--red)';
       document.getElementById('statusText').textContent = 'OFFLINE';
       document.getElementById('offlineBanner').style.display = 'block';
       reconnectTimer = setTimeout(connect, 3000);
     };
-  } catch(err) {
-    reconnectTimer = setTimeout(connect, 3000);
-  }
+  } catch(e) { reconnectTimer = setTimeout(connect, 3000); }
 }
-
 connect();
 window.addEventListener('resize', drawChart);
 </script>
