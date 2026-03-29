@@ -199,10 +199,10 @@ class Joystick {
 }
 
 // ── TOUCH INPUT ────────────────────────────────────
-C.addEventListener('touchstart',e=>{e.preventDefault();for(const t of e.changedTouches)onDown(t.identifier,t.clientX,t.clientY);},{passive:false});
-C.addEventListener('touchmove', e=>{e.preventDefault();for(const t of e.changedTouches)onMv(t.identifier,t.clientX,t.clientY);},{passive:false});
-C.addEventListener('touchend',  e=>{e.preventDefault();for(const t of e.changedTouches)onUp(t.identifier);},{passive:false});
-C.addEventListener('touchcancel',e=>{e.preventDefault();for(const t of e.changedTouches)onUp(t.identifier);},{passive:false});
+C.addEventListener('touchstart',e=>{if(GS==='playing'||GS==='countdown'){e.preventDefault();for(const t of e.changedTouches)onDown(t.identifier,t.clientX,t.clientY);}},{passive:false});
+C.addEventListener('touchmove', e=>{if(GS==='playing'||GS==='countdown'){e.preventDefault();for(const t of e.changedTouches)onMv(t.identifier,t.clientX,t.clientY);}},{passive:false});
+C.addEventListener('touchend',  e=>{if(GS==='playing'||GS==='countdown'){e.preventDefault();for(const t of e.changedTouches)onUp(t.identifier);}},{passive:false});
+C.addEventListener('touchcancel',e=>{if(GS==='playing'||GS==='countdown'){e.preventDefault();for(const t of e.changedTouches)onUp(t.identifier);}},{passive:false});
 
 // Mouse fallback
 let mTid=null;
