@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Il Cerchio di Giotto | CAD3D.Expert</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+
+  :root{
+    --parchment:#f4e8c1;
+    --parchment-dark:#e6d5a0;
+    --ink:#2c1810;
+    --ink-light:#5a3a28;
+    --gold:#c5973e;
+    --gold-bright:#e8b84b;
+    --gold-dark:#8b6914;
+    --red-seal:#8b1a1a;
+    --green-renaissance:#2d5a27;
+  }
+
+  html,body{
+    width:100%;height:100%;overflow:hidden;
+    font-family:'EB Garamond',serif;
+    background:var(--ink);
+    color:var(--ink);
+    touch-action:none;
+    -webkit-user-select:none;user-select:none;
+  }
+
+  body{
+    display:flex;align-items:center;justify-content:center;
+    background:
+      radial-gradient(ellipse at 30% 20%,#3a2518 0%,transparent 50%),
+      radial-gradient(ellipse at 70% 80%,#2a1a10 0%,transparent 50%),
+      #1a0e08;
+  }
+
+  .frame{
+    position:relative;
+    width:min(96vw,600px);
+    height:min(96vh,850px);
+    background:linear-gradient(135deg,#8b6914,#c5973e 20%,#e8ce6a 40%,#c5973e 60%,#8b6914 80%,#a07c20);
+    border-radius:8px;
+    padding:12px;
+    box-shadow:
+      0 0 60px rgba(0,0,0,.7),
+      inset 0 1px 0 rgba(255,255,255,.3),
+      inset 0 -1px 0 rgba(0,0,0,.3);
+  }
+
+  .frame::before{
+    content:'';position:absolute;inset:6px;
+    border:2px solid rgba(0,0,0,.2);border-radius:4px;
+    pointer-events:none;z-index:1;
+  }
+
+  .canvas-area{
+    position:relative;
+    width:100%;height:100%;
+    background:var(--parchment);
+    border-radius:3px;
+    overflow:hidden;
+    display:flex;flex-direction:column;
+  }
+
+  /* Parchment texture */
+  .canvas-area::before{
+    content:'';position:absolute;inset:0;
+    background:
+      url("data:image/svg+xml,%3Csvg width='200' height='200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.08'/%3E%3C/svg%3E"),
+      radial-gradient(ellipse at 50% 0%,rgba(255,255,255,.3),transparent 60%),
+      radial-gradient(ellipse at 80% 100%,rgba(139,105,20,.1),transparent 40%),
+      linear-gradient(180deg,rgba(255,255,255,.1) 0%,transparent 20%,transparent 80%,rgba(0,0,0,.05) 100%);
+    pointer-events:none;z-index:2;
+  }
+
+  .header{
+    text-align:center;
+    padding:20px 16px 10px;
+    position:relative;z-index:3;
+  }
+
+  .header h1{
+    font-family:'Cinzel Decorative',serif;
+    font-weight:700;
+    font-size:clamp(1.3rem,4vw,1.9rem);
+    color:var(--ink);
+    letter-spacing:.05em;
+    line-height:1.2;
+    text-shadow:1px 1px 0 rgba(196,151,62,.3);
+  }
+
+  .header .subtitle{
+    font-family:'EB Garamond',serif;
+    font-style:italic;
+    font-size:clamp(.85rem,2.5vw,1.05rem);
+    color:var(--ink-light);
+    margin-top:4px;
+    letter-spacing:.02em;
+  }
+
+  .ornament{
+    display:block;margin:8px auto;
+    width:120px;height:16px;
+    opacity:.5;
+  }
+
+  .ornament svg{width:100%;height:100%}
+
+  /* Score display */
+  .score-panel{
+    text-align:center;
+    padding:0 16px 8px;
+    position:relative;z-index:3;
+    min-height:60px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+  }
+
+  .score-value{
+    font-family:'Cinzel Decorative',serif;
+    font-weight:900;
+    font-size:clamp(2rem,7vw,3.2rem);
+    color:var(--red-seal);
+    opacity:0;
+    transform:scale(.5);
+    transition:all .6s cubic-bezier(.34,1.56,.64,1);
+    text-shadow:2px 2px 0 rgba(139,26,26,.15);
+  }
+
+  .score-value.visible{opacity:1;transform:scale(1)}
+
+  .score-label{
+    font-family:'EB Garamond',serif;
+    font-style:italic;
+    font-size:clamp(.9rem,2.5vw,1.1rem);
+    color:var(--ink-light);
+    opacity:0;
+    transition:opacity .4s ease .3s;
+  }
+
+  .score-label.visible{opacity:1}
+
+  .instruction{
+    font-family:'EB Garamond',serif;
+    font-style:italic;
+    font-size:clamp(.95rem,2.8vw,1.15rem);
+    color:var(--ink-light);
+    opacity:.8;
+    animation:breathe 3s ease-in-out infinite;
+  }
+
+  @keyframes breathe{0%,100%{opacity:.5}50%{opacity:1}}
+
+  /* Canvas */
+  .draw-container{
+    flex:1;
+    position:relative;
+    z-index:3;
+    margin:4px 16px 12px;
+    border:2px solid rgba(44,24,16,.15);
+    border-radius:50%;
+    aspect-ratio:1/1;
+    max-height:calc(100% - 20px);
+    align-self:center;
+    background:radial-gradient(circle,rgba(255,255,255,.4) 0%,transparent 70%);
+  }
+
+  canvas{
+    position:absolute;
+    top:0;left:0;
+    width:100%;height:100%;
+    cursor:crosshair;
+    border-radius:50%;
+    touch-action:none;
+  }
+
+  /* Reference circle (faint guide) */
+  .guide-circle{
+    position:absolute;
+    top:50%;left:50%;
+    width:70%;height:70%;
+    transform:translate(-50%,-50%);
+    border:1px dashed rgba(44,24,16,.08);
+    border-radius:50%;
+    pointer-events:none;
+  }
+
+  /* Bottom bar */
+  .bottom-bar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:6px 16px 14px;
+    position:relative;z-index:3;
+  }
+
+  .btn-reset{
+    font-family:'Cinzel',serif;
+    font-size:clamp(.75rem,2vw,.9rem);
+    font-weight:600;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--parchment);
+    background:var(--ink);
+    border:none;
+    padding:8px 20px;
+    border-radius:4px;
+    cursor:pointer;
+    transition:all .2s;
+    box-shadow:0 2px 8px rgba(0,0,0,.3);
+  }
+
+  .btn-reset:hover{background:var(--ink-light);transform:translateY(-1px)}
+  .btn-reset:active{transform:translateY(0)}
+
+  .best-score{
+    font-family:'EB Garamond',serif;
+    font-size:clamp(.8rem,2.2vw,.95rem);
+    color:var(--gold-dark);
+    font-style:italic;
+  }
+
+  .credit{
+    font-family:'EB Garamond',serif;
+    font-size:.7rem;
+    color:var(--ink-light);
+    opacity:.4;
+    text-align:center;
+    padding-bottom:6px;
+    position:relative;z-index:3;
+  }
+
+  .credit a{color:var(--ink-light);text-decoration:none}
+  .credit a:hover{text-decoration:underline}
+
+  /* Perfect circle overlay */
+  .perfect-overlay{
+    position:absolute;inset:0;
+    display:flex;align-items:center;justify-content:center;
+    background:rgba(244,232,193,.85);
+    z-index:10;
+    opacity:0;pointer-events:none;
+    transition:opacity .5s;
+    border-radius:3px;
+  }
+
+  .perfect-overlay.show{opacity:1;pointer-events:auto}
+
+  .perfect-overlay .msg{
+    text-align:center;
+    animation:popIn .6s cubic-bezier(.34,1.56,.64,1);
+  }
+
+  .perfect-overlay .msg h2{
+    font-family:'Cinzel Decorative',serif;
+    font-size:clamp(1.5rem,5vw,2.2rem);
+    color:var(--gold-dark);
+    text-shadow:2px 2px 0 rgba(196,151,62,.3);
+  }
+
+  .perfect-overlay .msg p{
+    font-family:'EB Garamond',serif;
+    font-style:italic;
+    font-size:clamp(1rem,3vw,1.2rem);
+    color:var(--ink-light);
+    margin-top:8px;
+  }
+
+  @keyframes popIn{0%{transform:scale(0);opacity:0}100%{transform:scale(1);opacity:1}}
+
+  /* Giotto wink easter egg */
+  .giotto-wink{
+    position:absolute;
+    bottom:60px;right:20px;
+    font-size:2rem;
+    opacity:0;
+    transition:opacity .4s;
+    z-index:5;
+    pointer-events:none;
+  }
+  .giotto-wink.show{opacity:1}
+
+  /* Stars for high scores */
+  .stars{
+    position:absolute;inset:0;pointer-events:none;z-index:4;
+    overflow:hidden;
+  }
+
+  .star{
+    position:absolute;
+    width:6px;height:6px;
+    background:var(--gold-bright);
+    clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);
+    animation:starFloat 2s ease-out forwards;
+    opacity:0;
+  }
+
+  @keyframes starFloat{
+    0%{opacity:0;transform:scale(0) translateY(0)}
+    30%{opacity:1;transform:scale(1)}
+    100%{opacity:0;transform:scale(.5) translateY(-80px)}
+  }
+</style>
+</head>
+<body>
+
+<div class="frame">
+  <div class="canvas-area">
+
+    <div class="header">
+      <h1>Il Cerchio di Giotto</h1>
+      <p class="subtitle">Disegna il cerchio perfetto, come il Maestro</p>
+      <div class="ornament">
+        <svg viewBox="0 0 120 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M0 8h45M75 8h45" stroke="#2c1810" stroke-width=".5" opacity=".4"/>
+          <circle cx="60" cy="8" r="5" stroke="#c5973e" stroke-width="1" fill="none"/>
+          <circle cx="60" cy="8" r="2" fill="#c5973e" opacity=".4"/>
+          <path d="M48 8l5-4M48 8l5 4M72 8l-5-4M72 8l-5 4" stroke="#2c1810" stroke-width=".5" opacity=".3"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="score-panel" id="scorePanel">
+      <p class="instruction" id="instruction">Traccia un cerchio con il dito o il mouse</p>
+      <div class="score-value" id="scoreValue"></div>
+      <div class="score-label" id="scoreLabel"></div>
+    </div>
+
+    <div class="draw-container" id="drawContainer">
+      <div class="guide-circle"></div>
+      <canvas id="canvas"></canvas>
+    </div>
+
+    <div class="bottom-bar">
+      <button class="btn-reset" id="btnReset" onclick="resetCanvas()">Riprova</button>
+      <span class="best-score" id="bestScore">Record: --</span>
+    </div>
+
+    <p class="credit">
+      <a href="https://cad3d.expert" target="_blank">CAD3D.Expert</a> &middot; Omaggio a Giotto di Bondone (1267-1337)
+    </p>
+
+    <div class="perfect-overlay" id="perfectOverlay">
+      <div class="msg">
+        <h2>Perfetto, Maestro!</h2>
+        <p>Giotto stesso ti farebbe un inchino.</p>
+      </div>
+    </div>
+
+    <div class="giotto-wink" id="giottoWink">&#x1F609;</div>
+    <div class="stars" id="starsContainer"></div>
+
+  </div>
+</div>
+
+<script>
+(function(){
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const container = document.getElementById('drawContainer');
+  const scoreValue = document.getElementById('scoreValue');
+  const scoreLabel = document.getElementById('scoreLabel');
+  const instruction = document.getElementById('instruction');
+  const bestScoreEl = document.getElementById('bestScore');
+  const perfectOverlay = document.getElementById('perfectOverlay');
+  const giottoWink = document.getElementById('giottoWink');
+  const starsContainer = document.getElementById('starsContainer');
+
+  let points = [];
+  let drawing = false;
+  let scored = false;
+  let bestScore = 0;
+
+  // Try load best from storage
+  try { bestScore = parseFloat(localStorage.getItem('giotto_best')) || 0; } catch(e){}
+  if(bestScore > 0) bestScoreEl.textContent = 'Record: ' + bestScore.toFixed(1) + '%';
+
+  function resizeCanvas(){
+    const r = canvas.getBoundingClientRect();
+    canvas.width = r.width * (window.devicePixelRatio || 1);
+    canvas.height = r.height * (window.devicePixelRatio || 1);
+    ctx.setTransform(window.devicePixelRatio||1,0,0,window.devicePixelRatio||1,0,0);
+    if(points.length > 0) redraw();
+  }
+
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+
+  function getPos(e){
+    const rect = canvas.getBoundingClientRect();
+    const t = e.touches ? e.touches[0] : e;
+    return { x: t.clientX - rect.left, y: t.clientY - rect.top };
+  }
+
+  function startDraw(e){
+    if(scored){ resetCanvas(); return; }
+    e.preventDefault();
+    drawing = true;
+    points = [];
+    const p = getPos(e);
+    points.push(p);
+    instruction.style.display = 'none';
+
+    ctx.clearRect(0,0,canvas.width/(window.devicePixelRatio||1),canvas.height/(window.devicePixelRatio||1));
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = '#2c1810';
+  }
+
+  function moveDraw(e){
+    if(!drawing) return;
+    e.preventDefault();
+    const p = getPos(e);
+    points.push(p);
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+  }
+
+  function endDraw(e){
+    if(!drawing) return;
+    e.preventDefault();
+    drawing = false;
+
+    if(points.length < 20){
+      instruction.style.display = 'block';
+      instruction.textContent = 'Traccia un cerchio piu\u0300 grande...';
+      return;
+    }
+
+    scored = true;
+    const score = calculateScore();
+    showScore(score);
+  }
+
+  canvas.addEventListener('mousedown', startDraw);
+  canvas.addEventListener('mousemove', moveDraw);
+  canvas.addEventListener('mouseup', endDraw);
+  canvas.addEventListener('mouseleave', endDraw);
+  canvas.addEventListener('touchstart', startDraw, {passive:false});
+  canvas.addEventListener('touchmove', moveDraw, {passive:false});
+  canvas.addEventListener('touchend', endDraw, {passive:false});
+
+  function calculateScore(){
+    // Find centroid
+    let cx=0, cy=0;
+    for(const p of points){ cx+=p.x; cy+=p.y; }
+    cx /= points.length;
+    cy /= points.length;
+
+    // Calculate distances from centroid
+    const dists = points.map(p => Math.sqrt((p.x-cx)**2 + (p.y-cy)**2));
+    const avgR = dists.reduce((a,b)=>a+b,0) / dists.length;
+
+    if(avgR < 15) return 0; // Too small
+
+    // Standard deviation of radius (circularity)
+    const variance = dists.reduce((s,d) => s + (d-avgR)**2, 0) / dists.length;
+    const stdDev = Math.sqrt(variance);
+    const coeffVar = stdDev / avgR; // coefficient of variation
+
+    // Check closure (start near end)
+    const startP = points[0];
+    const endP = points[points.length-1];
+    const closureGap = Math.sqrt((startP.x-endP.x)**2 + (startP.y-endP.y)**2);
+    const closureRatio = closureGap / avgR;
+
+    // Check coverage (did they draw most of the circle?)
+    const angles = points.map(p => Math.atan2(p.y-cy, p.x-cx));
+    const sectors = 36;
+    const sectorHits = new Set();
+    angles.forEach(a => {
+      let deg = ((a * 180/Math.PI) + 360) % 360;
+      sectorHits.add(Math.floor(deg / (360/sectors)));
+    });
+    const coverage = sectorHits.size / sectors;
+
+    // Composite score
+    let circularityScore = Math.max(0, 1 - coeffVar * 4); // lower CV = better
+    let closureScore = Math.max(0, 1 - closureRatio * 1.5);
+    let coverageScore = Math.min(1, coverage / 0.85);
+
+    // Weight them
+    let raw = circularityScore * 0.55 + closureScore * 0.20 + coverageScore * 0.25;
+
+    // Non-linear mapping for more satisfying scores
+    let score = Math.pow(raw, 0.7) * 100;
+    score = Math.min(100, Math.max(0, score));
+
+    // Round
+    score = Math.round(score * 10) / 10;
+
+    return score;
+  }
+
+  function showScore(score){
+    scoreValue.textContent = score.toFixed(1) + '%';
+    scoreValue.classList.add('visible');
+
+    const label = getJudgment(score);
+    scoreLabel.textContent = label;
+    scoreLabel.classList.add('visible');
+
+    // Draw the ideal circle for comparison
+    drawIdealCircle();
+
+    // Best score
+    if(score > bestScore){
+      bestScore = score;
+      bestScoreEl.textContent = 'Record: ' + score.toFixed(1) + '%';
+      try { localStorage.setItem('giotto_best', score.toString()); } catch(e){}
+    }
+
+    // Effects for high scores
+    if(score >= 95){
+      perfectOverlay.classList.add('show');
+      setTimeout(()=> perfectOverlay.classList.remove('show'), 3000);
+      spawnStars(20);
+    } else if(score >= 85){
+      giottoWink.classList.add('show');
+      setTimeout(()=> giottoWink.classList.remove('show'), 2000);
+      spawnStars(8);
+    } else if(score >= 70){
+      spawnStars(4);
+    }
+  }
+
+  function getJudgment(score){
+    if(score >= 98) return '«Divino!» Giotto ti invidia.';
+    if(score >= 95) return '«Magistrale!» Degno di una bottega rinascimentale.';
+    if(score >= 90) return '«Eccellente!» Papa Benedetto XI approva.';
+    if(score >= 85) return '«Notevole!» L\u2019occhio del Maestro si compiace.';
+    if(score >= 80) return '«Buono!» Un apprendista promettente.';
+    if(score >= 70) return '«Discreto.» Servono ancora ore di pratica.';
+    if(score >= 60) return '«Sufficiente.» Non lasciare il tuo mestiere.';
+    if(score >= 40) return '«Mediocre.» Forse meglio la scultura?';
+    if(score >= 20) return '«Scarso.» Giotto scuote la testa.';
+    return '«Pessimo!» Questo non e\u0300 nemmeno un cerchio.';
+  }
+
+  function drawIdealCircle(){
+    let cx=0, cy=0;
+    for(const p of points){ cx+=p.x; cy+=p.y; }
+    cx /= points.length;
+    cy /= points.length;
+    const dists = points.map(p => Math.sqrt((p.x-cx)**2 + (p.y-cy)**2));
+    const avgR = dists.reduce((a,b)=>a+b,0) / dists.length;
+
+    ctx.beginPath();
+    ctx.arc(cx, cy, avgR, 0, Math.PI*2);
+    ctx.strokeStyle = 'rgba(197,151,62,0.4)';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([6,4]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  function redraw(){
+    ctx.clearRect(0,0,canvas.width/(window.devicePixelRatio||1),canvas.height/(window.devicePixelRatio||1));
+    if(points.length < 2) return;
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, points[0].y);
+    for(let i=1;i<points.length;i++) ctx.lineTo(points[i].x, points[i].y);
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = '#2c1810';
+    ctx.stroke();
+    if(scored) drawIdealCircle();
+  }
+
+  function spawnStars(n){
+    const rect = starsContainer.getBoundingClientRect();
+    for(let i=0;i<n;i++){
+      const star = document.createElement('div');
+      star.className = 'star';
+      star.style.left = (Math.random()*100) + '%';
+      star.style.top = (30 + Math.random()*40) + '%';
+      star.style.animationDelay = (Math.random()*0.5) + 's';
+      star.style.width = (4 + Math.random()*6) + 'px';
+      star.style.height = star.style.width;
+      starsContainer.appendChild(star);
+      setTimeout(()=> star.remove(), 2500);
+    }
+  }
+
+  window.resetCanvas = function(){
+    points = [];
+    drawing = false;
+    scored = false;
+    ctx.clearRect(0,0,canvas.width/(window.devicePixelRatio||1),canvas.height/(window.devicePixelRatio||1));
+    scoreValue.classList.remove('visible');
+    scoreLabel.classList.remove('visible');
+    scoreValue.textContent = '';
+    scoreLabel.textContent = '';
+    instruction.style.display = 'block';
+    instruction.textContent = 'Traccia un cerchio con il dito o il mouse';
+    perfectOverlay.classList.remove('show');
+    giottoWink.classList.remove('show');
+  };
+
+})();
+</script>
+</body>
+</html>
