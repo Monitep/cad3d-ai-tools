@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Casio CA-901 Simulator | CAD3D.Expert</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;500;600;700;800;900&display=swap');
+
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{
+  width:100%;height:100%;overflow:hidden;
+  background:#1a1a1a;
+  font-family:'Share Tech Mono',monospace;
+  touch-action:none;-webkit-user-select:none;user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  display:flex;align-items:center;justify-content:center;
+}
+
+/* ═══ WATCH CONTAINER ═══ */
+.watch-scene{
+  position:relative;
+  display:flex;align-items:center;justify-content:center;
+  transform:scale(1);
+}
+
+/* ═══ BAND (top & bottom) ═══ */
+.band{
+  position:absolute;left:50%;transform:translateX(-50%);
+  width:140px;
+  background:linear-gradient(90deg,#2a2a2a,#3d3d3d 15%,#4a4a4a 30%,#3d3d3d 50%,#4a4a4a 70%,#3d3d3d 85%,#2a2a2a);
+  border-radius:4px;
+  z-index:0;
+}
+.band::before{
+  content:'';position:absolute;left:8px;right:8px;
+  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.2) 3px,rgba(0,0,0,.2) 4px);
+}
+.band-top{top:-80px;height:85px;border-radius:4px 4px 0 0}
+.band-top::before{top:0;bottom:0;border-radius:4px 4px 0 0}
+.band-bottom{bottom:-80px;height:85px;border-radius:0 0 4px 4px}
+.band-bottom::before{top:0;bottom:0;border-radius:0 0 4px 4px}
+
+/* ═══ CASE ═══ */
+.case{
+  position:relative;z-index:1;
+  width:280px;
+  background:linear-gradient(165deg,#e8e0d0 0%,#c8c0b0 15%,#b8b0a0 40%,#a8a090 60%,#c0b8a8 85%,#d0c8b8 100%);
+  border-radius:16px;
+  padding:10px;
+  box-shadow:
+    0 8px 30px rgba(0,0,0,.5),
+    0 2px 6px rgba(0,0,0,.3),
+    inset 0 1px 0 rgba(255,255,255,.4),
+    inset 0 -1px 0 rgba(0,0,0,.15);
+  border:1px solid rgba(0,0,0,.15);
+}
+
+/* Inner bezel */
+.bezel{
+  background:linear-gradient(170deg,#1a1a18 0%,#0d0d0c 100%);
+  border-radius:10px;
+  padding:6px 6px 8px;
+  box-shadow:inset 0 2px 6px rgba(0,0,0,.6),0 1px 0 rgba(255,255,255,.1);
+}
+
+/* ═══ CASIO BRANDING ═══ */
+.brand-top{
+  text-align:center;padding:2px 0 4px;
+  font-family:'Orbitron',sans-serif;
+  font-weight:800;font-size:11px;
+  color:#888;letter-spacing:3px;
+  text-shadow:0 1px 0 rgba(255,255,255,.05);
+}
+.brand-sub{
+  display:block;font-size:6px;font-weight:400;
+  color:#555;letter-spacing:5px;margin-top:1px;
+}
+
+/* ═══ LCD DISPLAY ═══ */
+.lcd-frame{
+  background:#6b7a56;
+  border-radius:6px;
+  padding:4px;
+  margin:4px 2px;
+  box-shadow:inset 0 2px 8px rgba(0,0,0,.4),0 1px 0 rgba(255,255,255,.05);
+}
+.lcd{
+  background:linear-gradient(180deg,#8a9e6a,#7d9160,#8a9e6a);
+  border-radius:4px;
+  padding:6px 8px;
+  min-height:72px;
+  display:flex;flex-direction:column;
+  position:relative;
+  overflow:hidden;
+  image-rendering:pixelated;
+}
+/* LCD scanlines */
+.lcd::after{
+  content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 1px,rgba(0,0,0,.04) 1px,rgba(0,0,0,.04) 2px);
+  pointer-events:none;border-radius:4px;
+}
+
+/* Mode indicators */
+.lcd-modes{
+  display:flex;gap:8px;justify-content:center;
+  font-size:7px;letter-spacing:1px;
+  color:rgba(50,60,35,.25);margin-bottom:3px;
+  font-family:'Share Tech Mono',monospace;
+}
+.lcd-modes span.active{color:rgba(30,40,20,.85)}
+
+/* Main display line */
+.lcd-main{
+  font-family:'Orbitron',monospace;
+  font-weight:700;
+  font-size:28px;
+  color:rgba(30,40,20,.9);
+  text-align:right;
+  line-height:1;
+  min-height:32px;
+  display:flex;align-items:center;justify-content:flex-end;
+  text-shadow:1px 1px 0 rgba(30,40,20,.1);
+  overflow:hidden;
+}
+
+/* Secondary display line */
+.lcd-sub{
+  font-family:'Share Tech Mono',monospace;
+  font-size:10px;
+  color:rgba(30,40,20,.6);
+  text-align:right;
+  min-height:12px;
+  margin-top:2px;
+}
+
+/* ═══ GAME DISPLAY ═══ */
+.game-lcd{
+  display:none;
+  width:100%;height:100%;
+  position:relative;
+}
+.game-lcd canvas{
+  width:100%;height:100%;
+  image-rendering:pixelated;
+}
+
+/* ═══ KEYPAD ═══ */
+.keypad{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:3px;
+  padding:6px 2px 2px;
+}
+.key{
+  background:linear-gradient(180deg,#2a2a28,#1e1e1c);
+  border:none;
+  border-radius:3px;
+  color:#aaa;
+  font-family:'Share Tech Mono',monospace;
+  font-size:10px;
+  font-weight:700;
+  padding:8px 2px;
+  cursor:pointer;
+  text-align:center;
+  box-shadow:0 2px 0 #0a0a09,0 3px 4px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.06);
+  transition:transform 50ms,box-shadow 50ms;
+  position:relative;
+  line-height:1;
+}
+.key:active{
+  transform:translateY(2px);
+  box-shadow:0 0 0 #0a0a09,0 1px 2px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.04);
+}
+.key-num{color:#c0b8a0}
+.key-op{color:#d4a050;font-size:12px}
+.key-fn{color:#7a9060;font-size:8px;letter-spacing:.5px}
+.key-ac{color:#c05040}
+.key-eq{background:linear-gradient(180deg,#3a3530,#2a2520);color:#e0c878}
+
+/* Double-width key */
+.key-wide{grid-column:span 2}
+
+/* ═══ SIDE BUTTONS ═══ */
+.side-buttons{
+  position:absolute;
+  display:flex;flex-direction:column;
+  gap:12px;top:50%;transform:translateY(-50%);
+  z-index:5;
+}
+.side-left{left:-52px}
+.side-right{right:-52px}
+
+.side-btn{
+  width:40px;height:34px;
+  background:linear-gradient(90deg,#b8b0a0,#c8c0b0,#b8b0a0);
+  border:1px solid rgba(0,0,0,.2);
+  border-radius:4px;
+  cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  box-shadow:0 2px 4px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.3);
+  transition:transform 50ms;
+  color:#3a3530;
+  font-family:'Share Tech Mono',monospace;
+  font-size:6px;font-weight:700;letter-spacing:.5px;
+  text-transform:uppercase;
+  line-height:1.2;
+}
+.side-right .side-btn{
+  background:linear-gradient(270deg,#b8b0a0,#c8c0b0,#b8b0a0);
+}
+.side-btn:active{transform:scale(.93)}
+.side-btn .side-icon{font-size:12px;margin-bottom:1px}
+
+/* ═══ BOTTOM BRANDING ═══ */
+.brand-bottom{
+  text-align:center;padding:4px 0 0;
+  font-size:5.5px;color:#555;letter-spacing:2px;
+  font-family:'Share Tech Mono',monospace;
+}
+
+/* ═══ GAME OVER FLASH ═══ */
+@keyframes lcdFlash{0%,40%,80%{opacity:1}20%,60%{opacity:.3}}
+.lcd.flash{animation:lcdFlash .6s}
+
+/* ═══ SCALE FOR DIFFERENT SCREENS ═══ */
+@media(max-height:700px){.watch-scene{transform:scale(.85)}}
+@media(max-height:600px){.watch-scene{transform:scale(.75)}}
+@media(min-height:900px){.watch-scene{transform:scale(1.15)}}
+@media(min-height:1100px){.watch-scene{transform:scale(1.3)}}
+
+/* background texture */
+body::before{
+  content:'';position:fixed;inset:0;
+  background:
+    radial-gradient(ellipse at 40% 30%,rgba(60,55,45,.3),transparent 60%),
+    radial-gradient(ellipse at 60% 70%,rgba(40,35,30,.2),transparent 50%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.03'/%3E%3C/svg%3E");
+  pointer-events:none;
+}
+
+.credit{
+  position:fixed;bottom:8px;left:0;right:0;text-align:center;
+  font-size:10px;color:rgba(255,255,255,.15);
+  font-family:'Share Tech Mono',monospace;
+}
+.credit a{color:rgba(255,255,255,.2);text-decoration:none}
+</style>
+</head>
+<body>
+
+<div class="watch-scene">
+  <!-- Bands -->
+  <div class="band band-top"></div>
+  <div class="band band-bottom"></div>
+
+  <!-- Side Buttons Left -->
+  <div class="side-buttons side-left">
+    <button class="side-btn" id="btnMode" onclick="cycleMode()">
+      <span class="side-icon">◀</span>MODE
+    </button>
+    <button class="side-btn" id="btnLight" onclick="toggleLight()">
+      <span class="side-icon">💡</span>LIGHT
+    </button>
+    <button class="side-btn" id="btnLeft" onclick="gameLeft()" style="display:none">
+      <span class="side-icon">◀</span>LEFT
+    </button>
+  </div>
+
+  <!-- Side Buttons Right -->
+  <div class="side-buttons side-right">
+    <button class="side-btn" id="btnStart" onclick="startStopGame()" style="display:none">
+      <span class="side-icon">▶</span>START
+    </button>
+    <button class="side-btn" id="btnSound" onclick="toggleSound()">
+      <span class="side-icon">🔊</span>SOUND
+    </button>
+    <button class="side-btn" id="btnRight" onclick="gameRight()" style="display:none">
+      <span class="side-icon">▶</span>RIGHT
+    </button>
+  </div>
+
+  <!-- Watch Case -->
+  <div class="case">
+    <div class="bezel">
+      <div class="brand-top">
+        CASIO
+        <span class="brand-sub">CALCULATOR</span>
+      </div>
+
+      <!-- LCD -->
+      <div class="lcd-frame">
+        <div class="lcd" id="lcd">
+          <div class="lcd-modes">
+            <span id="modeTime" class="active">TIME</span>
+            <span id="modeCalc">CALC</span>
+            <span id="modeGame">GAME</span>
+          </div>
+
+          <!-- TIME display -->
+          <div id="timeDisplay">
+            <div class="lcd-main" id="timeLine">12:00:00</div>
+            <div class="lcd-sub" id="dateLine">MON 2026.03.30</div>
+          </div>
+
+          <!-- CALC display -->
+          <div id="calcDisplay" style="display:none">
+            <div class="lcd-main" id="calcLine">0</div>
+            <div class="lcd-sub" id="calcOp"></div>
+          </div>
+
+          <!-- GAME display -->
+          <div id="gameDisplay" style="display:none">
+            <canvas id="gameCanvas" width="132" height="58"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Keypad -->
+      <div class="keypad" id="keypad">
+        <button class="key key-fn" onclick="kPress('MC')">MC</button>
+        <button class="key key-fn" onclick="kPress('MR')">MR</button>
+        <button class="key key-fn" onclick="kPress('M-')">M-</button>
+        <button class="key key-fn" onclick="kPress('M+')">M+</button>
+        <button class="key key-ac" onclick="kPress('AC')">AC</button>
+
+        <button class="key key-num" onclick="kPress('7')">7</button>
+        <button class="key key-num" onclick="kPress('8')">8</button>
+        <button class="key key-num" onclick="kPress('9')">9</button>
+        <button class="key key-op" onclick="kPress('/')">÷</button>
+        <button class="key key-fn" onclick="kPress('%')">%</button>
+
+        <button class="key key-num" onclick="kPress('4')">4</button>
+        <button class="key key-num" onclick="kPress('5')">5</button>
+        <button class="key key-num" onclick="kPress('6')">6</button>
+        <button class="key key-op" onclick="kPress('*')">×</button>
+        <button class="key key-fn" onclick="kPress('sqrt')">√</button>
+
+        <button class="key key-num" onclick="kPress('1')">1</button>
+        <button class="key key-num" onclick="kPress('2')">2</button>
+        <button class="key key-num" onclick="kPress('3')">3</button>
+        <button class="key key-op" onclick="kPress('-')">-</button>
+        <button class="key key-fn key-eq" onclick="kPress('=')" style="grid-row:span 2">=</button>
+
+        <button class="key key-num" onclick="kPress('0')">0</button>
+        <button class="key key-num" onclick="kPress('.')">.</button>
+        <button class="key key-fn" onclick="kPress('+-')">+/-</button>
+        <button class="key key-op" onclick="kPress('+')">+</button>
+      </div>
+
+      <div class="brand-bottom">CA-901 &nbsp; WATER RESISTANT</div>
+    </div>
+  </div>
+</div>
+
+<div class="credit"><a href="https://cad3d.expert" target="_blank">CAD3D.Expert</a></div>
+
+<script>
+(()=>{
+'use strict';
+
+/* ═══════════════════════════════
+   STATE
+   ═══════════════════════════════ */
+let mode = 'time'; // time | calc | game
+let soundOn = true;
+let lightOn = false;
+
+// Calculator state
+let calcVal = '0';
+let calcPrev = null;
+let calcOp = null;
+let calcNewInput = true;
+let calcMem = 0;
+
+// Game state
+let gameRunning = false;
+let gameOver = false;
+let gamePaused = false;
+let gameScore = 0;
+let gameBest = 0;
+let gameSpeed = 1;
+let gameLane = 1; // 0,1,2
+let gameObstacles = [];
+let gameFrame = 0;
+let gameInterval = null;
+
+// Audio context
+let audioCtx = null;
+function getAudio(){
+  if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function beep(freq, dur, vol){
+  if(!soundOn) return;
+  try{
+    const ctx = getAudio();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'square';
+    osc.frequency.value = freq;
+    gain.gain.value = vol || 0.06;
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + dur);
+  } catch(e){}
+}
+
+/* ═══════════════════════════════
+   MODE SWITCHING
+   ═══════════════════════════════ */
+function cycleMode(){
+  beep(800, 0.05);
+  if(gameRunning) stopGame();
+  const modes = ['time','calc','game'];
+  const idx = (modes.indexOf(mode) + 1) % 3;
+  setMode(modes[idx]);
+}
+
+function setMode(m){
+  mode = m;
+  document.getElementById('modeTime').classList.toggle('active', m==='time');
+  document.getElementById('modeCalc').classList.toggle('active', m==='calc');
+  document.getElementById('modeGame').classList.toggle('active', m==='game');
+
+  document.getElementById('timeDisplay').style.display = m==='time' ? '' : 'none';
+  document.getElementById('calcDisplay').style.display = m==='calc' ? '' : 'none';
+  document.getElementById('gameDisplay').style.display = m==='game' ? '' : 'none';
+
+  // Show/hide game buttons
+  const isGame = m==='game';
+  document.getElementById('btnLeft').style.display = isGame ? '' : 'none';
+  document.getElementById('btnRight').style.display = isGame ? '' : 'none';
+  document.getElementById('btnStart').style.display = isGame ? '' : 'none';
+
+  if(m==='game'){
+    resetGame();
+    drawGame();
+  }
+  if(m==='calc'){
+    calcReset();
+  }
+}
+
+/* ═══════════════════════════════
+   CLOCK
+   ═══════════════════════════════ */
+const days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+function updateClock(){
+  if(mode !== 'time') return;
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2,'0');
+  const m = String(now.getMinutes()).padStart(2,'0');
+  const s = String(now.getSeconds()).padStart(2,'0');
+  const day = days[now.getDay()];
+  const y = now.getFullYear();
+  const mo = String(now.getMonth()+1).padStart(2,'0');
+  const d = String(now.getDate()).padStart(2,'0');
+
+  document.getElementById('timeLine').textContent = `${h}:${m}:${s}`;
+  document.getElementById('dateLine').textContent = `${day} ${y}.${mo}.${d}`;
+}
+setInterval(updateClock, 500);
+updateClock();
+
+/* ═══════════════════════════════
+   LIGHT
+   ═══════════════════════════════ */
+function toggleLight(){
+  lightOn = !lightOn;
+  const lcd = document.getElementById('lcd');
+  if(lightOn){
+    lcd.style.background = 'linear-gradient(180deg,#a8be80,#9ab270,#a8be80)';
+    lcd.style.boxShadow = '0 0 20px rgba(140,180,100,.3)';
+  } else {
+    lcd.style.background = '';
+    lcd.style.boxShadow = '';
+  }
+  beep(600, 0.03);
+}
+
+function toggleSound(){
+  soundOn = !soundOn;
+  const btn = document.getElementById('btnSound');
+  btn.querySelector('.side-icon').textContent = soundOn ? '🔊' : '🔇';
+  if(soundOn) beep(1000, 0.05);
+}
+
+/* ═══════════════════════════════
+   CALCULATOR
+   ═══════════════════════════════ */
+function calcReset(){
+  calcVal='0';calcPrev=null;calcOp=null;calcNewInput=true;
+  updateCalcDisplay();
+}
+
+function updateCalcDisplay(){
+  // Format for LCD (max 8 chars)
+  let display = calcVal;
+  if(display.length > 10) display = parseFloat(display).toPrecision(8);
+  if(display === 'Infinity' || display === 'NaN') display = 'Error';
+  document.getElementById('calcLine').textContent = display;
+
+  let opStr = '';
+  if(calcPrev !== null && calcOp){
+    const ops = {'+':'+', '-':'-', '*':'×', '/':'÷'};
+    opStr = calcPrev + ' ' + (ops[calcOp]||calcOp);
+  }
+  if(calcMem !== 0) opStr = 'M ' + opStr;
+  document.getElementById('calcOp').textContent = opStr;
+}
+
+function kPress(k){
+  if(mode !== 'calc'){
+    // In game mode, some keys control the game
+    if(mode === 'game'){
+      if(k === '4') gameLeft();
+      else if(k === '6') gameRight();
+      else if(k === '5' || k === '=') startStopGame();
+      return;
+    }
+    return;
+  }
+
+  beep(1200, 0.02);
+  if(navigator.vibrate) navigator.vibrate(8);
+
+  if(k >= '0' && k <= '9'){
+    if(calcNewInput){
+      calcVal = k;
+      calcNewInput = false;
+    } else {
+      if(calcVal.length < 10) calcVal += k;
+    }
+  }
+  else if(k === '.'){
+    if(calcNewInput){ calcVal='0.'; calcNewInput=false; }
+    else if(!calcVal.includes('.')) calcVal += '.';
+  }
+  else if(k === 'AC'){
+    calcReset();
+  }
+  else if(k === '+-'){
+    if(calcVal !== '0'){
+      calcVal = calcVal.startsWith('-') ? calcVal.slice(1) : '-'+calcVal;
+    }
+  }
+  else if(k === '%'){
+    calcVal = String(parseFloat(calcVal)/100);
+  }
+  else if(k === 'sqrt'){
+    const v = parseFloat(calcVal);
+    calcVal = v < 0 ? 'Error' : String(Math.sqrt(v));
+    calcNewInput = true;
+  }
+  else if(['+','-','*','/'].includes(k)){
+    if(calcPrev !== null && !calcNewInput){
+      calcVal = String(doCalc(parseFloat(calcPrev), parseFloat(calcVal), calcOp));
+    }
+    calcPrev = calcVal;
+    calcOp = k;
+    calcNewInput = true;
+  }
+  else if(k === '='){
+    if(calcPrev !== null && calcOp){
+      calcVal = String(doCalc(parseFloat(calcPrev), parseFloat(calcVal), calcOp));
+      calcPrev = null;
+      calcOp = null;
+      calcNewInput = true;
+    }
+  }
+  else if(k === 'M+'){
+    calcMem += parseFloat(calcVal);
+    calcNewInput = true;
+  }
+  else if(k === 'M-'){
+    calcMem -= parseFloat(calcVal);
+    calcNewInput = true;
+  }
+  else if(k === 'MR'){
+    calcVal = String(calcMem);
+    calcNewInput = true;
+  }
+  else if(k === 'MC'){
+    calcMem = 0;
+  }
+
+  updateCalcDisplay();
+}
+
+function doCalc(a, b, op){
+  switch(op){
+    case '+': return a+b;
+    case '-': return a-b;
+    case '*': return a*b;
+    case '/': return b===0 ? 'Error' : a/b;
+    default: return b;
+  }
+}
+
+/* ═══════════════════════════════
+   CAR RACING GAME
+   ═══════════════════════════════ */
+const GW = 132, GH = 58;
+const LANE_W = 28;
+const LANE_X = [22, 52, 82]; // lane center positions
+const CAR_W = 18, CAR_H = 12;
+const OBS_W = 16, OBS_H = 10;
+
+const canvas = document.getElementById('gameCanvas');
+const gctx = canvas.getContext('2d');
+
+try{ gameBest = parseInt(localStorage.getItem('ca901_best'))||0; }catch(e){}
+
+function resetGame(){
+  gameOver = false;
+  gameRunning = false;
+  gamePaused = false;
+  gameScore = 0;
+  gameSpeed = 1;
+  gameLane = 1;
+  gameObstacles = [];
+  gameFrame = 0;
+  clearInterval(gameInterval);
+  gameInterval = null;
+}
+
+function startStopGame(){
+  if(!gameRunning && !gameOver){
+    gameRunning = true;
+    document.getElementById('btnStart').querySelector('.side-icon').textContent = '⏸';
+    gameLoop();
+    return;
+  }
+  if(gameRunning && !gameOver){
+    // Pause
+    gamePaused = !gamePaused;
+    document.getElementById('btnStart').querySelector('.side-icon').textContent = gamePaused ? '▶' : '⏸';
+    if(!gamePaused) gameLoop();
+    return;
+  }
+  if(gameOver){
+    resetGame();
+    drawGame();
+    document.getElementById('btnStart').querySelector('.side-icon').textContent = '▶';
+  }
+}
+
+function gameLeft(){
+  if(!gameRunning || gamePaused) return;
+  if(gameLane > 0){ gameLane--; beep(600, 0.02); }
+}
+function gameRight(){
+  if(!gameRunning || gamePaused) return;
+  if(gameLane < 2){ gameLane++; beep(600, 0.02); }
+}
+
+function gameLoop(){
+  if(!gameRunning || gamePaused) return;
+  gameFrame++;
+
+  // Speed increases
+  gameSpeed = 1 + Math.floor(gameScore / 50) * 0.3;
+
+  // Spawn obstacles
+  if(gameFrame % Math.max(8, Math.floor(25 - gameSpeed*3)) === 0){
+    const lane = Math.floor(Math.random()*3);
+    // Avoid spawning on top of existing nearby obstacles
+    const tooClose = gameObstacles.some(o => o.y < 8 && o.lane === lane);
+    if(!tooClose){
+      gameObstacles.push({ lane, y: -OBS_H });
+    }
+  }
+
+  // Move obstacles
+  for(const o of gameObstacles){
+    o.y += 1.2 * gameSpeed;
+  }
+
+  // Remove off-screen
+  gameObstacles = gameObstacles.filter(o => o.y < GH + 10);
+
+  // Score (for each obstacle that passes player)
+  for(const o of gameObstacles){
+    if(!o.scored && o.y > GH - CAR_H){
+      o.scored = true;
+      gameScore += 10;
+      beep(1500, 0.02, 0.03);
+    }
+  }
+
+  // Collision check
+  const px = LANE_X[gameLane];
+  const py = GH - CAR_H - 2;
+  for(const o of gameObstacles){
+    const ox = LANE_X[o.lane];
+    if(Math.abs(px - ox) < (CAR_W/2 + OBS_W/2 - 4) &&
+       Math.abs(py - o.y) < (CAR_H/2 + OBS_H/2 - 2)){
+      // CRASH!
+      gameOver = true;
+      gameRunning = false;
+      beep(200, 0.3, 0.1);
+      if(gameScore > gameBest){
+        gameBest = gameScore;
+        try{ localStorage.setItem('ca901_best', gameBest); }catch(e){}
+      }
+      document.getElementById('lcd').classList.add('flash');
+      setTimeout(()=> document.getElementById('lcd').classList.remove('flash'), 600);
+      document.getElementById('btnStart').querySelector('.side-icon').textContent = '▶';
+      drawGame();
+      return;
+    }
+  }
+
+  drawGame();
+  requestAnimationFrame(gameLoop);
+}
+
+function drawGame(){
+  const c = gctx;
+  // LCD background
+  c.fillStyle = '#8a9e6a';
+  c.fillRect(0, 0, GW, GH);
+
+  const dark = 'rgba(30,40,20,.85)';
+  const light = 'rgba(30,40,20,.15)';
+
+  // Road borders
+  c.strokeStyle = dark;
+  c.lineWidth = 1;
+  c.beginPath();
+  c.moveTo(12, 0); c.lineTo(12, GH);
+  c.moveTo(GW-12, 0); c.lineTo(GW-12, GH);
+  c.stroke();
+
+  // Lane dividers (dashed)
+  c.setLineDash([4, 4]);
+  c.strokeStyle = light;
+  const offset = (gameFrame * 2) % 8;
+  c.lineDashOffset = -offset;
+  c.beginPath();
+  c.moveTo(40, 0); c.lineTo(40, GH);
+  c.moveTo(70, 0); c.lineTo(70, GH);
+  c.stroke();
+  c.setLineDash([]);
+  c.lineDashOffset = 0;
+
+  // Road side markers (scrolling dashes)
+  c.fillStyle = dark;
+  for(let y = -8 + (gameFrame*1.5*gameSpeed)%16; y < GH; y += 16){
+    c.fillRect(8, y, 2, 6);
+    c.fillRect(GW-10, y, 2, 6);
+  }
+
+  // Draw obstacles (enemy cars)
+  c.fillStyle = dark;
+  for(const o of gameObstacles){
+    drawCarPixel(c, LANE_X[o.lane] - OBS_W/2, o.y, OBS_W, OBS_H, true);
+  }
+
+  // Draw player car
+  if(!gameOver || gameFrame % 4 < 2){
+    const px = LANE_X[gameLane] - CAR_W/2;
+    const py = GH - CAR_H - 2;
+    drawCarPixel(c, px, py, CAR_W, CAR_H, false);
+  }
+
+  // Score display
+  c.fillStyle = dark;
+  c.font = 'bold 7px "Share Tech Mono",monospace';
+  c.textAlign = 'left';
+  c.fillText('SC:' + gameScore, 1, 7);
+  c.textAlign = 'right';
+  c.fillText('HI:' + gameBest, GW-1, 7);
+
+  // Game over text
+  if(gameOver){
+    c.fillStyle = 'rgba(30,40,20,.7)';
+    c.fillRect(20, 20, GW-40, 18);
+    c.fillStyle = '#8a9e6a';
+    c.font = 'bold 10px "Share Tech Mono",monospace';
+    c.textAlign = 'center';
+    c.fillText('GAME OVER', GW/2, 33);
+  }
+
+  // Start prompt
+  if(!gameRunning && !gameOver){
+    c.fillStyle = dark;
+    c.font = 'bold 8px "Share Tech Mono",monospace';
+    c.textAlign = 'center';
+    if(gameFrame % 40 < 25){
+      c.fillText('PRESS START', GW/2, GH/2 + 3);
+    }
+  }
+}
+
+function drawCarPixel(c, x, y, w, h, enemy){
+  const dark = 'rgba(30,40,20,.85)';
+  c.fillStyle = dark;
+
+  if(enemy){
+    // Simple enemy car shape (coming towards player - front view)
+    c.fillRect(x+2, y, w-4, h);        // body
+    c.fillRect(x, y+2, w, h-4);        // wider middle
+    c.fillRect(x+1, y+1, 3, 2);        // left headlight
+    c.fillRect(x+w-4, y+1, 3, 2);      // right headlight
+    // Windshield (clear area)
+    c.fillStyle = '#8a9e6a';
+    c.fillRect(x+4, y+2, w-8, 3);
+    c.fillStyle = dark;
+  } else {
+    // Player car (rear view)
+    c.fillRect(x+2, y, w-4, h);        // body
+    c.fillRect(x, y+2, w, h-4);        // wider middle
+    c.fillRect(x+1, y+h-3, 3, 2);      // left taillight
+    c.fillRect(x+w-4, y+h-3, 3, 2);    // right taillight
+    // Rear window (clear area)
+    c.fillStyle = '#8a9e6a';
+    c.fillRect(x+4, y+h-5, w-8, 3);
+    c.fillStyle = dark;
+    // Exhaust detail
+    c.fillRect(x+w/2-1, y+h, 2, 1);
+  }
+}
+
+// Keyboard controls
+document.addEventListener('keydown', e => {
+  if(mode === 'game'){
+    if(e.key === 'ArrowLeft') gameLeft();
+    if(e.key === 'ArrowRight') gameRight();
+    if(e.key === ' ' || e.key === 'Enter'){ e.preventDefault(); startStopGame(); }
+  }
+  if(e.key === 'm' || e.key === 'M') cycleMode();
+});
+
+// Touch swipe on game canvas
+let gsx = null;
+canvas.addEventListener('pointerdown', e => { gsx = e.clientX; });
+canvas.addEventListener('pointerup', e => {
+  if(gsx === null) return;
+  const dx = e.clientX - gsx;
+  if(Math.abs(dx) > 15){
+    if(dx < 0) gameLeft(); else gameRight();
+  } else {
+    startStopGame();
+  }
+  gsx = null;
+});
+
+// Blink effect for start screen
+setInterval(()=>{ if(mode==='game' && !gameRunning && !gameOver){ gameFrame++; drawGame(); }}, 200);
+
+// Init
+setMode('time');
+
+})();
+</script>
+</body>
+</html>
