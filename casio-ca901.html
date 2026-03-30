@@ -3,859 +3,688 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Casio CA-901 Simulator | CAD3D.Expert</title>
+<title>Casio CA-901 | CAD3D.Expert</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;500;600;700;800;900&display=swap');
-
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 html,body{
   width:100%;height:100%;overflow:hidden;
-  background:#1a1a1a;
+  background:#181818;
   font-family:'Share Tech Mono',monospace;
-  touch-action:none;-webkit-user-select:none;user-select:none;
-  -webkit-tap-highlight-color:transparent;
   display:flex;align-items:center;justify-content:center;
+  -webkit-user-select:none;user-select:none;
+}
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse at 40% 30%,rgba(60,55,45,.25),transparent 60%),radial-gradient(ellipse at 60% 70%,rgba(40,35,30,.2),transparent 50%);
 }
 
-/* ═══ WATCH CONTAINER ═══ */
-.watch-scene{
+.scene{
   position:relative;
-  display:flex;align-items:center;justify-content:center;
-  transform:scale(1);
+  display:flex;align-items:center;gap:0;
+  transform-origin:center;
 }
 
-/* ═══ BAND (top & bottom) ═══ */
-.band{
-  position:absolute;left:50%;transform:translateX(-50%);
-  width:140px;
-  background:linear-gradient(90deg,#2a2a2a,#3d3d3d 15%,#4a4a4a 30%,#3d3d3d 50%,#4a4a4a 70%,#3d3d3d 85%,#2a2a2a);
-  border-radius:4px;
-  z-index:0;
+/* ══════ SIDE BUTTON PANELS ══════ */
+.side-panel{
+  display:flex;flex-direction:column;gap:10px;
+  padding:8px 4px;z-index:5;
 }
-.band::before{
-  content:'';position:absolute;left:8px;right:8px;
-  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.2) 3px,rgba(0,0,0,.2) 4px);
+.side-btn{
+  width:46px;min-height:42px;
+  background:linear-gradient(180deg,#c8c0b0,#b0a898,#a8a090);
+  border:1px solid rgba(0,0,0,.25);
+  border-radius:5px;
+  cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  box-shadow:0 2px 5px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.35);
+  color:#2a2520;
+  font-family:'Share Tech Mono',monospace;
+  font-size:7px;font-weight:700;letter-spacing:.5px;
+  text-transform:uppercase;line-height:1.3;
+  padding:4px 2px;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
 }
-.band-top{top:-80px;height:85px;border-radius:4px 4px 0 0}
-.band-top::before{top:0;bottom:0;border-radius:4px 4px 0 0}
-.band-bottom{bottom:-80px;height:85px;border-radius:0 0 4px 4px}
-.band-bottom::before{top:0;bottom:0;border-radius:0 0 4px 4px}
+.side-btn:active{
+  transform:scale(.92);
+  box-shadow:0 1px 2px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.2);
+  background:linear-gradient(180deg,#a8a090,#989080,#908878);
+}
+.side-btn .si{font-size:14px;line-height:1;margin-bottom:2px}
 
-/* ═══ CASE ═══ */
-.case{
-  position:relative;z-index:1;
-  width:280px;
-  background:linear-gradient(165deg,#e8e0d0 0%,#c8c0b0 15%,#b8b0a0 40%,#a8a090 60%,#c0b8a8 85%,#d0c8b8 100%);
-  border-radius:16px;
-  padding:10px;
-  box-shadow:
-    0 8px 30px rgba(0,0,0,.5),
-    0 2px 6px rgba(0,0,0,.3),
-    inset 0 1px 0 rgba(255,255,255,.4),
-    inset 0 -1px 0 rgba(0,0,0,.15);
-  border:1px solid rgba(0,0,0,.15);
+/* ══════ WATCH CASE ══════ */
+.watch{
+  position:relative;width:260px;
+  background:linear-gradient(165deg,#ddd5c5 0%,#c8c0b0 15%,#b5ad9d 40%,#a8a090 60%,#bbb3a3 80%,#ccc4b4 100%);
+  border-radius:14px;
+  padding:9px;
+  box-shadow:0 6px 25px rgba(0,0,0,.5),0 2px 5px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.4),inset 0 -1px 0 rgba(0,0,0,.12);
+  border:1px solid rgba(0,0,0,.12);
 }
 
-/* Inner bezel */
+/* Band stubs */
+.watch::before,.watch::after{
+  content:'';position:absolute;left:50%;transform:translateX(-50%);
+  width:120px;height:30px;
+  background:linear-gradient(90deg,#2a2a2a,#3a3a3a 20%,#444 50%,#3a3a3a 80%,#2a2a2a);
+  z-index:-1;
+}
+.watch::before{top:-28px;border-radius:6px 6px 0 0}
+.watch::after{bottom:-28px;border-radius:0 0 6px 6px}
+
 .bezel{
-  background:linear-gradient(170deg,#1a1a18 0%,#0d0d0c 100%);
-  border-radius:10px;
-  padding:6px 6px 8px;
-  box-shadow:inset 0 2px 6px rgba(0,0,0,.6),0 1px 0 rgba(255,255,255,.1);
+  background:linear-gradient(170deg,#1a1a18,#0e0e0d);
+  border-radius:9px;padding:5px 5px 6px;
+  box-shadow:inset 0 2px 6px rgba(0,0,0,.6),0 1px 0 rgba(255,255,255,.08);
 }
 
-/* ═══ CASIO BRANDING ═══ */
 .brand-top{
-  text-align:center;padding:2px 0 4px;
-  font-family:'Orbitron',sans-serif;
-  font-weight:800;font-size:11px;
-  color:#888;letter-spacing:3px;
-  text-shadow:0 1px 0 rgba(255,255,255,.05);
+  text-align:center;padding:1px 0 3px;
+  font-family:'Orbitron',sans-serif;font-weight:800;font-size:10px;
+  color:#777;letter-spacing:3px;
 }
-.brand-sub{
-  display:block;font-size:6px;font-weight:400;
-  color:#555;letter-spacing:5px;margin-top:1px;
-}
+.brand-top small{display:block;font-size:5.5px;font-weight:400;color:#555;letter-spacing:4px;margin-top:1px}
 
-/* ═══ LCD DISPLAY ═══ */
-.lcd-frame{
-  background:#6b7a56;
-  border-radius:6px;
-  padding:4px;
-  margin:4px 2px;
-  box-shadow:inset 0 2px 8px rgba(0,0,0,.4),0 1px 0 rgba(255,255,255,.05);
+/* ══════ LCD ══════ */
+.lcd-wrap{
+  background:#5e6e48;border-radius:5px;padding:3px;margin:3px 1px;
+  box-shadow:inset 0 2px 6px rgba(0,0,0,.4);
 }
 .lcd{
-  background:linear-gradient(180deg,#8a9e6a,#7d9160,#8a9e6a);
-  border-radius:4px;
-  padding:6px 8px;
-  min-height:72px;
+  background:linear-gradient(180deg,#8fa06a,#829660,#8fa06a);
+  border-radius:3px;padding:5px 7px;
+  position:relative;min-height:68px;
   display:flex;flex-direction:column;
-  position:relative;
-  overflow:hidden;
-  image-rendering:pixelated;
 }
-/* LCD scanlines */
+/* scanlines */
 .lcd::after{
-  content:'';position:absolute;inset:0;
-  background:repeating-linear-gradient(0deg,transparent,transparent 1px,rgba(0,0,0,.04) 1px,rgba(0,0,0,.04) 2px);
-  pointer-events:none;border-radius:4px;
+  content:'';position:absolute;inset:0;border-radius:3px;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 1px,rgba(0,0,0,.035) 1px,rgba(0,0,0,.035) 2px);
 }
+.lcd.lit{background:linear-gradient(180deg,#a4b87a,#96ac6e,#a4b87a);box-shadow:0 0 15px rgba(130,170,90,.25)}
 
-/* Mode indicators */
 .lcd-modes{
-  display:flex;gap:8px;justify-content:center;
+  display:flex;gap:6px;justify-content:center;
   font-size:7px;letter-spacing:1px;
-  color:rgba(50,60,35,.25);margin-bottom:3px;
-  font-family:'Share Tech Mono',monospace;
+  color:rgba(40,50,28,.2);margin-bottom:2px;
 }
-.lcd-modes span.active{color:rgba(30,40,20,.85)}
+.lcd-modes span.on{color:rgba(30,40,20,.85)}
 
-/* Main display line */
-.lcd-main{
-  font-family:'Orbitron',monospace;
-  font-weight:700;
-  font-size:28px;
-  color:rgba(30,40,20,.9);
-  text-align:right;
-  line-height:1;
-  min-height:32px;
+.lcd-line1{
+  font-family:'Orbitron',monospace;font-weight:700;font-size:26px;
+  color:rgba(25,35,15,.88);text-align:right;min-height:30px;
   display:flex;align-items:center;justify-content:flex-end;
-  text-shadow:1px 1px 0 rgba(30,40,20,.1);
-  overflow:hidden;
+  text-shadow:1px 1px 0 rgba(25,35,15,.08);
+  overflow:hidden;word-break:break-all;
+}
+.lcd-line2{
+  font-size:9px;color:rgba(30,40,20,.55);text-align:right;min-height:11px;margin-top:1px;
 }
 
-/* Secondary display line */
-.lcd-sub{
-  font-family:'Share Tech Mono',monospace;
-  font-size:10px;
-  color:rgba(30,40,20,.6);
-  text-align:right;
-  min-height:12px;
-  margin-top:2px;
-}
+/* Game canvas */
+#gameCanvas{display:none;width:100%;height:58px;image-rendering:pixelated}
 
-/* ═══ GAME DISPLAY ═══ */
-.game-lcd{
-  display:none;
-  width:100%;height:100%;
-  position:relative;
-}
-.game-lcd canvas{
-  width:100%;height:100%;
-  image-rendering:pixelated;
-}
-
-/* ═══ KEYPAD ═══ */
+/* ══════ KEYPAD ══════ */
 .keypad{
-  display:grid;
-  grid-template-columns:repeat(5,1fr);
-  gap:3px;
-  padding:6px 2px 2px;
+  display:grid;grid-template-columns:repeat(5,1fr);
+  gap:3px;padding:5px 1px 2px;
 }
 .key{
-  background:linear-gradient(180deg,#2a2a28,#1e1e1c);
-  border:none;
-  border-radius:3px;
-  color:#aaa;
-  font-family:'Share Tech Mono',monospace;
-  font-size:10px;
-  font-weight:700;
-  padding:8px 2px;
-  cursor:pointer;
-  text-align:center;
-  box-shadow:0 2px 0 #0a0a09,0 3px 4px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.06);
-  transition:transform 50ms,box-shadow 50ms;
-  position:relative;
+  background:linear-gradient(180deg,#2c2c2a,#1f1f1d);
+  border:none;border-radius:3px;
+  color:#b0a890;
+  font-family:'Share Tech Mono',monospace;font-size:11px;font-weight:700;
+  padding:10px 2px;
+  cursor:pointer;text-align:center;
+  box-shadow:0 2px 0 #0b0b0a,0 3px 3px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.05);
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
   line-height:1;
 }
 .key:active{
   transform:translateY(2px);
-  box-shadow:0 0 0 #0a0a09,0 1px 2px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.04);
+  box-shadow:0 0 0 #0b0b0a,0 1px 1px rgba(0,0,0,.15),inset 0 1px 0 rgba(255,255,255,.03);
 }
-.key-num{color:#c0b8a0}
-.key-op{color:#d4a050;font-size:12px}
-.key-fn{color:#7a9060;font-size:8px;letter-spacing:.5px}
-.key-ac{color:#c05040}
-.key-eq{background:linear-gradient(180deg,#3a3530,#2a2520);color:#e0c878}
-
-/* Double-width key */
-.key-wide{grid-column:span 2}
-
-/* ═══ SIDE BUTTONS ═══ */
-.side-buttons{
-  position:absolute;
-  display:flex;flex-direction:column;
-  gap:12px;top:50%;transform:translateY(-50%);
-  z-index:5;
-}
-.side-left{left:-52px}
-.side-right{right:-52px}
-
-.side-btn{
-  width:40px;height:34px;
-  background:linear-gradient(90deg,#b8b0a0,#c8c0b0,#b8b0a0);
-  border:1px solid rgba(0,0,0,.2);
-  border-radius:4px;
-  cursor:pointer;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  box-shadow:0 2px 4px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.3);
-  transition:transform 50ms;
-  color:#3a3530;
-  font-family:'Share Tech Mono',monospace;
-  font-size:6px;font-weight:700;letter-spacing:.5px;
-  text-transform:uppercase;
-  line-height:1.2;
-}
-.side-right .side-btn{
-  background:linear-gradient(270deg,#b8b0a0,#c8c0b0,#b8b0a0);
-}
-.side-btn:active{transform:scale(.93)}
-.side-btn .side-icon{font-size:12px;margin-bottom:1px}
-
-/* ═══ BOTTOM BRANDING ═══ */
-.brand-bottom{
-  text-align:center;padding:4px 0 0;
-  font-size:5.5px;color:#555;letter-spacing:2px;
-  font-family:'Share Tech Mono',monospace;
+.key-op{color:#d4a050;font-size:13px}
+.key-fn{color:#7a9060;font-size:8px}
+.key-ac{color:#c85040}
+.key-eq{
+  background:linear-gradient(180deg,#3a3530,#2a2520);
+  color:#e8cc70;grid-row:span 2;font-size:16px;
 }
 
-/* ═══ GAME OVER FLASH ═══ */
-@keyframes lcdFlash{0%,40%,80%{opacity:1}20%,60%{opacity:.3}}
-.lcd.flash{animation:lcdFlash .6s}
-
-/* ═══ SCALE FOR DIFFERENT SCREENS ═══ */
-@media(max-height:700px){.watch-scene{transform:scale(.85)}}
-@media(max-height:600px){.watch-scene{transform:scale(.75)}}
-@media(min-height:900px){.watch-scene{transform:scale(1.15)}}
-@media(min-height:1100px){.watch-scene{transform:scale(1.3)}}
-
-/* background texture */
-body::before{
-  content:'';position:fixed;inset:0;
-  background:
-    radial-gradient(ellipse at 40% 30%,rgba(60,55,45,.3),transparent 60%),
-    radial-gradient(ellipse at 60% 70%,rgba(40,35,30,.2),transparent 50%),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.03'/%3E%3C/svg%3E");
-  pointer-events:none;
+.brand-bot{
+  text-align:center;padding:3px 0 0;font-size:5px;color:#444;letter-spacing:2px;
 }
 
-.credit{
-  position:fixed;bottom:8px;left:0;right:0;text-align:center;
-  font-size:10px;color:rgba(255,255,255,.15);
-  font-family:'Share Tech Mono',monospace;
-}
-.credit a{color:rgba(255,255,255,.2);text-decoration:none}
+@keyframes lcdBlink{0%,50%{opacity:1}25%,75%{opacity:.2}}
+.lcd.blink{animation:lcdBlink .6s}
+
+/* ══════ SCALING ══════ */
+@media(max-height:650px){.scene{transform:scale(.78)}}
+@media(max-height:550px){.scene{transform:scale(.65)}}
+@media(min-height:850px){.scene{transform:scale(1.1)}}
+@media(min-height:1000px){.scene{transform:scale(1.25)}}
+@media(max-width:400px){.scene{transform:scale(.82)}}
+
+.credit{position:fixed;bottom:6px;width:100%;text-align:center;font-size:9px;color:rgba(255,255,255,.12)}
+.credit a{color:rgba(255,255,255,.18);text-decoration:none}
 </style>
 </head>
 <body>
 
-<div class="watch-scene">
-  <!-- Bands -->
-  <div class="band band-top"></div>
-  <div class="band band-bottom"></div>
+<div class="scene" id="scene">
 
-  <!-- Side Buttons Left -->
-  <div class="side-buttons side-left">
-    <button class="side-btn" id="btnMode" onclick="cycleMode()">
-      <span class="side-icon">◀</span>MODE
-    </button>
-    <button class="side-btn" id="btnLight" onclick="toggleLight()">
-      <span class="side-icon">💡</span>LIGHT
-    </button>
-    <button class="side-btn" id="btnLeft" onclick="gameLeft()" style="display:none">
-      <span class="side-icon">◀</span>LEFT
-    </button>
+  <!-- LEFT SIDE BUTTONS -->
+  <div class="side-panel" id="panelL">
+    <button class="side-btn" data-action="mode"><span class="si">⚙</span>MODE</button>
+    <button class="side-btn" data-action="light"><span class="si">☀</span>LIGHT</button>
+    <button class="side-btn" data-action="left"><span class="si">◀</span>LEFT</button>
   </div>
 
-  <!-- Side Buttons Right -->
-  <div class="side-buttons side-right">
-    <button class="side-btn" id="btnStart" onclick="startStopGame()" style="display:none">
-      <span class="side-icon">▶</span>START
-    </button>
-    <button class="side-btn" id="btnSound" onclick="toggleSound()">
-      <span class="side-icon">🔊</span>SOUND
-    </button>
-    <button class="side-btn" id="btnRight" onclick="gameRight()" style="display:none">
-      <span class="side-icon">▶</span>RIGHT
-    </button>
-  </div>
-
-  <!-- Watch Case -->
-  <div class="case">
+  <!-- WATCH -->
+  <div class="watch">
     <div class="bezel">
-      <div class="brand-top">
-        CASIO
-        <span class="brand-sub">CALCULATOR</span>
-      </div>
+      <div class="brand-top">CASIO<small>CALCULATOR</small></div>
 
-      <!-- LCD -->
-      <div class="lcd-frame">
+      <div class="lcd-wrap">
         <div class="lcd" id="lcd">
           <div class="lcd-modes">
-            <span id="modeTime" class="active">TIME</span>
-            <span id="modeCalc">CALC</span>
-            <span id="modeGame">GAME</span>
+            <span id="indTime" class="on">TIME</span>
+            <span id="indCalc">CALC</span>
+            <span id="indGame">GAME</span>
           </div>
-
-          <!-- TIME display -->
-          <div id="timeDisplay">
-            <div class="lcd-main" id="timeLine">12:00:00</div>
-            <div class="lcd-sub" id="dateLine">MON 2026.03.30</div>
-          </div>
-
-          <!-- CALC display -->
-          <div id="calcDisplay" style="display:none">
-            <div class="lcd-main" id="calcLine">0</div>
-            <div class="lcd-sub" id="calcOp"></div>
-          </div>
-
-          <!-- GAME display -->
-          <div id="gameDisplay" style="display:none">
-            <canvas id="gameCanvas" width="132" height="58"></canvas>
-          </div>
+          <div class="lcd-line1" id="line1">00:00:00</div>
+          <div class="lcd-line2" id="line2"></div>
+          <canvas id="gameCanvas" width="132" height="58"></canvas>
         </div>
       </div>
 
-      <!-- Keypad -->
       <div class="keypad" id="keypad">
-        <button class="key key-fn" onclick="kPress('MC')">MC</button>
-        <button class="key key-fn" onclick="kPress('MR')">MR</button>
-        <button class="key key-fn" onclick="kPress('M-')">M-</button>
-        <button class="key key-fn" onclick="kPress('M+')">M+</button>
-        <button class="key key-ac" onclick="kPress('AC')">AC</button>
-
-        <button class="key key-num" onclick="kPress('7')">7</button>
-        <button class="key key-num" onclick="kPress('8')">8</button>
-        <button class="key key-num" onclick="kPress('9')">9</button>
-        <button class="key key-op" onclick="kPress('/')">÷</button>
-        <button class="key key-fn" onclick="kPress('%')">%</button>
-
-        <button class="key key-num" onclick="kPress('4')">4</button>
-        <button class="key key-num" onclick="kPress('5')">5</button>
-        <button class="key key-num" onclick="kPress('6')">6</button>
-        <button class="key key-op" onclick="kPress('*')">×</button>
-        <button class="key key-fn" onclick="kPress('sqrt')">√</button>
-
-        <button class="key key-num" onclick="kPress('1')">1</button>
-        <button class="key key-num" onclick="kPress('2')">2</button>
-        <button class="key key-num" onclick="kPress('3')">3</button>
-        <button class="key key-op" onclick="kPress('-')">-</button>
-        <button class="key key-fn key-eq" onclick="kPress('=')" style="grid-row:span 2">=</button>
-
-        <button class="key key-num" onclick="kPress('0')">0</button>
-        <button class="key key-num" onclick="kPress('.')">.</button>
-        <button class="key key-fn" onclick="kPress('+-')">+/-</button>
-        <button class="key key-op" onclick="kPress('+')">+</button>
+        <button class="key key-fn" data-k="MC">MC</button>
+        <button class="key key-fn" data-k="MR">MR</button>
+        <button class="key key-fn" data-k="M-">M-</button>
+        <button class="key key-fn" data-k="M+">M+</button>
+        <button class="key key-ac" data-k="AC">AC</button>
+        <button class="key" data-k="7">7</button>
+        <button class="key" data-k="8">8</button>
+        <button class="key" data-k="9">9</button>
+        <button class="key key-op" data-k="/">÷</button>
+        <button class="key key-fn" data-k="%">%</button>
+        <button class="key" data-k="4">4</button>
+        <button class="key" data-k="5">5</button>
+        <button class="key" data-k="6">6</button>
+        <button class="key key-op" data-k="*">×</button>
+        <button class="key key-fn" data-k="sqrt">√</button>
+        <button class="key" data-k="1">1</button>
+        <button class="key" data-k="2">2</button>
+        <button class="key" data-k="3">3</button>
+        <button class="key key-op" data-k="-">−</button>
+        <button class="key key-eq" data-k="=">=</button>
+        <button class="key" data-k="0">0</button>
+        <button class="key" data-k=".">.</button>
+        <button class="key key-fn" data-k="+-">+/−</button>
+        <button class="key key-op" data-k="+">+</button>
       </div>
 
-      <div class="brand-bottom">CA-901 &nbsp; WATER RESISTANT</div>
+      <div class="brand-bot">CA-901 &nbsp; WATER RESISTANT</div>
     </div>
   </div>
+
+  <!-- RIGHT SIDE BUTTONS -->
+  <div class="side-panel" id="panelR">
+    <button class="side-btn" data-action="sound"><span class="si" id="soundIcon">🔊</span>SOUND</button>
+    <button class="side-btn" data-action="start"><span class="si" id="startIcon">▶</span>START</button>
+    <button class="side-btn" data-action="right"><span class="si">▶</span>RIGHT</button>
+  </div>
+
 </div>
 
 <div class="credit"><a href="https://cad3d.expert" target="_blank">CAD3D.Expert</a></div>
 
 <script>
-(()=>{
-'use strict';
+(function(){
+  /* ═══ REFS ═══ */
+  var lcd = document.getElementById('lcd');
+  var line1 = document.getElementById('line1');
+  var line2 = document.getElementById('line2');
+  var canvas = document.getElementById('gameCanvas');
+  var ctx = canvas.getContext('2d');
+  var indTime = document.getElementById('indTime');
+  var indCalc = document.getElementById('indCalc');
+  var indGame = document.getElementById('indGame');
+  var soundIcon = document.getElementById('soundIcon');
+  var startIcon = document.getElementById('startIcon');
 
-/* ═══════════════════════════════
-   STATE
-   ═══════════════════════════════ */
-let mode = 'time'; // time | calc | game
-let soundOn = true;
-let lightOn = false;
+  /* ═══ STATE ═══ */
+  var mode = 'time';
+  var soundOn = true;
+  var lit = false;
 
-// Calculator state
-let calcVal = '0';
-let calcPrev = null;
-let calcOp = null;
-let calcNewInput = true;
-let calcMem = 0;
+  // Calc
+  var cDisp = '0';
+  var cPrev = null;
+  var cOp = null;
+  var cNew = true;
+  var cMem = 0;
 
-// Game state
-let gameRunning = false;
-let gameOver = false;
-let gamePaused = false;
-let gameScore = 0;
-let gameBest = 0;
-let gameSpeed = 1;
-let gameLane = 1; // 0,1,2
-let gameObstacles = [];
-let gameFrame = 0;
-let gameInterval = null;
+  // Game
+  var gRun = false;
+  var gOver = false;
+  var gPause = false;
+  var gScore = 0;
+  var gBest = 0;
+  var gSpeed = 1;
+  var gLane = 1;
+  var gObs = [];
+  var gFrame = 0;
+  var gRAF = null;
+  var gBlinkFrame = 0;
 
-// Audio context
-let audioCtx = null;
-function getAudio(){
-  if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
-  return audioCtx;
-}
+  try { gBest = parseInt(localStorage.getItem('ca901_best')) || 0; } catch(e){}
 
-function beep(freq, dur, vol){
-  if(!soundOn) return;
-  try{
-    const ctx = getAudio();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'square';
-    osc.frequency.value = freq;
-    gain.gain.value = vol || 0.06;
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + dur);
-  } catch(e){}
-}
-
-/* ═══════════════════════════════
-   MODE SWITCHING
-   ═══════════════════════════════ */
-function cycleMode(){
-  beep(800, 0.05);
-  if(gameRunning) stopGame();
-  const modes = ['time','calc','game'];
-  const idx = (modes.indexOf(mode) + 1) % 3;
-  setMode(modes[idx]);
-}
-
-function setMode(m){
-  mode = m;
-  document.getElementById('modeTime').classList.toggle('active', m==='time');
-  document.getElementById('modeCalc').classList.toggle('active', m==='calc');
-  document.getElementById('modeGame').classList.toggle('active', m==='game');
-
-  document.getElementById('timeDisplay').style.display = m==='time' ? '' : 'none';
-  document.getElementById('calcDisplay').style.display = m==='calc' ? '' : 'none';
-  document.getElementById('gameDisplay').style.display = m==='game' ? '' : 'none';
-
-  // Show/hide game buttons
-  const isGame = m==='game';
-  document.getElementById('btnLeft').style.display = isGame ? '' : 'none';
-  document.getElementById('btnRight').style.display = isGame ? '' : 'none';
-  document.getElementById('btnStart').style.display = isGame ? '' : 'none';
-
-  if(m==='game'){
-    resetGame();
-    drawGame();
+  /* ═══ AUDIO ═══ */
+  var actx = null;
+  function beep(f, d, v) {
+    if (!soundOn) return;
+    try {
+      if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+      var o = actx.createOscillator();
+      var g = actx.createGain();
+      o.type = 'square'; o.frequency.value = f;
+      g.gain.value = v || 0.05;
+      g.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + d);
+      o.connect(g); g.connect(actx.destination);
+      o.start(); o.stop(actx.currentTime + d);
+    } catch(e){}
   }
-  if(m==='calc'){
-    calcReset();
+
+  /* ═══ MODE ═══ */
+  function setMode(m) {
+    if (gRun) { gRun = false; cancelAnimationFrame(gRAF); }
+    mode = m;
+    indTime.className = m === 'time' ? 'on' : '';
+    indCalc.className = m === 'calc' ? 'on' : '';
+    indGame.className = m === 'game' ? 'on' : '';
+
+    line1.style.display = m === 'game' ? 'none' : '';
+    line2.style.display = m === 'game' ? 'none' : '';
+    canvas.style.display = m === 'game' ? 'block' : 'none';
+
+    if (m === 'time') updateClock();
+    if (m === 'calc') { cDisp='0'; cPrev=null; cOp=null; cNew=true; cMem=0; updCalc(); }
+    if (m === 'game') { resetGame(); drawGame(); }
   }
-}
 
-/* ═══════════════════════════════
-   CLOCK
-   ═══════════════════════════════ */
-const days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
-function updateClock(){
-  if(mode !== 'time') return;
-  const now = new Date();
-  const h = String(now.getHours()).padStart(2,'0');
-  const m = String(now.getMinutes()).padStart(2,'0');
-  const s = String(now.getSeconds()).padStart(2,'0');
-  const day = days[now.getDay()];
-  const y = now.getFullYear();
-  const mo = String(now.getMonth()+1).padStart(2,'0');
-  const d = String(now.getDate()).padStart(2,'0');
-
-  document.getElementById('timeLine').textContent = `${h}:${m}:${s}`;
-  document.getElementById('dateLine').textContent = `${day} ${y}.${mo}.${d}`;
-}
-setInterval(updateClock, 500);
-updateClock();
-
-/* ═══════════════════════════════
-   LIGHT
-   ═══════════════════════════════ */
-function toggleLight(){
-  lightOn = !lightOn;
-  const lcd = document.getElementById('lcd');
-  if(lightOn){
-    lcd.style.background = 'linear-gradient(180deg,#a8be80,#9ab270,#a8be80)';
-    lcd.style.boxShadow = '0 0 20px rgba(140,180,100,.3)';
-  } else {
-    lcd.style.background = '';
-    lcd.style.boxShadow = '';
+  function cycleMode() {
+    var modes = ['time','calc','game'];
+    var i = (modes.indexOf(mode) + 1) % 3;
+    beep(800, 0.04);
+    setMode(modes[i]);
   }
-  beep(600, 0.03);
-}
 
-function toggleSound(){
-  soundOn = !soundOn;
-  const btn = document.getElementById('btnSound');
-  btn.querySelector('.side-icon').textContent = soundOn ? '🔊' : '🔇';
-  if(soundOn) beep(1000, 0.05);
-}
-
-/* ═══════════════════════════════
-   CALCULATOR
-   ═══════════════════════════════ */
-function calcReset(){
-  calcVal='0';calcPrev=null;calcOp=null;calcNewInput=true;
-  updateCalcDisplay();
-}
-
-function updateCalcDisplay(){
-  // Format for LCD (max 8 chars)
-  let display = calcVal;
-  if(display.length > 10) display = parseFloat(display).toPrecision(8);
-  if(display === 'Infinity' || display === 'NaN') display = 'Error';
-  document.getElementById('calcLine').textContent = display;
-
-  let opStr = '';
-  if(calcPrev !== null && calcOp){
-    const ops = {'+':'+', '-':'-', '*':'×', '/':'÷'};
-    opStr = calcPrev + ' ' + (ops[calcOp]||calcOp);
+  /* ═══ CLOCK ═══ */
+  var days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+  function updateClock() {
+    if (mode !== 'time') return;
+    var n = new Date();
+    var h = String(n.getHours()).padStart(2,'0');
+    var m = String(n.getMinutes()).padStart(2,'0');
+    var s = String(n.getSeconds()).padStart(2,'0');
+    line1.textContent = h + ':' + m + ':' + s;
+    line2.textContent = days[n.getDay()] + ' ' + n.getFullYear() + '.' +
+      String(n.getMonth()+1).padStart(2,'0') + '.' + String(n.getDate()).padStart(2,'0');
   }
-  if(calcMem !== 0) opStr = 'M ' + opStr;
-  document.getElementById('calcOp').textContent = opStr;
-}
+  setInterval(updateClock, 500);
 
-function kPress(k){
-  if(mode !== 'calc'){
-    // In game mode, some keys control the game
-    if(mode === 'game'){
-      if(k === '4') gameLeft();
-      else if(k === '6') gameRight();
-      else if(k === '5' || k === '=') startStopGame();
-      return;
+  /* ═══ LIGHT ═══ */
+  function toggleLight() {
+    lit = !lit;
+    lcd.classList.toggle('lit', lit);
+    beep(500, 0.03);
+  }
+  function toggleSound() {
+    soundOn = !soundOn;
+    soundIcon.textContent = soundOn ? '🔊' : '🔇';
+    if (soundOn) beep(1000, 0.04);
+  }
+
+  /* ═══ CALCULATOR ═══ */
+  function updCalc() {
+    var d = cDisp;
+    if (d.length > 10) d = parseFloat(d).toPrecision(8);
+    if (d === 'Infinity' || d === 'NaN' || d === 'undefined') d = 'Error';
+    line1.textContent = d;
+    var s = '';
+    if (cMem !== 0) s += 'M ';
+    if (cPrev !== null && cOp) {
+      var ops = {'+':'+','-':'−','*':'×','/':'÷'};
+      s += cPrev + ' ' + (ops[cOp]||cOp);
     }
-    return;
+    line2.textContent = s;
   }
 
-  beep(1200, 0.02);
-  if(navigator.vibrate) navigator.vibrate(8);
-
-  if(k >= '0' && k <= '9'){
-    if(calcNewInput){
-      calcVal = k;
-      calcNewInput = false;
-    } else {
-      if(calcVal.length < 10) calcVal += k;
+  function compute(a, b, op) {
+    switch(op) {
+      case '+': return a + b;
+      case '-': return a - b;
+      case '*': return a * b;
+      case '/': return b === 0 ? NaN : a / b;
     }
+    return b;
   }
-  else if(k === '.'){
-    if(calcNewInput){ calcVal='0.'; calcNewInput=false; }
-    else if(!calcVal.includes('.')) calcVal += '.';
-  }
-  else if(k === 'AC'){
-    calcReset();
-  }
-  else if(k === '+-'){
-    if(calcVal !== '0'){
-      calcVal = calcVal.startsWith('-') ? calcVal.slice(1) : '-'+calcVal;
+
+  function calcKey(k) {
+    beep(1200, 0.02);
+    if (navigator.vibrate) navigator.vibrate(8);
+
+    if (k >= '0' && k <= '9') {
+      if (cNew) { cDisp = k; cNew = false; }
+      else { if (cDisp.replace('-','').replace('.','').length < 9) cDisp += k; }
     }
-  }
-  else if(k === '%'){
-    calcVal = String(parseFloat(calcVal)/100);
-  }
-  else if(k === 'sqrt'){
-    const v = parseFloat(calcVal);
-    calcVal = v < 0 ? 'Error' : String(Math.sqrt(v));
-    calcNewInput = true;
-  }
-  else if(['+','-','*','/'].includes(k)){
-    if(calcPrev !== null && !calcNewInput){
-      calcVal = String(doCalc(parseFloat(calcPrev), parseFloat(calcVal), calcOp));
+    else if (k === '.') {
+      if (cNew) { cDisp = '0.'; cNew = false; }
+      else if (cDisp.indexOf('.') === -1) cDisp += '.';
     }
-    calcPrev = calcVal;
-    calcOp = k;
-    calcNewInput = true;
-  }
-  else if(k === '='){
-    if(calcPrev !== null && calcOp){
-      calcVal = String(doCalc(parseFloat(calcPrev), parseFloat(calcVal), calcOp));
-      calcPrev = null;
-      calcOp = null;
-      calcNewInput = true;
+    else if (k === 'AC') {
+      cDisp = '0'; cPrev = null; cOp = null; cNew = true;
     }
-  }
-  else if(k === 'M+'){
-    calcMem += parseFloat(calcVal);
-    calcNewInput = true;
-  }
-  else if(k === 'M-'){
-    calcMem -= parseFloat(calcVal);
-    calcNewInput = true;
-  }
-  else if(k === 'MR'){
-    calcVal = String(calcMem);
-    calcNewInput = true;
-  }
-  else if(k === 'MC'){
-    calcMem = 0;
-  }
-
-  updateCalcDisplay();
-}
-
-function doCalc(a, b, op){
-  switch(op){
-    case '+': return a+b;
-    case '-': return a-b;
-    case '*': return a*b;
-    case '/': return b===0 ? 'Error' : a/b;
-    default: return b;
-  }
-}
-
-/* ═══════════════════════════════
-   CAR RACING GAME
-   ═══════════════════════════════ */
-const GW = 132, GH = 58;
-const LANE_W = 28;
-const LANE_X = [22, 52, 82]; // lane center positions
-const CAR_W = 18, CAR_H = 12;
-const OBS_W = 16, OBS_H = 10;
-
-const canvas = document.getElementById('gameCanvas');
-const gctx = canvas.getContext('2d');
-
-try{ gameBest = parseInt(localStorage.getItem('ca901_best'))||0; }catch(e){}
-
-function resetGame(){
-  gameOver = false;
-  gameRunning = false;
-  gamePaused = false;
-  gameScore = 0;
-  gameSpeed = 1;
-  gameLane = 1;
-  gameObstacles = [];
-  gameFrame = 0;
-  clearInterval(gameInterval);
-  gameInterval = null;
-}
-
-function startStopGame(){
-  if(!gameRunning && !gameOver){
-    gameRunning = true;
-    document.getElementById('btnStart').querySelector('.side-icon').textContent = '⏸';
-    gameLoop();
-    return;
-  }
-  if(gameRunning && !gameOver){
-    // Pause
-    gamePaused = !gamePaused;
-    document.getElementById('btnStart').querySelector('.side-icon').textContent = gamePaused ? '▶' : '⏸';
-    if(!gamePaused) gameLoop();
-    return;
-  }
-  if(gameOver){
-    resetGame();
-    drawGame();
-    document.getElementById('btnStart').querySelector('.side-icon').textContent = '▶';
-  }
-}
-
-function gameLeft(){
-  if(!gameRunning || gamePaused) return;
-  if(gameLane > 0){ gameLane--; beep(600, 0.02); }
-}
-function gameRight(){
-  if(!gameRunning || gamePaused) return;
-  if(gameLane < 2){ gameLane++; beep(600, 0.02); }
-}
-
-function gameLoop(){
-  if(!gameRunning || gamePaused) return;
-  gameFrame++;
-
-  // Speed increases
-  gameSpeed = 1 + Math.floor(gameScore / 50) * 0.3;
-
-  // Spawn obstacles
-  if(gameFrame % Math.max(8, Math.floor(25 - gameSpeed*3)) === 0){
-    const lane = Math.floor(Math.random()*3);
-    // Avoid spawning on top of existing nearby obstacles
-    const tooClose = gameObstacles.some(o => o.y < 8 && o.lane === lane);
-    if(!tooClose){
-      gameObstacles.push({ lane, y: -OBS_H });
+    else if (k === '+-') {
+      if (cDisp !== '0' && cDisp !== 'Error')
+        cDisp = cDisp.charAt(0) === '-' ? cDisp.slice(1) : '-' + cDisp;
     }
-  }
-
-  // Move obstacles
-  for(const o of gameObstacles){
-    o.y += 1.2 * gameSpeed;
-  }
-
-  // Remove off-screen
-  gameObstacles = gameObstacles.filter(o => o.y < GH + 10);
-
-  // Score (for each obstacle that passes player)
-  for(const o of gameObstacles){
-    if(!o.scored && o.y > GH - CAR_H){
-      o.scored = true;
-      gameScore += 10;
-      beep(1500, 0.02, 0.03);
+    else if (k === '%') {
+      cDisp = String(parseFloat(cDisp) / 100);
+      cNew = true;
     }
-  }
-
-  // Collision check
-  const px = LANE_X[gameLane];
-  const py = GH - CAR_H - 2;
-  for(const o of gameObstacles){
-    const ox = LANE_X[o.lane];
-    if(Math.abs(px - ox) < (CAR_W/2 + OBS_W/2 - 4) &&
-       Math.abs(py - o.y) < (CAR_H/2 + OBS_H/2 - 2)){
-      // CRASH!
-      gameOver = true;
-      gameRunning = false;
-      beep(200, 0.3, 0.1);
-      if(gameScore > gameBest){
-        gameBest = gameScore;
-        try{ localStorage.setItem('ca901_best', gameBest); }catch(e){}
+    else if (k === 'sqrt') {
+      var v = parseFloat(cDisp);
+      cDisp = v < 0 ? 'Error' : String(Math.sqrt(v));
+      cNew = true;
+    }
+    else if (k === '+' || k === '-' || k === '*' || k === '/') {
+      if (cPrev !== null && !cNew) {
+        cDisp = String(compute(parseFloat(cPrev), parseFloat(cDisp), cOp));
       }
-      document.getElementById('lcd').classList.add('flash');
-      setTimeout(()=> document.getElementById('lcd').classList.remove('flash'), 600);
-      document.getElementById('btnStart').querySelector('.side-icon').textContent = '▶';
-      drawGame();
+      cPrev = cDisp; cOp = k; cNew = true;
+    }
+    else if (k === '=') {
+      if (cPrev !== null && cOp) {
+        cDisp = String(compute(parseFloat(cPrev), parseFloat(cDisp), cOp));
+        cPrev = null; cOp = null; cNew = true;
+      }
+    }
+    else if (k === 'M+') { cMem += parseFloat(cDisp); cNew = true; }
+    else if (k === 'M-') { cMem -= parseFloat(cDisp); cNew = true; }
+    else if (k === 'MR') { cDisp = String(cMem); cNew = true; }
+    else if (k === 'MC') { cMem = 0; }
+
+    updCalc();
+  }
+
+  /* ═══ GAME ═══ */
+  var GW = 132, GH = 58;
+  var LANE_X = [26, 52, 78]; // adjusted for 3 wider lanes with more gap
+  var CW = 16, CH = 12;
+
+  function resetGame() {
+    gOver = false; gRun = false; gPause = false;
+    gScore = 0; gSpeed = 1; gLane = 1;
+    gObs = []; gFrame = 0; gBlinkFrame = 0;
+    cancelAnimationFrame(gRAF);
+    startIcon.textContent = '▶';
+  }
+
+  function startStop() {
+    if (mode !== 'game') return;
+    if (gOver) { resetGame(); drawGame(); return; }
+    if (!gRun) {
+      gRun = true; gPause = false;
+      startIcon.textContent = '⏸';
+      beep(800, 0.04);
+      gRAF = requestAnimationFrame(gameTick);
       return;
     }
+    gPause = !gPause;
+    startIcon.textContent = gPause ? '▶' : '⏸';
+    if (!gPause) gRAF = requestAnimationFrame(gameTick);
   }
 
-  drawGame();
-  requestAnimationFrame(gameLoop);
-}
-
-function drawGame(){
-  const c = gctx;
-  // LCD background
-  c.fillStyle = '#8a9e6a';
-  c.fillRect(0, 0, GW, GH);
-
-  const dark = 'rgba(30,40,20,.85)';
-  const light = 'rgba(30,40,20,.15)';
-
-  // Road borders
-  c.strokeStyle = dark;
-  c.lineWidth = 1;
-  c.beginPath();
-  c.moveTo(12, 0); c.lineTo(12, GH);
-  c.moveTo(GW-12, 0); c.lineTo(GW-12, GH);
-  c.stroke();
-
-  // Lane dividers (dashed)
-  c.setLineDash([4, 4]);
-  c.strokeStyle = light;
-  const offset = (gameFrame * 2) % 8;
-  c.lineDashOffset = -offset;
-  c.beginPath();
-  c.moveTo(40, 0); c.lineTo(40, GH);
-  c.moveTo(70, 0); c.lineTo(70, GH);
-  c.stroke();
-  c.setLineDash([]);
-  c.lineDashOffset = 0;
-
-  // Road side markers (scrolling dashes)
-  c.fillStyle = dark;
-  for(let y = -8 + (gameFrame*1.5*gameSpeed)%16; y < GH; y += 16){
-    c.fillRect(8, y, 2, 6);
-    c.fillRect(GW-10, y, 2, 6);
+  function moveLeft() {
+    if (mode !== 'game' || !gRun || gPause) return;
+    if (gLane > 0) { gLane--; beep(500, 0.02); }
+  }
+  function moveRight() {
+    if (mode !== 'game' || !gRun || gPause) return;
+    if (gLane < 2) { gLane++; beep(500, 0.02); }
   }
 
-  // Draw obstacles (enemy cars)
-  c.fillStyle = dark;
-  for(const o of gameObstacles){
-    drawCarPixel(c, LANE_X[o.lane] - OBS_W/2, o.y, OBS_W, OBS_H, true);
+  var lastTick = 0;
+  function gameTick(ts) {
+    if (!gRun || gPause) return;
+
+    // Limit to ~30fps for retro feel
+    if (ts - lastTick < 33) { gRAF = requestAnimationFrame(gameTick); return; }
+    lastTick = ts;
+
+    gFrame++;
+    gSpeed = 1 + Math.floor(gScore / 80) * 0.25;
+
+    // Spawn
+    var spawnRate = Math.max(10, Math.floor(28 - gSpeed * 3));
+    if (gFrame % spawnRate === 0) {
+      var lane = Math.floor(Math.random() * 3);
+      var tooClose = false;
+      for (var i = 0; i < gObs.length; i++) {
+        if (gObs[i].lane === lane && gObs[i].y < 12) tooClose = true;
+      }
+      if (!tooClose) gObs.push({ lane: lane, y: -CH, scored: false });
+    }
+
+    // Move
+    for (var i = 0; i < gObs.length; i++) gObs[i].y += 1.5 * gSpeed;
+
+    // Clean
+    var newObs = [];
+    for (var i = 0; i < gObs.length; i++) { if (gObs[i].y < GH + 15) newObs.push(gObs[i]); }
+    gObs = newObs;
+
+    // Score
+    for (var i = 0; i < gObs.length; i++) {
+      if (!gObs[i].scored && gObs[i].y > GH - CH) {
+        gObs[i].scored = true;
+        gScore += 10;
+        beep(1500, 0.015, 0.03);
+      }
+    }
+
+    // Collision
+    var px = LANE_X[gLane], py = GH - CH - 3;
+    for (var i = 0; i < gObs.length; i++) {
+      var ox = LANE_X[gObs[i].lane], oy = gObs[i].y;
+      if (Math.abs(px - ox) < CW - 2 && Math.abs(py - oy) < CH - 2) {
+        gOver = true; gRun = false;
+        beep(150, 0.3, 0.08);
+        if (gScore > gBest) {
+          gBest = gScore;
+          try { localStorage.setItem('ca901_best', gBest); } catch(e){}
+        }
+        lcd.classList.add('blink');
+        setTimeout(function(){ lcd.classList.remove('blink'); }, 600);
+        startIcon.textContent = '▶';
+        drawGame();
+        return;
+      }
+    }
+
+    drawGame();
+    gRAF = requestAnimationFrame(gameTick);
   }
 
-  // Draw player car
-  if(!gameOver || gameFrame % 4 < 2){
-    const px = LANE_X[gameLane] - CAR_W/2;
-    const py = GH - CAR_H - 2;
-    drawCarPixel(c, px, py, CAR_W, CAR_H, false);
-  }
+  function drawGame() {
+    var c = ctx;
+    var dk = 'rgba(25,35,15,.88)';
+    var lt = 'rgba(25,35,15,.15)';
 
-  // Score display
-  c.fillStyle = dark;
-  c.font = 'bold 7px "Share Tech Mono",monospace';
-  c.textAlign = 'left';
-  c.fillText('SC:' + gameScore, 1, 7);
-  c.textAlign = 'right';
-  c.fillText('HI:' + gameBest, GW-1, 7);
+    c.fillStyle = '#8fa06a';
+    c.fillRect(0, 0, GW, GH);
 
-  // Game over text
-  if(gameOver){
-    c.fillStyle = 'rgba(30,40,20,.7)';
-    c.fillRect(20, 20, GW-40, 18);
-    c.fillStyle = '#8a9e6a';
-    c.font = 'bold 10px "Share Tech Mono",monospace';
-    c.textAlign = 'center';
-    c.fillText('GAME OVER', GW/2, 33);
-  }
+    // Road edges
+    c.strokeStyle = dk; c.lineWidth = 1.5;
+    c.beginPath();
+    c.moveTo(10, 0); c.lineTo(10, GH);
+    c.moveTo(GW - 10, 0); c.lineTo(GW - 10, GH);
+    c.stroke();
 
-  // Start prompt
-  if(!gameRunning && !gameOver){
-    c.fillStyle = dark;
-    c.font = 'bold 8px "Share Tech Mono",monospace';
-    c.textAlign = 'center';
-    if(gameFrame % 40 < 25){
-      c.fillText('PRESS START', GW/2, GH/2 + 3);
+    // Lane dividers (animated dashes)
+    c.save();
+    c.strokeStyle = lt; c.lineWidth = 1;
+    c.setLineDash([5, 5]);
+    c.lineDashOffset = -(gFrame * 2) % 10;
+    c.beginPath();
+    c.moveTo(39, 0); c.lineTo(39, GH);
+    c.moveTo(65, 0); c.lineTo(65, GH);
+    c.stroke();
+    c.restore();
+
+    // Road side markers
+    c.fillStyle = dk;
+    for (var y = -6 + ((gFrame * 1.8 * gSpeed) % 14); y < GH; y += 14) {
+      c.fillRect(6, y, 2, 5);
+      c.fillRect(GW - 8, y, 2, 5);
+    }
+
+    // Obstacles
+    for (var i = 0; i < gObs.length; i++) {
+      drawCar(c, LANE_X[gObs[i].lane], gObs[i].y, true, dk);
+    }
+
+    // Player car (blink on game over)
+    if (!gOver || gFrame % 6 < 3) {
+      drawCar(c, LANE_X[gLane], GH - CH - 3, false, dk);
+    }
+
+    // HUD
+    c.fillStyle = dk;
+    c.font = 'bold 7px Share Tech Mono,monospace';
+    c.textAlign = 'left';
+    c.fillText('SC:' + gScore, 1, 7);
+    c.textAlign = 'right';
+    c.fillText('HI:' + gBest, GW - 1, 7);
+
+    // Game Over
+    if (gOver) {
+      c.fillStyle = 'rgba(25,35,15,.75)';
+      c.fillRect(16, 20, GW - 32, 18);
+      c.fillStyle = '#8fa06a';
+      c.font = 'bold 10px Share Tech Mono,monospace';
+      c.textAlign = 'center';
+      c.fillText('GAME OVER', GW / 2, 33);
+    }
+
+    // Start prompt
+    if (!gRun && !gOver) {
+      gBlinkFrame++;
+      if (gBlinkFrame % 30 < 18) {
+        c.fillStyle = dk;
+        c.font = 'bold 9px Share Tech Mono,monospace';
+        c.textAlign = 'center';
+        c.fillText('PRESS START', GW / 2, GH / 2 + 4);
+      }
     }
   }
-}
 
-function drawCarPixel(c, x, y, w, h, enemy){
-  const dark = 'rgba(30,40,20,.85)';
-  c.fillStyle = dark;
-
-  if(enemy){
-    // Simple enemy car shape (coming towards player - front view)
-    c.fillRect(x+2, y, w-4, h);        // body
-    c.fillRect(x, y+2, w, h-4);        // wider middle
-    c.fillRect(x+1, y+1, 3, 2);        // left headlight
-    c.fillRect(x+w-4, y+1, 3, 2);      // right headlight
-    // Windshield (clear area)
-    c.fillStyle = '#8a9e6a';
-    c.fillRect(x+4, y+2, w-8, 3);
-    c.fillStyle = dark;
-  } else {
-    // Player car (rear view)
-    c.fillRect(x+2, y, w-4, h);        // body
-    c.fillRect(x, y+2, w, h-4);        // wider middle
-    c.fillRect(x+1, y+h-3, 3, 2);      // left taillight
-    c.fillRect(x+w-4, y+h-3, 3, 2);    // right taillight
-    // Rear window (clear area)
-    c.fillStyle = '#8a9e6a';
-    c.fillRect(x+4, y+h-5, w-8, 3);
-    c.fillStyle = dark;
-    // Exhaust detail
-    c.fillRect(x+w/2-1, y+h, 2, 1);
+  function drawCar(c, cx, y, enemy, dk) {
+    var x = cx - CW / 2;
+    c.fillStyle = dk;
+    // Body
+    c.fillRect(x + 2, y, CW - 4, CH);
+    c.fillRect(x, y + 2, CW, CH - 4);
+    if (enemy) {
+      // Headlights
+      c.fillRect(x + 1, y + 1, 3, 2);
+      c.fillRect(x + CW - 4, y + 1, 3, 2);
+      // Windshield gap
+      c.fillStyle = '#8fa06a';
+      c.fillRect(x + 4, y + 2, CW - 8, 3);
+    } else {
+      // Taillights
+      c.fillRect(x + 1, y + CH - 3, 3, 2);
+      c.fillRect(x + CW - 4, y + CH - 3, 3, 2);
+      // Rear window gap
+      c.fillStyle = '#8fa06a';
+      c.fillRect(x + 4, y + CH - 5, CW - 8, 3);
+    }
   }
-}
 
-// Keyboard controls
-document.addEventListener('keydown', e => {
-  if(mode === 'game'){
-    if(e.key === 'ArrowLeft') gameLeft();
-    if(e.key === 'ArrowRight') gameRight();
-    if(e.key === ' ' || e.key === 'Enter'){ e.preventDefault(); startStopGame(); }
-  }
-  if(e.key === 'm' || e.key === 'M') cycleMode();
-});
+  // Blink timer for start screen
+  setInterval(function() {
+    if (mode === 'game' && !gRun && !gOver) drawGame();
+  }, 150);
 
-// Touch swipe on game canvas
-let gsx = null;
-canvas.addEventListener('pointerdown', e => { gsx = e.clientX; });
-canvas.addEventListener('pointerup', e => {
-  if(gsx === null) return;
-  const dx = e.clientX - gsx;
-  if(Math.abs(dx) > 15){
-    if(dx < 0) gameLeft(); else gameRight();
-  } else {
-    startStopGame();
-  }
-  gsx = null;
-});
+  /* ═══ EVENT HANDLERS ═══ */
 
-// Blink effect for start screen
-setInterval(()=>{ if(mode==='game' && !gameRunning && !gameOver){ gameFrame++; drawGame(); }}, 200);
+  // Side buttons - use pointerdown for instant response on mobile
+  document.querySelectorAll('.side-btn').forEach(function(btn) {
+    function handler(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var action = btn.getAttribute('data-action');
+      if (action === 'mode') cycleMode();
+      else if (action === 'light') toggleLight();
+      else if (action === 'sound') toggleSound();
+      else if (action === 'start') startStop();
+      else if (action === 'left') moveLeft();
+      else if (action === 'right') moveRight();
+    }
+    btn.addEventListener('pointerdown', handler);
+  });
 
-// Init
-setMode('time');
+  // Keypad - use pointerdown for instant response
+  document.querySelectorAll('.key').forEach(function(btn) {
+    function handler(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var k = btn.getAttribute('data-k');
+      if (mode === 'calc') {
+        calcKey(k);
+      } else if (mode === 'game') {
+        if (k === '4') moveLeft();
+        else if (k === '6') moveRight();
+        else if (k === '5' || k === '=') startStop();
+      } else if (mode === 'time') {
+        // Tapping any key in time mode switches to calc
+        setMode('calc');
+        if (k >= '0' && k <= '9') calcKey(k);
+      }
+    }
+    btn.addEventListener('pointerdown', handler);
+  });
+
+  // Keyboard
+  document.addEventListener('keydown', function(e) {
+    if (mode === 'game') {
+      if (e.key === 'ArrowLeft') moveLeft();
+      else if (e.key === 'ArrowRight') moveRight();
+      else if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); startStop(); }
+    }
+    if (e.key === 'm' || e.key === 'M') cycleMode();
+  });
+
+  // Swipe on game canvas
+  var sx = null;
+  canvas.addEventListener('pointerdown', function(e) { sx = e.clientX; e.preventDefault(); });
+  canvas.addEventListener('pointerup', function(e) {
+    if (sx === null) return;
+    var dx = e.clientX - sx;
+    if (Math.abs(dx) > 20) { if (dx < 0) moveLeft(); else moveRight(); }
+    else startStop();
+    sx = null;
+  });
+
+  /* ═══ INIT ═══ */
+  setMode('time');
 
 })();
 </script>
