@@ -7,284 +7,203 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-:root{
-  --bg:#0a0a0f;
-  --bg2:#12121a;
-  --surface:#1a1a28;
-  --text:#f0ece4;
-  --text-dim:#888;
-  --accent:#e8b84b;
-  --tile-bg:#2a2a3a;
-  --tile-face:#f0ece4;
-  --tile-text:#1a1a28;
-  --tile-border:rgba(255,255,255,.08);
-  --tile-shadow:0 4px 16px rgba(0,0,0,.5);
-  --tile-shine:linear-gradient(135deg,rgba(255,255,255,.15) 0%,transparent 50%);
-  --radius:12px;
-  --gap:4px;
-  --glow:none;
-  --font:'Inter',sans-serif;
-  --font-tile:'Inter',sans-serif;
-}
-html,body{
-  width:100%;height:100%;overflow:hidden;
-  font-family:var(--font);
-  background:var(--bg);color:var(--text);
-  touch-action:none;-webkit-user-select:none;user-select:none;
-  -webkit-tap-highlight-color:transparent;
-}
+:root{--bg:#0a0a0f;--surface:#1a1a28;--text:#f0ece4;--text-dim:#888;--accent:#e8b84b;--radius:10px;--gap:4px;--font:'Inter',sans-serif;--glow:none}
+html,body{width:100%;height:100%;overflow:hidden;font-family:var(--font);background:var(--bg);color:var(--text);touch-action:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
 body{display:flex;flex-direction:column;align-items:center;height:100dvh;overflow-y:auto;overflow-x:hidden}
 
-/* Ambient background */
-.ambient{
-  position:fixed;inset:0;pointer-events:none;z-index:0;
-  background:
-    radial-gradient(ellipse at 20% 0%,rgba(232,184,75,.06),transparent 50%),
-    radial-gradient(ellipse at 80% 100%,rgba(100,60,200,.04),transparent 50%),
-    var(--bg);
-}
+.ambient{position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse at 20% 0%,rgba(232,184,75,.06),transparent 50%),radial-gradient(ellipse at 80% 100%,rgba(100,60,200,.04),transparent 50%),var(--bg)}
+.app{position:relative;z-index:1;width:100%;max-width:480px;display:flex;flex-direction:column;align-items:center;padding:12px 16px env(safe-area-inset-bottom,12px);min-height:100dvh}
 
-.app{
-  position:relative;z-index:1;
-  width:100%;max-width:480px;
-  display:flex;flex-direction:column;align-items:center;
-  padding:12px 16px env(safe-area-inset-bottom,12px);
-  min-height:100dvh;
-}
-
-/* Header */
-.logo{
-  font-family:'Playfair Display',serif;
-  font-weight:900;font-size:1.6rem;
-  letter-spacing:-.02em;
-  background:linear-gradient(135deg,var(--accent),#f5d78e,var(--accent));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-  background-clip:text;
-  margin-top:8px;
-}
+.logo{font-family:'Playfair Display',serif;font-weight:900;font-size:1.6rem;letter-spacing:-.02em;background:linear-gradient(135deg,var(--accent),#f5d78e,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-top:8px}
 .logo-sub{font-size:.7rem;color:var(--text-dim);letter-spacing:.15em;text-transform:uppercase;margin-top:2px}
 
-/* Stats bar */
-.stats{
-  display:flex;gap:0;width:100%;
-  margin-top:14px;
-  background:var(--surface);border-radius:14px;
-  overflow:hidden;
-  border:1px solid rgba(255,255,255,.04);
-}
-.stat{
-  flex:1;text-align:center;padding:10px 4px;
-  border-right:1px solid rgba(255,255,255,.04);
-}
+.stats{display:flex;width:100%;margin-top:14px;background:var(--surface);border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,.04)}
+.stat{flex:1;text-align:center;padding:10px 4px;border-right:1px solid rgba(255,255,255,.04)}
 .stat:last-child{border-right:none}
 .stat-val{font-family:'Space Mono',monospace;font-weight:700;font-size:1.15rem;color:var(--text)}
 .stat-lbl{font-size:.6rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;margin-top:2px}
 
-/* Controls row */
-.controls{
-  display:flex;gap:8px;width:100%;margin-top:12px;flex-wrap:wrap;justify-content:center;
-}
-.ctrl-group{
-  display:flex;gap:0;background:var(--surface);border-radius:10px;overflow:hidden;
-  border:1px solid rgba(255,255,255,.04);
-}
-.ctrl-btn{
-  background:none;border:none;color:var(--text-dim);
-  font-family:var(--font);font-size:.72rem;font-weight:600;
-  padding:8px 11px;cursor:pointer;
-  letter-spacing:.03em;text-transform:uppercase;
-  transition:all .15s;
-  border-right:1px solid rgba(255,255,255,.04);
-  white-space:nowrap;
-}
+.controls{display:flex;gap:8px;width:100%;margin-top:10px;flex-wrap:wrap;justify-content:center}
+.ctrl-group{display:flex;background:var(--surface);border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,.04)}
+.ctrl-btn{background:none;border:none;color:var(--text-dim);font-family:var(--font);font-size:.7rem;font-weight:600;padding:8px 10px;cursor:pointer;letter-spacing:.03em;text-transform:uppercase;transition:all .15s;border-right:1px solid rgba(255,255,255,.04);white-space:nowrap}
 .ctrl-btn:last-child{border-right:none}
 .ctrl-btn:hover,.ctrl-btn.active{background:rgba(232,184,75,.12);color:var(--accent)}
 .ctrl-btn.active{box-shadow:inset 0 -2px 0 var(--accent)}
-
-.icon-btn{
-  background:var(--surface);border:1px solid rgba(255,255,255,.04);border-radius:10px;
-  color:var(--text-dim);width:38px;height:38px;
-  display:flex;align-items:center;justify-content:center;
-  cursor:pointer;font-size:1.1rem;transition:all .15s;
-}
+.icon-btn{background:var(--surface);border:1px solid rgba(255,255,255,.04);border-radius:10px;color:var(--text-dim);width:38px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.1rem;transition:all .15s}
 .icon-btn:hover{background:rgba(232,184,75,.12);color:var(--accent)}
 
-/* Board */
-.board-wrap{
-  flex:1;display:flex;align-items:center;justify-content:center;
-  width:100%;margin-top:10px;
-  min-height:0;
-}
-.board{
-  position:relative;
-  width:min(92vw, 440px);
-  aspect-ratio:1;
-  background:var(--surface);
-  border-radius:16px;
-  padding:var(--gap);
-  border:1px solid rgba(255,255,255,.04);
-  box-shadow:0 8px 40px rgba(0,0,0,.4);
-  overflow:hidden;
-}
+.board-wrap{flex:1;display:flex;align-items:center;justify-content:center;width:100%;margin-top:10px;min-height:0}
+.board{position:relative;width:min(92vw,440px);aspect-ratio:1;background:var(--surface);border-radius:16px;padding:var(--gap);border:1px solid rgba(255,255,255,.04);box-shadow:0 8px 40px rgba(0,0,0,.4);overflow:hidden}
+.board::before{content:'';position:absolute;inset:0;border-radius:16px;background:var(--glow);pointer-events:none;z-index:0;opacity:.4}
 
-/* Board inner glow based on theme */
-.board::before{
-  content:'';position:absolute;inset:0;border-radius:16px;
-  background:var(--glow);pointer-events:none;z-index:0;opacity:.4;
-}
+/* ── TILE ── */
+.tile{position:absolute;display:flex;align-items:center;justify-content:center;border-radius:var(--radius);cursor:pointer;font-family:var(--font);font-weight:800;transition:left .15s cubic-bezier(.25,.46,.45,.94),top .15s cubic-bezier(.25,.46,.45,.94),box-shadow .15s;z-index:1;will-change:left,top;-webkit-tap-highlight-color:transparent;overflow:hidden}
+.tile:active{filter:brightness(.88)!important}
+.tile.empty{opacity:0;pointer-events:none}
+.tile-base,.tile-grain,.tile-shine,.tile-edge,.tile-noise{position:absolute;inset:0;border-radius:inherit;pointer-events:none}
+.tile-num{position:relative;z-index:5;pointer-events:none}
+.tile-correct-dot{position:absolute;bottom:4px;right:4px;width:6px;height:6px;border-radius:50%;background:rgba(100,220,100,.7);opacity:0;transition:opacity .3s;box-shadow:0 0 4px rgba(100,220,100,.4);z-index:6}
+.tile.correct .tile-correct-dot{opacity:1}
 
-.tile{
-  position:absolute;
-  display:flex;align-items:center;justify-content:center;
-  border-radius:var(--radius);
-  background:var(--tile-bg);
-  color:var(--tile-text);
-  font-family:var(--font-tile);
-  font-weight:800;
-  cursor:pointer;
-  transition:transform .15s cubic-bezier(.25,.46,.45,.94), box-shadow .15s, opacity .2s;
-  box-shadow:var(--tile-shadow);
-  z-index:1;
-  will-change:transform;
-  -webkit-tap-highlight-color:transparent;
+/* ═════════════════════════════════
+   LEGNO — rich wood with grain
+   ═════════════════════════════════ */
+.theme-legno{--surface:#1e130a;--glow:radial-gradient(circle,rgba(180,120,60,.12),transparent 70%)}
+.theme-legno .tile{box-shadow:0 3px 8px rgba(20,8,0,.7),0 1px 0 rgba(255,210,160,.1) inset}
+.theme-legno .tile-base{background:linear-gradient(168deg,#d4a06e 0%,#bf8a56 18%,#a87040 38%,#c08a58 52%,#b47848 68%,#c89868 85%,#d4a878 100%)}
+.theme-legno .tile-grain{
+  background:
+    repeating-linear-gradient(174deg,transparent 0px,transparent 2.5px,rgba(70,30,5,.14) 2.5px,rgba(70,30,5,.14) 3.5px,transparent 3.5px,transparent 7px),
+    repeating-linear-gradient(176deg,transparent 0px,transparent 6px,rgba(50,20,0,.08) 6px,rgba(50,20,0,.08) 7px,transparent 7px,transparent 16px),
+    repeating-linear-gradient(171deg,transparent 0px,transparent 12px,rgba(90,45,10,.06) 12px,rgba(90,45,10,.06) 13px,transparent 13px,transparent 28px);
+  mix-blend-mode:multiply;
 }
-.tile::before{
-  content:'';position:absolute;inset:0;border-radius:var(--radius);
-  background:var(--tile-shine);pointer-events:none;
+.theme-legno .tile-noise{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.06'/%3E%3C/svg%3E");
+  mix-blend-mode:overlay;
 }
-.tile::after{
-  content:'';position:absolute;inset:0;border-radius:var(--radius);
-  border:1px solid var(--tile-border);pointer-events:none;
-}
-.tile:active{transform:scale(.96)!important;box-shadow:0 2px 8px rgba(0,0,0,.3)!important}
-.tile.correct{box-shadow:var(--tile-shadow),inset 0 0 0 2px rgba(100,200,100,.3)}
+.theme-legno .tile-shine{background:linear-gradient(135deg,rgba(255,230,190,.28) 0%,rgba(255,230,190,.05) 30%,transparent 50%,rgba(0,0,0,.1) 100%)}
+.theme-legno .tile-edge{border:1px solid rgba(50,22,5,.3);border-top-color:rgba(255,210,170,.18);border-left-color:rgba(255,210,170,.12)}
+.theme-legno .tile-num{color:#321605;text-shadow:0 1px 0 rgba(255,200,150,.5)}
 
-.tile.empty{opacity:0;pointer-events:none;box-shadow:none}
-
-/* Win state */
-.win-overlay{
-  position:fixed;inset:0;z-index:100;
-  display:flex;align-items:center;justify-content:center;
-  background:rgba(0,0,0,.7);backdrop-filter:blur(8px);
-  opacity:0;pointer-events:none;transition:opacity .4s;
+/* ═════════════════════════════════
+   MARMO — white marble with veins
+   ═════════════════════════════════ */
+.theme-marmo{--surface:#18181e;--glow:radial-gradient(circle,rgba(220,220,240,.06),transparent 70%)}
+.theme-marmo .tile{box-shadow:0 4px 14px rgba(0,0,0,.25),0 1px 0 rgba(255,255,255,.5) inset}
+.theme-marmo .tile-base{background:linear-gradient(155deg,#f2efea 0%,#e9e5dd 25%,#ddd9d0 50%,#e5e1d9 75%,#f0ede8 100%)}
+.theme-marmo .tile-grain{
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='turbulence' baseFrequency='.012,.035' numOctaves='5' seed='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23m)' opacity='.18'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='v'%3E%3CfeTurbulence type='turbulence' baseFrequency='.025,.008' numOctaves='3' seed='12'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23v)' opacity='.1'/%3E%3C/svg%3E");
+  mix-blend-mode:multiply;
 }
+.theme-marmo .tile-noise{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E");
+  mix-blend-mode:soft-light;
+}
+.theme-marmo .tile-shine{background:linear-gradient(130deg,rgba(255,255,255,.55) 0%,rgba(255,255,255,.1) 25%,transparent 50%,rgba(0,0,0,.03) 100%)}
+.theme-marmo .tile-edge{border:1px solid rgba(210,205,195,.7);border-bottom-color:rgba(140,135,125,.35);border-right-color:rgba(140,135,125,.35)}
+.theme-marmo .tile-num{color:#2a2826;text-shadow:0 1px 0 rgba(255,255,255,.7)}
+
+/* ═════════════════════════════════
+   METALLO — brushed steel
+   ═════════════════════════════════ */
+.theme-metallo{--surface:#0e0e16;--glow:radial-gradient(circle,rgba(160,160,220,.06),transparent 70%)}
+.theme-metallo .tile{box-shadow:0 3px 10px rgba(0,0,0,.55),0 1px 0 rgba(255,255,255,.2) inset}
+.theme-metallo .tile-base{background:linear-gradient(175deg,#a0a0b0 0%,#85858f 30%,#70707e 55%,#8a8a96 75%,#9898a6 100%)}
+.theme-metallo .tile-grain{
+  background:
+    repeating-linear-gradient(92deg,transparent 0px,transparent 1px,rgba(255,255,255,.04) 1px,rgba(255,255,255,.04) 2px),
+    repeating-linear-gradient(88deg,transparent 0px,transparent 2px,rgba(0,0,0,.05) 2px,rgba(0,0,0,.05) 3px),
+    repeating-linear-gradient(90deg,transparent 0px,transparent 4px,rgba(255,255,255,.02) 4px,rgba(255,255,255,.02) 5px);
+}
+.theme-metallo .tile-noise{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.05'/%3E%3C/svg%3E");
+  mix-blend-mode:overlay;
+}
+.theme-metallo .tile-shine{
+  background:
+    linear-gradient(160deg,rgba(255,255,255,.35) 0%,rgba(255,255,255,.08) 25%,transparent 45%,rgba(0,0,0,.08) 100%),
+    radial-gradient(ellipse at 35% 15%,rgba(255,255,255,.12),transparent 50%);
+}
+.theme-metallo .tile-edge{border:1px solid rgba(255,255,255,.12);border-bottom-color:rgba(0,0,0,.35);border-right-color:rgba(0,0,0,.25)}
+.theme-metallo .tile-num{color:#eeeef4;text-shadow:0 -1px 0 rgba(0,0,0,.5),0 1px 0 rgba(255,255,255,.2)}
+
+/* ═════════════════════════════════
+   NEON — cyberpunk glow
+   ═════════════════════════════════ */
+.theme-neon{--surface:#050510;--glow:radial-gradient(circle,rgba(0,255,255,.05),transparent 60%)}
+.theme-neon .board{border-color:rgba(0,255,255,.12);box-shadow:0 0 50px rgba(0,255,255,.06),0 8px 40px rgba(0,0,0,.5)}
+.theme-neon .tile{
+  box-shadow:0 0 14px rgba(0,255,255,.18),0 0 3px rgba(0,255,255,.5),0 0 40px rgba(0,255,255,.04) inset;
+  border:1px solid rgba(0,255,255,.28);
+}
+.theme-neon .tile-base{background:linear-gradient(145deg,#0c0c22 0%,#08081a 50%,#0a0a1e 100%)}
+.theme-neon .tile-grain{
+  background:
+    repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,255,255,.018) 3px,rgba(0,255,255,.018) 4px),
+    repeating-linear-gradient(90deg,transparent,transparent 3px,rgba(0,255,255,.012) 3px,rgba(0,255,255,.012) 4px);
+}
+.theme-neon .tile-shine{background:radial-gradient(ellipse at 30% 20%,rgba(0,255,255,.08),transparent 60%)}
+.theme-neon .tile-edge{border:none}
+.theme-neon .tile-num{color:#0ff;text-shadow:0 0 14px rgba(0,255,255,.9),0 0 5px rgba(0,255,255,.5),0 0 30px rgba(0,255,255,.2)}
+.theme-neon .tile.correct .tile-correct-dot{background:#0f0;box-shadow:0 0 8px #0f0}
+.theme-neon .logo{background:linear-gradient(135deg,#0ff,#f0f,#0ff);-webkit-background-clip:text;background-clip:text}
+.theme-neon .stat-val{color:#0ff}
+
+/* ═════════════════════════════════
+   VETRO — frosted glass
+   ═════════════════════════════════ */
+.theme-vetro{--surface:rgba(255,255,255,.035);--glow:radial-gradient(circle,rgba(255,255,255,.03),transparent 60%)}
+.theme-vetro .ambient{background:radial-gradient(ellipse at 30% 20%,rgba(120,80,200,.08),transparent 50%),radial-gradient(ellipse at 70% 80%,rgba(60,140,200,.06),transparent 50%),var(--bg)}
+.theme-vetro .board{background:rgba(255,255,255,.03);border-color:rgba(255,255,255,.08)}
+.theme-vetro .tile{box-shadow:0 4px 20px rgba(0,0,0,.22),0 1px 0 rgba(255,255,255,.18) inset;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.theme-vetro .tile-base{background:linear-gradient(145deg,rgba(255,255,255,.14),rgba(255,255,255,.04))}
+.theme-vetro .tile-grain{
+  background:
+    radial-gradient(ellipse at 25% 25%,rgba(255,255,255,.08),transparent 55%),
+    radial-gradient(ellipse at 75% 75%,rgba(255,255,255,.04),transparent 45%);
+}
+.theme-vetro .tile-noise{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.95' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.06'/%3E%3C/svg%3E");
+  mix-blend-mode:soft-light;
+}
+.theme-vetro .tile-shine{
+  background:
+    linear-gradient(130deg,rgba(255,255,255,.25) 0%,transparent 35%),
+    linear-gradient(310deg,rgba(255,255,255,.06) 0%,transparent 30%);
+}
+.theme-vetro .tile-edge{border:1px solid rgba(255,255,255,.14);border-bottom-color:rgba(255,255,255,.04);border-right-color:rgba(255,255,255,.04)}
+.theme-vetro .tile-num{color:rgba(255,255,255,.92);text-shadow:0 1px 4px rgba(0,0,0,.35)}
+
+/* ═════════════════════════════════
+   TERRACOTTA — aged clay
+   ═════════════════════════════════ */
+.theme-terracotta{--surface:#1a0e08;--glow:radial-gradient(circle,rgba(200,100,50,.1),transparent 70%)}
+.theme-terracotta .tile{box-shadow:0 3px 10px rgba(30,10,0,.65),0 1px 0 rgba(255,180,140,.08) inset}
+.theme-terracotta .tile-base{background:linear-gradient(158deg,#d07a52 0%,#c06a42 22%,#aa5530 48%,#b86540 70%,#c87858 90%,#d08860 100%)}
+.theme-terracotta .tile-grain{
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='c'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.5' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23c)' opacity='.1'/%3E%3C/svg%3E");
+  mix-blend-mode:multiply;
+}
+.theme-terracotta .tile-noise{
+  background:
+    radial-gradient(circle at 20% 30%,rgba(60,15,0,.15) 0%,transparent 28%),
+    radial-gradient(circle at 70% 60%,rgba(60,15,0,.1) 0%,transparent 22%),
+    radial-gradient(circle at 45% 80%,rgba(80,20,0,.08) 0%,transparent 18%),
+    radial-gradient(circle at 80% 15%,rgba(50,10,0,.06) 0%,transparent 15%);
+}
+.theme-terracotta .tile-shine{background:linear-gradient(135deg,rgba(255,200,160,.22) 0%,transparent 38%,transparent 65%,rgba(0,0,0,.1) 100%)}
+.theme-terracotta .tile-edge{border:1px solid rgba(50,15,0,.35);border-top-color:rgba(255,180,140,.12);border-left-color:rgba(255,180,140,.08)}
+.theme-terracotta .tile-num{color:#fff4ee;text-shadow:0 1px 2px rgba(50,12,0,.55)}
+
+/* ═════════════════════════════════
+   RESPONSIVE TILE FONTS
+   ═════════════════════════════════ */
+.grid-3 .tile{font-size:clamp(1.6rem,6vw,2.4rem);--radius:14px}
+.grid-4 .tile{font-size:clamp(1.3rem,5vw,2rem);--radius:12px}
+.grid-5 .tile{font-size:clamp(1rem,4vw,1.6rem);--radius:10px}
+.grid-6 .tile{font-size:clamp(.85rem,3vw,1.2rem);--radius:8px}
+.grid-7 .tile{font-size:clamp(.7rem,2.5vw,1rem);--radius:7px}
+
+@keyframes hintPulse{0%,100%{box-shadow:0 0 0 0 rgba(232,184,75,.6)}50%{box-shadow:0 0 0 8px rgba(232,184,75,0)}}
+.tile.hint{animation:hintPulse .8s ease 4}
+
+.win-overlay{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);opacity:0;pointer-events:none;transition:opacity .4s}
 .win-overlay.show{opacity:1;pointer-events:auto}
-.win-card{
-  text-align:center;
-  background:var(--surface);
-  border-radius:24px;padding:36px 32px;
-  border:1px solid rgba(232,184,75,.2);
-  box-shadow:0 20px 80px rgba(0,0,0,.6);
-  transform:scale(.8);transition:transform .4s cubic-bezier(.34,1.56,.64,1);
-  max-width:320px;width:90%;
-}
+.win-card{text-align:center;background:#1a1a28;border-radius:24px;padding:36px 32px;border:1px solid rgba(232,184,75,.2);box-shadow:0 20px 80px rgba(0,0,0,.6);transform:scale(.8);transition:transform .4s cubic-bezier(.34,1.56,.64,1);max-width:320px;width:90%}
 .win-overlay.show .win-card{transform:scale(1)}
 .win-emoji{font-size:3rem;margin-bottom:12px}
 .win-title{font-family:'Playfair Display',serif;font-weight:900;font-size:1.8rem;color:var(--accent)}
 .win-stats{margin-top:16px;font-size:.95rem;color:var(--text-dim);line-height:1.8}
 .win-stats strong{color:var(--text);font-weight:700}
-.win-btn{
-  margin-top:20px;
-  background:linear-gradient(135deg,var(--accent),#f5d78e);
-  color:#1a1a28;border:none;border-radius:12px;
-  font-family:var(--font);font-weight:700;font-size:.9rem;
-  padding:12px 32px;cursor:pointer;letter-spacing:.03em;
-  transition:transform .15s;
-}
+.win-btn{margin-top:20px;background:linear-gradient(135deg,var(--accent),#f5d78e);color:#1a1a28;border:none;border-radius:12px;font-family:var(--font);font-weight:700;font-size:.9rem;padding:12px 32px;cursor:pointer;letter-spacing:.03em;transition:transform .15s}
 .win-btn:hover{transform:scale(1.03)}
-
-/* Confetti canvas */
 #confetti{position:fixed;inset:0;z-index:99;pointer-events:none}
-
-/* Bottom credit */
-.credit{
-  font-size:.65rem;color:rgba(255,255,255,.2);
-  margin-top:10px;padding-bottom:8px;
-}
+.credit{font-size:.65rem;color:rgba(255,255,255,.2);margin-top:10px;padding-bottom:8px}
 .credit a{color:rgba(255,255,255,.3);text-decoration:none}
-
-/* Theme variations */
-.theme-legno{
-  --tile-bg:linear-gradient(145deg,#c9956b,#a0714a);
-  --tile-text:#3a1e0a;
-  --tile-border:rgba(255,255,255,.12);
-  --tile-shadow:0 4px 12px rgba(60,30,10,.5);
-  --tile-shine:linear-gradient(135deg,rgba(255,255,255,.2) 0%,transparent 40%);
-  --surface:#2a1a0e;
-  --glow:radial-gradient(circle at 50% 50%,rgba(180,120,60,.15),transparent 70%);
-}
-.theme-marmo{
-  --tile-bg:linear-gradient(145deg,#e8e4e0,#ccc7c0);
-  --tile-text:#2a2826;
-  --tile-border:rgba(255,255,255,.3);
-  --tile-shadow:0 4px 16px rgba(0,0,0,.25);
-  --tile-shine:linear-gradient(135deg,rgba(255,255,255,.5) 0%,transparent 50%);
-  --surface:#1e1e22;
-  --glow:radial-gradient(circle at 50% 50%,rgba(200,200,210,.08),transparent 70%);
-}
-.theme-metallo{
-  --tile-bg:linear-gradient(145deg,#8a8a96,#5a5a66);
-  --tile-text:#e8e8f0;
-  --tile-border:rgba(255,255,255,.15);
-  --tile-shadow:0 4px 16px rgba(0,0,0,.5);
-  --tile-shine:linear-gradient(135deg,rgba(255,255,255,.3) 0%,transparent 35%);
-  --surface:#15151e;
-  --glow:radial-gradient(circle at 50% 50%,rgba(150,150,200,.08),transparent 70%);
-}
-.theme-neon{
-  --tile-bg:linear-gradient(145deg,#1a1a2e,#16162a);
-  --tile-text:#0ff;
-  --tile-border:rgba(0,255,255,.25);
-  --tile-shadow:0 4px 20px rgba(0,255,255,.15),0 0 1px rgba(0,255,255,.5);
-  --tile-shine:linear-gradient(135deg,rgba(0,255,255,.1) 0%,transparent 50%);
-  --surface:#0a0a18;
-  --glow:radial-gradient(circle at 50% 50%,rgba(0,255,255,.06),transparent 60%);
-}
-.theme-vetro{
-  --tile-bg:linear-gradient(145deg,rgba(255,255,255,.12),rgba(255,255,255,.04));
-  --tile-text:rgba(255,255,255,.9);
-  --tile-border:rgba(255,255,255,.15);
-  --tile-shadow:0 4px 20px rgba(0,0,0,.3);
-  --tile-shine:linear-gradient(135deg,rgba(255,255,255,.2) 0%,transparent 40%);
-  --surface:rgba(255,255,255,.03);
-  --glow:radial-gradient(circle at 50% 50%,rgba(255,255,255,.04),transparent 60%);
-}
-.theme-terracotta{
-  --tile-bg:linear-gradient(145deg,#c4704a,#a85835);
-  --tile-text:#fff5ee;
-  --tile-border:rgba(255,255,255,.1);
-  --tile-shadow:0 4px 14px rgba(80,30,10,.5);
-  --tile-shine:linear-gradient(135deg,rgba(255,255,255,.15) 0%,transparent 40%);
-  --surface:#2e1810;
-  --glow:radial-gradient(circle at 50% 50%,rgba(200,100,50,.12),transparent 70%);
-}
-
-/* Neon special: text glow */
-.theme-neon .tile{text-shadow:0 0 10px rgba(0,255,255,.6)}
-.theme-neon .logo{background:linear-gradient(135deg,#0ff,#f0f,#0ff);-webkit-background-clip:text;background-clip:text}
-.theme-neon .stat-val{color:#0ff}
-
-/* Responsive font sizes for tiles */
-.grid-3 .tile{font-size:clamp(1.6rem,6vw,2.4rem)}
-.grid-4 .tile{font-size:clamp(1.3rem,5vw,2rem)}
-.grid-5 .tile{font-size:clamp(1rem,4vw,1.6rem)}
-.grid-6 .tile{font-size:clamp(.8rem,3vw,1.2rem)}
-.grid-7 .tile{font-size:clamp(.65rem,2.5vw,1rem)}
-
-/* Shuffle animation */
-@keyframes shufflePop{
-  0%{transform:scale(1)}
-  50%{transform:scale(.85)}
-  100%{transform:scale(1)}
-}
-.shuffling .tile{animation:shufflePop .12s ease}
-
-/* Hint pulse */
-@keyframes hintPulse{
-  0%,100%{box-shadow:var(--tile-shadow),0 0 0 0 rgba(232,184,75,.5)}
-  50%{box-shadow:var(--tile-shadow),0 0 0 6px rgba(232,184,75,0)}
-}
-.tile.hint{animation:hintPulse 1s ease 3}
 </style>
 </head>
 <body>
@@ -295,14 +214,12 @@ body{display:flex;flex-direction:column;align-items:center;height:100dvh;overflo
   <div class="logo">Slide Master</div>
   <div class="logo-sub">Sliding Puzzle</div>
 
-  <!-- Stats -->
   <div class="stats">
     <div class="stat"><div class="stat-val" id="sMoves">0</div><div class="stat-lbl">Mosse</div></div>
     <div class="stat"><div class="stat-val" id="sTime">0:00</div><div class="stat-lbl">Tempo</div></div>
     <div class="stat"><div class="stat-val" id="sBest">--</div><div class="stat-lbl">Record</div></div>
   </div>
 
-  <!-- Grid size -->
   <div class="controls">
     <div class="ctrl-group" id="gridBtns">
       <button class="ctrl-btn" data-n="3">3&times;3</button>
@@ -313,7 +230,6 @@ body{display:flex;flex-direction:column;align-items:center;height:100dvh;overflo
     </div>
   </div>
 
-  <!-- Theme + actions -->
   <div class="controls">
     <div class="ctrl-group" id="themeBtns">
       <button class="ctrl-btn active" data-t="legno">Legno</button>
@@ -327,7 +243,6 @@ body{display:flex;flex-direction:column;align-items:center;height:100dvh;overflo
     <button class="icon-btn" id="btnShuffle" title="Rimescola">🔀</button>
   </div>
 
-  <!-- Board -->
   <div class="board-wrap">
     <div class="board grid-5" id="board"></div>
   </div>
@@ -335,7 +250,6 @@ body{display:flex;flex-direction:column;align-items:center;height:100dvh;overflo
   <div class="credit"><a href="https://cad3d.expert" target="_blank">CAD3D.Expert</a></div>
 </div>
 
-<!-- Win overlay -->
 <div class="win-overlay" id="winOverlay">
   <div class="win-card">
     <div class="win-emoji" id="winEmoji">🏆</div>
@@ -348,401 +262,139 @@ body{display:flex;flex-direction:column;align-items:center;height:100dvh;overflo
 <script>
 (()=>{
 'use strict';
+let N=5,tiles=[],moves=0,timerStart=0,timerInterval=null,running=false,currentTheme='legno';
+const $=id=>document.getElementById(id);
+const board=$('board'),sMoves=$('sMoves'),sTime=$('sTime'),sBest=$('sBest');
 
-/* ─── State ─── */
-let N = 5;
-let tiles = [];       // flat array, index = position, value = tile number (0 = empty)
-let moves = 0;
-let timerStart = 0;
-let timerInterval = null;
-let running = false;
-let currentTheme = 'legno';
-
-const $ = id => document.getElementById(id);
-const board = $('board');
-const sMoves = $('sMoves');
-const sTime = $('sTime');
-const sBest = $('sBest');
-
-/* ─── Init ─── */
 function init(size){
-  N = size || N;
-  clearInterval(timerInterval);
-  running = false;
-  moves = 0;
-  timerStart = 0;
-  sMoves.textContent = '0';
-  sTime.textContent = '0:00';
-
-  // Update grid class
-  board.className = 'board grid-' + N;
-
-  // Create solved state
-  tiles = [];
-  for(let i = 1; i < N*N; i++) tiles.push(i);
-  tiles.push(0);
-
-  // Shuffle
-  shuffle(200 + N * 80);
-
-  loadBest();
-  renderBoard();
+  N=size||N;clearInterval(timerInterval);running=false;moves=0;timerStart=0;
+  sMoves.textContent='0';sTime.textContent='0:00';
+  board.className='board grid-'+N;
+  tiles=[];for(let i=1;i<N*N;i++) tiles.push(i);tiles.push(0);
+  shuffle(200+N*80);loadBest();renderBoard();
 }
 
-/* ─── Shuffle (valid moves only) ─── */
 function shuffle(count){
-  let last = -1;
-  for(let i = 0; i < count; i++){
-    const ei = tiles.indexOf(0);
-    const er = Math.floor(ei / N), ec = ei % N;
-    const dirs = [];
-    if(er > 0) dirs.push(-N);
-    if(er < N-1) dirs.push(N);
-    if(ec > 0) dirs.push(-1);
-    if(ec < N-1) dirs.push(1);
-    // Don't reverse last move
-    const filtered = dirs.filter(d => d !== -last);
-    const d = filtered[Math.floor(Math.random() * filtered.length)];
-    [tiles[ei], tiles[ei+d]] = [tiles[ei+d], tiles[ei]];
-    last = d;
+  let last=-1;
+  for(let i=0;i<count;i++){
+    const ei=tiles.indexOf(0),er=Math.floor(ei/N),ec=ei%N,dirs=[];
+    if(er>0)dirs.push(-N);if(er<N-1)dirs.push(N);if(ec>0)dirs.push(-1);if(ec<N-1)dirs.push(1);
+    const f=dirs.filter(d=>d!==-last);
+    const d=f[Math.floor(Math.random()*f.length)];
+    [tiles[ei],tiles[ei+d]]=[tiles[ei+d],tiles[ei]];last=d;
   }
 }
 
-/* ─── Render ─── */
 function renderBoard(){
-  board.innerHTML = '';
-  const gap = 4;
-  const boardSize = board.clientWidth || 300;
-  const tileSize = (boardSize - gap * (N + 1)) / N;
-
-  tiles.forEach((val, idx) => {
-    if(val === 0) return; // skip empty
-    const row = Math.floor(idx / N);
-    const col = idx % N;
-    const el = document.createElement('div');
-    el.className = 'tile';
-    if(val === idx + 1) el.classList.add('correct');
-    el.dataset.val = val;
-    el.textContent = val;
-    el.style.width = tileSize + 'px';
-    el.style.height = tileSize + 'px';
-    el.style.left = (gap + col * (tileSize + gap)) + 'px';
-    el.style.top = (gap + row * (tileSize + gap)) + 'px';
-    el.style.background = 'var(--tile-bg)';
-    el.style.lineHeight = tileSize + 'px';
+  board.innerHTML='';
+  const gap=4,bw=board.clientWidth||300,ts=(bw-gap*(N+1))/N;
+  tiles.forEach((v,i)=>{
+    if(v===0)return;
+    const r=Math.floor(i/N),c=i%N;
+    const el=document.createElement('div');
+    el.className='tile';if(v===i+1)el.classList.add('correct');
+    el.dataset.val=v;
+    el.innerHTML=`<div class="tile-base"></div><div class="tile-grain"></div><div class="tile-noise"></div><div class="tile-shine"></div><div class="tile-edge"></div><span class="tile-num">${v}</span><div class="tile-correct-dot"></div>`;
+    el.style.width=ts+'px';el.style.height=ts+'px';
+    el.style.left=(gap+c*(ts+gap))+'px';el.style.top=(gap+r*(ts+gap))+'px';
+    // Subtle per-tile variation for organic feel
+    const hueShift=((v*13)%11)-5;
+    const brightShift=1+((v*7)%9-4)/120;
+    el.style.filter=`hue-rotate(${hueShift}deg) brightness(${brightShift})`;
     board.appendChild(el);
   });
 }
 
-/* ─── Position a single tile ─── */
-function positionTile(el, idx){
-  const gap = 4;
-  const boardSize = board.clientWidth || 300;
-  const tileSize = (boardSize - gap * (N + 1)) / N;
-  const row = Math.floor(idx / N);
-  const col = idx % N;
-  el.style.left = (gap + col * (tileSize + gap)) + 'px';
-  el.style.top = (gap + row * (tileSize + gap)) + 'px';
+function positionTile(el,idx){
+  const gap=4,bw=board.clientWidth||300,ts=(bw-gap*(N+1))/N;
+  const r=Math.floor(idx/N),c=idx%N;
+  el.style.left=(gap+c*(ts+gap))+'px';el.style.top=(gap+r*(ts+gap))+'px';
 }
 
-/* ─── Move tile ─── */
 function tryMove(val){
-  const ti = tiles.indexOf(val);
-  const ei = tiles.indexOf(0);
-  const tr = Math.floor(ti / N), tc = ti % N;
-  const er = Math.floor(ei / N), ec = ei % N;
-
-  // Must be adjacent
-  const adjacent = (tr === er && Math.abs(tc - ec) === 1) ||
-                   (tc === ec && Math.abs(tr - er) === 1);
-  if(!adjacent) return false;
-
-  // Swap
-  [tiles[ti], tiles[ei]] = [tiles[ei], tiles[ti]];
-
-  // Start timer on first move
-  if(!running){
-    running = true;
-    timerStart = Date.now();
-    timerInterval = setInterval(updateTimer, 100);
-  }
-
-  moves++;
-  sMoves.textContent = moves;
-
-  // Haptic
-  if(navigator.vibrate) navigator.vibrate(10);
-
-  // Animate
-  const tileEl = board.querySelector(`[data-val="${val}"]`);
-  if(tileEl){
-    positionTile(tileEl, ei); // move to empty position
-    // Update correct class
-    if(val === ei + 1) tileEl.classList.add('correct');
-    else tileEl.classList.remove('correct');
-  }
-
-  // Check win
-  if(checkWin()){
-    clearInterval(timerInterval);
-    running = false;
-    setTimeout(showWin, 300);
-  }
-
+  const ti=tiles.indexOf(val),ei=tiles.indexOf(0);
+  const tr=Math.floor(ti/N),tc=ti%N,er=Math.floor(ei/N),ec=ei%N;
+  if(!((tr===er&&Math.abs(tc-ec)===1)||(tc===ec&&Math.abs(tr-er)===1)))return false;
+  [tiles[ti],tiles[ei]]=[tiles[ei],tiles[ti]];
+  if(!running){running=true;timerStart=Date.now();timerInterval=setInterval(updateTimer,100)}
+  moves++;sMoves.textContent=moves;
+  if(navigator.vibrate)navigator.vibrate(12);
+  const tel=board.querySelector(`[data-val="${val}"]`);
+  if(tel){positionTile(tel,ei);if(val===ei+1)tel.classList.add('correct');else tel.classList.remove('correct')}
+  if(checkWin()){clearInterval(timerInterval);running=false;setTimeout(showWin,300)}
   return true;
 }
 
-/* ─── Check win ─── */
-function checkWin(){
-  for(let i = 0; i < N*N - 1; i++){
-    if(tiles[i] !== i + 1) return false;
-  }
-  return true;
-}
+function checkWin(){for(let i=0;i<N*N-1;i++)if(tiles[i]!==i+1)return false;return true}
+function updateTimer(){const e=Math.floor((Date.now()-timerStart)/1000);sTime.textContent=Math.floor(e/60)+':'+String(e%60).padStart(2,'0')}
+function getElapsed(){return Math.floor((Date.now()-timerStart)/1000)}
+function bestKey(){return'slide_best_'+N}
+function loadBest(){try{const b=localStorage.getItem(bestKey());sBest.textContent=b||'--'}catch(e){sBest.textContent='--'}}
+function saveBest(m){try{const p=parseInt(localStorage.getItem(bestKey()));if(!p||m<p){localStorage.setItem(bestKey(),m);sBest.textContent=m;return true}}catch(e){}return false}
 
-/* ─── Timer ─── */
-function updateTimer(){
-  const elapsed = Math.floor((Date.now() - timerStart) / 1000);
-  const m = Math.floor(elapsed / 60);
-  const s = elapsed % 60;
-  sTime.textContent = m + ':' + String(s).padStart(2,'0');
-}
-
-function getElapsed(){
-  return Math.floor((Date.now() - timerStart) / 1000);
-}
-
-/* ─── Best scores ─── */
-function bestKey(){ return 'slide_best_' + N; }
-function loadBest(){
-  try{
-    const b = localStorage.getItem(bestKey());
-    sBest.textContent = b ? b : '--';
-  } catch(e){ sBest.textContent = '--'; }
-}
-function saveBest(movesVal){
-  try{
-    const prev = parseInt(localStorage.getItem(bestKey()));
-    if(!prev || movesVal < prev){
-      localStorage.setItem(bestKey(), movesVal);
-      sBest.textContent = movesVal;
-      return true;
-    }
-  } catch(e){}
-  return false;
-}
-
-/* ─── Win ─── */
 function showWin(){
-  const elapsed = getElapsed();
-  const m = Math.floor(elapsed / 60);
-  const s = elapsed % 60;
-  const isRecord = saveBest(moves);
-  loadBest();
-
-  const emoji = isRecord ? '🏆' : (moves < N*N*3 ? '🌟' : '✨');
-  const title = isRecord ? 'Nuovo Record!' : 'Risolto!';
-
-  $('winEmoji').textContent = emoji;
-  $('winTitle').textContent = title;
-  $('winStats').innerHTML =
-    `<strong>${moves}</strong> mosse in <strong>${m}:${String(s).padStart(2,'0')}</strong><br>` +
-    `Griglia ${N}&times;${N}` +
-    (isRecord ? '<br><span style="color:var(--accent)">Miglior risultato!</span>' : '');
-
+  const e=getElapsed(),m=Math.floor(e/60),s=e%60,isR=saveBest(moves);loadBest();
+  $('winEmoji').textContent=isR?'🏆':moves<N*N*3?'🌟':'✨';
+  $('winTitle').textContent=isR?'Nuovo Record!':'Risolto!';
+  $('winStats').innerHTML=`<strong>${moves}</strong> mosse in <strong>${m}:${String(s).padStart(2,'0')}</strong><br>Griglia ${N}&times;${N}`+(isR?'<br><span style="color:var(--accent)">Miglior risultato!</span>':'');
   $('winOverlay').classList.add('show');
-  if(navigator.vibrate) navigator.vibrate([50,50,50,50,200]);
+  if(navigator.vibrate)navigator.vibrate([50,50,50,50,200]);
   launchConfetti();
 }
 
-/* ─── Confetti ─── */
 function launchConfetti(){
-  const canvas = $('confetti');
-  const ctx = canvas.getContext('2d');
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  const particles = [];
-  const colors = ['#e8b84b','#f5d78e','#ff6b6b','#4ecdc4','#a855f7','#f97316','#06b6d4','#fff'];
-  for(let i = 0; i < 120; i++){
-    particles.push({
-      x: canvas.width * .5 + (Math.random()-.5) * 100,
-      y: canvas.height * .4,
-      vx: (Math.random()-.5) * 14,
-      vy: -Math.random() * 16 - 4,
-      w: 4 + Math.random() * 6,
-      h: 6 + Math.random() * 10,
-      color: colors[Math.floor(Math.random()*colors.length)],
-      rot: Math.random()*360,
-      rv: (Math.random()-.5)*12,
-      gravity: .25 + Math.random()*.1,
-      life: 1
-    });
-  }
-  let frame;
-  function animate(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    let alive = false;
-    for(const p of particles){
-      if(p.life <= 0) continue;
-      alive = true;
-      p.x += p.vx;
-      p.y += p.vy;
-      p.vy += p.gravity;
-      p.vx *= .99;
-      p.rot += p.rv;
-      p.life -= .006;
-      ctx.save();
-      ctx.translate(p.x, p.y);
-      ctx.rotate(p.rot * Math.PI/180);
-      ctx.globalAlpha = Math.max(0, p.life);
-      ctx.fillStyle = p.color;
-      ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
-      ctx.restore();
-    }
-    if(alive) frame = requestAnimationFrame(animate);
-    else ctx.clearRect(0,0,canvas.width,canvas.height);
-  }
-  animate();
+  const c=$('confetti'),ctx=c.getContext('2d');c.width=innerWidth;c.height=innerHeight;
+  const P=[],cols=['#e8b84b','#f5d78e','#ff6b6b','#4ecdc4','#a855f7','#f97316','#06b6d4','#fff'];
+  for(let i=0;i<120;i++)P.push({x:c.width*.5+(Math.random()-.5)*100,y:c.height*.4,vx:(Math.random()-.5)*14,vy:-Math.random()*16-4,w:4+Math.random()*6,h:6+Math.random()*10,color:cols[Math.floor(Math.random()*cols.length)],rot:Math.random()*360,rv:(Math.random()-.5)*12,g:.25+Math.random()*.1,life:1});
+  !function draw(){ctx.clearRect(0,0,c.width,c.height);let alive=false;for(const p of P){if(p.life<=0)continue;alive=true;p.x+=p.vx;p.y+=p.vy;p.vy+=p.g;p.vx*=.99;p.rot+=p.rv;p.life-=.006;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);ctx.globalAlpha=Math.max(0,p.life);ctx.fillStyle=p.color;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore()}if(alive)requestAnimationFrame(draw);else ctx.clearRect(0,0,c.width,c.height)}();
 }
 
-/* ─── Hint ─── */
 function showHint(){
-  // Find first tile not in correct position
-  for(let i = 0; i < N*N - 1; i++){
-    if(tiles[i] !== i + 1){
-      const val = i + 1;
-      const el = board.querySelector(`[data-val="${val}"]`);
-      if(el){
-        el.classList.remove('hint');
-        void el.offsetWidth; // reflow
-        el.classList.add('hint');
-        setTimeout(()=> el.classList.remove('hint'), 3000);
-      }
-      break;
-    }
-  }
+  for(let i=0;i<N*N-1;i++){if(tiles[i]!==i+1){
+    const el=board.querySelector(`[data-val="${i+1}"]`);
+    if(el){el.classList.remove('hint');void el.offsetWidth;el.classList.add('hint');setTimeout(()=>el.classList.remove('hint'),3200)}break;
+  }}
 }
 
-/* ─── Theme ─── */
 function setTheme(t){
-  currentTheme = t;
-  document.body.className = '';
-  document.body.classList.add('theme-' + t);
-  // Update theme buttons
-  document.querySelectorAll('#themeBtns .ctrl-btn').forEach(b => {
-    b.classList.toggle('active', b.dataset.t === t);
-  });
-  try{ localStorage.setItem('slide_theme', t); } catch(e){}
+  currentTheme=t;document.body.className='theme-'+t;
+  document.querySelectorAll('#themeBtns .ctrl-btn').forEach(b=>b.classList.toggle('active',b.dataset.t===t));
+  try{localStorage.setItem('slide_theme',t)}catch(e){}
+  renderBoard();
 }
 
-/* ─── Input handling ─── */
-let touchStartX, touchStartY, touchTile;
-
-board.addEventListener('pointerdown', e => {
-  const tile = e.target.closest('.tile');
-  if(!tile) return;
-  touchStartX = e.clientX;
-  touchStartY = e.clientY;
-  touchTile = parseInt(tile.dataset.val);
-  e.preventDefault();
+/* ─── Input ─── */
+let sx,sy,st;
+board.addEventListener('pointerdown',e=>{const t=e.target.closest('.tile');if(!t)return;sx=e.clientX;sy=e.clientY;st=parseInt(t.dataset.val);e.preventDefault()});
+board.addEventListener('pointerup',e=>{
+  if(st==null)return;
+  const dx=e.clientX-sx,dy=e.clientY-sy,dist=Math.sqrt(dx*dx+dy*dy);
+  if(dist<10){tryMove(st)}
+  else{const ei=tiles.indexOf(0),er=Math.floor(ei/N),ec=ei%N;let ti=-1;
+    if(Math.abs(dx)>Math.abs(dy)){if(dx>0&&ec>0)ti=ei-1;else if(dx<0&&ec<N-1)ti=ei+1}
+    else{if(dy>0&&er>0)ti=ei-N;else if(dy<0&&er<N-1)ti=ei+N}
+    if(ti>=0&&tiles[ti]!==0)tryMove(tiles[ti])}
+  st=null;
+});
+document.addEventListener('keydown',e=>{
+  const ei=tiles.indexOf(0),er=Math.floor(ei/N),ec=ei%N;let ti=-1;
+  if(e.key==='ArrowUp'&&er<N-1)ti=ei+N;if(e.key==='ArrowDown'&&er>0)ti=ei-N;
+  if(e.key==='ArrowLeft'&&ec<N-1)ti=ei+1;if(e.key==='ArrowRight'&&ec>0)ti=ei-1;
+  if(ti>=0){e.preventDefault();tryMove(tiles[ti])}
 });
 
-board.addEventListener('pointerup', e => {
-  if(touchTile == null) return;
-  const dx = e.clientX - touchStartX;
-  const dy = e.clientY - touchStartY;
-  const dist = Math.sqrt(dx*dx + dy*dy);
+$('gridBtns').addEventListener('click',e=>{const b=e.target.closest('.ctrl-btn');if(!b)return;document.querySelectorAll('#gridBtns .ctrl-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');init(parseInt(b.dataset.n))});
+$('themeBtns').addEventListener('click',e=>{const b=e.target.closest('.ctrl-btn');if(!b)return;setTheme(b.dataset.t)});
+$('btnShuffle').addEventListener('click',()=>init(N));
+$('btnHint').addEventListener('click',showHint);
+$('winBtn').addEventListener('click',()=>{$('winOverlay').classList.remove('show');init(N)});
+$('winOverlay').addEventListener('click',e=>{if(e.target===$('winOverlay')){$('winOverlay').classList.remove('show');init(N)}});
 
-  if(dist < 10){
-    // Tap: just try to move clicked tile
-    tryMove(touchTile);
-  } else {
-    // Swipe: determine direction and move the tile that should slide into empty space
-    const ei = tiles.indexOf(0);
-    const er = Math.floor(ei / N), ec = ei % N;
-    let targetIdx = -1;
+let rTO;window.addEventListener('resize',()=>{clearTimeout(rTO);rTO=setTimeout(renderBoard,100)});
 
-    if(Math.abs(dx) > Math.abs(dy)){
-      // Horizontal swipe
-      if(dx > 0 && ec > 0) targetIdx = ei - 1;      // swipe right: tile left of empty moves right
-      else if(dx < 0 && ec < N-1) targetIdx = ei + 1; // swipe left: tile right of empty moves left
-    } else {
-      // Vertical swipe
-      if(dy > 0 && er > 0) targetIdx = ei - N;       // swipe down: tile above empty moves down
-      else if(dy < 0 && er < N-1) targetIdx = ei + N; // swipe up: tile below empty moves up
-    }
-    if(targetIdx >= 0 && tiles[targetIdx] !== 0){
-      tryMove(tiles[targetIdx]);
-    }
-  }
-  touchTile = null;
-});
-
-// Keyboard support
-document.addEventListener('keydown', e => {
-  const ei = tiles.indexOf(0);
-  const er = Math.floor(ei / N), ec = ei % N;
-  let targetIdx = -1;
-  if(e.key === 'ArrowUp' && er < N-1) targetIdx = ei + N;
-  if(e.key === 'ArrowDown' && er > 0) targetIdx = ei - N;
-  if(e.key === 'ArrowLeft' && ec < N-1) targetIdx = ei + 1;
-  if(e.key === 'ArrowRight' && ec > 0) targetIdx = ei - 1;
-  if(targetIdx >= 0){
-    e.preventDefault();
-    tryMove(tiles[targetIdx]);
-  }
-});
-
-/* ─── Button events ─── */
-$('gridBtns').addEventListener('click', e => {
-  const btn = e.target.closest('.ctrl-btn');
-  if(!btn) return;
-  const n = parseInt(btn.dataset.n);
-  document.querySelectorAll('#gridBtns .ctrl-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  init(n);
-});
-
-$('themeBtns').addEventListener('click', e => {
-  const btn = e.target.closest('.ctrl-btn');
-  if(!btn) return;
-  setTheme(btn.dataset.t);
-});
-
-$('btnShuffle').addEventListener('click', () => init(N));
-$('btnHint').addEventListener('click', showHint);
-
-$('winBtn').addEventListener('click', () => {
-  $('winOverlay').classList.remove('show');
-  init(N);
-});
-$('winOverlay').addEventListener('click', e => {
-  if(e.target === $('winOverlay')){
-    $('winOverlay').classList.remove('show');
-    init(N);
-  }
-});
-
-/* ─── Resize handling ─── */
-let resizeTimeout;
-window.addEventListener('resize', () => {
-  clearTimeout(resizeTimeout);
-  resizeTimeout = setTimeout(() => renderBoard(), 100);
-});
-
-/* ─── Boot ─── */
-try{
-  const savedTheme = localStorage.getItem('slide_theme');
-  if(savedTheme) currentTheme = savedTheme;
-} catch(e){}
+try{const s=localStorage.getItem('slide_theme');if(s)currentTheme=s}catch(e){}
 setTheme(currentTheme);
-// Wait for layout
-requestAnimationFrame(() => {
-  requestAnimationFrame(() => {
-    init(5);
-  });
-});
-
+requestAnimationFrame(()=>requestAnimationFrame(()=>init(5)));
 })();
 </script>
 </body>
