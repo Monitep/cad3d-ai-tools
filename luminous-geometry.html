@@ -57,6 +57,8 @@ const INERTIA=0.91;
 let trails=false, colorWave=false;
 // explode spring
 let ef=0, efV=0;
+// plasma ball
+let pOx=0,pOy=0,pAlpha=0,pTargets=[],pDotPos={};
 const SHAPES=['Cube','Tetra','Octa','Sphere','Cylinder','Star','Torus','Pyramid'];
 const DOPTS=[500,1000,2000,4000];
 let BAR_H=110;
@@ -132,9 +134,23 @@ function frame(ts){
     const[rx,ry,rz]=rot([px,py,pz],S.rotX,S.rotY);
     if(isNaN(rz))continue;
     const sc=CAM/(CAM-rz);
-    proj.push({sx:CX+rx*base*sc, sy:CY+ry*base*sc, d:(rz+1)*.5, yi:p[1], xi:p[0]});
+    proj.push({sx:CX+rx*base*sc, sy:CY+ry*base*sc, d:(rz+1)*.5, yi:p[1], xi:p[0], oi:i});
   }
   proj.sort((a,b)=>a.d-b.d);
+
+  // build dot screen-pos lookup for plasma
+  pDotPos={};
+  for(let i=0;i<proj.length;i++) pDotPos[proj[i].oi]=proj[i];
+
+  // plasma: update targets while dragging
+  if(drag){
+    pOx=lx;pOy=ly;pAlpha=1.0;
+    if(fc%4===0){
+      pTargets=proj.filter(p=>Math.hypot(p.sx-pOx,p.sy-pOy)<220)
+                   .sort((a,b)=>Math.hypot(a.sx-pOx,a.sy-pOy)-Math.hypot(b.sx-pOx,b.sy-pOy))
+                   .slice(0,9).map(p=>p.oi);
+    }
+  } else { pAlpha*=.82; }
 
   const ds=S.ds;
   for(let i=0;i<proj.length;i++){
@@ -153,6 +169,50 @@ function frame(ts){
     ctx.fillStyle=`rgba(${col[0]},${col[1]},${col[2]},${alpha.toFixed(2)})`;
     ctx.fill();
   }
+  if(pAlpha>0.02) drawPlasma();
+}
+
+// ── PLASMA ──
+function bolt(x1,y1,x2,y2,a,w,depth){
+  const dx=x2-x1,dy=y2-y1,d=Math.hypot(dx,dy);
+  if(d<7||w<0.22||depth>6){
+    ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);
+    ctx.strokeStyle=`rgba(220,240,255,${(a*.95).toFixed(2)})`;
+    ctx.lineWidth=w;ctx.stroke();
+    return;
+  }
+  // perpendicular displacement
+  const nx=-dy/d,ny=dx/d;
+  const off=(Math.random()-.5)*d*.55;
+  const mx=(x1+x2)/2+nx*off,my=(y1+y2)/2+ny*off;
+  bolt(x1,y1,mx,my,a,w*.78,depth+1);
+  bolt(mx,my,x2,y2,a,w*.78,depth+1);
+  // random branch
+  if(depth<3&&Math.random()<.35){
+    const bx=mx+(Math.random()-.5)*d*.7,by=my+(Math.random()-.5)*d*.7;
+    bolt(mx,my,bx,by,a*.45,w*.45,depth+2);
+  }
+}
+
+function drawPlasma(){
+  if(!pTargets.length)return;
+  ctx.save();
+  // outer glow pass
+  ctx.shadowColor='#88aaff';ctx.shadowBlur=18;
+  pTargets.forEach(oi=>{
+    const t=pDotPos[oi];if(!t)return;
+    bolt(pOx,pOy,t.sx,t.sy,pAlpha*.6,2.2,0);
+  });
+  // bright core pass
+  ctx.shadowColor='#ffffff';ctx.shadowBlur=6;
+  pTargets.forEach(oi=>{
+    const t=pDotPos[oi];if(!t)return;
+    bolt(pOx,pOy,t.sx,t.sy,pAlpha*.9,1.0,0);
+  });
+  // origin spark
+  ctx.beginPath();ctx.arc(pOx,pOy,4*pAlpha,0,Math.PI*2);
+  ctx.fillStyle=`rgba(200,225,255,${pAlpha.toFixed(2)})`;ctx.fill();
+  ctx.restore();
 }
 
 // ── INPUT ──
