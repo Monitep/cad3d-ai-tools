@@ -34,6 +34,11 @@
             display: block;
             width: 100%;
             height: auto;
+            cursor: grab;
+        }
+
+        canvas:active {
+            cursor: grabbing;
         }
 
         .controls {
@@ -45,7 +50,7 @@
             gap: 8px;
             box-shadow: 0 -4px 20px rgba(0, 212, 255, 0.1);
             font-size: 12px;
-            max-height: 130px;
+            max-height: 140px;
             overflow-y: auto;
         }
 
@@ -75,6 +80,7 @@
             transition: all 0.15s ease;
             -webkit-appearance: none;
             appearance: none;
+            touch-action: manipulation;
         }
 
         select {
@@ -152,7 +158,7 @@
                 grid-template-columns: repeat(2, 1fr);
                 padding: 8px 10px;
                 gap: 6px;
-                max-height: 140px;
+                max-height: 160px;
             }
 
             select, input, button {
@@ -195,12 +201,12 @@
 
         <div class="control-group">
             <label>Color Front</label>
-            <input type="color" id="colorFront" value="#00d4ff">
+            <input type="color" id="colorFront" value="#1a1a3e">
         </div>
 
         <div class="control-group">
             <label>Color Back</label>
-            <input type="color" id="colorBack" value="#ff00ff">
+            <input type="color" id="colorBack" value="#00ffff">
         </div>
 
         <div class="control-group">
@@ -224,7 +230,7 @@
         </div>
 
         <div class="control-group info">
-            📱 Drag • Pinch
+            📱 Drag to rotate • Pinch to scale
         </div>
     </div>
 
@@ -234,7 +240,7 @@
 
         function resizeCanvas() {
             canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight - 140;
+            canvas.height = window.innerHeight - 160;
         }
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
@@ -248,8 +254,8 @@
             autoRotateY: 0.005,
             shape: 'cube',
             dotDensity: 1000,
-            colorFront: '#00d4ff',
-            colorBack: '#ff00ff'
+            colorFront: '#1a1a3e',
+            colorBack: '#00ffff'
         };
 
         let touchStartX = 0, touchStartY = 0;
@@ -263,8 +269,8 @@
             return Math.sqrt(dx * dx + dy * dy);
         }
 
-        // Touch events with inverted movement
-        document.addEventListener('touchstart', (e) => {
+        // TOUCH EVENTS ONLY ON CANVAS
+        canvas.addEventListener('touchstart', (e) => {
             if (e.touches.length === 2) {
                 const t1 = e.touches[0], t2 = e.touches[1];
                 lastDistance = getDistance(
@@ -281,7 +287,7 @@
             e.preventDefault();
         }, {passive: false});
 
-        document.addEventListener('touchmove', (e) => {
+        canvas.addEventListener('touchmove', (e) => {
             if (e.touches.length === 2) {
                 const t1 = e.touches[0], t2 = e.touches[1];
                 const distance = getDistance(
@@ -301,32 +307,27 @@
                 const deltaX = touch.clientX - touchStartX;
                 const deltaY = touch.clientY - touchStartY;
                 
-                // INVERTED movement
                 state.rotationY = touchStartRotY - deltaX * 0.008;
                 state.rotationX = touchStartRotX + deltaY * 0.008;
                 e.preventDefault();
             }
         }, {passive: false});
 
-        document.addEventListener('touchend', (e) => {
+        canvas.addEventListener('touchend', (e) => {
             isDragging = false;
             lastDistance = 0;
         }, {passive: false});
 
-        // Control listeners - FIXED
-        const shapeSelect = document.getElementById('shapeSelect');
-        shapeSelect.addEventListener('change', (e) => {
+        // CONTROL LISTENERS
+        document.getElementById('shapeSelect').addEventListener('change', (e) => {
             state.shape = e.target.value;
             regeneratePoints();
-            console.log('Shape changed to:', state.shape);
         });
 
-        const dotDensitySlider = document.getElementById('dotDensity');
-        dotDensitySlider.addEventListener('input', (e) => {
+        document.getElementById('dotDensity').addEventListener('input', (e) => {
             state.dotDensity = parseInt(e.target.value);
             document.getElementById('dotDensityValue').textContent = state.dotDensity;
             regeneratePoints();
-            console.log('Dot density changed to:', state.dotDensity);
         });
 
         document.getElementById('colorFront').addEventListener('change', (e) => {
@@ -355,9 +356,10 @@
             state.rotationZ = 0;
             state.baseScale = 100;
             document.getElementById('scale').value = 100;
+            document.getElementById('scaleValue').textContent = '100%';
         });
 
-        // 3D functions
+        // 3D FUNCTIONS
         function rotateX(p, a) {
             const c = Math.cos(a), s = Math.sin(a);
             return {x: p.x, y: p.y * c - p.z * s, z: p.y * s + p.z * c};
@@ -379,7 +381,7 @@
             return {x: p.x * depth, y: p.y * depth, z: p.z, depth: depth};
         }
 
-        // Surface point generation
+        // SURFACE GENERATION
         function generateSurfacePoints(shape, density) {
             let points = [];
 
@@ -513,7 +515,7 @@
             currentPoints = generateSurfacePoints(state.shape, state.dotDensity);
         }
 
-        // Main animation loop
+        // ANIMATION LOOP
         function animate() {
             state.rotationX += state.autoRotateX;
             state.rotationY += state.autoRotateY;
@@ -547,29 +549,33 @@
             const colorBack = hexToRgb(state.colorBack);
 
             transformed.forEach(p => {
-                // Depth normalized -0.3 to 0.8 = 0 to 1
+                // DEPTH: -0.3 to 0.8 = front (0) to back (1)
                 const depthNorm = Math.max(0, Math.min(1, (p.depth + 0.3) * 1.2));
                 
-                // SIZE: front small, back LARGE
-                const minSize = 1.2, maxSize = 4.5;
+                // SIZE: FRONT SMALL, BACK LARGE
+                // depthNorm 0 (front) = small, depthNorm 1 (back) = large
+                const minSize = 0.6, maxSize = 4;
                 const size = minSize + depthNorm * (maxSize - minSize);
                 
-                // COLOR: interpolate front → back
+                // COLOR: FRONT dark, BACK bright
+                // depthNorm 0 (front) = colorFront (dark), depthNorm 1 (back) = colorBack (bright)
                 const r = Math.floor(colorFront.r + (colorBack.r - colorFront.r) * depthNorm);
                 const g = Math.floor(colorFront.g + (colorBack.g - colorFront.g) * depthNorm);
                 const b = Math.floor(colorFront.b + (colorBack.b - colorFront.b) * depthNorm);
                 
-                // ALPHA: far away = brighter
-                const alpha = 0.4 + depthNorm * 0.6;
+                // ALPHA: FRONT low/dim, BACK high/bright
+                // depthNorm 0 (front) = 0.2 (very dim), depthNorm 1 (back) = 0.9 (very bright)
+                const alpha = 0.2 + depthNorm * 0.7;
 
                 ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
                 ctx.beginPath();
                 ctx.arc(p.screenX, p.screenY, size, 0, Math.PI * 2);
                 ctx.fill();
 
-                // Glow
-                ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${alpha * 0.5})`;
-                ctx.lineWidth = size * 1.3;
+                // Subtle glow only on back dots
+                const glowAlpha = Math.max(0, (depthNorm - 0.4) * 0.5);
+                ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${glowAlpha})`;
+                ctx.lineWidth = size * 0.8;
                 ctx.stroke();
             });
 
