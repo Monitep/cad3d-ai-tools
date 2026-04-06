@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Perception Lab — Illusioni Ottiche</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,700;1,300;1,600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#07070f;
+  --bg2:#0d0d1e;
+  --gold:#cfa830;
+  --gold2:rgba(207,168,48,.14);
+  --blue:#4a8fc5;
+  --text:#e2ded5;
+  --dim:rgba(226,222,213,.44);
+  --border:rgba(207,168,48,.13);
+  --red:#c85050;
+}
+body{background:var(--bg);color:var(--text);font-family:'Space Mono',monospace;min-height:100vh;overflow-x:hidden}
+body::after{content:'';position:fixed;inset:0;opacity:.022;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");pointer-events:none;z-index:9999}
+
+/* HEADER */
+header{padding:52px 44px 40px;border-bottom:1px solid var(--border);display:grid;grid-template-columns:1fr auto;align-items:end;gap:24px}
+.eyebrow{font-size:9px;letter-spacing:5px;color:var(--gold);text-transform:uppercase;margin-bottom:18px;opacity:.8}
+h1{font-family:'Cormorant Garamond',serif;font-size:clamp(50px,9vw,108px);font-weight:300;line-height:.88;letter-spacing:-2px}
+h1 span{display:block;color:var(--gold);font-style:italic}
+.hstat{text-align:right;padding-bottom:6px}
+.hstat div{font-size:9px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;line-height:2.1}
+.hstat strong{color:var(--text);font-weight:400}
+.hstat a{color:var(--gold);text-decoration:none}
+
+/* INTRO */
+.intro{padding:24px 44px;border-bottom:1px solid var(--border);font-size:10px;color:var(--dim);letter-spacing:.8px;line-height:1.9;max-width:760px}
+
+/* GALLERY */
+.gallery{display:grid;grid-template-columns:repeat(3,1fr);border-left:1px solid var(--border)}
+@media(max-width:860px){.gallery{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){.gallery{grid-template-columns:1fr}}
+
+/* CARD */
+.card{border-right:1px solid var(--border);border-bottom:1px solid var(--border);position:relative;cursor:pointer;overflow:hidden;background:var(--bg2);aspect-ratio:1}
+.card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.018) 0%,transparent 60%);z-index:1;pointer-events:none}
+.card canvas{width:100%;height:100%;display:block;position:absolute;top:0;left:0}
+.badge{position:absolute;top:0;left:0;background:var(--bg);border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:7px 13px;font-size:9px;letter-spacing:3px;color:var(--gold);z-index:10;font-weight:700}
+.tag{position:absolute;top:0;right:0;background:rgba(7,7,15,.72);border-left:1px solid var(--border);border-bottom:1px solid var(--border);padding:7px 11px;font-size:8px;letter-spacing:2px;color:var(--dim);z-index:10;text-transform:uppercase}
+.foot{position:absolute;bottom:0;left:0;right:0;padding:18px 16px 14px;background:linear-gradient(transparent,rgba(7,7,15,.96));transform:translateY(100%);transition:transform .32s cubic-bezier(.25,.46,.45,.94);z-index:10}
+.card:hover .foot{transform:translateY(0)}
+.ftitle{font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:400;margin-bottom:4px}
+.fshort{font-size:9px;letter-spacing:.8px;color:var(--dim);line-height:1.6}
+.fcta{margin-top:8px;font-size:8px;letter-spacing:3px;color:var(--gold);text-transform:uppercase}
+
+/* MODAL */
+.modal{display:none;position:fixed;inset:0;z-index:1000;background:rgba(7,7,15,.97);backdrop-filter:blur(10px);overflow-y:auto}
+.modal.open{display:flex;flex-direction:column;align-items:center;padding:20px 20px 60px}
+.mtop{width:100%;max-width:940px;display:flex;justify-content:space-between;align-items:center;padding-bottom:18px;border-bottom:1px solid var(--border);margin-bottom:28px}
+.mnum{font-size:9px;letter-spacing:4px;color:var(--gold)}
+.btnclose{background:none;border:1px solid var(--border);color:var(--dim);font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;padding:8px 16px;cursor:pointer;transition:all .2s;text-transform:uppercase}
+.btnclose:hover{border-color:var(--gold);color:var(--gold)}
+.mcontent{width:100%;max-width:940px;display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start}
+@media(max-width:680px){.mcontent{grid-template-columns:1fr}}
+.mwrap{aspect-ratio:1;width:100%;border:1px solid var(--border);background:var(--bg2);overflow:hidden;position:relative}
+.mwrap canvas{width:100%;height:100%;display:block}
+.mtag{font-size:8px;letter-spacing:4px;color:var(--blue);text-transform:uppercase;margin-bottom:12px}
+.mtitle{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:300;line-height:1.1;margin-bottom:18px}
+.mdesc{font-size:10px;color:var(--dim);line-height:1.9;letter-spacing:.4px;margin-bottom:24px}
+.btnrev{background:none;border:1px solid var(--gold2);color:var(--gold);font-family:'Space Mono',monospace;font-size:9px;letter-spacing:3px;padding:12px 20px;cursor:pointer;text-transform:uppercase;transition:all .25s;display:block;width:100%;margin-bottom:16px}
+.btnrev:hover{background:var(--gold);color:var(--bg)}
+.hint{font-size:9px;letter-spacing:1px;color:var(--dim);line-height:1.8;padding:12px;border:1px solid var(--border);border-left:2px solid var(--gold)}
+
+/* FOOTER */
+footer{border-top:1px solid var(--border);padding:20px 44px;display:flex;justify-content:space-between;align-items:center;font-size:8px;letter-spacing:2px;color:var(--dim);flex-wrap:wrap;gap:8px}
+footer a{color:var(--gold);text-decoration:none}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="eyebrow">[ Laboratorio di Percezione Visiva ]</div>
+    <h1>ILLUSIONI<span>Ottiche</span></h1>
+  </div>
+  <div class="hstat">
+    <div>Esperimenti <strong>07</strong></div>
+    <div>Categorie <strong>05</strong></div>
+    <div><a href="https://cad3d.expert" target="_blank">CAD3D.Expert</a></div>
+  </div>
+</header>
+
+<div class="intro">
+  Ogni illusione presentata è un fenomeno scientifico documentato. Queste immagini sfruttano i meccanismi fondamentali del sistema visivo umano: dall'inibizione laterale della retina al color constancy corticale, dal motion detection periferico all'elaborazione contestuale della dimensione. Passare il mouse su ogni card per i dettagli. Cliccare per espandere.
+</div>
+
+<div class="gallery" id="gallery"></div>
+
+<footer>
+  <span>Basato su ricerche di Kitaoka, Adelson, Hermann, Fraser, Ebbinghaus</span>
+  <span><a href="https://cad3d.expert" target="_blank">cad3d.expert</a> — Visualizzazione e Percezione 2025</span>
+</footer>
+
+<!-- MODAL -->
+<div class="modal" id="modal">
+  <div class="mtop">
+    <div class="mnum" id="mnum"></div>
+    <button class="btnclose" onclick="closeModal()">ESC / CHIUDI ×</button>
+  </div>
+  <div class="mcontent">
+    <div class="mwrap"><canvas id="mc"></canvas></div>
+    <div>
+      <div class="mtag" id="mtag"></div>
+      <div class="mtitle" id="mtitle"></div>
+      <div class="mdesc" id="mdesc"></div>
+      <button class="btnrev" id="mbtn" style="display:none"></button>
+      <div class="hint" id="mhint"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+// ILLUSIONS CONFIG
+// ═══════════════════════════════════════════════
+const ILL = [
+  {
+    num:'01', tag:'Movimento Periferico',
+    title:'Serpenti Rotanti',
+    short:'Immagine statica che sembra ruotare',
+    desc:'I cerchi appaiono in continua rotazione, eppure l\'immagine è completamente statica. Il fenomeno è detto "peripheral drift": specifici gradienti di luminanza ingannano i neuroni edge-detector nella retina periferica. La rotazione apparente inverte direzione se si osserva con illuminazione variabile. Scoperta e codificata da Akiyoshi Kitaoka nel 1999.',
+    hint:'⟶ Non fissare un punto preciso. Guarda l\'immagine in modo diffuso, o muovi gli occhi lentamente, per massimizzare la rotazione.',
+    btn:null, draw:drawSnakes, anim:null
+  },{
+    num:'02', tag:'Distorsione Geometrica',
+    title:'Muro del Caffè',
+    short:'Linee orizzontali che sembrano inclinate',
+    desc:'Tutte le linee di "malta" grigia tra le righe di piastrelle sono perfettamente parallele. L\'offset alternato delle piastrelle crea un contrasto di bordo asimmetrico che distorce la percezione dell\'angolo: il cervello interpreta ogni riga come un trapezio. Osservato per la prima volta nel 1973 da Richard Gregory in un caffè di Bristol.',
+    hint:'⟶ Allontana lo schermo per vedere la convergenza. Premi il bottone per rivelare le linee reali sovrapposte.',
+    btn:'MOSTRA LE PARALLELE', draw:drawCafe, anim:null
+  },{
+    num:'03', tag:'Inibizione Laterale',
+    title:'Griglia di Hermann',
+    short:'Puntini grigi appaiono agli incroci',
+    desc:'Puntini grigi compaiono nelle intersezioni bianche tra i quadrati neri, ma scompaiono non appena ci si focalizza su uno di essi. Le cellule gangliari della retina con campo ricettivo center-surround sono più stimolate lungo i corridoi bianchi (un lato) che alle intersezioni (quattro lati), generando inibizione percepita come grigio. Descritto da Ludimar Hermann nel 1870.',
+    hint:'⟶ Fissa un\'intersezione precisa: il puntino svanisce. Guarda di lato: riappare. I puntini non esistono mai dove guardi.',
+    btn:null, draw:drawHermann, anim:null
+  },{
+    num:'04', tag:'Costanza del Colore',
+    title:'Ombra sulla Scacchiera',
+    short:'A e B sono esattamente lo stesso grigio',
+    desc:'Il quadrato marcato A e quello marcato B sono lo stesso identico grigio (#787878). Il cervello corregge automaticamente per l\'illuminazione: interpreta B come una tessera chiara in ombra, e A come una tessera scura in piena luce. Questo meccanismo di "color constancy" è essenziale per riconoscere gli oggetti in condizioni di luce variabile. Creato dal Prof. Edward Adelson, MIT, 1995.',
+    hint:'⟶ Non ci credi? Premi il bottone per rivelare: A e B vengono collegati visivamente e mostrano il colore identico.',
+    btn:'RIVELA LA VERITÀ', draw:drawChecker, anim:null
+  },{
+    num:'05', tag:'Percezione Relativa',
+    title:'Cerchi di Ebbinghaus',
+    short:'Due cerchi identici, dimensioni diverse',
+    desc:'I due cerchi arancioni al centro sono perfettamente identici in diametro. Circondato da cerchi grandi, quello di sinistra appare più piccolo. Circondato da cerchi piccoli, quello di destra appare più grande. Il cervello valuta sempre le dimensioni in modo relativo al contesto circostante, mai in valore assoluto. Teorizzato da Hermann Ebbinghaus, Berlino, fine XIX secolo.',
+    hint:'⟶ Premi il bottone per visualizzare i raggi identici sovrapposti all\'immagine.',
+    btn:'CONFRONTA I RAGGI', draw:drawEbbinghaus, anim:null
+  },{
+    num:'06', tag:'Afterimage Cromatico',
+    title:'Inseguitore Lilla',
+    short:'Fissa la croce: apparirà un punto verde',
+    desc:'Fissa la croce nera centrale senza muovere gli occhi. I puntini rosa scompaiono in sequenza ciclica. Dopo 10-15 secondi vedrai un punto VERDE che ruota nel cerchio vuoto, anche se non esiste. È un afterimage negativo: il cervello stanca i coni sensibili al magenta e genera il colore complementare (verde) per compensare. Il fenomeno si chiama "phi motion" + adattamento cromatico.',
+    hint:'⟶ Fissa SOLO la croce centrale senza muovere gli occhi. Aspetta almeno 10-15 secondi per vedere il punto verde.',
+    btn:null, draw:drawLilac, anim:'lilac'
+  },{
+    num:'07', tag:'Errore di Ricostruzione',
+    title:'Spirale di Fraser',
+    short:'Non è una spirale: sono cerchi concentrici',
+    desc:'Nonostante l\'apparenza convincente, questa figura non contiene nessuna linea a spirale. Sono esclusivamente cerchi concentrici sovrapposti. Il pattern twistato bicolore dei segmenti crea segnali direzionali tangenziali che il cervello interpreta erroneamente come struttura spiraliforme. Puoi verificarlo tracciando un cerchio con il dito: torni esattamente al punto di partenza. Scoperta da James Fraser nel 1908.',
+    hint:'⟶ Traccia un anello con il dito: è un cerchio chiuso. Premi il bottone per sovrapporre i cerchi reali in rosso.',
+    btn:'RIVELA I CERCHI', draw:drawFraser, anim:null
+  }
+];
+
+// ═══════════════════════════════════════════════
+// BUILD GALLERY
+// ═══════════════════════════════════════════════
+const gallery = document.getElementById('gallery');
+ILL.forEach((ill,i)=>{
+  const card = document.createElement('div');
+  card.className='card';
+  card.onclick=()=>openModal(i);
+  card.innerHTML=`
+    <canvas id="c${i}" width="400" height="400"></canvas>
+    <div class="badge">${ill.num}</div>
+    <div class="tag">${ill.tag}</div>
+    <div class="foot">
+      <div class="ftitle">${ill.title}</div>
+      <div class="fshort">${ill.short}</div>
+      <div class="fcta">→ Espandi</div>
+    </div>`;
+  gallery.appendChild(card);
+  const ctx=document.getElementById(`c${i}`).getContext('2d');
+  ill.draw(ctx,400,400,false);
+  if(ill.anim==='lilac') startLilac(`c${i}`,400,400);
+});
+
+// ═══════════════════════════════════════════════
+// MODAL
+// ═══════════════════════════════════════════════
+let revealOn=false;
+const lilacTimers={};
+
+function openModal(idx){
+  const ill=ILL[idx]; revealOn=false;
+  const mc=document.getElementById('mc');
+  const sz=Math.min(window.innerWidth*.88,window.innerHeight*.72,620);
+  mc.width=sz; mc.height=sz;
+  document.getElementById('mnum').textContent=`${ill.num} / 07 — ${ill.tag}`;
+  document.getElementById('mtag').textContent=ill.tag;
+  document.getElementById('mtitle').textContent=ill.title;
+  document.getElementById('mdesc').textContent=ill.desc;
+  document.getElementById('mhint').textContent=ill.hint;
+  const btn=document.getElementById('mbtn');
+  if(ill.btn){
+    btn.style.display='block'; btn.textContent=ill.btn;
+    btn.onclick=()=>{
+      revealOn=!revealOn;
+      btn.textContent=revealOn?'NASCONDI':ill.btn;
+      ill.draw(mc.getContext('2d'),sz,sz,revealOn);
+      if(ill.anim==='lilac') startLilac('mc',sz,sz);
+    };
+  } else btn.style.display='none';
+  document.getElementById('modal').classList.add('open');
+  ill.draw(mc.getContext('2d'),sz,sz,false);
+  if(ill.anim==='lilac') startLilac('mc',sz,sz);
+}
+function closeModal(){
+  document.getElementById('modal').classList.remove('open');
+  stopLilac('mc');
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+document.getElementById('modal').addEventListener('click',e=>{
+  if(e.target===document.getElementById('modal'))closeModal();
+});
+
+// ═══════════════════════════════════════════════
+// LILAC CHASER ANIMATION
+// ═══════════════════════════════════════════════
+function startLilac(id,W,H){
+  stopLilac(id);
+  let h=0;
+  lilacTimers[id]=setInterval(()=>{
+    const c=document.getElementById(id);
+    if(!c){stopLilac(id);return;}
+    h=(h+1)%12;
+    lilacFrame(c.getContext('2d'),W,H,h);
+  },110);
+}
+function stopLilac(id){if(lilacTimers[id]){clearInterval(lilacTimers[id]);delete lilacTimers[id];}}
+
+// ═══════════════════════════════════════════════
+// DRAWING: 1. ROTATING SNAKES
+// ═══════════════════════════════════════════════
+function drawSnakes(ctx,W,H,_){
+  ctx.fillStyle='#111228'; ctx.fillRect(0,0,W,H);
+  const cols=3,rows=3,pi2=Math.PI*2;
+  const cW=(W*.92)/cols, cH=(H*.92)/rows;
+  const pR=Math.min(cW,cH)*.47;
+  const oX=W*.04, oY=H*.04;
+  // Colors: Black → Dark violet → White → Bright yellow-green (Kitaoka sequence)
+  const C=['#000000','#26156b','#ffffff','#c8f030'];
+  const nR=6, nS=32;
+
+  for(let row=0;row<rows;row++){
+    for(let col=0;col<cols;col++){
+      const cx=oX+cW*(col+.5), cy=oY+cH*(row+.5);
+      const R=pR;
+      const base=(row*cols+col)*(pi2/(rows*cols+1));
+      // Flip color sequence for alternating patches = alternating rotation direction
+      const flip=(row+col)%2===1;
+
+      // Background radial gradient
+      const bg=ctx.createRadialGradient(cx,cy,0,cx,cy,R);
+      bg.addColorStop(0,'#1c1c3e'); bg.addColorStop(1,'#0b0b1c');
+      ctx.beginPath(); ctx.arc(cx,cy,R,0,pi2); ctx.fillStyle=bg; ctx.fill();
+
+      for(let ring=nR-1;ring>=0;ring--){
+        const r1=(ring/nR)*R, r2=((ring+1)/nR)*R;
+        for(let seg=0;seg<nS;seg++){
+          const a1=(seg/nS)*pi2+base;
+          const a2=((seg+1)/nS)*pi2+base;
+          // Key: ring offset creates diagonal luminance gradient = apparent motion
+          const ci=flip?(nS-seg+ring*7)%4:(seg+ring*7)%4;
+          ctx.beginPath();
+          ctx.arc(cx,cy,r2,a1,a2);
+          ctx.arc(cx,cy,r1,a2,a1,true);
+          ctx.closePath();
+          ctx.fillStyle=C[ci]; ctx.fill();
+        }
+      }
+      // Center dot
+      ctx.beginPath(); ctx.arc(cx,cy,R*.07,0,pi2);
+      ctx.fillStyle='#0b0b1c'; ctx.fill();
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════
+// DRAWING: 2. CAFÉ WALL
+// ═══════════════════════════════════════════════
+function drawCafe(ctx,W,H,showLines){
+  const tW=Math.floor(W/7.5);
+  const tH=Math.floor(tW*.62);
+  const mortar=3;
+  ctx.fillStyle='#909090'; ctx.fillRect(0,0,W,H);
+  const rows=Math.ceil(H/(tH+mortar))+2;
+  const cols=Math.ceil(W/tW)+3;
+  for(let r=0;r<rows;r++){
+    const y=r*(tH+mortar)-mortar;
+    const off=(r%2)*(tW/2);
+    for(let c=0;c<cols;c++){
+      const x=c*tW-off-tW;
+      ctx.fillStyle=(c%2===0)?'#181828':'#f0ede0';
+      ctx.fillRect(x,y,tW,tH);
+    }
+  }
+  if(showLines){
+    for(let r=0;r<=rows;r++){
+      const y=r*(tH+mortar)-mortar/2;
+      ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y);
+      ctx.strokeStyle='rgba(200,60,60,.85)'; ctx.lineWidth=1.5; ctx.stroke();
+    }
+    ctx.fillStyle='rgba(200,60,60,.9)';
+    ctx.font=`${Math.floor(W*.028)}px monospace`;
+    ctx.textAlign='center'; ctx.textBaseline='top';
+    ctx.fillText('LINEE PARALLELE',W/2,6);
+  }
+}
+
+// ═══════════════════════════════════════════════
+// DRAWING: 3. HERMANN GRID
+// ═══════════════════════════════════════════════
+function drawHermann(ctx,W,H,_){
+  const t=Math.floor(Math.min(W,H)/7.5);
+  const g=Math.round(t*.33);
+  ctx.fillStyle='#f5f5f0'; ctx.fillRect(0,0,W,H);
+  const cols=Math.ceil(W/t)+1, rows=Math.ceil(H/t)+1;
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      ctx.fillStyle='#171728';
+      ctx.fillRect(c*t+g/2, r*t+g/2, t-g, t-g);
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════
+// DRAWING: 4. CHECKER SHADOW (Adelson)
+// ═══════════════════════════════════════════════
+function drawChecker(ctx,W,H,showReveal){
+  const m=W*.07, bSz=Math.min(W,H)-m*2;
+  const bx=(W-bSz)/2, by=(H-bSz)/2;
+  const n=8, t=bSz/n;
+
+  // Base checkerboard
+  for(let r=0;r<n;r++){
+    for(let c=0;c<n;c++){
+      ctx.fillStyle=((r+c)%2===0)?'#d0d0d0':'#3c3c3c';
+      ctx.fillRect(bx+c*t,by+r*t,t,t);
+    }
+  }
+
+  // A = dark tile outside shadow (row=5,col=2 → 5+2=7 odd → dark)
+  // B = light tile inside shadow (row=2,col=4 → 2+4=6 even → light)
+  const aR=5,aC=2, bR=2,bC=4;
+  const gray='#787878';
+
+  // Paint A (no shadow overlay needed here)
+  ctx.fillStyle=gray; ctx.fillRect(bx+aC*t,by+aR*t,t,t);
+
+  // Shadow gradient (cols 3→5 transition, solid from 5 on)
+  const grd=ctx.createLinearGradient(bx+2.8*t,0,bx+4.1*t,0);
+  grd.addColorStop(0,'rgba(0,0,0,0)');
+  grd.addColorStop(1,'rgba(0,0,0,.53)');
+  ctx.fillStyle=grd; ctx.fillRect(bx,by,bSz,bSz);
+  ctx.fillStyle='rgba(0,0,0,.53)'; ctx.fillRect(bx+4.1*t,by,bSz,bSz);
+
+  // Paint B over shadow so it remains the same gray
+  ctx.fillStyle=gray; ctx.fillRect(bx+bC*t,by+bR*t,t,t);
+
+  // Cylinder (stands on board, right side)
+  const cCX=bx+5.5*t, cHW=t*1.15;
+  const cTop=by-t*.08, cBot=by+bSz+t*.04;
+  const eRY=cHW*.22;
+  const cylG=ctx.createLinearGradient(cCX-cHW,0,cCX+cHW,0);
+  cylG.addColorStop(0,'#2a5a2a'); cylG.addColorStop(.25,'#3d7a40');
+  cylG.addColorStop(.6,'#5ab85a'); cylG.addColorStop(.85,'#3a7040'); cylG.addColorStop(1,'#182818');
+  ctx.beginPath();
+  ctx.moveTo(cCX-cHW,cTop+eRY);
+  ctx.lineTo(cCX-cHW,cBot-eRY);
+  ctx.ellipse(cCX,cBot,cHW,eRY,0,Math.PI,0,true);
+  ctx.lineTo(cCX+cHW,cTop+eRY);
+  ctx.ellipse(cCX,cTop,cHW,eRY,0,0,Math.PI,true);
+  ctx.closePath(); ctx.fillStyle=cylG; ctx.fill();
+  ctx.beginPath(); ctx.ellipse(cCX,cTop,cHW,eRY,0,0,Math.PI*2);
+  ctx.fillStyle='#7cd87c'; ctx.fill();
+  ctx.strokeStyle='#2a5a2a'; ctx.lineWidth=.6; ctx.stroke();
+
+  // Labels
+  const fs=Math.floor(t*.42);
+  ctx.font=`bold ${fs}px monospace`;
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+
+  if(!showReveal){
+    ctx.fillStyle='#cfa830';
+    ctx.fillText('A',bx+aC*t+t*.5,by+aR*t+t*.5);
+    ctx.fillStyle='#cfa830';
+    ctx.fillText('B',bx+bC*t+t*.5,by+bR*t+t*.5);
+  } else {
+    // Reveal: outline A and B, draw connector
+    ctx.strokeStyle='#c85050'; ctx.lineWidth=2.5; ctx.setLineDash([]);
+    ctx.strokeRect(bx+aC*t+2,by+aR*t+2,t-4,t-4);
+    ctx.strokeRect(bx+bC*t+2,by+bR*t+2,t-4,t-4);
+    ctx.setLineDash([3,3]); ctx.lineWidth=1.8;
+    ctx.beginPath();
+    ctx.moveTo(bx+aC*t+t*.5,by+aR*t+t*.5);
+    ctx.lineTo(bx+bC*t+t*.5,by+bR*t+t*.5);
+    ctx.strokeStyle='rgba(200,80,80,.7)'; ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle='#c85050';
+    ctx.fillText('A',bx+aC*t+t*.5,by+aR*t+t*.5);
+    ctx.fillText('B',bx+bC*t+t*.5,by+bR*t+t*.5);
+    ctx.font=`${Math.floor(t*.2)}px monospace`;
+    ctx.fillStyle='#c85050';
+    ctx.fillText('A = B = #787878',W*.5,by+bSz+18);
+  }
+}
+
+// ═══════════════════════════════════════════════
+// DRAWING: 5. EBBINGHAUS
+// ═══════════════════════════════════════════════
+function drawEbbinghaus(ctx,W,H,showReveal){
+  ctx.fillStyle='#0b0b1e'; ctx.fillRect(0,0,W,H);
+  const cR=Math.min(W,H)*.065;
+  const lCX=W*.28, rCX=W*.72, cy=H*.5;
+
+  // Left: 5 large surrounding circles
+  const bigR=cR*2.8, bigD=cR+bigR+cR*.3, bigN=5;
+  for(let i=0;i<bigN;i++){
+    const a=(i/bigN)*Math.PI*2-Math.PI/2;
+    ctx.beginPath(); ctx.arc(lCX+bigD*Math.cos(a),cy+bigD*Math.sin(a),bigR,0,Math.PI*2);
+    ctx.fillStyle='#243a60'; ctx.fill();
+    ctx.strokeStyle='#3a6090'; ctx.lineWidth=1; ctx.stroke();
+  }
+
+  // Right: 8 small surrounding circles
+  const smlR=cR*.42, smlD=cR+smlR+cR*.22, smlN=8;
+  for(let i=0;i<smlN;i++){
+    const a=(i/smlN)*Math.PI*2-Math.PI/2;
+    ctx.beginPath(); ctx.arc(rCX+smlD*Math.cos(a),cy+smlD*Math.sin(a),smlR,0,Math.PI*2);
+    ctx.fillStyle='#243a60'; ctx.fill();
+    ctx.strokeStyle='#3a6090'; ctx.lineWidth=1; ctx.stroke();
+  }
+
+  // Center circles (identical size)
+  [lCX,rCX].forEach(cx=>{
+    ctx.beginPath(); ctx.arc(cx,cy,cR,0,Math.PI*2);
+    ctx.fillStyle='#e07820'; ctx.fill();
+    ctx.strokeStyle='#f0a040'; ctx.lineWidth=2; ctx.stroke();
+  });
+
+  if(showReveal){
+    ctx.strokeStyle='#c85050'; ctx.lineWidth=1.5; ctx.setLineDash([4,3]);
+    ctx.beginPath(); ctx.moveTo(lCX,cy); ctx.lineTo(lCX+cR,cy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(rCX,cy); ctx.lineTo(rCX+cR,cy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(lCX+cR,cy-9); ctx.lineTo(rCX,cy-9); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.font=`${Math.floor(W*.022)}px monospace`;
+    ctx.fillStyle='#c85050'; ctx.textAlign='center';
+    ctx.fillText('RAGGI IDENTICI',W/2,cy-18);
+  }
+}
+
+// ═══════════════════════════════════════════════
+// DRAWING: 6. LILAC CHASER
+// ═══════════════════════════════════════════════
+function drawLilac(ctx,W,H,_){ lilacFrame(ctx,W,H,0); }
+
+function lilacFrame(ctx,W,H,hidden){
+  ctx.fillStyle='#f2eef9'; ctx.fillRect(0,0,W,H);
+  const cx=W/2, cy=H/2;
+  const ringR=Math.min(W,H)*.35;
+  const dR=Math.min(W,H)*.052;
+  const N=12;
+  for(let i=0;i<N;i++){
+    if(i===hidden) continue;
+    const a=(i/N)*Math.PI*2-Math.PI/2;
+    const dx=cx+ringR*Math.cos(a), dy=cy+ringR*Math.sin(a);
+    const g=ctx.createRadialGradient(dx,dy,0,dx,dy,dR*1.65);
+    g.addColorStop(0,'rgba(190,90,195,1)');
+    g.addColorStop(.42,'rgba(190,90,195,.72)');
+    g.addColorStop(1,'rgba(190,90,195,0)');
+    ctx.beginPath(); ctx.arc(dx,dy,dR*1.65,0,Math.PI*2);
+    ctx.fillStyle=g; ctx.fill();
+  }
+  // Fixation cross
+  const cs=Math.min(W,H)*.022;
+  ctx.strokeStyle='#1a1a2a'; ctx.lineWidth=2.2;
+  ctx.beginPath();
+  ctx.moveTo(cx-cs,cy); ctx.lineTo(cx+cs,cy);
+  ctx.moveTo(cx,cy-cs); ctx.lineTo(cx,cy+cs);
+  ctx.stroke();
+  // Small dot at cross center
+  ctx.beginPath(); ctx.arc(cx,cy,1.5,0,Math.PI*2);
+  ctx.fillStyle='#1a1a2a'; ctx.fill();
+}
+
+// ═══════════════════════════════════════════════
+// DRAWING: 7. FRASER SPIRAL
+// ═══════════════════════════════════════════════
+function drawFraser(ctx,W,H,showReveal){
+  ctx.fillStyle='#f8f5ee'; ctx.fillRect(0,0,W,H);
+  const cx=W/2, cy=H/2;
+  const maxR=Math.min(W,H)*.44;
+  const nC=9, ropeHW=maxR*.044, pi2=Math.PI*2;
+
+  for(let ci=0;ci<nC;ci++){
+    const r=maxR*(ci+1)/nC;
+    const circ=pi2*r;
+    const nS=Math.max(8,Math.round(circ/(ropeHW*2.6)));
+
+    for(let si=0;si<nS;si++){
+      const a1=(si/nS)*pi2, a2=((si+1)/nS)*pi2;
+      const c1=Math.cos(a1),s1=Math.sin(a1);
+      const c2=Math.cos(a2),s2=Math.sin(a2);
+      const x1i=cx+(r-ropeHW)*c1, y1i=cy+(r-ropeHW)*s1;
+      const x1o=cx+(r+ropeHW)*c1, y1o=cy+(r+ropeHW)*s1;
+      const x2i=cx+(r-ropeHW)*c2, y2i=cy+(r-ropeHW)*s2;
+      const x2o=cx+(r+ropeHW)*c2, y2o=cy+(r+ropeHW)*s2;
+      // Phase offset per circle creates consistent twist = spiral illusion
+      const phase=(si+ci*4)%2;
+      if(phase===0){
+        ctx.beginPath(); ctx.moveTo(x1o,y1o); ctx.lineTo(x1i,y1i); ctx.lineTo(x2o,y2o);
+        ctx.closePath(); ctx.fillStyle='#1c1c2e'; ctx.fill();
+        ctx.beginPath(); ctx.moveTo(x1i,y1i); ctx.lineTo(x2i,y2i); ctx.lineTo(x2o,y2o);
+        ctx.closePath(); ctx.fillStyle='#f8f5ee'; ctx.fill();
+      } else {
+        ctx.beginPath(); ctx.moveTo(x1o,y1o); ctx.lineTo(x2i,y2i); ctx.lineTo(x2o,y2o);
+        ctx.closePath(); ctx.fillStyle='#1c1c2e'; ctx.fill();
+        ctx.beginPath(); ctx.moveTo(x1o,y1o); ctx.lineTo(x1i,y1i); ctx.lineTo(x2i,y2i);
+        ctx.closePath(); ctx.fillStyle='#f8f5ee'; ctx.fill();
+      }
+    }
+
+    if(showReveal){
+      ctx.beginPath(); ctx.arc(cx,cy,r,0,pi2);
+      ctx.strokeStyle='rgba(200,60,60,.65)'; ctx.lineWidth=1.8; ctx.stroke();
+    }
+  }
+}
+</script>
+</body>
+</html>
