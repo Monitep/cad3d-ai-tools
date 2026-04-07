@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#020c1a">
+<title>AquaPhysics</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;background:#020c1a;touch-action:manipulation}
+canvas{display:block;position:fixed;top:0;left:0}
+#ui{
+  position:fixed;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  background:rgba(2,10,22,.95);z-index:10;
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  user-select:none;
+}
+.drop-icon{font-size:4.5rem;margin-bottom:.8rem;filter:drop-shadow(0 0 25px #00bbff90)}
+h1{color:#fff;font-size:2rem;font-weight:200;letter-spacing:8px;text-transform:uppercase;margin-bottom:.3rem}
+.sub{color:#3399bb;font-size:.8rem;letter-spacing:3px;margin-bottom:2rem;text-transform:uppercase}
+p{color:rgba(255,255,255,.5);font-size:.85rem;text-align:center;max-width:270px;line-height:1.8;margin-bottom:2.5rem}
+#btn{
+  background:linear-gradient(135deg,#0055cc,#00ccff);
+  color:#fff;border:none;padding:15px 48px;border-radius:50px;
+  font-size:1rem;letter-spacing:2px;cursor:pointer;text-transform:uppercase;
+  box-shadow:0 0 50px rgba(0,160,255,.45),inset 0 1px 0 rgba(255,255,255,.25);
+  touch-action:manipulation;
+}
+#btn:active{transform:scale(.95);opacity:.9}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="ui">
+  <div class="drop-icon">💧</div>
+  <h1>Aqua</h1>
+  <div class="sub">Physics Simulation</div>
+  <p>Inclina il telefono per muovere l'acqua.<br>Tocca la superficie per creare onde.<br>Scuoti per un'esplosione.</p>
+  <button id="btn" onclick="start()">Attiva</button>
+</div>
+
+<script>
+'use strict';
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d', {alpha:false});
+
+let W=0, H=0;
+function resize(){W=canvas.width=window.innerWidth; H=canvas.height=window.innerHeight;}
+resize();
+window.addEventListener('resize', resize);
+
+// ==================== WAVE SIMULATION ====================
+const N = 160;
+const hArr = new Float32Array(N);
+const vArr = new Float32Array(N);
+const BASE = 0.52;
+
+let gx = 0;
+let running = false;
+let causticT = 0;
+
+function initWave(){
+  hArr.fill(BASE);
+  for(let i=0;i<6;i++){
+    const x=5+Math.floor(Math.random()*(N-10));
+    vArr[x]+=(Math.random()-.5)*0.005;
+  }
+}
+
+function stepWave(){
+  const C2=0.38, SPRING=0.0014, DAMP=0.9938;
+  const tilt = gx * 0.28;
+  for(let x=0;x<N;x++){
+    const eq=BASE+tilt*(x/(N-1)-.5);
+    const hl=x>0?hArr[x-1]:hArr[x]+(hArr[x]-hArr[x+1]);
+    const hr=x<N-1?hArr[x+1]:hArr[x]+(hArr[x]-hArr[x-1]);
+    vArr[x]+=C2*(hl+hr-2*hArr[x])+SPRING*(eq-hArr[x]);
+    vArr[x]*=DAMP;
+    hArr[x]=Math.max(0.04,Math.min(0.96,hArr[x]+vArr[x]));
+  }
+}
+
+function splash(xi, amp, radius=5){
+  for(let x=Math.max(0,xi-radius);x<=Math.min(N-1,xi+radius);x++){
+    const d=Math.abs(x-xi);
+    vArr[x]+=amp*(1-d/radius);
+  }
+}
+
+// ==================== BUBBLES ====================
+const bub=[];
+const NBUB=22;
+
+function newBubble(scatter){
+  const xi=Math.floor(Math.random()*N);
+  bub.push({
+    x:Math.random(),
+    y:scatter?hArr[xi]+0.05+Math.random()*(1-BASE)*0.85:0.97+Math.random()*0.02,
+    r:1.2+Math.random()*3.8,
+    vx:(Math.random()-.5)*0.0007,
+    vy:-(0.00025+Math.random()*0.0008)
+  });
+}
+
+function initBubbles(){
+  bub.length=0;
+  for(let i=0;i<NBUB;i++) newBubble(true);
+}
+
+function updateBubbles(){
+  for(let i=bub.length-1;i>=0;i--){
+    const b=bub[i];
+    b.x+=b.vx-gx*0.00006;
+    b.y+=b.vy;
+    if(b.x<0){b.x=0;b.vx*=-1;}
+    if(b.x>1){b.x=1;b.vx*=-1;}
+    const xi=Math.min(N-1,Math.max(0,Math.floor(b.x*(N-1))));
+    if(b.y<=hArr[xi]){
+      splash(xi,-0.0004*b.r,3);
+      bub.splice(i,1);
+      newBubble(false);
+    }
+  }
+}
+
+// ==================== PARTICLES ====================
+const parts=[];
+
+function addSplash(px,py,n,strength=1){
+  for(let i=0;i<n;i++){
+    const angle=-Math.PI+Math.random()*Math.PI;
+    const sp=(1.5+Math.random()*4)*strength;
+    parts.push({x:px,y:py,vx:Math.cos(angle)*sp,vy:-Math.abs(Math.sin(angle))*sp-2*strength,life:1,r:1.2+Math.random()*2.5*strength});
+  }
+}
+
+function updateParts(){
+  for(let i=parts.length-1;i>=0;i--){
+    const p=parts[i];
+    p.vy+=0.2;p.x+=p.vx;p.y+=p.vy;p.life-=0.026;
+    if(p.life<=0) parts.splice(i,1);
+  }
+}
+
+// ==================== PATH ====================
+function getPath(){
+  const path=new Path2D();
+  path.moveTo(-1,H+2);
+  for(let x=0;x<N;x++) path.lineTo(x*W/(N-1),hArr[x]*H);
+  path.lineTo(W+1,H+2);
+  path.closePath();
+  return path;
+}
+
+// ==================== RENDER ====================
+function render(){
+  causticT+=0.009;
+  const path=getPath();
+
+  const avgH=hArr.reduce((s,v)=>s+v,0)/N;
+  const avgY=avgH*H;
+
+  // --- SKY / AIR ---
+  const airG=ctx.createLinearGradient(0,0,0,avgY+60);
+  airG.addColorStop(0,'#020810');
+  airG.addColorStop(0.6,'#041020');
+  airG.addColorStop(1,'#071830');
+  ctx.fillStyle=airG;
+  ctx.fillRect(0,0,W,H);
+
+  // --- WATER BODY ---
+  const wG=ctx.createLinearGradient(0,avgY,0,H);
+  wG.addColorStop(0,'#2299ee');
+  wG.addColorStop(0.12,'#1177cc');
+  wG.addColorStop(0.45,'#0a44aa');
+  wG.addColorStop(1,'#030f40');
+  ctx.fillStyle=wG;
+  ctx.fill(path);
+
+  // --- CLIPPED WATER EFFECTS ---
+  ctx.save();
+  ctx.clip(path);
+
+  // Curvature-based caustics (light focused by surface)
+  ctx.globalAlpha=0.18;
+  for(let x=2;x<N-2;x+=2){
+    const curv=hArr[x-1]+hArr[x+1]-2*hArr[x];
+    if(curv<-0.001){
+      const px=x*W/(N-1);
+      const py=hArr[x]*H;
+      const w2=Math.abs(curv)*W*0.55;
+      const cG=ctx.createLinearGradient(px,py,px,H);
+      const alpha=Math.min(1,Math.abs(curv)*700);
+      cG.addColorStop(0,`rgba(120,220,255,${alpha})`);
+      cG.addColorStop(0.35,`rgba(60,150,255,${alpha*0.5})`);
+      cG.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=cG;
+      ctx.fillRect(px-w2/2,py,w2,H-py);
+    }
+  }
+
+  // Animated caustic blobs
+  ctx.globalAlpha=0.08;
+  for(let i=0;i<10;i++){
+    const t=causticT+i*0.73;
+    const cx=(Math.sin(t*0.63+i*1.1)*0.38+0.5)*W;
+    const cy=avgY+(Math.cos(t*0.49+i*1.4)*0.3+0.7)*(H-avgY);
+    const r=12+Math.sin(t*1.2+i)*9;
+    const cG=ctx.createRadialGradient(cx,cy,0,cx,cy,r);
+    cG.addColorStop(0,'rgba(130,230,255,1)');
+    cG.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=cG;
+    ctx.beginPath();
+    ctx.ellipse(cx,cy,r*1.4,r*0.6,Math.sin(t*0.32),0,Math.PI*2);
+    ctx.fill();
+  }
+
+  // Light rays from surface
+  ctx.globalAlpha=0.05;
+  for(let i=0;i<7;i++){
+    const rx=(i/6*0.75+0.125)*W+Math.sin(causticT*0.45+i)*25;
+    const rG=ctx.createLinearGradient(rx,avgY,rx+Math.sin(causticT*0.6+i)*15,H);
+    rG.addColorStop(0,'rgba(120,200,255,0.9)');
+    rG.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=rG;
+    ctx.beginPath();
+    const spread=10+i*2;
+    ctx.moveTo(rx-spread,avgY);
+    ctx.lineTo(rx+spread,avgY);
+    ctx.lineTo(rx+spread*1.5+Math.sin(causticT+i)*12,H);
+    ctx.lineTo(rx-spread*1.5-Math.sin(causticT+i)*12,H);
+    ctx.closePath();
+    ctx.fill();
+  }
+  ctx.globalAlpha=1;
+
+  // Horizontal depth gradient (depth effect)
+  const depthG=ctx.createLinearGradient(0,avgY,0,H);
+  depthG.addColorStop(0,'rgba(0,80,180,0)');
+  depthG.addColorStop(1,'rgba(0,10,60,0.35)');
+  ctx.fillStyle=depthG;
+  ctx.fillRect(0,avgY,W,H-avgY);
+
+  // Bubbles
+  for(const b of bub){
+    const bx=b.x*W, by=b.y*H;
+    ctx.globalAlpha=0.38;
+    ctx.beginPath();
+    ctx.arc(bx,by,b.r,0,Math.PI*2);
+    ctx.strokeStyle='rgba(180,235,255,0.9)';
+    ctx.lineWidth=0.9;
+    ctx.stroke();
+    ctx.globalAlpha=0.65;
+    ctx.beginPath();
+    ctx.arc(bx-b.r*.38,by-b.r*.38,b.r*.32,0,Math.PI*2);
+    ctx.fillStyle='rgba(255,255,255,0.85)';
+    ctx.fill();
+  }
+  ctx.globalAlpha=1;
+
+  ctx.restore(); // end clip
+
+  // --- SURFACE ---
+  // Main foam line
+  ctx.beginPath();
+  for(let x=0;x<N;x++){
+    const px=x*W/(N-1),py=hArr[x]*H;
+    x===0?ctx.moveTo(px,py):ctx.lineTo(px,py);
+  }
+  ctx.strokeStyle='rgba(255,255,255,0.6)';
+  ctx.lineWidth=2;
+  ctx.stroke();
+
+  // Specular sheen
+  const sG=ctx.createLinearGradient(0,0,W,0);
+  sG.addColorStop(0,'rgba(120,220,255,0)');
+  sG.addColorStop(0.3,'rgba(220,248,255,0.22)');
+  sG.addColorStop(0.7,'rgba(220,248,255,0.22)');
+  sG.addColorStop(1,'rgba(120,220,255,0)');
+  ctx.beginPath();
+  for(let x=0;x<N;x++){
+    const px=x*W/(N-1),py=hArr[x]*H;
+    x===0?ctx.moveTo(px,py):ctx.lineTo(px,py);
+  }
+  ctx.strokeStyle=sG;
+  ctx.lineWidth=6;
+  ctx.stroke();
+
+  // Crest highlights
+  for(let x=2;x<N-2;x++){
+    const slope=hArr[x-1]-hArr[x+1];
+    if(slope>0.005){
+      const px=x*W/(N-1),py=hArr[x]*H;
+      const intensity=Math.min(.55,slope*55);
+      const r=2.5+slope*100;
+      const hG=ctx.createRadialGradient(px,py,0,px,py,r);
+      hG.addColorStop(0,`rgba(230,250,255,${intensity})`);
+      hG.addColorStop(1,'rgba(230,250,255,0)');
+      ctx.fillStyle=hG;
+      ctx.beginPath();
+      ctx.arc(px,py,r,0,Math.PI*2);
+      ctx.fill();
+    }
+  }
+
+  // --- SPLASH PARTICLES ---
+  for(const p of parts){
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.fillStyle=`rgba(160,230,255,${p.life*.85})`;
+    ctx.fill();
+  }
+
+  // --- 3D CONTAINER WALLS ---
+  const D=Math.min(W,H)*0.038;
+  ctx.globalAlpha=0.72;
+
+  // Left wall
+  ctx.beginPath();
+  ctx.moveTo(0,0);ctx.lineTo(D,D);ctx.lineTo(D,H);ctx.lineTo(0,H);
+  ctx.closePath();
+  const lG=ctx.createLinearGradient(0,0,D,0);
+  lG.addColorStop(0,'rgba(80,160,220,0.55)');
+  lG.addColorStop(1,'rgba(20,70,140,0.2)');
+  ctx.fillStyle=lG;ctx.fill();
+
+  // Right wall
+  ctx.beginPath();
+  ctx.moveTo(W,0);ctx.lineTo(W-D,D);ctx.lineTo(W-D,H);ctx.lineTo(W,H);
+  ctx.closePath();
+  const rG=ctx.createLinearGradient(W-D,0,W,0);
+  rG.addColorStop(0,'rgba(20,70,140,0.2)');
+  rG.addColorStop(1,'rgba(80,160,220,0.55)');
+  ctx.fillStyle=rG;ctx.fill();
+
+  // Top wall
+  ctx.beginPath();
+  ctx.moveTo(0,0);ctx.lineTo(D,D);ctx.lineTo(W-D,D);ctx.lineTo(W,0);
+  ctx.closePath();
+  const tG=ctx.createLinearGradient(0,0,0,D);
+  tG.addColorStop(0,'rgba(50,120,190,0.45)');
+  tG.addColorStop(1,'rgba(15,50,110,0.15)');
+  ctx.fillStyle=tG;ctx.fill();
+
+  ctx.globalAlpha=1;
+
+  // Bright edges
+  ctx.strokeStyle='rgba(140,215,255,0.65)';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(D,D);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(W,0);ctx.lineTo(W-D,D);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(D,D);ctx.lineTo(W-D,D);ctx.stroke();
+  ctx.strokeStyle='rgba(100,180,240,0.3)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(D,D);ctx.lineTo(D,H);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(W-D,D);ctx.lineTo(W-D,H);ctx.stroke();
+
+  // Glass reflection streaks
+  const gs1=ctx.createLinearGradient(0,0,W*.1,0);
+  gs1.addColorStop(0,'rgba(255,255,255,0)');
+  gs1.addColorStop(0.5,'rgba(255,255,255,0.04)');
+  gs1.addColorStop(1,'rgba(255,255,255,0)');
+  ctx.fillStyle=gs1;ctx.fillRect(D,0,W*.08,H);
+
+  const gs2=ctx.createLinearGradient(W*.4,0,W*.6,0);
+  gs2.addColorStop(0,'rgba(255,255,255,0)');
+  gs2.addColorStop(0.5,'rgba(255,255,255,0.02)');
+  gs2.addColorStop(1,'rgba(255,255,255,0)');
+  ctx.fillStyle=gs2;ctx.fillRect(0,0,W,H);
+}
+
+// ==================== INPUT ====================
+let lastShakeT=0;
+
+function setupMotion(){
+  window.addEventListener('devicemotion', e=>{
+    const a=e.accelerationIncludingGravity;
+    if(!a) return;
+    gx=gx*.80+(a.x||0)*.20;
+
+    // Shake detection
+    const raw=e.acceleration;
+    if(raw){
+      const mag=Math.sqrt((raw.x||0)**2+(raw.y||0)**2+(raw.z||0)**2);
+      const now=Date.now();
+      if(mag>18&&now-lastShakeT>600){
+        lastShakeT=now;
+        for(let i=0;i<8;i++){
+          const xi=5+Math.floor(Math.random()*(N-10));
+          splash(xi,(Math.random()-.5)*0.04,6);
+        }
+        // Big surface explosion
+        const sxi=Math.floor(N/2);
+        const sy=hArr[sxi]*H;
+        addSplash(W/2,sy,20,2.5);
+      }
+    }
+  });
+}
+
+canvas.addEventListener('pointerdown', e=>{
+  if(!running) return;
+  e.preventDefault();
+  const tx=e.clientX/W;
+  const xi=Math.min(N-1,Math.max(0,Math.floor(tx*N)));
+  splash(xi,-0.013,5);
+  const py=hArr[xi]*H;
+  addSplash(e.clientX,py,7,1);
+},{passive:false});
+
+// ==================== LOOP ====================
+function loop(ts){
+  if(!running) return;
+  stepWave();stepWave();
+  updateBubbles();
+  updateParts();
+  render();
+  requestAnimationFrame(loop);
+}
+
+async function start(){
+  document.getElementById('ui').style.display='none';
+  initWave();
+  initBubbles();
+
+  if(typeof DeviceMotionEvent!=='undefined'&&typeof DeviceMotionEvent.requestPermission==='function'){
+    try{
+      const p=await DeviceMotionEvent.requestPermission();
+      if(p==='granted') setupMotion();
+    }catch(err){console.warn('Motion permission denied',err);}
+  } else {
+    setupMotion();
+  }
+
+  running=true;
+  requestAnimationFrame(loop);
+}
+</script>
+</body>
+</html>
