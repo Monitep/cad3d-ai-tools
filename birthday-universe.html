@@ -4,47 +4,75 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Il Tuo Universo Personale</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
+:root{
+  --bg:#07071a;--g1:rgba(100,30,180,.35);--g2:rgba(30,100,200,.3);--g3:rgba(180,30,100,.25);
+  --a1:#ff6b9d;--a2:#ffd93d;
+  --card:rgba(255,255,255,.035);--card-b:rgba(255,255,255,.07);--card-h:rgba(255,255,255,.16);
+  --tx:#fff;--txm:rgba(255,255,255,.42);--txd:rgba(255,255,255,.6);
+  --ibg:rgba(255,255,255,.07);--ib:rgba(255,255,255,.12);
+  --gc:rgba(255,255,255,.03);--panel:rgba(15,10,35,.92);
+  --fs:1rem;
+}
+.th-ocean{--bg:#020f1f;--g1:rgba(0,100,200,.4);--g2:rgba(0,180,180,.3);--g3:rgba(0,50,150,.2);--a1:#00dfd8;--a2:#4d96ff;--panel:rgba(0,15,35,.92)}
+.th-forest{--bg:#030a05;--g1:rgba(20,120,40,.4);--g2:rgba(40,160,60,.25);--g3:rgba(80,200,80,.15);--a1:#6bcb77;--a2:#c8f557;--panel:rgba(3,12,6,.92)}
+.th-sunset{--bg:#150500;--g1:rgba(200,80,0,.4);--g2:rgba(220,50,30,.3);--g3:rgba(180,120,0,.2);--a1:#ff9f1c;--a2:#ff4500;--panel:rgba(20,5,0,.92)}
+.th-night{--bg:#000;--g1:rgba(30,30,30,.6);--g2:rgba(20,20,20,.4);--g3:rgba(50,50,50,.2);--a1:#d0d0d0;--a2:#888;--panel:rgba(10,10,10,.95)}
+.th-light{
+  --bg:#eef0f8;--g1:rgba(100,60,220,.1);--g2:rgba(60,120,220,.08);--g3:rgba(180,60,120,.07);
+  --a1:#7928ca;--a2:#ff0080;
+  --card:rgba(255,255,255,.85);--card-b:rgba(0,0,0,.08);--card-h:rgba(0,0,0,.14);
+  --tx:#1a1a2e;--txm:rgba(0,0,0,.45);--txd:rgba(0,0,0,.65);
+  --ibg:rgba(255,255,255,.95);--ib:rgba(0,0,0,.15);--gc:rgba(0,0,0,.04);--panel:rgba(240,238,255,.97)
+}
+
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Segoe UI',system-ui,sans-serif;background:#07071a;min-height:100vh;overflow-x:hidden;color:white}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);min-height:100vh;overflow-x:hidden;color:var(--tx);font-size:var(--fs);transition:background .35s,color .35s}
 
-/* ---- BACKGROUND ---- */
-.bg{position:fixed;inset:0;z-index:-2;background:radial-gradient(ellipse at 15% 40%,rgba(100,30,180,.35),transparent 55%),radial-gradient(ellipse at 85% 20%,rgba(30,100,200,.3),transparent 55%),radial-gradient(ellipse at 50% 85%,rgba(180,30,100,.25),transparent 55%),#07071a}
-.bg-grid{position:fixed;inset:0;z-index:-1;background-image:linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);background-size:50px 50px}
+.bg{position:fixed;inset:0;z-index:-2;background:radial-gradient(ellipse at 15% 40%,var(--g1),transparent 55%),radial-gradient(ellipse at 85% 20%,var(--g2),transparent 55%),radial-gradient(ellipse at 50% 85%,var(--g3),transparent 55%),var(--bg);transition:background .35s}
+.bg-grid{position:fixed;inset:0;z-index:-1;background-image:linear-gradient(var(--gc) 1px,transparent 1px),linear-gradient(90deg,var(--gc) 1px,transparent 1px);background-size:50px 50px}
 
-/* ---- PARTICLES ---- */
-@keyframes floatUp{0%{transform:translateY(100vh) scale(0);opacity:0}10%{opacity:.7}90%{opacity:.7}100%{transform:translateY(-20vh) scale(1);opacity:0}}
+@keyframes floatUp{0%{transform:translateY(100vh);opacity:0}10%{opacity:.6}90%{opacity:.6}100%{transform:translateY(-20vh);opacity:0}}
 .pt{position:fixed;border-radius:50%;pointer-events:none;animation:floatUp linear infinite}
 
-/* ---- INPUT SECTION ---- */
-.hero{text-align:center;padding:60px 20px 50px;position:relative}
-.hero h1{font-size:clamp(2.2rem,5vw,4.2rem);font-weight:900;background:linear-gradient(135deg,#ff6b9d 0%,#ffd93d 30%,#6bcb77 60%,#4d96ff 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:10px;line-height:1.1}
-.hero p{color:rgba(255,255,255,.55);font-size:1.05rem;margin-bottom:40px}
-.input-card{max-width:460px;margin:0 auto;background:rgba(255,255,255,.04);backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.1);border-radius:28px;padding:40px;box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 60px rgba(100,30,180,.2)}
-label{display:block;color:rgba(255,255,255,.6);font-size:.82rem;letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px;font-weight:600}
-input[type=date],input[type=time]{width:100%;padding:14px 18px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:14px;color:white;font-size:1rem;margin-bottom:22px;outline:none;transition:all .3s;color-scheme:dark}
-input:focus{border-color:rgba(140,50,220,.7);box-shadow:0 0 0 3px rgba(140,50,220,.15);background:rgba(255,255,255,.1)}
-.hint{color:rgba(255,255,255,.35);font-size:.78rem;margin-top:-14px;margin-bottom:20px;padding-left:4px}
-.btn{width:100%;padding:17px;background:linear-gradient(135deg,#7928ca,#ff0080);border:none;border-radius:14px;color:white;font-size:1.05rem;font-weight:800;cursor:pointer;transition:all .3s;letter-spacing:.5px;text-transform:uppercase;position:relative;overflow:hidden}
-.btn:hover{transform:translateY(-3px);box-shadow:0 14px 40px rgba(120,0,120,.5)}
-.btn:active{transform:translateY(0)}
+/* INPUT */
+.hero{text-align:center;padding:60px 20px 50px}
+.hero h1{font-size:clamp(2rem,5vw,4rem);font-weight:900;background:linear-gradient(135deg,var(--a1),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:10px;line-height:1.1}
+.hero p{color:var(--txd);font-size:1rem;margin-bottom:36px}
+.icard{max-width:440px;margin:0 auto;background:var(--card);backdrop-filter:blur(20px);border:1px solid var(--card-b);border-radius:24px;padding:36px;box-shadow:0 30px 80px rgba(0,0,0,.5)}
+label{display:block;color:var(--txd);font-size:.78rem;letter-spacing:.8px;text-transform:uppercase;margin-bottom:7px;font-weight:600}
+input[type=date],input[type=time]{width:100%;padding:13px 16px;background:var(--ibg);border:1px solid var(--ib);border-radius:12px;color:var(--tx);font-size:1rem;margin-bottom:20px;outline:none;transition:all .3s;color-scheme:dark}
+.th-light input[type=date],.th-light input[type=time]{color-scheme:light}
+input:focus{border-color:rgba(140,50,220,.7);box-shadow:0 0 0 3px rgba(140,50,220,.15)}
+.hint{color:var(--txm);font-size:.75rem;margin-top:-14px;margin-bottom:18px;padding-left:4px}
+.btn{width:100%;padding:16px;background:linear-gradient(135deg,#7928ca,#ff0080);border:none;border-radius:12px;color:#fff;font-size:1rem;font-weight:800;cursor:pointer;transition:all .3s;letter-spacing:.3px;text-transform:uppercase}
+.btn:hover{transform:translateY(-3px);box-shadow:0 14px 36px rgba(120,0,120,.5)}
 
-/* ---- RESULTS ---- */
-#results{display:none;max-width:1200px;margin:0 auto;padding:30px 18px 60px}
+/* RESULTS */
+#results{display:none;max-width:1200px;margin:0 auto;padding:30px 16px 60px}
 
-/* ---- BIG TICKER ---- */
-.ticker-wrap{text-align:center;padding:40px 30px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:28px;margin-bottom:32px;position:relative;overflow:hidden}
+/* ACTION BAR */
+.action-bar{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:28px}
+.abtn{display:flex;align-items:center;gap:7px;padding:10px 20px;background:var(--card);border:1px solid var(--card-b);border-radius:12px;color:var(--txd);cursor:pointer;font-size:.85rem;font-weight:600;transition:all .3s;backdrop-filter:blur(10px)}
+.abtn:hover{background:var(--card-h);color:var(--tx);transform:translateY(-2px)}
+.abtn.pdf{border-color:rgba(255,107,157,.4);color:#ff6b9d}
+.abtn.share{border-color:rgba(77,150,255,.4);color:#4d96ff}
+.abtn.reset{border-color:rgba(255,255,255,.15)}
+
+/* TICKER */
+.ticker-wrap{text-align:center;padding:36px 24px;background:var(--card);border:1px solid var(--card-b);border-radius:24px;margin-bottom:28px;position:relative;overflow:hidden}
 .ticker-wrap::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(120,0,200,.08),rgba(255,0,128,.08))}
-.ticker-label{color:rgba(255,255,255,.45);font-size:.78rem;letter-spacing:3px;text-transform:uppercase;margin-bottom:14px}
-.ticker-main{font-size:clamp(2rem,6vw,4.5rem);font-weight:900;background:linear-gradient(135deg,#ff6b9d,#ffd93d);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-variant-numeric:tabular-nums;font-feature-settings:"tnum";line-height:1;letter-spacing:-1px}
-.ticker-sub{color:rgba(255,255,255,.4);font-size:.85rem;margin-top:10px;font-variant-numeric:tabular-nums}
+.ticker-label{color:var(--txm);font-size:.74rem;letter-spacing:3px;text-transform:uppercase;margin-bottom:12px}
+.ticker-main{font-size:clamp(1.8rem,5.5vw,4rem);font-weight:900;background:linear-gradient(135deg,var(--a1),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-variant-numeric:tabular-nums;font-feature-settings:"tnum";line-height:1;letter-spacing:-1px}
+.ticker-sub{color:var(--txm);font-size:.82rem;margin-top:10px;font-variant-numeric:tabular-nums}
 
-/* ---- CARDS ---- */
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:18px}
-.card{background:rgba(255,255,255,.035);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.07);border-radius:22px;padding:26px;transition:all .35s cubic-bezier(.2,.8,.2,1);position:relative;overflow:hidden;animation:cardIn .5s ease both}
-@keyframes cardIn{from{opacity:0;transform:translateY(28px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
-.card:hover{transform:translateY(-5px);border-color:rgba(255,255,255,.16);box-shadow:0 24px 50px rgba(0,0,0,.5)}
-.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:22px 22px 0 0}
+/* CARDS */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.card{background:var(--card);backdrop-filter:blur(12px);border:1px solid var(--card-b);border-radius:20px;padding:24px;transition:all .3s cubic-bezier(.2,.8,.2,1);position:relative;overflow:hidden;animation:cardIn .5s ease both}
+@keyframes cardIn{from{opacity:0;transform:translateY(24px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+.card:hover{transform:translateY(-4px);border-color:var(--card-h);box-shadow:0 20px 44px rgba(0,0,0,.4)}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:20px 20px 0 0}
 .c-p::before{background:linear-gradient(90deg,#7928ca,#ff0080)}
 .c-b::before{background:linear-gradient(90deg,#0070f3,#00dfd8)}
 .c-g::before{background:linear-gradient(90deg,#17c964,#5ea2ef)}
@@ -54,41 +82,67 @@ input:focus{border-color:rgba(140,50,220,.7);box-shadow:0 0 0 3px rgba(140,50,22
 .c-l::before{background:linear-gradient(90deg,#84cc16,#22c55e)}
 .c-r::before{background:linear-gradient(90deg,#ef4444,#f97316)}
 .c-y::before{background:linear-gradient(90deg,#eab308,#f59e0b)}
-.emo{font-size:2.4rem;margin-bottom:10px;display:block}
-.clabel{color:rgba(255,255,255,.42);font-size:.7rem;letter-spacing:1.8px;text-transform:uppercase;margin-bottom:7px}
-.cval{font-size:1.65rem;font-weight:800;color:#fff;line-height:1.2;margin-bottom:5px;font-variant-numeric:tabular-nums}
-.cdesc{color:rgba(255,255,255,.38);font-size:.8rem;line-height:1.55}
+.emo{font-size:2.2rem;margin-bottom:9px;display:block}
+.clabel{color:var(--txm);font-size:.68rem;letter-spacing:1.8px;text-transform:uppercase;margin-bottom:6px}
+.cval{font-size:1.55rem;font-weight:800;color:var(--tx);line-height:1.2;margin-bottom:5px;font-variant-numeric:tabular-nums}
+.cdesc{color:var(--txm);font-size:.78rem;line-height:1.55}
 
-/* ---- ZODIAC WIDE ---- */
+/* ZODIAC WIDE */
 .zodiac-card{grid-column:span 2}
-@media(max-width:640px){.zodiac-card{grid-column:span 1}}
-.zodiac-inner{display:flex;align-items:center;gap:24px}
-@media(max-width:640px){.zodiac-inner{flex-direction:column;text-align:center}}
-.z-sym{font-size:5.5rem;line-height:1;flex-shrink:0}
-.z-name{font-size:2.2rem;font-weight:900;color:#fff;margin-bottom:4px}
-.z-dates{color:rgba(255,255,255,.45);font-size:.82rem;margin-bottom:8px;letter-spacing:.5px}
-.z-traits{color:rgba(255,255,255,.65);font-size:.88rem;line-height:1.65}
+@media(max-width:600px){.zodiac-card{grid-column:span 1}}
+.zi{display:flex;align-items:center;gap:20px}
+@media(max-width:600px){.zi{flex-direction:column;text-align:center}}
+.z-sym{font-size:5rem;line-height:1;flex-shrink:0}
+.z-name{font-size:2rem;font-weight:900;color:var(--tx);margin-bottom:3px}
+.z-dates{color:var(--txm);font-size:.8rem;margin-bottom:7px;letter-spacing:.5px}
+.z-traits{color:var(--txd);font-size:.86rem;line-height:1.65}
 
-/* ---- RESET ---- */
-.reset{display:block;margin:36px auto 0;padding:12px 36px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:14px;color:rgba(255,255,255,.5);cursor:pointer;font-size:.9rem;transition:all .3s}
-.reset:hover{background:rgba(255,255,255,.12);color:#fff}
+/* FLOAT CONTROLS */
+.fab{position:fixed;bottom:24px;right:24px;z-index:200;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+.fab-btn{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#7928ca,#ff0080);border:none;color:#fff;font-size:1.4rem;cursor:pointer;box-shadow:0 6px 24px rgba(120,0,120,.5);transition:all .3s;display:flex;align-items:center;justify-content:center}
+.fab-btn:hover{transform:scale(1.1) rotate(30deg)}
+.fab-panel{background:var(--panel);backdrop-filter:blur(24px);border:1px solid var(--card-b);border-radius:20px;padding:20px;width:260px;display:none;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.fab-panel.open{display:block;animation:panelIn .25s ease}
+@keyframes panelIn{from{opacity:0;transform:translateY(10px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+.panel-title{color:var(--txm);font-size:.7rem;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;font-weight:700}
+.themes{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.tswatch{width:34px;height:34px;border-radius:50%;border:2.5px solid transparent;cursor:pointer;transition:all .2s;position:relative}
+.tswatch:hover,.tswatch.active{border-color:#fff;transform:scale(1.15)}
+.th-light .tswatch:hover,.th-light .tswatch.active{border-color:#555}
+.tswatch[data-th=""]      {background:linear-gradient(135deg,#7928ca,#ff0080)}
+.tswatch[data-th="ocean"] {background:linear-gradient(135deg,#0070f3,#00dfd8)}
+.tswatch[data-th="forest"]{background:linear-gradient(135deg,#17c964,#c8f557)}
+.tswatch[data-th="sunset"]{background:linear-gradient(135deg,#ff9f1c,#ff4500)}
+.tswatch[data-th="night"] {background:linear-gradient(135deg,#333,#888)}
+.tswatch[data-th="light"] {background:linear-gradient(135deg,#eef0f8,#c8b4ff);border-color:rgba(0,0,0,.2)!important}
+.tswatch[data-th="light"]:hover{border-color:#7928ca!important}
+.fs-ctrl{display:flex;align-items:center;gap:8px}
+.fs-btn{width:32px;height:32px;border-radius:8px;background:var(--card);border:1px solid var(--card-b);color:var(--tx);font-size:1.1rem;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center}
+.fs-btn:hover{background:var(--card-h)}
+.fs-val{color:var(--txd);font-size:.85rem;font-weight:700;flex:1;text-align:center;min-width:36px}
+.divider{height:1px;background:var(--card-b);margin:14px 0}
+
+/* TOAST */
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(50,200,100,.9);color:#fff;padding:10px 24px;border-radius:12px;font-size:.88rem;font-weight:600;opacity:0;transition:all .3s;pointer-events:none;z-index:300}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 </style>
 </head>
 <body>
 <div class="bg"></div>
 <div class="bg-grid"></div>
+<div class="toast" id="toast"></div>
 
 <!-- INPUT -->
 <div id="inputSection">
   <div class="hero">
     <h1>🌌 Il Tuo Universo</h1>
-    <p>Inserisci la tua data di nascita e scopri tutto quello che sei diventato</p>
-    <div class="input-card">
+    <p>Inserisci la data di nascita e scopri tutto quello che sei diventato</p>
+    <div class="icard">
       <label>Data di nascita</label>
       <input type="date" id="birthDate">
       <label>Ora di nascita</label>
       <input type="time" id="birthTime">
-      <div class="hint">Opzionale — affina il segno zodiacale e i secondi esatti</div>
+      <div class="hint">Opzionale — affina il calcolo del segno e i secondi esatti</div>
       <button class="btn" onclick="go()">✨ Scopri il tuo universo</button>
     </div>
   </div>
@@ -96,256 +150,87 @@ input:focus{border-color:rgba(140,50,220,.7);box-shadow:0 0 0 3px rgba(140,50,22
 
 <!-- RESULTS -->
 <div id="results">
+  <div class="action-bar" id="actionBar">
+    <button class="abtn pdf" onclick="makePDF()">📄 Scarica PDF</button>
+    <button class="abtn share" onclick="doShare()">🔗 Condividi link</button>
+    <button class="abtn reset" onclick="doReset()">← Cambia data</button>
+  </div>
   <div class="ticker-wrap">
     <div class="ticker-label">🎂 Sei vivo da esattamente</div>
     <div class="ticker-main" id="tickerMain">-</div>
     <div class="ticker-sub" id="tickerSub">-</div>
   </div>
   <div class="grid" id="grid"></div>
-  <button class="reset" onclick="doReset()">← Calcola un'altra data</button>
+</div>
+
+<!-- FAB CONTROLS -->
+<div class="fab">
+  <div class="fab-panel" id="fabPanel">
+    <div class="panel-title">Tema colore</div>
+    <div class="themes">
+      <div class="tswatch active" data-th="" title="Viola" onclick="setTheme(this)"></div>
+      <div class="tswatch" data-th="ocean" title="Oceano" onclick="setTheme(this)"></div>
+      <div class="tswatch" data-th="forest" title="Foresta" onclick="setTheme(this)"></div>
+      <div class="tswatch" data-th="sunset" title="Tramonto" onclick="setTheme(this)"></div>
+      <div class="tswatch" data-th="night" title="Notte" onclick="setTheme(this)"></div>
+      <div class="tswatch" data-th="light" title="Chiaro" onclick="setTheme(this)"></div>
+    </div>
+    <div class="divider"></div>
+    <div class="panel-title">Dimensione testo</div>
+    <div class="fs-ctrl">
+      <button class="fs-btn" onclick="changeFS(-1)">A−</button>
+      <div class="fs-val" id="fsVal">100%</div>
+      <button class="fs-btn" onclick="changeFS(1)">A+</button>
+    </div>
+  </div>
+  <button class="fab-btn" onclick="togglePanel()" title="Personalizza">⚙️</button>
 </div>
 
 <script>
-// ==== SANTI ====
-const SAINTS={
-'01-01':'Maria SS. Madre di Dio','01-02':'Basilio Magno e Gregorio','01-03':'Genoveffa',
-'01-04':'Elisabetta Ann Seton','01-05':'Amelia','01-06':'Epifania del Signore',
-'01-07':'Raimondo da Peñafort','01-08':'Massimo','01-09':'Adriano','01-10':'Aldo',
-'01-11':'Igino Papa','01-12':'Modesto','01-13':'Ilario','01-14':'Felice da Nola',
-'01-15':'Mauro e Placido','01-16':'Marcello I Papa','01-17':'Antonio Abate',
-'01-18':'Liberata','01-19':'Mario e Marta','01-20':'Fabiano e Sebastiano',
-'01-21':'Agnese','01-22':'Vincenzo e Anastasio','01-23':'Emerenziana',
-'01-24':'Francesco di Sales','01-25':'Conversione di San Paolo',
-'01-26':'Timoteo e Tito','01-27':'Angela Merici','01-28':"Tommaso d'Aquino",
-'01-29':'Costanzo','01-30':'Martina','01-31':'Giovanni Bosco',
-'02-01':'Verdiana','02-02':'Presentazione del Signore','02-03':'Biagio',
-'02-04':'Gilberto','02-05':'Agata','02-06':'Paolo Miki e compagni',
-'02-07':'Teodoro','02-08':'Gerolamo Emiliani','02-09':'Apollonia',
-'02-10':'Scolastica','02-11':'Nostra Signora di Lourdes',
-'02-12':'Eulalia di Barcellona','02-13':'Beatrice','02-14':'Valentino / Cirillo e Metodio',
-'02-15':'Faustino e Giovita','02-16':'Giuliana','02-17':'Sette Fondatori dei Serviti',
-'02-18':'Simone','02-19':'Corrado Confalonieri','02-20':'Eleuterio',
-'02-21':'Pier Damiani','02-22':'Cattedra di San Pietro',
-'02-23':'Policarpo','02-24':'Sergio','02-25':'Cesario',
-'02-26':'Nestore','02-27':'Gabriele dell\'Addolorata','02-28':'Romano','02-29':'Romano',
-'03-01':'Albino','03-02':'Simplicio Papa','03-03':'Cunegonda',
-'03-04':'Casimiro','03-05':'Adriano','03-06':'Colette',
-'03-07':'Perpetua e Felicita','03-08':'Giovanni di Dio',
-'03-09':'Francesca Romana','03-10':'Macario','03-11':'Costantino',
-'03-12':'Gregorio Magno','03-13':'Rodrigo','03-14':'Matilde',
-'03-15':'Luisa de Marillac','03-16':'Eriberto','03-17':'Patrizio',
-'03-18':'Cirillo di Gerusalemme','03-19':'Giuseppe','03-20':'Cutberto',
-'03-21':'Nicola da Flüe','03-22':'Lea','03-23':'Turibio di Mongrovejo',
-'03-24':'Oscar','03-25':'Annunciazione del Signore','03-26':'Emanuele',
-'03-27':'Ruperto','03-28':'Sisto III','03-29':'Bertoldo',
-'03-30':'Amedeo','03-31':'Beniamino',
-'04-01':'Ugo di Grenoble','04-02':'Francesco di Paola',
-'04-03':'Riccardo di Chichester','04-04':'Isidoro di Siviglia',
-'04-05':'Vincenzo Ferrer','04-06':'Guglielmo','04-07':'Giovanni Battista de la Salle',
-'04-08':'Alberto','04-09':'Maria Cleofe','04-10':'Ezechiele',
-'04-11':'Stanislao','04-12':'Zeno di Verona','04-13':'Ermenegildo',
-'04-14':'Valeriano','04-15':'Damiano','04-16':'Bernardette Soubirous',
-'04-17':'Aniceto','04-18':'Apollonio','04-19':'Leone IX',
-'04-20':'Adalberto','04-21':'Anselmo d\'Aosta','04-22':'Caio Papa',
-'04-23':'Giorgio','04-24':'Fedele da Sigmaringen','04-25':'Marco Evangelista',
-'04-26':'Marcellino','04-27':'Zita','04-28':'Luigi Maria Grignion',
-'04-29':'Caterina da Siena','04-30':'Pio V',
-'05-01':'Giuseppe Lavoratore','05-02':'Atanasio',
-'05-03':'Filippo e Giacomo Apostoli','05-04':'Ciriaco',
-'05-05':'Gottardo','05-06':'Domenica','05-07':'Flavia',
-'05-08':'Vittore','05-09':'Pacomio','05-10':'Antonino',
-'05-11':'Fabio','05-12':'Nereo e Achilleo','05-13':'Nostra Signora di Fatima',
-'05-14':'Mattia Apostolo','05-15':'Isidoro Agricoltore',
-'05-16':'Ubaldo','05-17':'Pasquale Baylon','05-18':'Giovanni I Papa',
-'05-19':'Celestino V','05-20':'Bernardino da Siena',
-'05-21':'Vittorio','05-22':'Rita da Cascia','05-23':'Desiderio',
-'05-24':'Maria Ausiliatrice','05-25':'Beda il Venerabile',
-'05-26':'Filippo Neri','05-27':'Agostino di Canterbury',
-'05-28':'Germano di Parigi','05-29':'Massimino',
-'05-30':'Giovanna d\'Arco','05-31':'Visitazione di Maria',
-'06-01':'Giustino','06-02':'Marcellino e Pietro',
-'06-03':'Carlo Lwanga e compagni','06-04':'Francesco Caracciolo',
-'06-05':'Bonifacio di Magonza','06-06':'Norberto',
-'06-07':'Roberto di Molesme','06-08':'Medardo',
-'06-09':'Efrem il Siro','06-10':'Getulio',
-'06-11':'Barnaba Apostolo','06-12':'Leo III Papa',
-'06-13':'Antonio da Padova','06-14':'Eliseo Profeta',
-'06-15':'Vito Modesto Crescenza','06-16':'Aureliano',
-'06-17':'Gregorio Barbarigo','06-18':'Marcello',
-'06-19':'Romualdo','06-20':'Silverio Papa',
-'06-21':'Luigi Gonzaga','06-22':'Paolino da Nola',
-'06-23':'Giuseppe Cafasso','06-24':'Natività di San Giovanni Battista',
-'06-25':'Guglielmo da Vercelli','06-26':'Antimo',
-'06-27':'Cirillo di Alessandria','06-28':'Ireneo di Lione',
-'06-29':'Pietro e Paolo Apostoli','06-30':'Primi Martiri della Chiesa Romana',
-'07-01':'Ester Regina','07-02':'Ottone',
-'07-03':'Tommaso Apostolo','07-04':'Elisabetta del Portogallo',
-'07-05':'Antonio Maria Zaccaria','07-06':'Maria Goretti',
-'07-07':'Claudio','07-08':'Adriano III Papa',
-'07-09':'Veronica Giuliani','07-10':'Amalia',
-'07-11':'Benedetto da Norcia','07-12':'Giovanni Gualberto',
-'07-13':'Enrico di Baviera','07-14':'Camillo de Lellis',
-'07-15':'Bonaventura','07-16':'Nostra Signora del Carmelo',
-'07-17':'Alessio','07-18':'Federico',
-'07-19':'Arsenio','07-20':'Apollinare',
-'07-21':'Lorenzo da Brindisi','07-22':'Maria Maddalena',
-'07-23':'Brigida di Svezia','07-24':'Cristina',
-'07-25':'Giacomo il Maggiore Apostolo','07-26':'Gioacchino e Anna',
-'07-27':'Celestino I Papa','07-28':'Nazario e Celso',
-'07-29':'Marta','07-30':'Pietro Crisologo',
-'07-31':'Ignazio di Loyola',
-'08-01':'Alfonso M. de\' Liguori','08-02':'Eusebio di Vercelli',
-'08-03':'Lidia','08-04':'Giovanni Maria Vianney',
-'08-05':'Dedicazione S. Maria Maggiore','08-06':'Trasfigurazione del Signore',
-'08-07':'Sisto II e compagni','08-08':'Domenico',
-'08-09':'Teresa Benedetta della Croce','08-10':'Lorenzo Martire',
-'08-11':'Chiara d\'Assisi','08-12':'Giovanna Francesca de Chantal',
-'08-13':'Ippolito e Ponziano','08-14':'Massimiliano Kolbe',
-'08-15':'Assunzione di Maria','08-16':'Rocco',
-'08-17':'Giacinto','08-18':'Elena',
-'08-19':'Giovanni Eudes','08-20':'Bernardo di Chiaravalle',
-'08-21':'Pio X','08-22':'Vergine Maria Regina',
-'08-23':'Rosa da Lima','08-24':'Bartolomeo Apostolo',
-'08-25':'Luigi IX re di Francia','08-26':'Alessandro',
-'08-27':'Monica','08-28':'Agostino di Ippona',
-'08-29':'Martirio di Giovanni Battista','08-30':'Felice e Adautto',
-'08-31':'Raimondo Nonnato',
-'09-01':'Egidio','09-02':'Elpidio',
-'09-03':'Gregorio Magno','09-04':'Rosalia di Palermo',
-'09-05':'Teresa di Calcutta','09-06':'Eleuterio',
-'09-07':'Regina','09-08':'Natività di Maria',
-'09-09':'Pietro Claver','09-10':'Nicola da Tolentino',
-'09-11':'Proto e Giacinto','09-12':'SS. Nome di Maria',
-'09-13':'Giovanni Crisostomo','09-14':'Esaltazione della Santa Croce',
-'09-15':'Madonna Addolorata','09-16':'Cornelio e Cipriano',
-'09-17':'Roberto Bellarmino','09-18':'Giuseppe da Copertino',
-'09-19':'Gennaro','09-20':'Andrea Kim e compagni',
-'09-21':'Matteo Apostolo ed Evangelista','09-22':'Maurizio e compagni',
-'09-23':'Pio da Pietrelcina (Padre Pio)','09-24':'Nostra Signora della Mercede',
-'09-25':'Sergio','09-26':'Cosma e Damiano',
-'09-27':'Vincenzo de\' Paoli','09-28':'Venceslao',
-'09-29':'Michele, Gabriele e Raffaele Arcangeli','09-30':'Girolamo',
-'10-01':'Teresa di Gesù Bambino','10-02':'Angeli Custodi',
-'10-03':'Geraldo','10-04':'Francesco d\'Assisi',
-'10-05':'Placido e compagni','10-06':'Bruno di Colonia',
-'10-07':'Nostra Signora del Rosario','10-08':'Pelagia',
-'10-09':'Dionigi e compagni','10-10':'Daniele Comboni',
-'10-11':'Giovanni XXIII','10-12':'Serafino da Montegranaro',
-'10-13':'Edoardo','10-14':'Callisto I Papa',
-'10-15':'Teresa d\'Avila','10-16':'Margherita Maria Alacoque',
-'10-17':'Ignazio di Antiochia','10-18':'Luca Evangelista',
-'10-19':'Paolo della Croce','10-20':'Irene',
-'10-21':'Orsola e compagni','10-22':'Giovanni Paolo II',
-'10-23':'Giovanni da Capestrano','10-24':'Antonio Maria Claret',
-'10-25':'Crispino e Crispiniano','10-26':'Evaristo Papa',
-'10-27':'Fiorenzo','10-28':'Simone e Giuda Apostoli',
-'10-29':'Ermelinda','10-30':'Germano di Capua',
-'10-31':'Vigilia di Ognissanti',
-'11-01':'Tutti i Santi','11-02':'Commemorazione dei Defunti',
-'11-03':'Martino de Porres','11-04':'Carlo Borromeo',
-'11-05':'Zaccaria e Elisabetta','11-06':'Leonardo da Noblac',
-'11-07':'Ernesto','11-08':'Gottfredo',
-'11-09':'Dedicazione Basilica Lateranense','11-10':'Leone Magno',
-'11-11':'Martino di Tours','11-12':'Giosafat Kuncewic',
-'11-13':'Omobono','11-14':'Nicasio',
-'11-15':'Alberto Magno','11-16':'Margherita di Scozia e Geltrude',
-'11-17':'Elisabetta di Ungheria','11-18':'Dedicazione Basiliche di Pietro e Paolo',
-'11-19':'Matilde di Ringelheim','11-20':'Edmondo',
-'11-21':'Presentazione di Maria','11-22':'Cecilia',
-'11-23':'Clemente I Papa','11-24':'Andrea Dung-Lac e compagni',
-'11-25':'Caterina d\'Alessandria','11-26':'Silvestro Gozzolini',
-'11-27':'Virgilio','11-28':'Giacomo della Marca',
-'11-29':'Saturnino','11-30':'Andrea Apostolo',
-'12-01':'Eligio','12-02':'Bibiana',
-'12-03':'Francesco Saverio','12-04':'Giovanni Damasceno',
-'12-05':'Sabba','12-06':'Nicola di Bari',
-'12-07':'Ambrogio','12-08':'Immacolata Concezione di Maria',
-'12-09':'Juan Diego','12-10':'Nostra Signora di Loreto',
-'12-11':'Damaso I Papa','12-12':'Nostra Signora di Guadalupe',
-'12-13':'Lucia di Siracusa','12-14':'Giovanni della Croce',
-'12-15':'Virginia','12-16':'Adelaide',
-'12-17':'Lazzaro','12-18':'Graziano',
-'12-19':'Fausta','12-20':'Ursicino',
-'12-21':'Pietro Canisio','12-22':'Francesca Saverio Cabrini',
-'12-23':'Giovanni da Kety','12-24':'Vigilia di Natale',
-'12-25':'Natività di Gesù Cristo','12-26':'Stefano Protomartire',
-'12-27':'Giovanni Apostolo','12-28':'Santi Innocenti',
-'12-29':'Tommaso Becket','12-30':'Ruggero','12-31':'Silvestro I Papa'
-};
+// ===== DATA =====
+const SAINTS={'01-01':'Maria SS. Madre di Dio','01-02':'Basilio Magno e Gregorio','01-03':'Genoveffa','01-04':'Elisabetta Ann Seton','01-05':'Amelia','01-06':'Epifania del Signore','01-07':'Raimondo da Peñafort','01-08':'Massimo','01-09':'Adriano','01-10':'Aldo','01-11':'Igino Papa','01-12':'Modesto','01-13':'Ilario','01-14':'Felice da Nola','01-15':'Mauro e Placido','01-16':'Marcello I Papa','01-17':'Antonio Abate','01-18':'Liberata','01-19':'Mario e Marta','01-20':'Fabiano e Sebastiano','01-21':'Agnese','01-22':'Vincenzo e Anastasio','01-23':'Emerenziana','01-24':'Francesco di Sales','01-25':'Conversione di San Paolo','01-26':'Timoteo e Tito','01-27':'Angela Merici','01-28':"Tommaso d'Aquino",'01-29':'Costanzo','01-30':'Martina','01-31':'Giovanni Bosco','02-01':'Verdiana','02-02':'Presentazione del Signore','02-03':'Biagio','02-04':'Gilberto','02-05':'Agata','02-06':'Paolo Miki e compagni','02-07':'Teodoro','02-08':'Gerolamo Emiliani','02-09':'Apollonia','02-10':'Scolastica','02-11':'Nostra Signora di Lourdes','02-12':'Eulalia di Barcellona','02-13':'Beatrice','02-14':'Valentino / Cirillo e Metodio','02-15':'Faustino e Giovita','02-16':'Giuliana','02-17':'Sette Fondatori dei Serviti','02-18':'Simone','02-19':'Corrado Confalonieri','02-20':'Eleuterio','02-21':'Pier Damiani','02-22':'Cattedra di San Pietro','02-23':'Policarpo','02-24':'Sergio','02-25':'Cesario','02-26':'Nestore','02-27':"Gabriele dell'Addolorata",'02-28':'Romano','02-29':'Romano','03-01':'Albino','03-02':'Simplicio Papa','03-03':'Cunegonda','03-04':'Casimiro','03-05':'Adriano','03-06':'Colette','03-07':'Perpetua e Felicita','03-08':'Giovanni di Dio','03-09':'Francesca Romana','03-10':'Macario','03-11':'Costantino','03-12':'Gregorio Magno','03-13':'Rodrigo','03-14':'Matilde','03-15':'Luisa de Marillac','03-16':'Eriberto','03-17':'Patrizio','03-18':'Cirillo di Gerusalemme','03-19':'Giuseppe','03-20':'Cutberto','03-21':'Nicola da Flue','03-22':'Lea','03-23':'Turibio di Mongrovejo','03-24':'Oscar','03-25':'Annunciazione del Signore','03-26':'Emanuele','03-27':'Ruperto','03-28':'Sisto III','03-29':'Bertoldo','03-30':'Amedeo','03-31':'Beniamino','04-01':'Ugo di Grenoble','04-02':'Francesco di Paola','04-03':'Riccardo di Chichester','04-04':'Isidoro di Siviglia','04-05':'Vincenzo Ferrer','04-06':'Guglielmo','04-07':'Giovanni Battista de la Salle','04-08':'Alberto','04-09':'Maria Cleofe','04-10':'Ezechiele','04-11':'Stanislao','04-12':'Zeno di Verona','04-13':'Ermenegildo','04-14':'Valeriano','04-15':'Damiano','04-16':'Bernardette Soubirous','04-17':'Aniceto','04-18':'Apollonio','04-19':'Leone IX','04-20':'Adalberto','04-21':"Anselmo d'Aosta",'04-22':'Caio Papa','04-23':'Giorgio','04-24':'Fedele da Sigmaringen','04-25':'Marco Evangelista','04-26':'Marcellino','04-27':'Zita','04-28':'Luigi Maria Grignion','04-29':'Caterina da Siena','04-30':'Pio V','05-01':'Giuseppe Lavoratore','05-02':'Atanasio','05-03':'Filippo e Giacomo Apostoli','05-04':'Ciriaco','05-05':'Gottardo','05-06':'Domenica','05-07':'Flavia','05-08':'Vittore','05-09':'Pacomio','05-10':'Antonino','05-11':'Fabio','05-12':'Nereo e Achilleo','05-13':'Nostra Signora di Fatima','05-14':'Mattia Apostolo','05-15':'Isidoro Agricoltore','05-16':'Ubaldo','05-17':'Pasquale Baylon','05-18':'Giovanni I Papa','05-19':'Celestino V','05-20':'Bernardino da Siena','05-21':'Vittorio','05-22':'Rita da Cascia','05-23':'Desiderio','05-24':'Maria Ausiliatrice','05-25':'Beda il Venerabile','05-26':'Filippo Neri','05-27':'Agostino di Canterbury','05-28':'Germano di Parigi','05-29':'Massimino','05-30':"Giovanna d'Arco",'05-31':'Visitazione di Maria','06-01':'Giustino','06-02':'Marcellino e Pietro','06-03':'Carlo Lwanga e compagni','06-04':'Francesco Caracciolo','06-05':'Bonifacio di Magonza','06-06':'Norberto','06-07':'Roberto di Molesme','06-08':'Medardo','06-09':'Efrem il Siro','06-10':'Getulio','06-11':'Barnaba Apostolo','06-12':'Leo III Papa','06-13':'Antonio da Padova','06-14':'Eliseo Profeta','06-15':'Vito Modesto Crescenza','06-16':'Aureliano','06-17':'Gregorio Barbarigo','06-18':'Marcello','06-19':'Romualdo','06-20':'Silverio Papa','06-21':'Luigi Gonzaga','06-22':'Paolino da Nola','06-23':'Giuseppe Cafasso','06-24':'San Giovanni Battista','06-25':'Guglielmo da Vercelli','06-26':'Antimo','06-27':'Cirillo di Alessandria','06-28':'Ireneo di Lione','06-29':'Pietro e Paolo Apostoli','06-30':'Primi Martiri della Chiesa','07-01':'Ester Regina','07-02':'Ottone','07-03':'Tommaso Apostolo','07-04':'Elisabetta del Portogallo','07-05':'Antonio Maria Zaccaria','07-06':'Maria Goretti','07-07':'Claudio','07-08':'Adriano III Papa','07-09':'Veronica Giuliani','07-10':'Amalia','07-11':'Benedetto da Norcia','07-12':'Giovanni Gualberto','07-13':'Enrico di Baviera','07-14':'Camillo de Lellis','07-15':'Bonaventura','07-16':'Nostra Signora del Carmelo','07-17':'Alessio','07-18':'Federico','07-19':'Arsenio','07-20':'Apollinare','07-21':'Lorenzo da Brindisi','07-22':'Maria Maddalena','07-23':'Brigida di Svezia','07-24':'Cristina','07-25':'Giacomo il Maggiore Apostolo','07-26':'Gioacchino e Anna','07-27':'Celestino I Papa','07-28':'Nazario e Celso','07-29':'Marta','07-30':'Pietro Crisologo','07-31':'Ignazio di Loyola','08-01':"Alfonso M. de' Liguori",'08-02':'Eusebio di Vercelli','08-03':'Lidia','08-04':'Giovanni Maria Vianney','08-05':'Dedicazione S. Maria Maggiore','08-06':'Trasfigurazione del Signore','08-07':'Sisto II e compagni','08-08':'Domenico','08-09':'Teresa Benedetta della Croce','08-10':'Lorenzo Martire','08-11':"Chiara d'Assisi",'08-12':'Giovanna Francesca de Chantal','08-13':'Ippolito e Ponziano','08-14':'Massimiliano Kolbe','08-15':'Assunzione di Maria','08-16':'Rocco','08-17':'Giacinto','08-18':'Elena','08-19':'Giovanni Eudes','08-20':'Bernardo di Chiaravalle','08-21':'Pio X','08-22':'Vergine Maria Regina','08-23':'Rosa da Lima','08-24':'Bartolomeo Apostolo','08-25':'Luigi IX re di Francia','08-26':'Alessandro','08-27':'Monica','08-28':'Agostino di Ippona','08-29':'Martirio di Giovanni Battista','08-30':'Felice e Adautto','08-31':'Raimondo Nonnato','09-01':'Egidio','09-02':'Elpidio','09-03':'Gregorio Magno','09-04':'Rosalia di Palermo','09-05':'Teresa di Calcutta','09-06':'Eleuterio','09-07':'Regina','09-08':'Nativita di Maria','09-09':'Pietro Claver','09-10':'Nicola da Tolentino','09-11':'Proto e Giacinto','09-12':'SS. Nome di Maria','09-13':'Giovanni Crisostomo','09-14':'Esaltazione della Santa Croce','09-15':'Madonna Addolorata','09-16':'Cornelio e Cipriano','09-17':'Roberto Bellarmino','09-18':'Giuseppe da Copertino','09-19':'Gennaro','09-20':'Andrea Kim e compagni','09-21':'Matteo Apostolo ed Evangelista','09-22':'Maurizio e compagni','09-23':'Pio da Pietrelcina (Padre Pio)','09-24':'Nostra Signora della Mercede','09-25':'Sergio','09-26':'Cosma e Damiano','09-27':"Vincenzo de' Paoli",'09-28':'Venceslao','09-29':'Michele, Gabriele e Raffaele Arcangeli','09-30':'Girolamo','10-01':'Teresa di Gesu Bambino','10-02':'Angeli Custodi','10-03':'Geraldo','10-04':"Francesco d'Assisi",'10-05':'Placido e compagni','10-06':'Bruno di Colonia','10-07':'Nostra Signora del Rosario','10-08':'Pelagia','10-09':'Dionigi e compagni','10-10':'Daniele Comboni','10-11':'Giovanni XXIII','10-12':'Serafino da Montegranaro','10-13':'Edoardo','10-14':'Callisto I Papa','10-15':"Teresa d'Avila",'10-16':'Margherita Maria Alacoque','10-17':'Ignazio di Antiochia','10-18':'Luca Evangelista','10-19':'Paolo della Croce','10-20':'Irene','10-21':'Orsola e compagni','10-22':'Giovanni Paolo II','10-23':'Giovanni da Capestrano','10-24':'Antonio Maria Claret','10-25':'Crispino e Crispiniano','10-26':'Evaristo Papa','10-27':'Fiorenzo','10-28':'Simone e Giuda Apostoli','10-29':'Ermelinda','10-30':'Germano di Capua','10-31':'Vigilia di Ognissanti','11-01':'Tutti i Santi','11-02':'Commemorazione dei Defunti','11-03':'Martino de Porres','11-04':'Carlo Borromeo','11-05':'Zaccaria e Elisabetta','11-06':'Leonardo da Noblac','11-07':'Ernesto','11-08':'Gottfredo','11-09':'Dedicazione Basilica Lateranense','11-10':'Leone Magno','11-11':'Martino di Tours','11-12':'Giosafat Kuncewic','11-13':'Omobono','11-14':'Nicasio','11-15':'Alberto Magno','11-16':'Margherita di Scozia e Geltrude','11-17':'Elisabetta di Ungheria','11-18':'Dedicazione Basiliche di Pietro e Paolo','11-19':'Matilde di Ringelheim','11-20':'Edmondo','11-21':'Presentazione di Maria','11-22':'Cecilia','11-23':'Clemente I Papa','11-24':'Andrea Dung-Lac e compagni','11-25':"Caterina d'Alessandria",'11-26':'Silvestro Gozzolini','11-27':'Virgilio','11-28':'Giacomo della Marca','11-29':'Saturnino','11-30':'Andrea Apostolo','12-01':'Eligio','12-02':'Bibiana','12-03':'Francesco Saverio','12-04':'Giovanni Damasceno','12-05':'Sabba','12-06':'Nicola di Bari','12-07':'Ambrogio','12-08':'Immacolata Concezione di Maria','12-09':'Juan Diego','12-10':'Nostra Signora di Loreto','12-11':'Damaso I Papa','12-12':'Nostra Signora di Guadalupe','12-13':'Lucia di Siracusa','12-14':'Giovanni della Croce','12-15':'Virginia','12-16':'Adelaide','12-17':'Lazzaro','12-18':'Graziano','12-19':'Fausta','12-20':'Ursicino','12-21':'Pietro Canisio','12-22':'Francesca Saverio Cabrini','12-23':'Giovanni da Kety','12-24':'Vigilia di Natale','12-25':'Nativita di Gesu Cristo','12-26':'Stefano Protomartire','12-27':'Giovanni Apostolo','12-28':'Santi Innocenti','12-29':'Tommaso Becket','12-30':'Ruggero','12-31':'Silvestro I Papa'};
 
-// ==== POPOLAZIONE ====
-const POP=[[1900,1.60],[1910,1.75],[1920,1.86],[1930,2.07],[1940,2.30],
-[1950,2.50],[1955,2.77],[1960,3.03],[1965,3.34],[1970,3.70],
-[1975,4.07],[1980,4.43],[1985,4.83],[1990,5.31],[1995,5.72],
-[2000,6.10],[2005,6.54],[2010,6.93],[2015,7.38],[2020,7.80],
-[2025,8.20],[2030,8.55]];
-function worldPop(y){
-  for(let i=0;i<POP.length-1;i++){
-    if(y>=POP[i][0]&&y<POP[i+1][0]){
-      const t=(y-POP[i][0])/(POP[i+1][0]-POP[i][0]);
-      return(POP[i][1]+t*(POP[i+1][1]-POP[i][1])).toFixed(2);
-    }
-  }
-  return y<POP[0][0]?POP[0][1].toFixed(2):POP[POP.length-1][1].toFixed(2);
-}
+const POP=[[1900,1.60],[1910,1.75],[1920,1.86],[1930,2.07],[1940,2.30],[1950,2.50],[1955,2.77],[1960,3.03],[1965,3.34],[1970,3.70],[1975,4.07],[1980,4.43],[1985,4.83],[1990,5.31],[1995,5.72],[2000,6.10],[2005,6.54],[2010,6.93],[2015,7.38],[2020,7.80],[2025,8.20],[2030,8.55]];
+function worldPop(y){for(let i=0;i<POP.length-1;i++){if(y>=POP[i][0]&&y<POP[i+1][0]){const t=(y-POP[i][0])/(POP[i+1][0]-POP[i][0]);return(POP[i][1]+t*(POP[i+1][1]-POP[i][1])).toFixed(2);}}return y<POP[0][0]?POP[0][1].toFixed(2):POP[POP.length-1][1].toFixed(2);}
 
-// ==== ZODIACO OCCIDENTALE ====
 const ZODIAC=[
-  {n:'Capricorno',s:'♑',e:'🐐',sm:12,sd:22,em:1,ed:19,el:'Terra',pl:'Saturno',
-   t:'Ambizioso, disciplinato, paziente. Costruisce con metodo ciò che dura nel tempo.'},
-  {n:'Acquario',s:'♒',e:'🏺',sm:1,sd:20,em:2,ed:18,el:'Aria',pl:'Urano',
-   t:'Originale, visionario, indipendente. Pensa fuori dagli schemi, cambia il mondo.'},
-  {n:'Pesci',s:'♓',e:'🐟',sm:2,sd:19,em:3,ed:20,el:'Acqua',pl:'Nettuno',
-   t:'Sensibile, intuitivo, creativo. Vive tra sogno e realtà con grazia.'},
-  {n:'Ariete',s:'♈',e:'🐏',sm:3,sd:21,em:4,ed:19,el:'Fuoco',pl:'Marte',
-   t:'Coraggioso, energico, pioniere. Sempre il primo a lanciarsi nelle avventure.'},
-  {n:'Toro',s:'♉',e:'🐂',sm:4,sd:20,em:5,ed:20,el:'Terra',pl:'Venere',
-   t:'Affidabile, determinato, sensuale. Ama la qualità, la stabilità e il bello.'},
-  {n:'Gemelli',s:'♊',e:'👫',sm:5,sd:21,em:6,ed:20,el:'Aria',pl:'Mercurio',
-   t:'Curioso, versatile, brillante. Si annoia raramente e parla di tutto.'},
-  {n:'Cancro',s:'♋',e:'🦀',sm:6,sd:21,em:7,ed:22,el:'Acqua',pl:'Luna',
-   t:'Protettivo, empatico, fedele. Il cuore caldo di ogni famiglia.'},
-  {n:'Leone',s:'♌',e:'🦁',sm:7,sd:23,em:8,ed:22,el:'Fuoco',pl:'Sole',
-   t:'Generoso, carismatico, creativo. Nato per brillare e ispirare.'},
-  {n:'Vergine',s:'♍',e:'🌾',sm:8,sd:23,em:9,ed:22,el:'Terra',pl:'Mercurio',
-   t:'Analitico, preciso, metodico. Perfezionista con un cuore grande.'},
-  {n:'Bilancia',s:'♎',e:'⚖️',sm:9,sd:23,em:10,ed:22,el:'Aria',pl:'Venere',
-   t:'Diplomatico, estetico, giusto. Cerca sempre equilibrio e armonia.'},
-  {n:'Scorpione',s:'♏',e:'🦂',sm:10,sd:23,em:11,ed:21,el:'Acqua',pl:'Plutone',
-   t:'Intenso, perspicace, trasformativo. Vede oltre le apparenze.'},
-  {n:'Sagittario',s:'♐',e:'🏹',sm:11,sd:22,em:12,ed:21,el:'Fuoco',pl:'Giove',
-   t:'Avventuroso, ottimista, filosofo. Ama esplorare mondi nuovi.'},
+  {n:'Capricorno',s:'♑',e:'🐐',sm:12,sd:22,em:1,ed:19,el:'Terra',pl:'Saturno',t:'Ambizioso, disciplinato, paziente. Costruisce con metodo cio che dura nel tempo.'},
+  {n:'Acquario',s:'♒',e:'🏺',sm:1,sd:20,em:2,ed:18,el:'Aria',pl:'Urano',t:'Originale, visionario, indipendente. Pensa fuori dagli schemi, cambia il mondo.'},
+  {n:'Pesci',s:'♓',e:'🐟',sm:2,sd:19,em:3,ed:20,el:'Acqua',pl:'Nettuno',t:'Sensibile, intuitivo, creativo. Vive tra sogno e realta con grazia.'},
+  {n:'Ariete',s:'♈',e:'🐏',sm:3,sd:21,em:4,ed:19,el:'Fuoco',pl:'Marte',t:'Coraggioso, energico, pioniere. Sempre il primo a lanciarsi nelle avventure.'},
+  {n:'Toro',s:'♉',e:'🐂',sm:4,sd:20,em:5,ed:20,el:'Terra',pl:'Venere',t:'Affidabile, determinato, sensuale. Ama la qualita, la stabilita e il bello.'},
+  {n:'Gemelli',s:'♊',e:'👫',sm:5,sd:21,em:6,ed:20,el:'Aria',pl:'Mercurio',t:'Curioso, versatile, brillante. Si annoia raramente e parla di tutto.'},
+  {n:'Cancro',s:'♋',e:'🦀',sm:6,sd:21,em:7,ed:22,el:'Acqua',pl:'Luna',t:'Protettivo, empatico, fedele. Il cuore caldo di ogni famiglia.'},
+  {n:'Leone',s:'♌',e:'🦁',sm:7,sd:23,em:8,ed:22,el:'Fuoco',pl:'Sole',t:'Generoso, carismatico, creativo. Nato per brillare e ispirare.'},
+  {n:'Vergine',s:'♍',e:'🌾',sm:8,sd:23,em:9,ed:22,el:'Terra',pl:'Mercurio',t:'Analitico, preciso, metodico. Perfezionista con un cuore grande.'},
+  {n:'Bilancia',s:'♎',e:'⚖️',sm:9,sd:23,em:10,ed:22,el:'Aria',pl:'Venere',t:'Diplomatico, estetico, giusto. Cerca sempre equilibrio e armonia.'},
+  {n:'Scorpione',s:'♏',e:'🦂',sm:10,sd:23,em:11,ed:21,el:'Acqua',pl:'Plutone',t:'Intenso, perspicace, trasformativo. Vede oltre le apparenze.'},
+  {n:'Sagittario',s:'♐',e:'🏹',sm:11,sd:22,em:12,ed:21,el:'Fuoco',pl:'Giove',t:'Avventuroso, ottimista, filosofo. Ama esplorare mondi nuovi.'},
 ];
-function getZodiac(m,d){
-  for(const z of ZODIAC){
-    if(z.sm===12&&z.em===1){if((m===12&&d>=z.sd)||(m===1&&d<=z.ed))return z;}
-    else{if((m===z.sm&&d>=z.sd)||(m===z.em&&d<=z.ed))return z;}
-  }
-  return ZODIAC[0];
-}
+function getZodiac(m,d){for(const z of ZODIAC){if(z.sm===12&&z.em===1){if((m===12&&d>=z.sd)||(m===1&&d<=z.ed))return z;}else{if((m===z.sm&&d>=z.sd)||(m===z.em&&d<=z.ed))return z;}}return ZODIAC[0];}
 
-// ==== ZODIACO CINESE ====
-const CHZ=['Topo 🐀','Bue 🐂','Tigre 🐯','Coniglio 🐇','Drago 🐉','Serpente 🐍',
-'Cavallo 🐴','Capra 🐐','Scimmia 🐒','Gallo 🐓','Cane 🐕','Maiale 🐷'];
-function getChinese(y){return CHZ[((y-1900)%12+12)%12];}
+const CHZ=['Topo','Bue','Tigre','Coniglio','Drago','Serpente','Cavallo','Capra','Scimmia','Gallo','Cane','Maiale'];
+const CHZE=['🐀','🐂','🐯','🐇','🐉','🐍','🐴','🐐','🐒','🐓','🐕','🐷'];
+function getChinese(y){const i=((y-1900)%12+12)%12;return{n:CHZ[i],e:CHZE[i]};}
 
-// ==== FASE LUNARE ====
 function moonPhase(date){
   const y=date.getFullYear(),m=date.getMonth()+1,d=date.getDate();
-  let yr=y,mo=m;
-  if(mo<3){yr--;mo+=12;}
+  let yr=y,mo=m;if(mo<3){yr--;mo+=12;}
   const a=Math.floor(yr/100),b=2-a+Math.floor(a/4);
   const jd=Math.floor(365.25*(yr+4716))+Math.floor(30.6001*(mo+1))+d+b-1524.5;
   const ph=((jd-2451550.1)%29.530588+29.530588)%29.530588;
-  const ps=[['🌑','Luna Nuova',0,1.85],['🌒','Crescente',1.85,7.38],
-    ['🌓','Primo Quarto',7.38,11.08],['🌔','Gibbosa Crescente',11.08,14.77],
-    ['🌕','Luna Piena',14.77,18.46],['🌖','Gibbosa Calante',18.46,22.15],
-    ['🌗','Ultimo Quarto',22.15,25.85],['🌘','Calante',25.85,29.53]];
+  const ps=[['🌑','Luna Nuova',0,1.85],['🌒','Crescente',1.85,7.38],['🌓','Primo Quarto',7.38,11.08],['🌔','Gibbosa Crescente',11.08,14.77],['🌕','Luna Piena',14.77,18.46],['🌖','Gibbosa Calante',18.46,22.15],['🌗','Ultimo Quarto',22.15,25.85],['🌘','Calante',25.85,29.53]];
   for(const p of ps)if(ph>=p[2]&&ph<p[3])return{e:p[0],n:p[1]};
   return{e:'🌑',n:'Luna Nuova'};
 }
 
-// ==== STAGIONE ====
+function julianDay(date){
+  const y=date.getFullYear(),m=date.getMonth()+1,d=date.getDate();
+  let yr=y,mo=m;if(mo<3){yr--;mo+=12;}
+  const a=Math.floor(yr/100),b=2-a+Math.floor(a/4);
+  return Math.floor(365.25*(yr+4716))+Math.floor(30.6001*(mo+1))+d+b-1524.5;
+}
+
 function getSeason(m,d){
   if((m===3&&d>=20)||m===4||m===5||(m===6&&d<21))return{e:'🌸',n:'Primavera'};
   if((m===6&&d>=21)||m===7||m===8||(m===9&&d<23))return{e:'☀️',n:'Estate'};
@@ -353,36 +238,98 @@ function getSeason(m,d){
   return{e:'❄️',n:'Inverno'};
 }
 
-// ==== UTILS ====
-const DAYS=['Domenica','Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato'];
-const MONTHS=['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno',
-'Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+const DAYS=['Domenica','Lunedi','Martedi','Mercoledi','Giovedi','Venerdi','Sabato'];
+const MONTHS=['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
 function fmt(n){return Math.floor(n).toLocaleString('it-IT');}
 function pad(n){return String(n).padStart(2,'0');}
 
-// ==== STATE ====
-let birthDT=null,liveTimer=null;
+// ===== GLOBAL STATE =====
+let birthDT=null,liveTimer=null,fsLevel=0;
+let _years,_totalDays,_totalHr,_totalMin,_weeks,_sleepDays,_weekends,_daysNext;
+let _bloodL,_earthMM,_coffee,_hairCm,_awakeMin,_steps,_jd;
+let _zodiac,_chinese,_moon,_season,_saint,_pop,_dowStr,_bday,_tv,_m,_d,_y;
 
-// ==== PARTICLES ====
+// ===== PARTICLES =====
 function spawnParticles(){
   const colors=['#ff6b9d','#ffd93d','#6bcb77','#4d96ff','#c77dff','#ff9f1c','#00dfd8'];
-  for(let i=0;i<35;i++){
-    const p=document.createElement('div');
-    p.className='pt';
+  for(let i=0;i<30;i++){
+    const p=document.createElement('div');p.className='pt';
     const sz=Math.random()*4+2;
-    Object.assign(p.style,{
-      width:sz+'px',height:sz+'px',
-      background:colors[Math.floor(Math.random()*colors.length)],
-      left:Math.random()*100+'vw',
-      animationDuration:(Math.random()*18+14)+'s',
-      animationDelay:(Math.random()*-25)+'s',
-      opacity:.55
-    });
+    Object.assign(p.style,{width:sz+'px',height:sz+'px',background:colors[Math.floor(Math.random()*colors.length)],left:Math.random()*100+'vw',animationDuration:(Math.random()*18+14)+'s',animationDelay:(Math.random()*-25)+'s',opacity:.5});
     document.body.appendChild(p);
   }
 }
 
-// ==== LIVE TICKER ====
+// ===== THEME =====
+function setTheme(el){
+  document.querySelectorAll('.tswatch').forEach(s=>s.classList.remove('active'));
+  el.classList.add('active');
+  const t=el.dataset.th;
+  document.body.className=document.body.className.replace(/th-\w+/g,'').trim();
+  if(t)document.body.classList.add('th-'+t);
+  localStorage.setItem('bday-theme',t);
+}
+
+// ===== FONT SIZE =====
+const FS_STEPS=[80,90,100,110,120,135,150];
+function applyFS(){
+  const pct=FS_STEPS[fsLevel+3];
+  document.documentElement.style.setProperty('--fs',(pct/100)+'rem');
+  document.getElementById('fsVal').textContent=pct+'%';
+  localStorage.setItem('bday-fs',fsLevel);
+}
+function changeFS(dir){
+  const ni=fsLevel+dir;
+  if(ni>=-3&&ni<=3){fsLevel=ni;applyFS();}
+}
+
+// ===== FAB =====
+function togglePanel(){
+  document.getElementById('fabPanel').classList.toggle('open');
+}
+document.addEventListener('click',e=>{
+  const fab=document.querySelector('.fab');
+  if(!fab.contains(e.target))document.getElementById('fabPanel').classList.remove('open');
+});
+
+// ===== TOAST =====
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+// ===== SHARE =====
+function doShare(){
+  const dv=document.getElementById('birthDate').value;
+  const tv=document.getElementById('birthTime').value;
+  let url=location.href.split('?')[0]+'?d='+dv;
+  if(tv)url+='&t='+encodeURIComponent(tv);
+  navigator.clipboard.writeText(url).then(()=>showToast('✅ Link copiato!')).catch(()=>{
+    prompt('Copia il link:',url);
+  });
+}
+
+// ===== COUNTER ANIMATION =====
+function animateCounter(el,target,duration=1400){
+  const start=performance.now();
+  const step=time=>{
+    const p=Math.min((time-start)/duration,1);
+    const ease=1-Math.pow(1-p,3);
+    el.textContent=fmt(Math.floor(ease*target));
+    if(p<1)requestAnimationFrame(step);
+    else el.textContent=fmt(target);
+  };
+  requestAnimationFrame(step);
+}
+function startCounters(){
+  document.querySelectorAll('[data-cnt]').forEach(el=>{
+    const delay=parseInt(el.dataset.delay||0);
+    setTimeout(()=>animateCounter(el,parseFloat(el.dataset.cnt)),delay);
+  });
+}
+
+// ===== LIVE TICKER =====
 function tick(){
   if(!birthDT)return;
   const now=new Date(),ms=now-birthDT;
@@ -392,126 +339,221 @@ function tick(){
   const rh=Math.floor((ms%86400000)/3600000);
   const rm=Math.floor((ms%3600000)/60000);
   const rs=Math.floor((ms%60000)/1000);
-  document.getElementById('tickerMain').textContent=
-    `${y}a ${rd}g ${pad(rh)}:${pad(rm)}:${pad(rs)}`;
-  document.getElementById('tickerSub').textContent=
-    `${fmt(sec)} secondi  •  ${fmt(min)} minuti  •  ${fmt(hr)} ore`;
-  const el=id=>{const e=document.getElementById(id);return e;};
-  const upd=(id,val)=>{const e=el(id);if(e)e.textContent=fmt(val);};
+  document.getElementById('tickerMain').textContent=`${y}a ${rd}g ${pad(rh)}:${pad(rm)}:${pad(rs)}`;
+  document.getElementById('tickerSub').textContent=`${fmt(sec)} secondi  •  ${fmt(min)} minuti  •  ${fmt(hr)} ore`;
+  const upd=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=fmt(v);};
   upd('lv-sec',sec);
-  upd('lv-hb',sec*70/60);    // ~70 bpm
-  upd('lv-br',sec*16/60);    // ~16 breaths/min
-  upd('lv-blinks',sec*(16/24)*15/60); // ~15 blinks/min when awake
+  upd('lv-hb',sec*70/60);
+  upd('lv-br',sec*16/60);
+  upd('lv-blinks',(ms/3600000)*(16/24)*15*60);
 }
 
-// ==== MAIN ====
+// ===== MAIN CALCULATE =====
 function go(){
   const dv=document.getElementById('birthDate').value;
   if(!dv){alert('Inserisci la data di nascita!');return;}
   const tv=document.getElementById('birthTime').value;
-  const [y,m,d]=dv.split('-').map(Number);
+  const[y,m,d]=dv.split('-').map(Number);
   birthDT=tv?new Date(y,m-1,d,...tv.split(':').map(Number),0):new Date(y,m-1,d,0,0,0);
+  _tv=tv;_m=m;_d=d;_y=y;
 
   const now=new Date(),ms=now-birthDT;
-  const days=ms/86400e3,sec=ms/1e3,min=ms/6e4;
-  const totalDays=Math.floor(days),totalSec=Math.floor(sec),totalMin=Math.floor(min);
-  const totalHr=Math.floor(ms/36e5),weeks=Math.floor(totalDays/7);
-  const sleepDays=Math.floor(totalDays*7/24);
+  const days=ms/86400e3,totalMin=ms/6e4;
+  _totalDays=Math.floor(days);_totalHr=Math.floor(ms/36e5);_totalMin=Math.floor(totalMin);
+  _weeks=Math.floor(_totalDays/7);_years=Math.floor(_totalDays/365.25);
+  _sleepDays=Math.floor(_totalDays*7/24);_weekends=_weeks*2;
+  _awakeMin=totalMin*(16/24);_bloodL=Math.floor(totalMin*70*.07);
+  _steps=Math.floor(_totalDays*8000);_coffee=Math.floor(_totalDays*1.5);
+  _hairCm=Math.floor(_totalDays*.35/10);
+  _earthMM=(_totalDays/365.25*940).toFixed(1);
+  _jd=julianDay(birthDT);
 
-  const zodiac=getZodiac(m,d);
-  const chinese=getChinese(y);
-  const moon=moonPhase(birthDT);
-  const season=getSeason(m,d);
-  const mmdd=pad(m)+'-'+pad(d);
-  const saint=SAINTS[mmdd]||'N/D';
-  const pop=worldPop(y);
-  const dowStr=DAYS[birthDT.getDay()];
-  const bday=`${d} ${MONTHS[m-1]} ${y}`;
+  let nb=new Date(now.getFullYear(),m-1,d);if(nb<=now)nb=new Date(now.getFullYear()+1,m-1,d);
+  _daysNext=Math.ceil((nb-now)/864e5);
 
-  // Next birthday
-  let nb=new Date(now.getFullYear(),m-1,d);
-  if(nb<=now)nb=new Date(now.getFullYear()+1,m-1,d);
-  const daysNext=Math.ceil((nb-now)/864e5);
+  _zodiac=getZodiac(m,d);_chinese=getChinese(y);_moon=moonPhase(birthDT);_season=getSeason(m,d);
+  const mmdd=pad(m)+'-'+pad(d);_saint=SAINTS[mmdd]||'N/D';_pop=worldPop(y);
+  _dowStr=DAYS[birthDT.getDay()];_bday=`${d} ${MONTHS[m-1]} ${y}`;
 
-  // Fun stats
-  const steps=Math.floor(totalDays*8000);
-  const coffee=Math.floor(totalDays*1.5);
-  const pizza=Math.floor(totalDays/8);
-  const hairCm=(totalDays*.35/10).toFixed(0);
-  const earthMM=((totalDays/365.25)*940).toFixed(1); // milioni km
-  const weekends=Math.floor(weeks*2);
-
-  // Blood pumped: heart ~70 bpm, ~70ml per beat => litri
-  const bloodL=Math.floor(totalMin*70*.07);
-
-  // Show
   document.getElementById('inputSection').style.display='none';
   document.getElementById('results').style.display='block';
+  if(liveTimer)clearInterval(liveTimer);tick();liveTimer=setInterval(tick,1000);
 
-  if(liveTimer)clearInterval(liveTimer);
-  tick();
-  liveTimer=setInterval(tick,1000);
+  buildCards();
+  setTimeout(startCounters,200);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
 
-  // CARDS
+function buildCards(){
   const grid=document.getElementById('grid');
-  const C=(col,emo,label,val,desc,delay=0)=>
-    `<div class="card ${col}" style="animation-delay:${delay}ms">
+  const C=(col,emo,label,val,desc,delay=0,raw=null)=>{
+    const cntAttr=raw!=null?` data-cnt="${raw}" data-delay="${delay+200}"`:''
+    const v=raw!=null?'0':val;
+    return`<div class="card ${col}" style="animation-delay:${delay}ms">
       <span class="emo">${emo}</span>
       <div class="clabel">${label}</div>
-      <div class="cval">${val}</div>
+      <div class="cval"${cntAttr}>${v}</div>
       <div class="cdesc">${desc}</div>
     </div>`;
+  };
 
-  const cards=[
-    C('c-p','📅','Nato il',`${dowStr}`,`${bday}${tv?' alle '+tv:''}`,0),
-    C('c-b','🗓️','Giorni di vita',fmt(totalDays),`${fmt(weeks)} settimane complete`,60),
-    C('c-g','😴','Giorni dormendo',fmt(sleepDays),`Media 7h/notte = ${fmt(sleepDays*7)} ore totali`,120),
-    C('c-o','⛪','Santo del tuo giorno',saint,`${d} ${MONTHS[m-1]}`,180),
-    C('c-pk','🌍','Popolazione mondiale allora',`${pop} miliardi`,`Anno ${y} — oggi siamo ~8.2 miliardi`,240),
-    C('c-cy',moon.e,'Luna alla nascita',moon.n,`Fase lunare il giorno in cui sei arrivato`,300),
-    C('c-l',season.e,'Stagione di nascita',season.n,`Sei figlio della ${season.n.toLowerCase()}`,360),
-    C('c-r','🐉','Zodiaco Cinese',chinese,`Ciclo lunare dell'anno ${y}`,420),
-    C('c-p','❤️','Battiti del cuore',`<span id="lv-hb">...</span>`,`~70 bpm — si aggiorna ogni secondo`,480),
-    C('c-b','⏱️','Secondi vissuti',`<span id="lv-sec">...</span>`,`Conta live`,540),
-    C('c-g','🫁','Respiri presi',`<span id="lv-br">...</span>`,`~16 respiri/minuto`,600),
-    C('c-o','😉','Battiti di ciglia',`<span id="lv-blinks">...</span>`,`~15 ciglia/min da sveglio`,660),
-    C('c-pk','👣','Passi stimati',fmt(steps),`Media 8.000 passi/giorno`,720),
-    C('c-cy','🌐','Km percorsi intorno al Sole',`${earthMM} Mln km`,`La Terra percorre ~940 milioni km/anno`,780),
-    C('c-l','🩸','Sangue pompato',`${fmt(bloodL)} litri`,`~70ml per battito a ~70 bpm`,840),
-    C('c-r','☕','Caffè stimati (media italiana)',fmt(coffee),`1.5 caffè al giorno = modo di vivere`,900),
-    C('c-p','🍕','Pizze mangiate (stima)',fmt(pizza),`Una pizza ogni 8 giorni: modesto`,960),
-    C('c-b','💇','Capelli cresciuti senza tagli',`~${hairCm} cm`,`0.35mm al giorno — chilometri!`,1020),
-    C('c-g','🎉','Fine settimana vissuti',fmt(weekends),`${fmt(weeks)} settimane = ${fmt(weekends)} giorni di svago`,1080),
-    C('c-o','🎂','Prossimo compleanno',`fra ${daysNext} giorni`,`${d} ${MONTHS[m-1]} ${nb.getFullYear()}`,1140),
-  ];
-
-  // Zodiac wide card
   const zcard=`<div class="card zodiac-card c-pk" style="animation-delay:0ms">
-    <div class="zodiac-inner">
-      <div class="z-sym">${zodiac.e}</div>
+    <div class="zi">
+      <div class="z-sym">${_zodiac.e}</div>
       <div>
-        <div class="clabel">Segno Zodiacale${tv?' (con ora di nascita)':''}</div>
-        <div class="z-name">${zodiac.s} ${zodiac.n}</div>
-        <div class="z-dates">Elemento: ${zodiac.el}  |  Pianeta dominante: ${zodiac.pl}</div>
-        <div class="z-traits">${zodiac.t}</div>
+        <div class="clabel">Segno Zodiacale${_tv?' (con ora di nascita)':''}</div>
+        <div class="z-name">${_zodiac.s} ${_zodiac.n}</div>
+        <div class="z-dates">Elemento: ${_zodiac.el}  |  Pianeta: ${_zodiac.pl}</div>
+        <div class="z-traits">${_zodiac.t}</div>
       </div>
     </div>
   </div>`;
 
+  const cards=[
+    C('c-p','📅','Nato il',_bday+(_tv?' alle '+_tv:''),_dowStr,60),
+    C('c-b','🗓️','Giorni di vita','',`${fmt(_weeks)} settimane complete`,120,_totalDays),
+    C('c-g','😴','Giorni dormendo','',`Media 7h/notte = ${fmt(_sleepDays*7)} ore`,180,_sleepDays),
+    C('c-o','⛪','Santo del giorno',_saint,`${_d} ${MONTHS[_m-1]}`,240),
+    C('c-pk','🌍','Popolazione mondiale',`${_pop} miliardi`,`Stima all'anno ${_y} — oggi ~8.2 miliardi`,300),
+    C('c-cy',_moon.e,'Luna alla nascita',_moon.n,`Fase lunare nel giorno in cui sei arrivato`,360),
+    C('c-l',_season.e,'Stagione di nascita',_season.n,`Sei figlio della ${_season.n.toLowerCase()}`,420),
+    C('c-r','🐉','Zodiaco Cinese',`Anno del ${_chinese.n} ${_chinese.e}`,`Ciclo lunare dell'anno ${_y}`,480),
+    C('c-y','🔢','Giorno Giuliano',Math.floor(_jd).toLocaleString('it-IT'),`JDN: numero assoluto dei giorni astronomici`,540),
+    C('c-p','❤️','Battiti del cuore',`<span id="lv-hb">...</span>`,`~70 bpm — live`,600),
+    C('c-b','⏱️','Secondi vissuti',`<span id="lv-sec">...</span>`,'Conta live',660),
+    C('c-g','🫁','Respiri presi',`<span id="lv-br">...</span>`,'~16/min — live',720),
+    C('c-o','😉','Battiti di ciglia',`<span id="lv-blinks">...</span>`,'~15/min da sveglio — live',780),
+    C('c-pk','👣','Passi stimati','',`Media 8.000 passi/giorno`,840,_steps),
+    C('c-cy','🌐','Km intorno al Sole',`~${_earthMM} Mln km`,`La Terra percorre ~940 Mln km/anno`,900),
+    C('c-l','🩸','Sangue pompato','',`~70ml per battito a 70 bpm`,960,_bloodL),
+    C('c-r','☕','Caffe stimati','',`Media italiana: 1.5/giorno`,1020,_coffee),
+    C('c-y','💇','Capelli senza tagli',`~${_hairCm} cm`,`0.35mm al giorno — lunghissimi!`,1080),
+    C('c-p','🎉','Weekend vissuti','',`${fmt(_weeks)} settimane`,1140,_weekends),
+    C('c-b','🎂','Prossimo compleanno',`fra ${_daysNext} giorni`,`${_d} ${MONTHS[_m-1]} ${new Date().getFullYear()+(new Date()>new Date(new Date().getFullYear(),_m-1,_d)?1:0)}`,1200),
+  ];
   grid.innerHTML=zcard+cards.join('');
-  window.scrollTo({top:0,behavior:'smooth'});
 }
 
+// ===== PDF =====
+function makePDF(){
+  if(!window.jspdf){showToast('Libreria PDF non caricata');return;}
+  const{jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const W=210,H=297,mg=14;let y=mg;
+
+  const txt=(s,x,yy,opts)=>doc.text(String(s),x,yy,opts||{});
+  const row=(label,val,yy)=>{
+    doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(90,90,90);
+    txt(label,mg+5,yy);
+    doc.setFont('helvetica','bold');doc.setTextColor(20,20,20);
+    txt(val,105,yy);
+    return yy+6.5;
+  };
+  const section=(title,r,g,b,yy)=>{
+    if(yy>H-40){doc.addPage();yy=mg;}
+    doc.setFillColor(r,g,b);doc.rect(mg,yy,3,7,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(9.5);doc.setTextColor(r,g,b);
+    txt(title,mg+6,yy+5.5);
+    return yy+12;
+  };
+
+  // HEADER BAR
+  doc.setFillColor(18,8,45);doc.rect(0,0,W,32,'F');
+  doc.setFillColor(255,107,157);doc.rect(0,30,W/3,2.5,'F');
+  doc.setFillColor(255,217,61);doc.rect(W/3,30,W/3,2.5,'F');
+  doc.setFillColor(107,203,119);doc.rect(2*W/3,30,W/3,2.5,'F');
+  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(18);
+  txt('IL TUO UNIVERSO PERSONALE',W/2,14,{align:'center'});
+  doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(190,170,255);
+  txt(`Data: ${_bday}${_tv?' alle '+_tv:''} | Generato il ${new Date().toLocaleDateString('it-IT')}`,W/2,24,{align:'center'});
+
+  y=42;
+
+  // SECTION 1: NASCITA
+  y=section('DATI DI NASCITA',121,40,202,y);
+  y=row('Data di nascita:',`${_dowStr} ${_bday}${_tv?' alle '+_tv:''}`,y);
+  y=row('Santo del giorno:',_saint,y);
+  y=row('Stagione:',_season.n,y);
+  y=row('Fase lunare:',_moon.n,y);
+  y=row('Giorno Giuliano (JDN):',Math.floor(_jd).toLocaleString('it-IT'),y);
+  y=row('Popolazione mondiale:',_pop+' miliardi stimati (anno '+_y+')',y);
+  y+=4;
+
+  // SECTION 2: ZODIACO
+  y=section('SEGNO ZODIACALE',255,0,128,y);
+  y=row('Segno Occidentale:',`${_zodiac.n} ${_zodiac.s}  |  ${_zodiac.el} / ${_zodiac.pl}`,y);
+  doc.setFont('helvetica','italic');doc.setFontSize(8);doc.setTextColor(80,80,80);
+  const traits=doc.splitTextToSize(_zodiac.t,W-2*mg-10);
+  doc.text(traits,mg+5,y);y+=traits.length*4.5+5;
+  y=row('Zodiaco Cinese:',`Anno del ${_chinese.n} ${_chinese.e}`,y);
+  y+=4;
+
+  // SECTION 3: STATISTICHE
+  y=section('STATISTICHE DI VITA',23,201,100,y);
+  y=row('Anni compiuti:',`${_years} anni`,y);
+  y=row('Giorni vissuti:',fmt(_totalDays),y);
+  y=row('Settimane:',fmt(_weeks),y);
+  y=row('Ore totali:',fmt(_totalHr),y);
+  y=row('Giorni dormendo:',`${fmt(_sleepDays)}  (media 7h/notte)`,y);
+  y=row('Weekend vissuti:',fmt(_weekends),y);
+  y=row('Prossimo compleanno:','fra '+_daysNext+' giorni',y);
+  y+=4;
+
+  // SECTION 4: BIOLOGIA
+  if(y>H-70){doc.addPage();y=mg;}
+  y=section("STIME BIOLOGICHE",245,167,28,y);
+  const nowMs=new Date()-birthDT;
+  y=row('Battiti del cuore:','~'+fmt(nowMs/1000*70/60)+'  (70 bpm)',y);
+  y=row('Respiri:','~'+fmt(nowMs/1000*16/60)+'  (16/min)',y);
+  y=row('Passi stimati:','~'+fmt(_steps)+'  (8.000/giorno)',y);
+  y=row('Litri di sangue pompati:','~'+fmt(_bloodL),y);
+  y=row('Km percorsi attorno al Sole:','~'+_earthMM+' Mln km',y);
+  y=row('Caffe stimati:','~'+fmt(_coffee)+'  (1.5/giorno)',y);
+  y=row('Capelli cresciuti:','~'+_hairCm+' cm  (senza tagli)',y);
+
+  // FOOTER
+  doc.setFillColor(18,8,45);doc.rect(0,H-16,W,16,'F');
+  doc.setFontSize(7.5);doc.setFont('helvetica','normal');doc.setTextColor(170,150,220);
+  txt('cad3d.expert/ai/birthday-universe.html  |  Generato con Il Tuo Universo Personale',W/2,H-6,{align:'center'});
+
+  doc.save(`universo-${_y}.pdf`);
+  showToast('📄 PDF scaricato!');
+}
+
+// ===== RESET =====
 function doReset(){
-  if(liveTimer)clearInterval(liveTimer);
-  birthDT=null;
+  if(liveTimer)clearInterval(liveTimer);birthDT=null;
   document.getElementById('inputSection').style.display='block';
   document.getElementById('results').style.display='none';
 }
 
-// INIT
-spawnParticles();
+// ===== URL PARAMS AUTO-LOAD =====
+function checkURL(){
+  const p=new URLSearchParams(location.search);
+  const dv=p.get('d'),tv=p.get('t');
+  if(dv){
+    document.getElementById('birthDate').value=dv;
+    if(tv)document.getElementById('birthTime').value=tv;
+    setTimeout(go,300);
+  }
+}
+
+// ===== INIT =====
 document.getElementById('birthDate').max=new Date().toISOString().slice(0,10);
+spawnParticles();
+
+// Restore prefs
+const savedTheme=localStorage.getItem('bday-theme')||'';
+const savedFS=parseInt(localStorage.getItem('bday-fs')||0);
+fsLevel=savedFS;applyFS();
+if(savedTheme){
+  const sw=document.querySelector(`.tswatch[data-th="${savedTheme}"]`);
+  if(sw)setTheme(sw);
+} else {
+  document.querySelector('.tswatch[data-th=""]').classList.add('active');
+}
+
+checkURL();
 </script>
 </body>
 </html>
