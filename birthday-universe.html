@@ -461,173 +461,145 @@ function makePDF(){
   if(!window.jspdf){showToast('Libreria PDF non caricata');return;}
   const{jsPDF}=window.jspdf;
   const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-  const W=210,H=297,mg=14,now=new Date(),sec=(now-birthDT)/1000;
-  const T=(s,x,y,o)=>doc.text(String(s),x,y,o||{});
+  const W=210,H=297,mg=15,now=new Date(),sec=(now-birthDT)/1000;
+  // strip emoji - jsPDF Helvetica non li supporta
+  const T=(s,x,y,o)=>doc.text(String(s).replace(/[^\x00-\x7E\u00C0-\u024F]/g,'').trim(),x,y,o||{});
   const F=(st)=>doc.setFont('helvetica',st);
   const S=(n)=>doc.setFontSize(n);
   const FC=(...c)=>doc.setFillColor(...c);
   const TC=(...c)=>doc.setTextColor(...c);
   const DC=(...c)=>doc.setDrawColor(...c);
-  const R=(x,y,w,h,s)=>doc.rect(x,y,w,h,s||'F');
+  const R=(x,y,w,h)=>doc.rect(x,y,w,h,'F');
+  const cw=(W-2*mg)/2-1;
 
-  // ── HEADER 52mm ──
-  FC(14,6,40); R(0,0,W,52);
-  // 4-color stripe top
-  FC(255,107,157); R(0,0,W/4,2);
-  FC(255,217,61);  R(W/4,0,W/4,2);
-  FC(107,203,119); R(W/2,0,W/4,2);
-  FC(77,150,255);  R(3*W/4,0,W/4,2);
-  // 4-color stripe bottom
-  FC(255,107,157); R(0,50,W/4,2);
-  FC(255,217,61);  R(W/4,50,W/4,2);
-  FC(107,203,119); R(W/2,50,W/4,2);
-  FC(77,150,255);  R(3*W/4,50,W/4,2);
-  // Title
-  TC(255,255,255); F('bold'); S(21);
-  T('IL TUO UNIVERSO PERSONALE',W/2,19,{align:'center'});
-  // Divider line
-  DC(140,100,220); doc.setLineWidth(0.3);
-  doc.line(mg+20,23,W-mg-20,23);
-  // Birth info
+  // ── HEADER 44mm ──
+  FC(14,6,40); R(0,0,W,44);
+  FC(255,107,157);R(0,0,W/4,2.5); FC(255,210,50);R(W/4,0,W/4,2.5);
+  FC(107,200,119);R(W/2,0,W/4,2.5); FC(77,150,255);R(3*W/4,0,W/4,2.5);
+  FC(255,107,157);R(0,41.5,W/4,2.5); FC(255,210,50);R(W/4,41.5,W/4,2.5);
+  FC(107,200,119);R(W/2,41.5,W/4,2.5); FC(77,150,255);R(3*W/4,41.5,W/4,2.5);
+  TC(255,255,255); F('bold'); S(20);
+  T('IL TUO UNIVERSO PERSONALE',W/2,16,{align:'center'});
+  DC(140,100,220); doc.setLineWidth(0.25);
+  doc.line(mg+15,19.5,W-mg-15,19.5);
   TC(210,190,255); F('bold'); S(11.5);
-  T(`${_dowStr}, ${_d} ${MONTHS[_m-1]} ${_y}${_tv?' \u00B7 ore '+_tv:''}`,W/2,31,{align:'center'});
-  // Subtitle
-  TC(160,135,210); F('normal'); S(8);
-  T(`${_zodiac.n} ${_zodiac.s}  \u00B7  Anno del ${_chinese.n}  \u00B7  ${_season.n}  \u00B7  ${_moon.n}`,W/2,39,{align:'center'});
-  // Generated
-  TC(110,90,160); S(6.5);
-  T(`Generato il ${now.toLocaleDateString('it-IT')} alle ${now.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})} \u00B7 cad3d.expert`,W/2,46,{align:'center'});
+  T(`${_dowStr}, ${_d} ${MONTHS[_m-1]} ${_y}${_tv?' - ore '+_tv:''}`,W/2,27.5,{align:'center'});
+  TC(150,125,200); F('normal'); S(7.5);
+  T(`${_zodiac.n}  |  Anno del ${_chinese.n}  |  ${_season.n}  |  ${_moon.n}`,W/2,35,{align:'center'});
+  TC(110,88,160); S(6.5);
+  T(`Generato il ${now.toLocaleDateString('it-IT')} alle ${now.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})}  -  cad3d.expert`,W/2,40.5,{align:'center'});
 
-  let y=58;
+  let y=50;
 
-  // ── TWO-BOX SECTION ──
-  const bw=(W-3*mg)/2, bx1=mg, bx2=mg*2+bw, bh=82;
-  // box backgrounds
-  FC(245,241,255); R(bx1,y,bw,bh);
-  FC(255,241,248); R(bx2,y,bw,bh);
-  // box headers
-  FC(100,30,180); R(bx1,y,bw,9);
-  FC(200,0,110);  R(bx2,y,bw,9);
-  TC(255,255,255); F('bold'); S(8);
-  T('ANAGRAFE E ORIGINI',bx1+bw/2,y+6,{align:'center'});
-  T('ZODIACO E DESTINO', bx2+bw/2,y+6,{align:'center'});
+  // ── DUE BOX AFFIANCATI ──
+  const bw=(W-3*mg)/2,bx1=mg,bx2=mg*2+bw,bh=78;
+  FC(244,240,255); R(bx1,y,bw,bh);
+  FC(255,240,250); R(bx2,y,bw,bh);
+  FC(90,25,170); R(bx1,y,bw,8.5);
+  FC(185,0,100); R(bx2,y,bw,8.5);
+  TC(255,255,255); F('bold'); S(7.5);
+  T('ANAGRAFE E ORIGINI',bx1+bw/2,y+5.8,{align:'center'});
+  T('SEGNO ZODIACALE',bx2+bw/2,y+5.8,{align:'center'});
 
   const bRow=(label,val,bx,ry)=>{
-    TC(100,90,130); F('normal'); S(7.2); T(label,bx+3,ry);
-    TC(25,15,50);   F('bold');   S(7.8); T(val,bx+bw-3,ry,{align:'right',maxWidth:bw-6});
+    TC(100,85,130); F('normal'); S(7); T(label,bx+3,ry);
+    TC(20,12,45); F('bold'); S(7.5);
+    T(String(val),bx+bw-3,ry,{align:'right',maxWidth:bw-6});
   };
   let by=y+15;
-  bRow('Nato il:',`${_dowStr} ${_d} ${MONTHS[_m-1]} ${_y}`,bx1,by); by+=8;
-  bRow('Santo del giorno:',_saint,bx1,by); by+=8;
-  bRow('Stagione:',_season.n+' '+_season.e,bx1,by); by+=8;
-  bRow('Fase lunare:',_moon.n+' '+_moon.e,bx1,by); by+=8;
-  bRow('Giorno Giuliano:',Math.floor(_jd).toLocaleString('it-IT'),bx1,by); by+=8;
-  bRow('Popolazione mondiale:',_pop+' miliardi ('+_y+')',bx1,by); by+=8;
-  bRow('Zodiaco Cinese:','Anno del '+_chinese.n+' '+_chinese.e,bx1,by);
+  bRow('Nato il:',`${_dowStr} ${_d} ${MONTHS[_m-1]} ${_y}`,bx1,by); by+=7.5;
+  bRow('Santo del giorno:',_saint,bx1,by); by+=7.5;
+  bRow('Stagione:',_season.n,bx1,by); by+=7.5;
+  bRow('Fase lunare:',_moon.n,bx1,by); by+=7.5;
+  bRow('Giorno Giuliano:',Math.floor(_jd).toLocaleString('it-IT'),bx1,by); by+=7.5;
+  bRow('Popolazione mondiale:',_pop+' miliardi ('+_y+')',bx1,by); by+=7.5;
+  bRow('Zodiaco Cinese:','Anno del '+_chinese.n,bx1,by);
 
-  // Zodiaco box
-  by=y+16;
-  TC(200,0,110); F('bold'); S(26); T(_zodiac.s,bx2+bw/2,by+10,{align:'center'});
-  TC(25,15,50);  F('bold'); S(13); T(_zodiac.n,bx2+bw/2,by+21,{align:'center'});
-  TC(100,30,180);F('normal');S(8);
-  T(_zodiac.el+' \u00B7 '+_zodiac.pl,bx2+bw/2,by+29,{align:'center'});
-  // Traits wrapped
-  TC(80,70,110); F('italic'); S(7.2);
-  const trl=doc.splitTextToSize(_zodiac.t,bw-8);
-  doc.text(trl,bx2+bw/2,by+37,{align:'center'});
-  // Bottom note
-  by=y+bh-7;
-  DC(200,0,110); doc.setLineWidth(0.15);
-  doc.line(bx2+6,by-2,bx2+bw-6,by-2);
-  TC(100,30,180); F('bold'); S(7.5);
-  T('Zodiaco Cinese: Anno del '+_chinese.n,bx2+bw/2,by+1,{align:'center'});
+  by=y+14;
+  TC(185,0,100); F('bold'); S(28); T(_zodiac.n[0],bx2+bw/2,by+14,{align:'center'});
+  TC(20,12,45); F('bold'); S(14); T(_zodiac.n,bx2+bw/2,by+26,{align:'center'});
+  DC(185,0,100); doc.setLineWidth(0.2); doc.line(bx2+10,by+29,bx2+bw-10,by+29);
+  TC(90,25,170); F('normal'); S(8); T(_zodiac.el+' / '+_zodiac.pl,bx2+bw/2,by+35,{align:'center'});
+  TC(70,60,100); F('italic'); S(7);
+  const trl=doc.splitTextToSize(_zodiac.t.replace(/[^\x00-\x7E\u00C0-\u024F ]/g,''),bw-10);
+  doc.text(trl,bx2+bw/2,by+43,{align:'center'});
+  y+=bh+5;
 
-  y+=bh+6;
-
-  // ── SECTION + 2-COL GRID HELPERS ──
+  // ── SECTION HEADER ──
   const secH=(title,r,g,b)=>{
-    if(y>H-60){doc.addPage();y=14;}
-    FC(r,g,b); R(mg,y,W-2*mg,9);
-    TC(255,255,255); F('bold'); S(9);
-    T(title,W/2,y+6,{align:'center'});
-    y+=12;
+    FC(r,g,b); R(mg,y,W-2*mg,8.5);
+    TC(255,255,255); F('bold'); S(8.5); T(title,W/2,y+5.8,{align:'center'});
+    y+=11;
   };
-  const grid=(items)=>{
-    const cw=(W-2*mg-3)/2;
+
+  // ── GRIGLIA 2 COLONNE ──
+  const grid2=(items,r,g,b)=>{
     items.forEach(([la,va],i)=>{
-      const col=i%2, row=Math.floor(i/2);
-      const cx=mg+col*(cw+3), cy=y+row*9;
-      if(col===0){
-        if(row%2===0){FC(247,244,255);}else{FC(252,249,255);}
-        R(mg,cy-3,W-2*mg,8.8);
-      }
-      // Label dot
-      FC(r||100,g||30,b||180); R(cx+1,cy-2.5,2,2);
-      TC(90,80,115); F('normal'); S(7.2); T(la,cx+5,cy);
-      TC(20,12,45);  F('bold');   S(9);   T(va,cx+cw,cy,{align:'right'});
+      const col=i%2,rowI=Math.floor(i/2);
+      const cx=mg+col*(cw+2),cy=y+rowI*8;
+      if(col===0){if(rowI%2===0){FC(248,245,255);}else{FC(253,251,255);}R(mg,cy-2.5,W-2*mg,7.5);}
+      FC(r,g,b); R(cx+1,cy-1.5,1.8,1.8);
+      TC(90,80,115); F('normal'); S(7); T(la,cx+4.5,cy);
+      TC(15,10,40); F('bold'); S(8.5); T(String(va),cx+cw,cy,{align:'right'});
     });
-    y+=Math.ceil(items.length/2)*9+4;
+    y+=Math.ceil(items.length/2)*8+4;
   };
-  let r=0,g=0,b=0; // current section color (for dot)
+
+  // ── RIGHE FULL WIDTH (per valori lunghi) ──
+  const gridFull=(items,r,g,b)=>{
+    items.forEach(([la,va],i)=>{
+      if(i%2===0){FC(248,245,255);}else{FC(253,251,255);}R(mg,y-2.5,W-2*mg,7.5);
+      FC(r,g,b); R(mg+1,y-1.5,1.8,1.8);
+      TC(90,80,115); F('normal'); S(7); T(la,mg+4.5,y);
+      TC(15,10,40); F('bold'); S(8.5); T(String(va),W-mg,y,{align:'right'});
+      y+=8;
+    });
+    y+=4;
+  };
 
   // ── CRONOLOGIA ──
-  r=100;g=30;b=180;
-  secH('CRONOLOGIA DI VITA',r,g,b);
-  grid([
-    ['Eta anagrafica',`${_years} anni compiuti`],
-    ['Giorni vissuti',fmt(_totalDays)+' giorni'],
-    ['Settimane complete',fmt(_weeks)+' settimane'],
-    ['Ore totali',fmt(_totalHr)+' ore'],
-    ['Minuti vissuti',fmt(Math.floor(sec/60))+' minuti'],
-    ['Secondi vissuti',fmt(Math.floor(sec))+' secondi'],
-    ['Giorni dormendo',fmt(_sleepDays)+' (7h/notte)'],
-    ['Weekend vissuti',fmt(_weekends)+' giorni'],
-    ['Orbite Luna',fmt(_luneOrbite)+' orbite complete'],
-    ['Prossimo compleanno','fra '+_daysNext+' giorni'],
-  ]);
+  secH('CRONOLOGIA DI VITA',90,25,170);
+  grid2([
+    ['Eta anagrafica',`${_years} anni`],['Giorni vissuti',fmt(_totalDays)+' giorni'],
+    ['Settimane complete',fmt(_weeks)],['Ore totali',fmt(_totalHr)],
+    ['Minuti vissuti',fmt(Math.floor(sec/60))],['Secondi vissuti',fmt(Math.floor(sec))],
+    ['Giorni dormendo',fmt(_sleepDays)+' (7h/notte)'],['Weekend vissuti',fmt(_weekends)],
+    ['Orbite della Luna',fmt(_luneOrbite)+' orbite'],['Prossimo compleanno','fra '+_daysNext+' giorni'],
+  ],90,25,170);
 
   // ── BIOLOGIA ──
-  r=200;g=110;b=0;
-  secH('STIME BIOLOGICHE',r,g,b);
-  grid([
-    ['Battiti del cuore','~'+fmt(sec*70/60)],
-    ['Respiri presi','~'+fmt(sec*16/60)],
-    ['Battiti di ciglia','~'+fmt(sec*(16/24)*15/60)],
-    ['Passi stimati','~'+fmt(_steps)],
-    ['Sangue pompato','~'+fmt(_bloodL)+' litri'],
-    ['Caffe (da 17 anni)','~'+fmt(_coffee)],
-    ['Capelli cresciuti','~'+_hairCm+' cm'],
-    ['Pizza stimate','~'+fmt(Math.floor(Math.max(0,_totalDays-17*365.25)/8))],
-  ]);
+  secH('STIME BIOLOGICHE',190,100,0);
+  grid2([
+    ['Battiti del cuore','~'+fmt(sec*70/60)],['Respiri presi','~'+fmt(sec*16/60)],
+    ['Battiti di ciglia','~'+fmt(sec*(16/24)*15/60)],['Passi stimati','~'+fmt(_steps)],
+    ['Sangue pompato','~'+fmt(_bloodL)+' litri'],['Caffe (da 17 anni)','~'+fmt(_coffee)],
+    ['Capelli cresciuti','~'+_hairCm+' cm'],['Pizza stimate','~'+fmt(Math.floor(Math.max(0,_totalDays-17*365.25)/8))],
+  ],190,100,0);
 
   // ── ASTRONOMIA ──
-  r=0;g=90;b=210;
-  secH('DISTANZE ASTRONOMICHE (al momento della stampa)',r,g,b);
-  // Subtitle
-  TC(100,90,130); F('italic'); S(7); T('Valori in km calcolati moltiplicando la velocita in km/s per i secondi di vita trascorsi.',mg+2,y-3);
-  grid([
-    ['Arco orbita attorno al Sole (29.78 km/s)',fmtKm(sec*29.78)],
-    ['Arco orbita galattica (220 km/s)',fmtKm(sec*220)],
-    ['Avvicinamento ad Andromeda (110 km/s)',fmtKm(sec*110)],
-    ['Moto nel cosmo vs CMB (627 km/s)',fmtKm(sec*627)],
-  ]);
+  secH('DISTANZE PERCORSE (al momento della stampa)',0,85,200);
+  TC(100,90,130); F('italic'); S(6.5);
+  T('Velocita x secondi vissuti. Valori in km interi.',mg+2,y-3);
+  gridFull([
+    ['Arco orbita attorno al Sole  (29.78 km/s)',fmtKm(sec*29.78)],
+    ['Arco orbita galattica  (220 km/s)',fmtKm(sec*220)],
+    ['Avvicinamento ad Andromeda  (110 km/s)',fmtKm(sec*110)],
+    ['Moto nel cosmo vs fondo CMB  (627 km/s)',fmtKm(sec*627)],
+  ],0,85,200);
 
   // ── FOOTER ──
-  FC(14,6,40); R(0,H-18,W,18);
-  FC(255,107,157); R(0,H-18,W/4,1.5);
-  FC(255,217,61);  R(W/4,H-18,W/4,1.5);
-  FC(107,203,119); R(W/2,H-18,W/4,1.5);
-  FC(77,150,255);  R(3*W/4,H-18,W/4,1.5);
-  TC(180,155,230); F('bold'); S(8.5);
-  T('Il Tuo Universo Personale',W/2,H-10,{align:'center'});
-  TC(120,100,175); F('normal'); S(6.5);
-  T('cad3d.expert/ai/birthday-universe.html  \u00B7  Dati stimati a scopo informativo',W/2,H-4,{align:'center'});
+  FC(14,6,40); R(0,H-15,W,15);
+  FC(255,107,157);R(0,H-15,W/4,1.5); FC(255,210,50);R(W/4,H-15,W/4,1.5);
+  FC(107,200,119);R(W/2,H-15,W/4,1.5); FC(77,150,255);R(3*W/4,H-15,W/4,1.5);
+  TC(170,148,220); F('bold'); S(8); T('Il Tuo Universo Personale',W/2,H-8,{align:'center'});
+  TC(110,90,165); F('normal'); S(6.5);
+  T('cad3d.expert/ai/birthday-universe.html  -  Dati stimati a scopo informativo',W/2,H-3.5,{align:'center'});
 
   doc.save(`universo-${_y}-${pad(_m)}-${pad(_d)}.pdf`);
-  showToast('📄 PDF scaricato!');
+  showToast('PDF scaricato!');
 }
 
-// ===== RESET =====
+
 function doReset(){
   if(liveTimer)clearInterval(liveTimer);birthDT=null;
   document.getElementById('inputSection').style.display='block';
