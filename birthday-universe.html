@@ -85,7 +85,7 @@ input:focus{border-color:rgba(140,50,220,.7);box-shadow:0 0 0 3px rgba(140,50,22
 .emo{font-size:2.2rem;margin-bottom:9px;display:block}
 .clabel{color:var(--txm);font-size:.68rem;letter-spacing:1.8px;text-transform:uppercase;margin-bottom:6px}
 .cval{font-size:1.55rem;font-weight:800;color:var(--tx);line-height:1.2;margin-bottom:5px;font-variant-numeric:tabular-nums}
-.cdesc{color:var(--txm);font-size:.78rem;line-height:1.55}
+.cdesc{color:var(--txm);font-size:.88rem;line-height:1.6}
 
 /* ZODIAC WIDE */
 .zodiac-card{grid-column:span 2}
@@ -247,6 +247,7 @@ function pad(n){return String(n).padStart(2,'0');}
 let birthDT=null,liveTimer=null,fsLevel=0;
 let _years,_totalDays,_totalHr,_totalMin,_weeks,_sleepDays,_weekends,_daysNext;
 let _bloodL,_earthMM,_coffee,_hairCm,_awakeMin,_steps,_jd;
+let _kmGalassia,_kmAndromeda,_kmCosmo,_luneOrbite;
 let _zodiac,_chinese,_moon,_season,_saint,_pop,_dowStr,_bday,_tv,_m,_d,_y;
 
 // ===== PARTICLES =====
@@ -366,6 +367,14 @@ function go(){
   _steps=Math.floor(_totalDays*8000);_coffee=Math.floor(_totalDays*1.5);
   _hairCm=Math.floor(_totalDays*.35/10);
   _earthMM=(_totalDays/365.25*940).toFixed(1);
+  // Distanze astronomiche: km/giorno = velocità km/s × 86400
+  // Sole attorno galassia: 220 km/s → 19.008 Mln km/giorno
+  // Milky Way verso Andromeda: 110 km/s → 9.504 Mln km/giorno
+  // Sistema solare nel cosmo (vs CMB): 627 km/s → 54.2 Mln km/giorno
+  _kmGalassia  = (_totalDays * 19.008).toFixed(0);   // Mln km
+  _kmAndromeda = (_totalDays * 9.504).toFixed(0);    // Mln km
+  _kmCosmo     = (_totalDays * 54.173).toFixed(0);   // Mln km
+  _luneOrbite  = Math.floor(_totalDays / 27.3);
   _jd=julianDay(birthDT);
 
   let nb=new Date(now.getFullYear(),m-1,d);if(nb<=now)nb=new Date(now.getFullYear()+1,m-1,d);
@@ -424,12 +433,16 @@ function buildCards(){
     C('c-g','🫁','Respiri presi',`<span id="lv-br">...</span>`,'~16/min — live',720),
     C('c-o','😉','Battiti di ciglia',`<span id="lv-blinks">...</span>`,'~15/min da sveglio — live',780),
     C('c-pk','👣','Passi stimati','',`Media 8.000 passi/giorno`,840,_steps),
-    C('c-cy','🌐','Km intorno al Sole',`~${_earthMM} Mln km`,`La Terra percorre ~940 Mln km/anno`,900),
-    C('c-l','🩸','Sangue pompato','',`~70ml per battito a 70 bpm`,960,_bloodL),
-    C('c-r','☕','Caffe stimati','',`Media italiana: 1.5/giorno`,1020,_coffee),
-    C('c-y','💇','Capelli senza tagli',`~${_hairCm} cm`,`0.35mm al giorno — lunghissimi!`,1080),
-    C('c-p','🎉','Weekend vissuti','',`${fmt(_weeks)} settimane`,1140,_weekends),
-    C('c-b','🎂','Prossimo compleanno',`fra ${_daysNext} giorni`,`${_d} ${MONTHS[_m-1]} ${new Date().getFullYear()+(new Date()>new Date(new Date().getFullYear(),_m-1,_d)?1:0)}`,1200),
+    C('c-cy','☀️','Km attorno al Sole',`~${_earthMM} Mln km`,`La Terra orbita a ~30 km/s — ma è la distanza più corta`,900),
+    C('c-pk','🌌','Km attorno al centro galattico',`~${Number(_kmGalassia).toLocaleString('it-IT')} Mln km`,`Il Sole orbita a ~220 km/s — un giro completo dura 230 milioni di anni`,960),
+    C('c-b','🔵','Km verso Andromeda',`~${Number(_kmAndromeda).toLocaleString('it-IT')} Mln km`,`Le due galassie si avvicinano a 110 km/s — si fonderanno tra ~4.5 Mld di anni`,1020),
+    C('c-r','🌀','Km nel cosmo (vs fondo CMB)',`~${Number(_kmCosmo).toLocaleString('it-IT')} Mln km`,`Il Sistema Solare si muove a 627 km/s rispetto al fondo cosmico a microonde`,1080),
+    C('c-y','🌙','Orbite complete della Luna',`${fmt(_luneOrbite)}`,`La Luna orbita attorno alla Terra ogni 27.3 giorni`,1140),
+    C('c-l','🩸','Sangue pompato','',`~70ml per battito a 70 bpm`,1200,_bloodL),
+    C('c-r','☕','Caffe stimati','',`Media italiana: 1.5/giorno`,1260,_coffee),
+    C('c-y','💇','Capelli senza tagli',`~${_hairCm} cm`,`0.35mm al giorno — lunghissimi!`,1320),
+    C('c-p','🎉','Weekend vissuti','',`${fmt(_weeks)} settimane`,1380,_weekends),
+    C('c-b','🎂','Prossimo compleanno',`fra ${_daysNext} giorni`,`${_d} ${MONTHS[_m-1]} ${new Date().getFullYear()+(new Date()>new Date(new Date().getFullYear(),_m-1,_d)?1:0)}`,1440),
   ];
   grid.innerHTML=zcard+cards.join('');
 }
