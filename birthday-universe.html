@@ -558,7 +558,7 @@ function makePDF(){
       const col=i%2, row=Math.floor(i/2);
       const cx=mg+col*(cw+3), cy=y+row*9;
       if(col===0){
-        FC(row%2===0?[247,244,255]:[252,249,255]);
+        if(row%2===0){FC(247,244,255);}else{FC(252,249,255);}
         R(mg,cy-3,W-2*mg,8.8);
       }
       // Label dot
