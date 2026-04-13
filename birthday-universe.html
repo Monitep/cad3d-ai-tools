@@ -461,88 +461,169 @@ function makePDF(){
   if(!window.jspdf){showToast('Libreria PDF non caricata');return;}
   const{jsPDF}=window.jspdf;
   const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-  const W=210,H=297,mg=14;let y=mg;
+  const W=210,H=297,mg=14,now=new Date(),sec=(now-birthDT)/1000;
+  const T=(s,x,y,o)=>doc.text(String(s),x,y,o||{});
+  const F=(st)=>doc.setFont('helvetica',st);
+  const S=(n)=>doc.setFontSize(n);
+  const FC=(...c)=>doc.setFillColor(...c);
+  const TC=(...c)=>doc.setTextColor(...c);
+  const DC=(...c)=>doc.setDrawColor(...c);
+  const R=(x,y,w,h,s)=>doc.rect(x,y,w,h,s||'F');
 
-  const txt=(s,x,yy,opts)=>doc.text(String(s),x,yy,opts||{});
-  const row=(label,val,yy)=>{
-    doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(90,90,90);
-    txt(label,mg+5,yy);
-    doc.setFont('helvetica','bold');doc.setTextColor(20,20,20);
-    txt(val,105,yy);
-    return yy+6.5;
+  // ── HEADER 52mm ──
+  FC(14,6,40); R(0,0,W,52);
+  // 4-color stripe top
+  FC(255,107,157); R(0,0,W/4,2);
+  FC(255,217,61);  R(W/4,0,W/4,2);
+  FC(107,203,119); R(W/2,0,W/4,2);
+  FC(77,150,255);  R(3*W/4,0,W/4,2);
+  // 4-color stripe bottom
+  FC(255,107,157); R(0,50,W/4,2);
+  FC(255,217,61);  R(W/4,50,W/4,2);
+  FC(107,203,119); R(W/2,50,W/4,2);
+  FC(77,150,255);  R(3*W/4,50,W/4,2);
+  // Title
+  TC(255,255,255); F('bold'); S(21);
+  T('IL TUO UNIVERSO PERSONALE',W/2,19,{align:'center'});
+  // Divider line
+  DC(140,100,220); doc.setLineWidth(0.3);
+  doc.line(mg+20,23,W-mg-20,23);
+  // Birth info
+  TC(210,190,255); F('bold'); S(11.5);
+  T(`${_dowStr}, ${_d} ${MONTHS[_m-1]} ${_y}${_tv?' \u00B7 ore '+_tv:''}`,W/2,31,{align:'center'});
+  // Subtitle
+  TC(160,135,210); F('normal'); S(8);
+  T(`${_zodiac.n} ${_zodiac.s}  \u00B7  Anno del ${_chinese.n}  \u00B7  ${_season.n}  \u00B7  ${_moon.n}`,W/2,39,{align:'center'});
+  // Generated
+  TC(110,90,160); S(6.5);
+  T(`Generato il ${now.toLocaleDateString('it-IT')} alle ${now.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})} \u00B7 cad3d.expert`,W/2,46,{align:'center'});
+
+  let y=58;
+
+  // ── TWO-BOX SECTION ──
+  const bw=(W-3*mg)/2, bx1=mg, bx2=mg*2+bw, bh=82;
+  // box backgrounds
+  FC(245,241,255); R(bx1,y,bw,bh);
+  FC(255,241,248); R(bx2,y,bw,bh);
+  // box headers
+  FC(100,30,180); R(bx1,y,bw,9);
+  FC(200,0,110);  R(bx2,y,bw,9);
+  TC(255,255,255); F('bold'); S(8);
+  T('ANAGRAFE E ORIGINI',bx1+bw/2,y+6,{align:'center'});
+  T('ZODIACO E DESTINO', bx2+bw/2,y+6,{align:'center'});
+
+  const bRow=(label,val,bx,ry)=>{
+    TC(100,90,130); F('normal'); S(7.2); T(label,bx+3,ry);
+    TC(25,15,50);   F('bold');   S(7.8); T(val,bx+bw-3,ry,{align:'right',maxWidth:bw-6});
   };
-  const section=(title,r,g,b,yy)=>{
-    if(yy>H-40){doc.addPage();yy=mg;}
-    doc.setFillColor(r,g,b);doc.rect(mg,yy,3,7,'F');
-    doc.setFont('helvetica','bold');doc.setFontSize(9.5);doc.setTextColor(r,g,b);
-    txt(title,mg+6,yy+5.5);
-    return yy+12;
+  let by=y+15;
+  bRow('Nato il:',`${_dowStr} ${_d} ${MONTHS[_m-1]} ${_y}`,bx1,by); by+=8;
+  bRow('Santo del giorno:',_saint,bx1,by); by+=8;
+  bRow('Stagione:',_season.n+' '+_season.e,bx1,by); by+=8;
+  bRow('Fase lunare:',_moon.n+' '+_moon.e,bx1,by); by+=8;
+  bRow('Giorno Giuliano:',Math.floor(_jd).toLocaleString('it-IT'),bx1,by); by+=8;
+  bRow('Popolazione mondiale:',_pop+' miliardi ('+_y+')',bx1,by); by+=8;
+  bRow('Zodiaco Cinese:','Anno del '+_chinese.n+' '+_chinese.e,bx1,by);
+
+  // Zodiaco box
+  by=y+16;
+  TC(200,0,110); F('bold'); S(26); T(_zodiac.s,bx2+bw/2,by+10,{align:'center'});
+  TC(25,15,50);  F('bold'); S(13); T(_zodiac.n,bx2+bw/2,by+21,{align:'center'});
+  TC(100,30,180);F('normal');S(8);
+  T(_zodiac.el+' \u00B7 '+_zodiac.pl,bx2+bw/2,by+29,{align:'center'});
+  // Traits wrapped
+  TC(80,70,110); F('italic'); S(7.2);
+  const trl=doc.splitTextToSize(_zodiac.t,bw-8);
+  doc.text(trl,bx2+bw/2,by+37,{align:'center'});
+  // Bottom note
+  by=y+bh-7;
+  DC(200,0,110); doc.setLineWidth(0.15);
+  doc.line(bx2+6,by-2,bx2+bw-6,by-2);
+  TC(100,30,180); F('bold'); S(7.5);
+  T('Zodiaco Cinese: Anno del '+_chinese.n,bx2+bw/2,by+1,{align:'center'});
+
+  y+=bh+6;
+
+  // ── SECTION + 2-COL GRID HELPERS ──
+  const secH=(title,r,g,b)=>{
+    if(y>H-60){doc.addPage();y=14;}
+    FC(r,g,b); R(mg,y,W-2*mg,9);
+    TC(255,255,255); F('bold'); S(9);
+    T(title,W/2,y+6,{align:'center'});
+    y+=12;
   };
+  const grid=(items)=>{
+    const cw=(W-2*mg-3)/2;
+    items.forEach(([la,va],i)=>{
+      const col=i%2, row=Math.floor(i/2);
+      const cx=mg+col*(cw+3), cy=y+row*9;
+      if(col===0){
+        FC(row%2===0?[247,244,255]:[252,249,255]);
+        R(mg,cy-3,W-2*mg,8.8);
+      }
+      // Label dot
+      FC(r||100,g||30,b||180); R(cx+1,cy-2.5,2,2);
+      TC(90,80,115); F('normal'); S(7.2); T(la,cx+5,cy);
+      TC(20,12,45);  F('bold');   S(9);   T(va,cx+cw,cy,{align:'right'});
+    });
+    y+=Math.ceil(items.length/2)*9+4;
+  };
+  let r=0,g=0,b=0; // current section color (for dot)
 
-  // HEADER BAR
-  doc.setFillColor(18,8,45);doc.rect(0,0,W,32,'F');
-  doc.setFillColor(255,107,157);doc.rect(0,30,W/3,2.5,'F');
-  doc.setFillColor(255,217,61);doc.rect(W/3,30,W/3,2.5,'F');
-  doc.setFillColor(107,203,119);doc.rect(2*W/3,30,W/3,2.5,'F');
-  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(18);
-  txt('IL TUO UNIVERSO PERSONALE',W/2,14,{align:'center'});
-  doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(190,170,255);
-  txt(`Data: ${_bday}${_tv?' alle '+_tv:''} | Generato il ${new Date().toLocaleDateString('it-IT')}`,W/2,24,{align:'center'});
+  // ── CRONOLOGIA ──
+  r=100;g=30;b=180;
+  secH('CRONOLOGIA DI VITA',r,g,b);
+  grid([
+    ['Eta anagrafica',`${_years} anni compiuti`],
+    ['Giorni vissuti',fmt(_totalDays)+' giorni'],
+    ['Settimane complete',fmt(_weeks)+' settimane'],
+    ['Ore totali',fmt(_totalHr)+' ore'],
+    ['Minuti vissuti',fmt(Math.floor(sec/60))+' minuti'],
+    ['Secondi vissuti',fmt(Math.floor(sec))+' secondi'],
+    ['Giorni dormendo',fmt(_sleepDays)+' (7h/notte)'],
+    ['Weekend vissuti',fmt(_weekends)+' giorni'],
+    ['Orbite Luna',fmt(_luneOrbite)+' orbite complete'],
+    ['Prossimo compleanno','fra '+_daysNext+' giorni'],
+  ]);
 
-  y=42;
+  // ── BIOLOGIA ──
+  r=200;g=110;b=0;
+  secH('STIME BIOLOGICHE',r,g,b);
+  grid([
+    ['Battiti del cuore','~'+fmt(sec*70/60)],
+    ['Respiri presi','~'+fmt(sec*16/60)],
+    ['Battiti di ciglia','~'+fmt(sec*(16/24)*15/60)],
+    ['Passi stimati','~'+fmt(_steps)],
+    ['Sangue pompato','~'+fmt(_bloodL)+' litri'],
+    ['Caffe (da 17 anni)','~'+fmt(_coffee)],
+    ['Capelli cresciuti','~'+_hairCm+' cm'],
+    ['Pizza stimate','~'+fmt(Math.floor(Math.max(0,_totalDays-17*365.25)/8))],
+  ]);
 
-  // SECTION 1: NASCITA
-  y=section('DATI DI NASCITA',121,40,202,y);
-  y=row('Data di nascita:',`${_dowStr} ${_bday}${_tv?' alle '+_tv:''}`,y);
-  y=row('Santo del giorno:',_saint,y);
-  y=row('Stagione:',_season.n,y);
-  y=row('Fase lunare:',_moon.n,y);
-  y=row('Giorno Giuliano (JDN):',Math.floor(_jd).toLocaleString('it-IT'),y);
-  y=row('Popolazione mondiale:',_pop+' miliardi stimati (anno '+_y+')',y);
-  y+=4;
+  // ── ASTRONOMIA ──
+  r=0;g=90;b=210;
+  secH('DISTANZE ASTRONOMICHE (al momento della stampa)',r,g,b);
+  // Subtitle
+  TC(100,90,130); F('italic'); S(7); T('Valori in km calcolati moltiplicando la velocita in km/s per i secondi di vita trascorsi.',mg+2,y-3);
+  grid([
+    ['Arco orbita attorno al Sole (29.78 km/s)',fmtKm(sec*29.78)],
+    ['Arco orbita galattica (220 km/s)',fmtKm(sec*220)],
+    ['Avvicinamento ad Andromeda (110 km/s)',fmtKm(sec*110)],
+    ['Moto nel cosmo vs CMB (627 km/s)',fmtKm(sec*627)],
+  ]);
 
-  // SECTION 2: ZODIACO
-  y=section('SEGNO ZODIACALE',255,0,128,y);
-  y=row('Segno Occidentale:',`${_zodiac.n} ${_zodiac.s}  |  ${_zodiac.el} / ${_zodiac.pl}`,y);
-  doc.setFont('helvetica','italic');doc.setFontSize(8);doc.setTextColor(80,80,80);
-  const traits=doc.splitTextToSize(_zodiac.t,W-2*mg-10);
-  doc.text(traits,mg+5,y);y+=traits.length*4.5+5;
-  y=row('Zodiaco Cinese:',`Anno del ${_chinese.n} ${_chinese.e}`,y);
-  y+=4;
+  // ── FOOTER ──
+  FC(14,6,40); R(0,H-18,W,18);
+  FC(255,107,157); R(0,H-18,W/4,1.5);
+  FC(255,217,61);  R(W/4,H-18,W/4,1.5);
+  FC(107,203,119); R(W/2,H-18,W/4,1.5);
+  FC(77,150,255);  R(3*W/4,H-18,W/4,1.5);
+  TC(180,155,230); F('bold'); S(8.5);
+  T('Il Tuo Universo Personale',W/2,H-10,{align:'center'});
+  TC(120,100,175); F('normal'); S(6.5);
+  T('cad3d.expert/ai/birthday-universe.html  \u00B7  Dati stimati a scopo informativo',W/2,H-4,{align:'center'});
 
-  // SECTION 3: STATISTICHE
-  y=section('STATISTICHE DI VITA',23,201,100,y);
-  y=row('Anni compiuti:',`${_years} anni`,y);
-  y=row('Giorni vissuti:',fmt(_totalDays),y);
-  y=row('Settimane:',fmt(_weeks),y);
-  y=row('Ore totali:',fmt(_totalHr),y);
-  y=row('Giorni dormendo:',`${fmt(_sleepDays)}  (media 7h/notte)`,y);
-  y=row('Weekend vissuti:',fmt(_weekends),y);
-  y=row('Prossimo compleanno:','fra '+_daysNext+' giorni',y);
-  y+=4;
-
-  // SECTION 4: BIOLOGIA
-  if(y>H-70){doc.addPage();y=mg;}
-  y=section("STIME BIOLOGICHE",245,167,28,y);
-  const nowMs=new Date()-birthDT;
-  const s=nowMs/1000;
-  y=row('Battiti del cuore:','~'+fmt(s*70/60)+'  (70 bpm)',y);
-  y=row('Respiri:','~'+fmt(s*16/60)+'  (16/min)',y);
-  y=row('Passi stimati:','~'+fmt(_steps)+'  (8.000/giorno)',y);
-  y=row('Litri di sangue pompati:','~'+fmt(_bloodL),y);
-  y=row('Arco orbita attorno al Sole:',fmtKm(s*29.78)+' (29.78 km/s)',y);
-  y=row('Arco orbita galattica:',fmtKm(s*220)+' (220 km/s)',y);
-  y=row('Avvicinamento ad Andromeda:',fmtKm(s*110)+' (110 km/s)',y);
-  y=row('Moto nel cosmo vs CMB:',fmtKm(s*627)+' (627 km/s)',y);
-  y=row('Caffe stimati (da 17 anni):','~'+fmt(_coffee)+'  (1.5/giorno)',y);
-  y=row('Capelli cresciuti:','~'+_hairCm+' cm  (senza tagli)',y);
-
-  // FOOTER
-  doc.setFillColor(18,8,45);doc.rect(0,H-16,W,16,'F');
-  doc.setFontSize(7.5);doc.setFont('helvetica','normal');doc.setTextColor(170,150,220);
-  txt('cad3d.expert/ai/birthday-universe.html  |  Generato con Il Tuo Universo Personale',W/2,H-6,{align:'center'});
-
-  doc.save(`universo-${_y}.pdf`);
+  doc.save(`universo-${_y}-${pad(_m)}-${pad(_d)}.pdf`);
   showToast('📄 PDF scaricato!');
 }
 
