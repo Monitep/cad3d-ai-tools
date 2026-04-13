@@ -240,6 +240,7 @@ function getSeason(m,d){
 
 const DAYS=['Domenica','Lunedi','Martedi','Mercoledi','Giovedi','Venerdi','Sabato'];
 const MONTHS=['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+function fmtKm(km){return Math.floor(km).toLocaleString('it-IT')+' km';}
 function fmt(n){return Math.floor(n).toLocaleString('it-IT');}
 function pad(n){return String(n).padStart(2,'0');}
 
@@ -343,10 +344,16 @@ function tick(){
   document.getElementById('tickerMain').textContent=`${y}a ${rd}g ${pad(rh)}:${pad(rm)}:${pad(rs)}`;
   document.getElementById('tickerSub').textContent=`${fmt(sec)} secondi  •  ${fmt(min)} minuti  •  ${fmt(hr)} ore`;
   const upd=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=fmt(v);};
+  const updK=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=fmtKm(v);};
   upd('lv-sec',sec);
   upd('lv-hb',sec*70/60);
   upd('lv-br',sec*16/60);
   upd('lv-blinks',(ms/3600000)*(16/24)*15*60);
+  // distanze live: velocità × secondi
+  updK('lv-sun', sec * 29.78);    // Terra attorno al Sole
+  updK('lv-gal', sec * 220);      // Sole attorno al centro galattico (arco)
+  updK('lv-and', sec * 110);      // Avvicinamento Andromeda
+  updK('lv-cmb', sec * 627);      // Moto vs fondo cosmico CMB
 }
 
 // ===== MAIN CALCULATE =====
@@ -364,7 +371,9 @@ function go(){
   _weeks=Math.floor(_totalDays/7);_years=Math.floor(_totalDays/365.25);
   _sleepDays=Math.floor(_totalDays*7/24);_weekends=_weeks*2;
   _awakeMin=totalMin*(16/24);_bloodL=Math.floor(totalMin*70*.07);
-  _steps=Math.floor(_totalDays*8000);_coffee=Math.floor(_totalDays*1.5);
+  _steps=Math.floor(_totalDays*8000);
+  const coffeeDays=Math.max(0,_totalDays-17*365.25);
+  _coffee=Math.floor(coffeeDays*1.5);
   _hairCm=Math.floor(_totalDays*.35/10);
   _earthMM=(_totalDays/365.25*940).toFixed(1);
   // Distanze astronomiche: km/giorno = velocità km/s × 86400
@@ -433,10 +442,10 @@ function buildCards(){
     C('c-g','🫁','Respiri presi',`<span id="lv-br">...</span>`,'~16/min — live',720),
     C('c-o','😉','Battiti di ciglia',`<span id="lv-blinks">...</span>`,'~15/min da sveglio — live',780),
     C('c-pk','👣','Passi stimati','',`Media 8.000 passi/giorno`,840,_steps),
-    C('c-cy','☀️','Km attorno al Sole',`~${_earthMM} Mln km`,`La Terra orbita a ~30 km/s — ma è la distanza più corta`,900),
-    C('c-pk','🌌','Km attorno al centro galattico',`~${Number(_kmGalassia).toLocaleString('it-IT')} Mln km`,`Il Sole orbita a ~220 km/s — un giro completo dura 230 milioni di anni`,960),
-    C('c-b','🔵','Km verso Andromeda',`~${Number(_kmAndromeda).toLocaleString('it-IT')} Mln km`,`Le due galassie si avvicinano a 110 km/s — si fonderanno tra ~4.5 Mld di anni`,1020),
-    C('c-r','🌀','Km nel cosmo (vs fondo CMB)',`~${Number(_kmCosmo).toLocaleString('it-IT')} Mln km`,`Il Sistema Solare si muove a 627 km/s rispetto al fondo cosmico a microonde`,1080),
+    C('c-cy','☀️','Arco orbita attorno al Sole',`<span id="lv-sun" style="font-size:1.05rem">...</span>`,`29.78 km/s — arco di orbita circolare. 1 giro completo = ~940 Mln km`,900),
+    C('c-pk','🌌','Arco orbita attorno alla Galassia',`<span id="lv-gal" style="font-size:1.05rem">...</span>`,`220 km/s — arco percorso sul giro galattico. 1 orbita dura 230 milioni di anni`,960),
+    C('c-b','🔵','Avvicinamento ad Andromeda',`<span id="lv-and" style="font-size:1.05rem">...</span>`,`110 km/s — moto relativo. Le due galassie si fonderanno tra ~4.5 miliardi di anni`,1020),
+    C('c-r','🌀','Moto nel cosmo (vs fondo CMB)',`<span id="lv-cmb" style="font-size:1.05rem">...</span>`,`627 km/s — velocità del Sistema Solare rispetto al fondo cosmico a microonde`,1080),
     C('c-y','🌙','Orbite complete della Luna',`${fmt(_luneOrbite)}`,`La Luna orbita attorno alla Terra ogni 27.3 giorni`,1140),
     C('c-l','🩸','Sangue pompato','',`~70ml per battito a 70 bpm`,1200,_bloodL),
     C('c-r','☕','Caffe stimati','',`Media italiana: 1.5/giorno`,1260,_coffee),
@@ -516,12 +525,16 @@ function makePDF(){
   if(y>H-70){doc.addPage();y=mg;}
   y=section("STIME BIOLOGICHE",245,167,28,y);
   const nowMs=new Date()-birthDT;
-  y=row('Battiti del cuore:','~'+fmt(nowMs/1000*70/60)+'  (70 bpm)',y);
-  y=row('Respiri:','~'+fmt(nowMs/1000*16/60)+'  (16/min)',y);
+  const s=nowMs/1000;
+  y=row('Battiti del cuore:','~'+fmt(s*70/60)+'  (70 bpm)',y);
+  y=row('Respiri:','~'+fmt(s*16/60)+'  (16/min)',y);
   y=row('Passi stimati:','~'+fmt(_steps)+'  (8.000/giorno)',y);
   y=row('Litri di sangue pompati:','~'+fmt(_bloodL),y);
-  y=row('Km percorsi attorno al Sole:','~'+_earthMM+' Mln km',y);
-  y=row('Caffe stimati:','~'+fmt(_coffee)+'  (1.5/giorno)',y);
+  y=row('Arco orbita attorno al Sole:',fmtKm(s*29.78)+' (29.78 km/s)',y);
+  y=row('Arco orbita galattica:',fmtKm(s*220)+' (220 km/s)',y);
+  y=row('Avvicinamento ad Andromeda:',fmtKm(s*110)+' (110 km/s)',y);
+  y=row('Moto nel cosmo vs CMB:',fmtKm(s*627)+' (627 km/s)',y);
+  y=row('Caffe stimati (da 17 anni):','~'+fmt(_coffee)+'  (1.5/giorno)',y);
   y=row('Capelli cresciuti:','~'+_hairCm+' cm  (senza tagli)',y);
 
   // FOOTER
