@@ -210,9 +210,21 @@ const ZODIAC=[
 ];
 function getZodiac(m,d){for(const z of ZODIAC){if(z.sm===12&&z.em===1){if((m===12&&d>=z.sd)||(m===1&&d<=z.ed))return z;}else{if((m===z.sm&&d>=z.sd)||(m===z.em&&d<=z.ed))return z;}}return ZODIAC[0];}
 
-const CHZ=['Topo','Bue','Tigre','Coniglio','Drago','Serpente','Cavallo','Capra','Scimmia','Gallo','Cane','Maiale'];
-const CHZE=['🐀','🐂','🐯','🐇','🐉','🐍','🐴','🐐','🐒','🐓','🐕','🐷'];
-function getChinese(y){const i=((y-1900)%12+12)%12;return{n:CHZ[i],e:CHZE[i]};}
+const CHZ=[
+  {n:'Topo',   art:'del',  e:'🐀'},
+  {n:'Bue',    art:'del',  e:'🐂'},
+  {n:'Tigre',  art:'della',e:'🐯'},
+  {n:'Coniglio',art:'del', e:'🐇'},
+  {n:'Drago',  art:'del',  e:'🐉'},
+  {n:'Serpente',art:'del', e:'🐍'},
+  {n:'Cavallo',art:'del',  e:'🐴'},
+  {n:'Capra',  art:'della',e:'🐐'},
+  {n:'Scimmia',art:'della',e:'🐒'},
+  {n:'Gallo',  art:'del',  e:'🐓'},
+  {n:'Cane',   art:'del',  e:'🐕'},
+  {n:'Maiale', art:'del',  e:'🐷'},
+];
+function getChinese(y){return CHZ[((y-1900)%12+12)%12];}
 
 function moonPhase(date){
   const y=date.getFullYear(),m=date.getMonth()+1,d=date.getDate();
@@ -436,7 +448,7 @@ function buildCards(){
     C('c-pk','🌍','Popolazione mondiale',`${_pop} miliardi`,`Stima all'anno ${_y} — oggi ~8.2 miliardi`,300),
     C('c-cy',_moon.e,'Luna alla nascita',_moon.n,`Fase lunare nel giorno in cui sei arrivato`,360),
     C('c-l',_season.e,'Stagione di nascita',_season.n,`Sei figlio/a ${_season.prep}`,420),
-    C('c-r','🐉','Zodiaco Cinese',`Anno del ${_chinese.n} ${_chinese.e}`,`Ciclo lunare dell'anno ${_y}`,480),
+    C('c-r','🐉','Zodiaco Cinese',`Anno ${_chinese.art} ${_chinese.n} ${_chinese.e}`,`Ciclo lunare dell'anno ${_y}`,480),
     C('c-y','🔢','Giorno Giuliano',Math.floor(_jd).toLocaleString('it-IT'),`JDN: numero assoluto dei giorni astronomici`,540),
     C('c-p','❤️','Battiti del cuore',`<span id="lv-hb">...</span>`,`~70 bpm — live`,600),
     C('c-b','⏱️','Secondi vissuti',`<span id="lv-sec">...</span>`,'Conta live',660),
@@ -486,7 +498,7 @@ function makePDF(){
   TC(210,190,255); F('bold'); S(11.5);
   T(`${_dowStr}, ${_d} ${MONTHS[_m-1]} ${_y}${_tv?' - ore '+_tv:''}`,W/2,27.5,{align:'center'});
   TC(150,125,200); F('normal'); S(7.5);
-  T(`${_zodiac.n}  |  Anno del ${_chinese.n}  |  ${_season.n}  |  ${_moon.n}`,W/2,35,{align:'center'});
+  T(`${_zodiac.n}  |  Anno ${_chinese.art} ${_chinese.n}  |  ${_season.n}  |  ${_moon.n}`,W/2,35,{align:'center'});
   TC(110,88,160); S(6.5);
   T(`Generato il ${now.toLocaleDateString('it-IT')} alle ${now.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})}  -  cad3d.expert`,W/2,40.5,{align:'center'});
 
@@ -524,7 +536,7 @@ function makePDF(){
   bRow('Fase lunare:',_moon.n,bx1,by); by+=7.5;
   bRow('Giorno Giuliano:',Math.floor(_jd).toLocaleString('it-IT'),bx1,by); by+=7.5;
   bRow('Popolazione mondiale:',_pop+' miliardi ('+_y+')',bx1,by); by+=7.5;
-  bRow('Zodiaco Cinese:','Anno del '+_chinese.n,bx1,by);
+  bRow('Zodiaco Cinese:','Anno '+_chinese.art+' '+_chinese.n,bx1,by);
 
   by=y+14;
   TC(185,0,100); F('bold'); S(28); T(_zodiac.n[0],bx2+bw/2,by+14,{align:'center'});
