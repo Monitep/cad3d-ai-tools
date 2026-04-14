@@ -37,10 +37,11 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);min-height
 .pt{position:fixed;border-radius:50%;pointer-events:none;animation:floatUp linear infinite}
 
 /* INPUT */
-.hero{text-align:center;padding:60px 20px 50px}
-.hero h1{font-size:clamp(2rem,5vw,4rem);font-weight:900;background:linear-gradient(135deg,var(--a1),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:10px;line-height:1.1}
-.hero p{color:var(--txd);font-size:1rem;margin-bottom:36px}
-.icard{max-width:440px;margin:0 auto;background:var(--card);backdrop-filter:blur(20px);border:1px solid var(--card-b);border-radius:24px;padding:36px;box-shadow:0 30px 80px rgba(0,0,0,.5)}
+.hero{text-align:center;padding:30px 16px 30px}
+@media(max-height:680px){.hero{padding-top:14px;padding-bottom:14px}}
+.hero h1{font-size:clamp(1.7rem,5vw,4rem);font-weight:900;background:linear-gradient(135deg,var(--a1),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px;line-height:1.1}
+.hero p{color:var(--txd);font-size:.95rem;margin-bottom:22px}
+.icard{max-width:440px;margin:0 auto;background:var(--card);backdrop-filter:blur(20px);border:1px solid var(--card-b);border-radius:24px;padding:24px;box-shadow:0 30px 80px rgba(0,0,0,.5)}
 label{display:block;color:var(--txd);font-size:.78rem;letter-spacing:.8px;text-transform:uppercase;margin-bottom:7px;font-weight:600}
 input[type=date],input[type=time]{width:100%;padding:13px 16px;background:var(--ibg);border:1px solid var(--ib);border-radius:12px;color:var(--tx);font-size:1rem;margin-bottom:20px;outline:none;transition:all .3s;color-scheme:dark}
 .th-light input[type=date],.th-light input[type=time]{color-scheme:light}
@@ -232,10 +233,10 @@ function julianDay(date){
 }
 
 function getSeason(m,d){
-  if((m===3&&d>=20)||m===4||m===5||(m===6&&d<21))return{e:'🌸',n:'Primavera'};
-  if((m===6&&d>=21)||m===7||m===8||(m===9&&d<23))return{e:'☀️',n:'Estate'};
-  if((m===9&&d>=23)||m===10||m===11||(m===12&&d<21))return{e:'🍂',n:'Autunno'};
-  return{e:'❄️',n:'Inverno'};
+  if((m===3&&d>=20)||m===4||m===5||(m===6&&d<21))return{e:'🌸',n:'Primavera',prep:"della Primavera"};
+  if((m===6&&d>=21)||m===7||m===8||(m===9&&d<23))return{e:'☀️',n:'Estate',prep:"dell'Estate"};
+  if((m===9&&d>=23)||m===10||m===11||(m===12&&d<21))return{e:'🍂',n:'Autunno',prep:"dell'Autunno"};
+  return{e:'❄️',n:'Inverno',prep:"dell'Inverno"};
 }
 
 const DAYS=['Domenica','Lunedi','Martedi','Mercoledi','Giovedi','Venerdi','Sabato'];
@@ -434,7 +435,7 @@ function buildCards(){
     C('c-o','⛪','Santo del giorno',_saint,`${_d} ${MONTHS[_m-1]}`,240),
     C('c-pk','🌍','Popolazione mondiale',`${_pop} miliardi`,`Stima all'anno ${_y} — oggi ~8.2 miliardi`,300),
     C('c-cy',_moon.e,'Luna alla nascita',_moon.n,`Fase lunare nel giorno in cui sei arrivato`,360),
-    C('c-l',_season.e,'Stagione di nascita',_season.n,`Sei figlio della ${_season.n.toLowerCase()}`,420),
+    C('c-l',_season.e,'Stagione di nascita',_season.n,`Sei figlio/a ${_season.prep}`,420),
     C('c-r','🐉','Zodiaco Cinese',`Anno del ${_chinese.n} ${_chinese.e}`,`Ciclo lunare dell'anno ${_y}`,480),
     C('c-y','🔢','Giorno Giuliano',Math.floor(_jd).toLocaleString('it-IT'),`JDN: numero assoluto dei giorni astronomici`,540),
     C('c-p','❤️','Battiti del cuore',`<span id="lv-hb">...</span>`,`~70 bpm — live`,600),
@@ -501,10 +502,20 @@ function makePDF(){
   T('ANAGRAFE E ORIGINI',bx1+bw/2,y+5.8,{align:'center'});
   T('SEGNO ZODIACALE',bx2+bw/2,y+5.8,{align:'center'});
 
+  // dot leader filler between label and value
+  const dotLeader=(x1,x2,yy)=>{
+    DC(180,165,215); doc.setLineWidth(0.15);
+    const dots='. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .';
+    TC(190,175,220); F('normal'); S(6);
+    T(dots,x1,yy,{maxWidth:x2-x1-2,charSpace:0.5});
+  };
+
   const bRow=(label,val,bx,ry)=>{
-    TC(100,85,130); F('normal'); S(7); T(label,bx+3,ry);
-    TC(20,12,45); F('bold'); S(7.5);
-    T(String(val),bx+bw-3,ry,{align:'right',maxWidth:bw-6});
+    TC(55,40,90); F('bold'); S(7.2); T(label,bx+3,ry);
+    const lw=doc.getTextWidth(label);
+    dotLeader(bx+3+lw+2,bx+bw-3,ry);
+    TC(10,5,35); F('bold'); S(7.8);
+    T(String(val),bx+bw-3,ry,{align:'right'});
   };
   let by=y+15;
   bRow('Nato il:',`${_dowStr} ${_d} ${MONTHS[_m-1]} ${_y}`,bx1,by); by+=7.5;
@@ -532,26 +543,30 @@ function makePDF(){
     y+=11;
   };
 
-  // ── GRIGLIA 2 COLONNE ──
+  // ── GRIGLIA 2 COLONNE con dot leader ──
   const grid2=(items,r,g,b)=>{
     items.forEach(([la,va],i)=>{
       const col=i%2,rowI=Math.floor(i/2);
       const cx=mg+col*(cw+2),cy=y+rowI*8;
       if(col===0){if(rowI%2===0){FC(248,245,255);}else{FC(253,251,255);}R(mg,cy-2.5,W-2*mg,7.5);}
       FC(r,g,b); R(cx+1,cy-1.5,1.8,1.8);
-      TC(90,80,115); F('normal'); S(7); T(la,cx+4.5,cy);
-      TC(15,10,40); F('bold'); S(8.5); T(String(va),cx+cw,cy,{align:'right'});
+      TC(55,40,90); F('bold'); S(7.2); T(la,cx+4.5,cy);
+      const lw=doc.getTextWidth(la);
+      dotLeader(cx+4.5+lw+2,cx+cw-1,cy);
+      TC(10,5,35); F('bold'); S(8.5); T(String(va),cx+cw,cy,{align:'right'});
     });
     y+=Math.ceil(items.length/2)*8+4;
   };
 
-  // ── RIGHE FULL WIDTH (per valori lunghi) ──
+  // ── RIGHE FULL WIDTH con dot leader ──
   const gridFull=(items,r,g,b)=>{
     items.forEach(([la,va],i)=>{
       if(i%2===0){FC(248,245,255);}else{FC(253,251,255);}R(mg,y-2.5,W-2*mg,7.5);
       FC(r,g,b); R(mg+1,y-1.5,1.8,1.8);
-      TC(90,80,115); F('normal'); S(7); T(la,mg+4.5,y);
-      TC(15,10,40); F('bold'); S(8.5); T(String(va),W-mg,y,{align:'right'});
+      TC(55,40,90); F('bold'); S(7.2); T(la,mg+4.5,y);
+      const lw=doc.getTextWidth(la);
+      dotLeader(mg+4.5+lw+2,W-mg-2,y);
+      TC(10,5,35); F('bold'); S(8.5); T(String(va),W-mg,y,{align:'right'});
       y+=8;
     });
     y+=4;
