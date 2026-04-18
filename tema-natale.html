@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Tema Natale — La Tua Mappa Astrale</title>
+<style>
+:root{--bg:#06030f;--deep:#100628;--card:rgba(255,255,255,.04);--cb:rgba(255,255,255,.08);--gold:#d4a017;--silver:#b8b4cc;--glow:rgba(180,130,255,.18);--tx:#e8e0ff;--txm:rgba(220,210,255,.5);--txd:rgba(220,210,255,.75)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);min-height:100vh;color:var(--tx);overflow-x:hidden}
+.bg{position:fixed;inset:0;z-index:-2;background:radial-gradient(ellipse at 20% 30%,rgba(80,20,160,.4),transparent 55%),radial-gradient(ellipse at 80% 70%,rgba(40,10,100,.35),transparent 55%),radial-gradient(ellipse at 50% 10%,rgba(120,60,20,.2),transparent 40%),#06030f}
+.stars{position:fixed;inset:0;z-index:-1;pointer-events:none}
+
+/* INPUT */
+.hero{text-align:center;padding:40px 16px 30px}
+.hero h1{font-size:clamp(1.8rem,4.5vw,3.5rem);font-weight:900;background:linear-gradient(135deg,#d4a017 0%,#f5d76e 40%,#c084fc 80%,#818cf8 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px}
+.hero p{color:var(--txm);font-size:.95rem;margin-bottom:28px}
+.icard{max-width:500px;margin:0 auto;background:rgba(30,10,60,.6);backdrop-filter:blur(20px);border:1px solid rgba(180,130,255,.2);border-radius:24px;padding:30px 28px;box-shadow:0 0 60px rgba(100,40,200,.2),0 30px 80px rgba(0,0,0,.6)}
+label{display:block;color:var(--txm);font-size:.72rem;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:6px;font-weight:600}
+input[type=date],input[type=time],select{width:100%;padding:12px 14px;background:rgba(255,255,255,.05);border:1px solid rgba(180,130,255,.2);border-radius:12px;color:var(--tx);font-size:.95rem;margin-bottom:18px;outline:none;transition:all .3s;color-scheme:dark}
+input:focus,select:focus{border-color:rgba(180,130,255,.6);box-shadow:0 0 0 3px rgba(150,80,255,.12)}
+select option{background:#1e0a3c}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.hint{color:var(--txm);font-size:.72rem;margin-top:-12px;margin-bottom:16px;padding-left:4px;line-height:1.4}
+.btn{width:100%;padding:15px;background:linear-gradient(135deg,#6b21a8,#d4a017);border:none;border-radius:12px;color:#fff;font-size:1rem;font-weight:800;cursor:pointer;transition:all .3s;letter-spacing:.4px;text-transform:uppercase}
+.btn:hover{transform:translateY(-3px);box-shadow:0 14px 40px rgba(180,130,60,.4)}
+
+/* RESULTS */
+#results{display:none;max-width:1100px;margin:0 auto;padding:20px 14px 60px}
+
+/* HEADER RESULT */
+.rhead{text-align:center;padding:30px 20px;background:rgba(30,10,60,.5);border:1px solid rgba(180,130,255,.15);border-radius:24px;margin-bottom:22px;position:relative;overflow:hidden}
+.rhead::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(180,100,255,.12),transparent 60%)}
+.rhead-name{font-size:clamp(1.4rem,3vw,2.4rem);font-weight:900;background:linear-gradient(135deg,var(--gold),#f5d76e,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:4px}
+.rhead-sub{color:var(--txm);font-size:.82rem;margin-bottom:20px}
+
+/* BIG 3 */
+.big3{display:flex;justify-content:center;gap:20px;flex-wrap:wrap;margin-top:4px}
+.b3card{text-align:center;padding:14px 22px;background:rgba(255,255,255,.04);border:1px solid rgba(180,130,255,.15);border-radius:16px;min-width:130px}
+.b3sym{font-size:2.2rem;line-height:1;margin-bottom:4px}
+.b3label{color:var(--txm);font-size:.65rem;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:3px}
+.b3val{font-size:1.1rem;font-weight:800;color:var(--gold)}
+
+/* LAYOUT */
+.twocol{display:grid;grid-template-columns:auto 1fr;gap:18px;margin-bottom:22px;align-items:start}
+@media(max-width:720px){.twocol{grid-template-columns:1fr}}
+
+/* CHART */
+.chart-wrap{background:rgba(30,10,60,.4);border:1px solid rgba(180,130,255,.15);border-radius:20px;padding:16px;display:flex;align-items:center;justify-content:center}
+#chartSVG{width:340px;height:340px;max-width:100%}
+
+/* SECTION */
+.sec{margin-bottom:18px}
+.sec-title{color:var(--txm);font-size:.68rem;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid rgba(180,130,255,.15);font-weight:700}
+
+/* PLANET TABLE */
+.ptable{width:100%;border-collapse:collapse}
+.ptable th{color:var(--txm);font-size:.65rem;letter-spacing:1px;text-transform:uppercase;text-align:left;padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.06);font-weight:600}
+.ptable td{padding:6px 8px;font-size:.82rem;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:middle}
+.ptable tr:last-child td{border-bottom:none}
+.ptable tr:hover td{background:rgba(255,255,255,.03)}
+.psym{font-size:1.1rem;width:28px;display:inline-block}
+.retro{color:#f87171;font-size:.65rem;margin-left:3px;font-weight:700}
+.deg{color:var(--txm);font-size:.75rem}
+
+/* ASPECTS */
+.asp-list{display:flex;flex-direction:column;gap:5px}
+.asp-row{display:flex;align-items:center;gap:8px;padding:6px 10px;background:rgba(255,255,255,.03);border-radius:8px;font-size:.8rem}
+.asp-type{font-weight:700;min-width:70px}
+.asp-orb{color:var(--txm);font-size:.72rem;margin-left:auto}
+.asp-conj{color:#f5d76e}.asp-opp{color:#f87171}.asp-trine{color:#34d399}.asp-square{color:#fb923c}.asp-sext{color:#60a5fa}
+
+/* INTERP CARDS */
+.icard-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-bottom:18px}
+.icard2{background:var(--card);border:1px solid var(--cb);border-radius:16px;padding:18px;position:relative;overflow:hidden}
+.icard2::before{content:'';position:absolute;top:0;left:0;right:0;height:2.5px}
+.ic-gold::before{background:linear-gradient(90deg,#d4a017,#f5d76e)}.ic-silver::before{background:linear-gradient(90deg,#7c3aed,#c084fc)}.ic-red::before{background:linear-gradient(90deg,#ef4444,#f97316)}.ic-blue::before{background:linear-gradient(90deg,#0ea5e9,#38bdf8)}.ic-green::before{background:linear-gradient(90deg,#10b981,#6ee7b7)}
+.ic-sym{font-size:1.8rem;margin-bottom:6px}
+.ic-label{color:var(--txm);font-size:.65rem;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px}
+.ic-title{font-size:1.05rem;font-weight:800;color:var(--gold);margin-bottom:6px}
+.ic-text{color:var(--txd);font-size:.8rem;line-height:1.6}
+
+/* HOUSES */
+.house-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
+.hcard{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:11px 13px}
+.hcard-num{color:var(--txm);font-size:.65rem;letter-spacing:1px;text-transform:uppercase;font-weight:700}
+.hcard-sign{font-size:.95rem;font-weight:700;color:var(--tx);margin:2px 0}
+.hcard-theme{color:var(--txm);font-size:.72rem;line-height:1.4}
+.hcard-planets{color:var(--gold);font-size:.72rem;margin-top:4px}
+
+/* RESET */
+.reset-btn{display:block;margin:30px auto 0;padding:10px 32px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:12px;color:var(--txm);cursor:pointer;font-size:.85rem;transition:all .3s}
+.reset-btn:hover{background:rgba(255,255,255,.1);color:var(--tx)}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<canvas class="stars" id="starCanvas"></canvas>
+
+<div id="inputSection">
+<div class="hero">
+  <h1>⭐ Tema Natale</h1>
+  <p>La tua mappa astrale completa con posizione dei pianeti, case e aspetti</p>
+  <div class="icard">
+    <label>Data di nascita</label>
+    <input type="date" id="bDate">
+    <label>Ora di nascita <span style="color:#f5a623">★ obbligatoria per Ascendente e Case</span></label>
+    <input type="time" id="bTime">
+    <label>Luogo di nascita</label>
+    <select id="bCity" onchange="cityChange()">
+      <option value="">— Seleziona città —</option>
+      <option value="45.47,9.19">Milano</option>
+      <option value="41.90,12.49">Roma</option>
+      <option value="40.85,14.27">Napoli</option>
+      <option value="45.07,7.69">Torino</option>
+      <option value="45.44,12.32">Venezia</option>
+      <option value="43.77,11.25">Firenze</option>
+      <option value="44.50,11.34">Bologna</option>
+      <option value="44.41,8.93">Genova</option>
+      <option value="38.12,13.36">Palermo</option>
+      <option value="45.66,9.44">Bergamo</option>
+      <option value="45.82,8.83">Varese</option>
+      <option value="45.55,11.55">Vicenza</option>
+      <option value="41.12,16.87">Bari</option>
+      <option value="37.50,15.09">Catania</option>
+      <option value="46.07,11.12">Trento</option>
+      <option value="46.49,11.35">Bolzano</option>
+      <option value="46.01,8.97">Lugano (CH)</option>
+      <option value="47.38,8.54">Zurigo (CH)</option>
+      <option value="46.20,6.14">Ginevra (CH)</option>
+      <option value="46.94,7.45">Berna (CH)</option>
+      <option value="48.85,2.35">Parigi</option>
+      <option value="51.51,-0.13">Londra</option>
+      <option value="52.52,13.40">Berlino</option>
+      <option value="40.42,-3.70">Madrid</option>
+      <option value="41.39,2.17">Barcellona</option>
+      <option value="48.21,16.37">Vienna</option>
+      <option value="40.71,-74.01">New York</option>
+      <option value="34.05,-118.24">Los Angeles</option>
+      <option value="custom">Inserisci manualmente...</option>
+    </select>
+    <div id="customCoords" style="display:none">
+      <div class="row2">
+        <div><label>Latitudine (°N)</label><input type="number" id="bLat" placeholder="45.47" step="0.01" min="-90" max="90" style="margin-bottom:0"></div>
+        <div><label>Longitudine (°E)</label><input type="number" id="bLon" placeholder="9.19" step="0.01" min="-180" max="180" style="margin-bottom:0"></div>
+      </div>
+      <div style="height:18px"></div>
+    </div>
+    <div class="hint">L'ora esatta è necessaria per calcolare Ascendente e Case. Senza ora si usano le 12:00 (posizioni meno precise).</div>
+    <button class="btn" onclick="go()">✦ Calcola il tuo Tema Natale</button>
+  </div>
+</div>
+</div>
+
+<div id="results">
+  <div class="rhead">
+    <div class="rhead-name" id="rTitle"></div>
+    <div class="rhead-sub" id="rSub"></div>
+    <div class="big3" id="big3"></div>
+  </div>
+  <div class="twocol">
+    <div class="chart-wrap"><svg id="chartSVG" viewBox="0 0 340 340"></svg></div>
+    <div>
+      <div class="sec"><div class="sec-title">Pianeti nei Segni e nelle Case</div>
+        <table class="ptable">
+          <thead><tr><th>Pianeta</th><th>Segno</th><th>°</th><th>Casa</th></tr></thead>
+          <tbody id="planetTbody"></tbody>
+        </table>
+      </div>
+      <div class="sec"><div class="sec-title">Aspetti Principali</div>
+        <div class="asp-list" id="aspList"></div>
+      </div>
+    </div>
+  </div>
+  <div class="sec"><div class="sec-title">Lettura Astrale — I Punti Chiave</div>
+    <div class="icard-grid" id="interpCards"></div>
+  </div>
+  <div class="sec"><div class="sec-title">Le Dodici Case — La Mappa della Vita</div>
+    <div class="house-grid" id="houseGrid"></div>
+  </div>
+  <button class="reset-btn" onclick="doReset()">← Nuovo Tema Natale</button>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// STARS BACKGROUND
+// ══════════════════════════════════════════════════════════════
+const sc=document.getElementById('starCanvas');
+function drawStars(){
+  sc.width=window.innerWidth;sc.height=window.innerHeight;
+  const ctx=sc.getContext('2d');
+  for(let i=0;i<220;i++){
+    const x=Math.random()*sc.width,y=Math.random()*sc.height;
+    const r=Math.random()*1.3+.2,a=Math.random()*.7+.1;
+    ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);
+    ctx.fillStyle=`rgba(220,200,255,${a})`;ctx.fill();
+  }
+}
+drawStars();window.addEventListener('resize',drawStars);
+
+// ══════════════════════════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════════════════════════
+const SIGNS=[
+  {n:'Ariete',sym:'♈',el:'Fuoco',mod:'Cardinale',ru:'Marte',col:'#e74c3c'},
+  {n:'Toro',sym:'♉',el:'Terra',mod:'Fisso',ru:'Venere',col:'#27ae60'},
+  {n:'Gemelli',sym:'♊',el:'Aria',mod:'Mutabile',ru:'Mercurio',col:'#f39c12'},
+  {n:'Cancro',sym:'♋',el:'Acqua',mod:'Cardinale',ru:'Luna',col:'#3498db'},
+  {n:'Leone',sym:'♌',el:'Fuoco',mod:'Fisso',ru:'Sole',col:'#e67e22'},
+  {n:'Vergine',sym:'♍',el:'Terra',mod:'Mutabile',ru:'Mercurio',col:'#8e44ad'},
+  {n:'Bilancia',sym:'♎',el:'Aria',mod:'Cardinale',ru:'Venere',col:'#16a085'},
+  {n:'Scorpione',sym:'♏',el:'Acqua',mod:'Fisso',ru:'Plutone',col:'#c0392b'},
+  {n:'Sagittario',sym:'♐',el:'Fuoco',mod:'Mutabile',ru:'Giove',col:'#8e44ad'},
+  {n:'Capricorno',sym:'♑',el:'Terra',mod:'Cardinale',ru:'Saturno',col:'#2c3e50'},
+  {n:'Acquario',sym:'♒',el:'Aria',mod:'Fisso',ru:'Urano',col:'#2980b9'},
+  {n:'Pesci',sym:'♓',el:'Acqua',mod:'Mutabile',ru:'Nettuno',col:'#1abc9c'},
+];
+
+const PLANETS=[
+  {id:'sun',n:'Sole',sym:'☉',color:'#f5d76e'},
+  {id:'moon',n:'Luna',sym:'☽',color:'#c0c0d0'},
+  {id:'mercury',n:'Mercurio',sym:'☿',color:'#a0d8ef'},
+  {id:'venus',n:'Venere',sym:'♀',color:'#ff9daa'},
+  {id:'mars',n:'Marte',sym:'♂',color:'#ff6b6b'},
+  {id:'jupiter',n:'Giove',sym:'♃',color:'#ffd59e'},
+  {id:'saturn',n:'Saturno',sym:'♄',color:'#b0a080'},
+  {id:'uranus',n:'Urano',sym:'♅',color:'#7ec8e3'},
+  {id:'neptune',n:'Nettuno',sym:'♆',color:'#8080ff'},
+  {id:'pluto',n:'Plutone',sym:'♇',color:'#c080ff'},
+];
+
+const HOUSE_THEMES=['Identità e personalità','Denaro e valori','Comunicazione e mente','Casa e famiglia','Creatività e amore','Lavoro e salute','Relazioni e partnership','Trasformazione e risorse','Filosofia e viaggi','Carriera e vocazione','Amicizie e ideali','Inconscio e karma'];
+
+// ══════════════════════════════════════════════════════════════
+// ASTRONOMY — Schlyter method
+// ══════════════════════════════════════════════════════════════
+const rad=x=>x*Math.PI/180, deg=x=>x*180/Math.PI;
+const norm360=x=>((x%360)+360)%360;
+const norm180=x=>{x=norm360(x);return x>180?x-360:x;};
+
+function daysSince2000(y,m,d,h){
+  // days from J2000.0 (2000 Jan 1.5 = JD 2451545.0)
+  const jd=367*y-Math.floor(7*(y+Math.floor((m+9)/12))/4)+Math.floor(275*m/9)+d+1721013.5+h/24;
+  return jd-2451545.0;
+}
+
+function solveKepler(M,e){
+  // M in degrees, returns E in degrees
+  let E=M+deg(e)*Math.sin(rad(M))*(1+e*Math.cos(rad(M)));
+  for(let i=0;i<6;i++){
+    const dE=(M-deg(E)+deg(e)*Math.sin(rad(E)))/(1-e*Math.cos(rad(E)));
+    E+=dE;
+    if(Math.abs(dE)<0.0001)break;
+  }
+  return E;
+}
+
+function trueAnomaly(M,e){
+  const E=solveKepler(M,e);
+  const v=deg(2*Math.atan2(Math.sqrt(1+e)*Math.sin(rad(E/2)),Math.sqrt(1-e)*Math.cos(rad(E/2))));
+  return norm360(v);
+}
+
+// Orbital elements (Schlyter), d = days from J2000.0
+function orbitalElements(d){
+  return{
+    sun:{N:0,i:0,w:norm360(282.9404+4.70935e-5*d),a:1,e:0.016709-1.151e-9*d,M:norm360(356.0470+0.9856002585*d)},
+    mercury:{N:norm360(48.3313+3.24587e-5*d),i:7.0047+5e-8*d,w:norm360(29.1241+1.01444e-5*d),a:0.387098,e:0.205635+5.59e-10*d,M:norm360(168.6562+4.0923344368*d)},
+    venus:{N:norm360(76.6799+2.4659e-5*d),i:3.3946+2.75e-8*d,w:norm360(54.891+1.38374e-5*d),a:0.723330,e:0.006773-1.302e-9*d,M:norm360(48.0052+1.6021302244*d)},
+    mars:{N:norm360(49.5574+2.11081e-5*d),i:1.8497-1.78e-8*d,w:norm360(286.5016+2.92961e-5*d),a:1.523688,e:0.093405+2.516e-9*d,M:norm360(18.6021+0.5240207766*d)},
+    jupiter:{N:norm360(100.4542+2.76854e-5*d),i:1.303-1.557e-7*d,w:norm360(273.8777+1.64505e-5*d),a:5.20256,e:0.048498+4.469e-9*d,M:norm360(19.895+0.0830853001*d)},
+    saturn:{N:norm360(113.6634+2.3898e-5*d),i:2.4886-1.081e-7*d,w:norm360(339.3939+2.97661e-5*d),a:9.55475,e:0.055546-9.499e-9*d,M:norm360(316.967+0.0334442282*d)},
+    uranus:{N:norm360(74.0005+1.3978e-5*d),i:0.7733+1.9e-8*d,w:norm360(96.6612+3.0565e-5*d),a:19.18171-1.55e-8*d,e:0.047318+7.45e-9*d,M:norm360(142.5905+0.011725806*d)},
+    neptune:{N:norm360(131.7806+3.0173e-5*d),i:1.77-2.55e-7*d,w:norm360(272.8461-6.027e-6*d),a:30.05826+3.313e-8*d,e:0.008606+2.15e-9*d,M:norm360(260.2471+0.005995147*d)},
+    pluto:{N:norm360(110.3+0*d),i:17.14,w:norm360(113.768+0.0003246*d),a:39.543,e:0.2490,M:norm360(14.882+0.00397*d)},
+  };
+}
+
+function helioRect(el){
+  // heliocentric rectangular coords
+  const v=trueAnomaly(el.M,el.e);
+  const r=el.a*(1-el.e*el.e)/(1+el.e*Math.cos(rad(v)));
+  const vw=rad(v+el.w);
+  const N=rad(el.N),i=rad(el.i);
+  const xh=r*(Math.cos(N)*Math.cos(vw)-Math.sin(N)*Math.sin(vw)*Math.cos(i));
+  const yh=r*(Math.sin(N)*Math.cos(vw)+Math.cos(N)*Math.sin(vw)*Math.cos(i));
+  const zh=r*(Math.sin(vw)*Math.sin(i));
+  return{x:xh,y:yh,z:zh,r};
+}
+
+function geocentricLon(d,id){
+  const els=orbitalElements(d);
+  const sunEl=els.sun;
+  const sv=trueAnomaly(sunEl.M,sunEl.e);
+  const sr=sunEl.a*(1-sunEl.e*sunEl.e)/(1+sunEl.e*Math.cos(rad(sv)));
+  // Sun's geocentric position (= -Earth's heliocentric)
+  const sunLon=norm360(sv+sunEl.w);
+  const xs=-sr*Math.cos(rad(sunLon));
+  const ys=-sr*Math.sin(rad(sunLon));
+  // planet heliocentric
+  const ph=helioRect(els[id]);
+  // geocentric ecliptic
+  const xg=ph.x+xs,yg=ph.y+ys;
+  return norm360(deg(Math.atan2(yg,xg)));
+}
+
+function sunLon(d){
+  const el=orbitalElements(d).sun;
+  const v=trueAnomaly(el.M,el.e);
+  return norm360(v+el.w);
+}
+
+function moonLon(d){
+  // Simplified lunar theory (Meeus Ch.22, low precision)
+  const N=norm360(125.1228-0.0529538083*d);
+  const i=5.1454;
+  const w=norm360(318.0634+0.1643573223*d);
+  const a=60.2666;
+  const e=0.054900;
+  const M=norm360(115.3654+13.0649929509*d);
+  const v=trueAnomaly(M,e);
+  const lon=norm360(N+w+v);
+  // perturbations
+  const Ms=orbitalElements(d).sun.M;
+  const Mm=M;
+  const D=norm360(lon-sunLon(d));
+  const F=norm360(lon-N);
+  const corr=
+    -1.274*Math.sin(rad(Mm-2*D))
+    +0.658*Math.sin(rad(2*D))
+    -0.186*Math.sin(rad(Ms))
+    -0.059*Math.sin(rad(2*Mm-2*D))
+    -0.057*Math.sin(rad(Mm-2*D+Ms))
+    +0.053*Math.sin(rad(Mm+2*D))
+    +0.046*Math.sin(rad(2*D-Ms))
+    +0.041*Math.sin(rad(Mm-Ms))
+    -0.035*Math.sin(rad(D))
+    -0.031*Math.sin(rad(Mm+Ms))
+    -0.015*Math.sin(rad(2*F-2*D))
+    +0.011*Math.sin(rad(Mm-4*D));
+  return norm360(lon+corr);
+}
+
+function obliquity(d){return 23.4393-3.563e-7*d;}
+
+// Ascendant calculation
+function ascendant(d,lat,lon){
+  // GMST in degrees
+  const T=d/36525;
+  const GMST=norm360(280.46061837+360.98564736629*d+0.000387933*T*T);
+  const LST=norm360(GMST+lon);
+  const RAMC=rad(LST);
+  const eps=rad(obliquity(d));
+  const phi=rad(lat);
+  const asc=deg(Math.atan2(Math.cos(RAMC),-(Math.sin(RAMC)*Math.cos(eps)+Math.tan(phi)*Math.sin(eps))));
+  return norm360(asc);
+}
+
+// Midheaven
+function midheaven(d,lon){
+  const T=d/36525;
+  const GMST=norm360(280.46061837+360.98564736629*d+0.000387933*T*T);
+  const LST=norm360(GMST+lon);
+  const RAMC=rad(LST);
+  const eps=rad(obliquity(d));
+  const mc=deg(Math.atan2(Math.sin(RAMC),Math.cos(RAMC)*Math.cos(eps)));
+  return norm360(mc);
+}
+
+// House cusps (Whole Sign from Ascendant)
+function houseCusps(asc){
+  const ascSign=Math.floor(asc/30);
+  const cusps=[];
+  for(let i=0;i<12;i++)cusps.push(norm360((ascSign+i)*30));
+  return cusps;
+}
+
+function houseOf(lon,cusps){
+  const asc=cusps[0];
+  for(let h=0;h<12;h++){
+    const c1=cusps[h],c2=cusps[(h+1)%12];
+    let lo=((lon-c1+360)%360),range=((c2-c1+360)%360)||360;
+    if(lo<range)return h+1;
+  }
+  return 1;
+}
+
+function isRetrograde(d,id){
+  if(id==='sun'||id==='moon')return false;
+  const l1=id==='sun'?sunLon(d):(id==='moon'?moonLon(d):geocentricLon(d,id));
+  const l2=id==='sun'?sunLon(d+1):(id==='moon'?moonLon(d+1):geocentricLon(d+1,id));
+  const dl=norm180(l2-l1);
+  return dl<0;
+}
+
+// ══════════════════════════════════════════════════════════════
+// INTERPRETATIONS
+// ══════════════════════════════════════════════════════════════
+const SUN_INTERP=[
+  'Pioniere nato, con un\'energia inesauribile. Agisce per istinto, ama iniziare e si stufa delle routine.',
+  'Radicato e perseverante, cerca sicurezza e piaceri concreti. La sua forza sta nella costanza.',
+  'Curioso e versatile, ama le idee e la comunicazione. Ha molti interessi e si adatta con facilità.',
+  'Intuitivo e protettivo, la famiglia è il centro di tutto. Sente prima di pensare.',
+  'Generoso e carismatico, nato per brillare. Ha bisogno di essere apprezzato e di creare.',
+  'Analitico e preciso, trova realizzazione nel fare bene le cose. Il dettaglio non gli sfugge.',
+  'Diplomatico e raffinato, cerca equilibrio e bellezza. Le relazioni sono il suo campo di crescita.',
+  'Intenso e trasformativo, va sempre in profondità. Nulla lo spaventa, tutto lo affascina.',
+  'Avventuriero e ottimista, ama la libertà e la ricerca di significato. Il mondo è la sua casa.',
+  'Ambizioso e disciplinato, costruisce con pazienza ciò che dura. Il successo è il suo obiettivo.',
+  'Originale e visionario, pensa al futuro. Lotta per i propri ideali con indipendenza.',
+  'Sensibile ed empatico, vive tra sogno e realtà. Ha una profonda connessione con l\'invisibile.',
+];
+const MOON_INTERP=[
+  'Emozioni rapide e intense. Reagisce d\'istinto, ha bisogno di azione per sentirsi vivo.',
+  'Bisogno di stabilità e sicurezza emotiva. Le emozioni sono profonde ma lente a manifestarsi.',
+  'Mente e cuore sempre in dialogo. Elabora le emozioni attraverso le parole e il pensiero.',
+  'Luna di casa, profonda sensibilità. Ha bisogno di radici e cura materna per stare bene.',
+  'Cuore caldo e generoso. Ha bisogno di amore, riconoscimento e di esprimersi creativamente.',
+  'Emozioni elaborate attraverso l\'analisi. Tende all\'autocritica, ha bisogno di ordine interiore.',
+  'Bisogno di armonia e relazioni equilibrate. Le emozioni si manifestano nelle dinamiche di coppia.',
+  'Emozioni profonde e intense, difficili da esternare. Grande forza interiore e istinto trasformativo.',
+  'Spirito libero anche emotivamente. Ha bisogno di spazio, avventura e di non sentirsi in gabbia.',
+  'Emozioni controllate, senso del dovere forte. La vulnerabilità viene nascosta con disciplina.',
+  'Distacco emotivo come meccanismo di difesa. Empatico verso l\'umanità, più difficile con i singoli.',
+  'Sensibilità lunare amplificata. Confini porosi, assorbimento delle emozioni altrui, grande intuizione.',
+];
+const ASC_INTERP=[
+  'Appare energico, diretto, sicuro di sé. Lascia subito un\'impressione di forza e determinazione.',
+  'Appare stabile, affidabile, calmo. Trasmette solidità e senso pratico.',
+  'Appare vivace, curioso, comunicativo. Lascia un\'impressione di intelligenza e versatilità.',
+  'Appare sensibile, premuroso, riservato. Trasmette calore e protezione.',
+  'Appare carismatico, sicuro, luminoso. Lascia un\'impressione di autorevolezza e vitalità.',
+  'Appare preciso, ordinato, umile. Trasmette competenza e attenzione al dettaglio.',
+  'Appare elegante, diplomatico, piacevole. Lascia un\'impressione di equilibrio e raffinatezza.',
+  'Appare intenso, magnetico, riservato. Trasmette profondità e mistero.',
+  'Appare entusiasta, ottimista, aperto. Lascia un\'impressione di libertà e avventura.',
+  'Appare serio, responsabile, ambizioso. Trasmette affidabilità e determinazione.',
+  'Appare originale, distaccato, intellettuale. Lascia un\'impressione di unicità e modernità.',
+  'Appare dolce, sensibile, sfuggente. Trasmette empatia e un\'aura quasi mistica.',
+];
+const PLANET_INTERP={
+  mercury:['Pensiero rapido e diretto, comunicazione assertiva.','Mente pratica e concreta, impara attraverso i sensi.','Curiosità instancabile, poliedrico, ottimo comunicatore.','Intuizione forte, pensa con il cuore.','Espressione creativa e teatrale, grande carisma verbale.','Mente analitica e precisa, attenzione ai dettagli.','Diplomatico nel linguaggio, cerca sempre il punto di equilibrio.','Mente penetrante, intuisce ciò che non viene detto.','Mente filosófica, visione d\'insieme, ironia brillante.','Pensiero strutturato, pragmatico, orientato ai risultati.','Mente originale e anticonformista, idee avanti.','Intuizione e immaginazione, pensa per immagini.'],
+  venus:['Amore appassionato e impulsivo, seduzione diretta.','Amore sensuale e fedele, cerca sicurezza nel partner.','Amore versatile, ha bisogno di stimoli intellettuali.','Amore protettivo e viscerale, grande attaccamento.','Amore generoso e romantico, vuole essere adorato.','Amore premuroso ma critico, difficile apertura.','Amore armonioso, cerca il partner ideale con cura.','Amore intenso e totalizzante, tutto o niente.','Amore libero e avventuroso, paura dell\'impegno.','Amore discreto e duraturo, si dimostra con i fatti.','Amore amicale e libero, cerca un partner complice.','Amore romantico e senza confini, si dissolve nell\'altro.'],
+  mars:['Energia inesauribile, azione immediata, spirito competitivo.','Perseverante e tenace, lento ad arrabbiarsi ma esplosivo.','Energia dispersa in mille direzioni, molto reattivo verbalmente.','Motivato dai legami, difende con ferocia chi ama.','Determinato e fiero, vuole vincere e primeggiare.','Energia canalizzata nel lavoro, perfezionismo operativo.','Evita i conflitti, ma quando combatte usa la diplomazia.','Intenso e strategico, usa la forza psicologica.','Energia esplosiva e avventurosa, ama le sfide.','Ambizioso, disciplinato, resistenza eccezionale.','Rivoluzionario, energia canalizzata in ideali.','Energia fluida, agisce per intuizione e compassione.'],
+  jupiter:['Espansione attraverso l\'azione e la leadership.','Fortuna legata alla pazienza e ai beni materiali.','Crescita attraverso la comunicazione e l\'apprendimento.','Abbondanza nelle relazioni familiari e domestiche.','Espansione creativa, talento per il teatro e l\'arte.','Fortuna nel servizio, nella salute e nel lavoro.','Crescita attraverso le relazioni e la giustizia.','Trasformazione come motore di fortuna e potere.','Giove in casa: nel segno più forte, espansione filosofica.','Fortuna nella carriera, nel rigore e nella disciplina.','Espansione attraverso la comunità e le idee innovative.','Crescita spirituale, intuizione e compassione ampliate.'],
+  saturn:['Disciplina nell\'azione, impara l\'autocontrollo.','Struttura nei valori materiali, lavoro costante.','Disciplina mentale, comunicazione seria e responsabile.','Karma familiare, difficoltà nelle radici, grande forza interiore.','Responsabilità nella creatività, maturità artistica tardiva.','Grande rigore nel lavoro e nella salute, perfezionismo.','Struttura nelle relazioni, lezioni di equilibrio e giustizia.','Trasformazione lenta e profonda, karma delle risorse condivise.','Disciplina filosofica, maturità attraverso il viaggio interiore.','Saturno a casa propria: ambizione strutturata, percorso lungo.','Responsabilità sociale, karma nella collettività.','Dissoluzione delle strutture, karma spirituale e isolamento.'],
+};
+
+// ══════════════════════════════════════════════════════════════
+// CHART DRAWING
+// ══════════════════════════════════════════════════════════════
+function lonToXY(lon,ascLon,R,cx,cy){
+  let delta=norm360(lon-ascLon);
+  const svgAngle=((180-delta)%360+360)%360;
+  const r=rad(svgAngle);
+  return{x:cx+R*Math.cos(r),y:cy+R*Math.sin(r)};
+}
+
+function drawChart(positions,ascLon,mcLon){
+  const svg=document.getElementById('chartSVG');
+  const W=340,H=340,cx=W/2,cy=H/2;
+  const R={outer:155,zodiac:137,zodiacInner:118,house:112,planet:100,inner:82};
+  let s='';
+
+  // Background
+  s+=`<circle cx="${cx}" cy="${cy}" r="${R.outer}" fill="#0d0620" stroke="rgba(180,130,255,.25)" stroke-width="1"/>`;
+
+  // Zodiac ring
+  for(let i=0;i<12;i++){
+    const sign=SIGNS[i];
+    const startLon=i*30;
+    const endLon=startLon+30;
+    const p1=lonToXY(startLon,ascLon,R.outer,cx,cy);
+    const p2=lonToXY(endLon,ascLon,R.outer,cx,cy);
+    const p3=lonToXY(endLon,ascLon,R.zodiacInner,cx,cy);
+    const p4=lonToXY(startLon,ascLon,R.zodiacInner,cx,cy);
+    const col=sign.col+'22';
+    s+=`<path d="M${p1.x},${p1.y} A${R.outer},${R.outer} 0 0,0 ${p2.x},${p2.y} L${p3.x},${p3.y} A${R.zodiacInner},${R.zodiacInner} 0 0,1 ${p4.x},${p4.y} Z" fill="${col}" stroke="rgba(180,130,255,.15)" stroke-width=".8"/>`;
+    // Sign symbol at midpoint of segment
+    const mid=lonToXY(startLon+15,ascLon,R.zodiac-9,cx,cy);
+    s+=`<text x="${mid.x}" y="${mid.y}" text-anchor="middle" dominant-baseline="central" font-size="11" fill="${sign.col}" opacity=".9">${sign.sym}</text>`;
+    // Divider lines
+    s+=`<line x1="${p1.x}" y1="${p1.y}" x2="${p4.x}" y2="${p4.y}" stroke="rgba(180,130,255,.2)" stroke-width=".6"/>`;
+  }
+  s+=`<circle cx="${cx}" cy="${cy}" r="${R.zodiacInner}" fill="none" stroke="rgba(180,130,255,.25)" stroke-width="1"/>`;
+
+  // House divisions (Whole Sign = same as zodiac, but show the cusp marks)
+  for(let i=0;i<12;i++){
+    const cuspLon=norm360(Math.floor(ascLon/30)*30+i*30);
+    const p1=lonToXY(cuspLon,ascLon,R.zodiacInner,cx,cy);
+    const p2=lonToXY(cuspLon,ascLon,R.inner,cx,cy);
+    s+=`<line x1="${p1.x}" y1="${p1.y}" x2="${p2.x}" y2="${p2.y}" stroke="rgba(180,130,255,.35)" stroke-width="${i===0||i===3||i===6||i===9?1.5:.5}"/>`;
+    // House number
+    const mid=lonToXY(cuspLon+15,ascLon,R.house,cx,cy);
+    s+=`<text x="${mid.x}" y="${mid.y}" text-anchor="middle" dominant-baseline="central" font-size="9" fill="rgba(180,130,255,.55)">${i+1}</text>`;
+  }
+  s+=`<circle cx="${cx}" cy="${cy}" r="${R.inner}" fill="#06030f" stroke="rgba(180,130,255,.2)" stroke-width=".8"/>`;
+
+  // Aspect lines (inside inner circle)
+  const ASPECTS=[{n:'⬤',type:'conj',deg:0,orb:8,col:'rgba(245,215,110,.35)'},{n:'△',type:'trine',deg:120,orb:6,col:'rgba(52,211,153,.35)'},{n:'□',type:'square',deg:90,orb:6,col:'rgba(251,146,60,.25)'},{n:'☍',type:'opp',deg:180,orb:8,col:'rgba(248,113,113,.25)'},{n:'⚹',type:'sext',deg:60,orb:4,col:'rgba(96,165,250,.25)'}];
+  const pKeys=Object.keys(positions);
+  for(let a=0;a<pKeys.length;a++){
+    for(let b=a+1;b<pKeys.length;b++){
+      const l1=positions[pKeys[a]].lon,l2=positions[pKeys[b]].lon;
+      const angle=Math.abs(norm180(l2-l1));
+      for(const asp of ASPECTS){
+        if(Math.abs(angle-asp.deg)<asp.orb){
+          const pa=lonToXY(l1,ascLon,R.inner-4,cx,cy);
+          const pb=lonToXY(l2,ascLon,R.inner-4,cx,cy);
+          s+=`<line x1="${pa.x}" y1="${pa.y}" x2="${pb.x}" y2="${pb.y}" stroke="${asp.col}" stroke-width="1"/>`;
+        }
+      }
+    }
+  }
+
+  // Planet positions
+  const placed=[];
+  for(const [id,pos] of Object.entries(positions)){
+    let plon=pos.lon;
+    // avoid overlap: offset if too close to previous planet
+    let pr=lonToXY(plon,ascLon,R.planet,cx,cy);
+    // find planet data
+    const pd=PLANETS.find(p=>p.id===id)||{sym:'?',color:'#fff'};
+    s+=`<circle cx="${pr.x}" cy="${pr.y}" r="9" fill="#0d0620" stroke="${pd.color}" stroke-width="1.5" opacity=".9"/>`;
+    s+=`<text x="${pr.x}" y="${pr.y}" text-anchor="middle" dominant-baseline="central" font-size="10" fill="${pd.color}" font-weight="bold">${pd.sym}</text>`;
+  }
+
+  // Cardinal points
+  const aP=lonToXY(ascLon,ascLon,R.zodiacInner+3,cx,cy);
+  const dP=lonToXY(ascLon+180,ascLon,R.zodiacInner+3,cx,cy);
+  const mcP=lonToXY(mcLon,ascLon,R.zodiacInner+3,cx,cy);
+  const icP=lonToXY(mcLon+180,ascLon,R.zodiacInner+3,cx,cy);
+  s+=`<text x="${aP.x}" y="${aP.y}" text-anchor="middle" dominant-baseline="central" font-size="9" fill="#d4a017" font-weight="bold">Asc</text>`;
+  s+=`<text x="${dP.x}" y="${dP.y}" text-anchor="middle" dominant-baseline="central" font-size="9" fill="#d4a017">Dsc</text>`;
+  s+=`<text x="${mcP.x}" y="${mcP.y}" text-anchor="middle" dominant-baseline="central" font-size="9" fill="#d4a017">MC</text>`;
+  s+=`<text x="${icP.x}" y="${icP.y}" text-anchor="middle" dominant-baseline="central" font-size="9" fill="#d4a017">IC</text>`;
+
+  svg.innerHTML=s;
+}
+
+// ══════════════════════════════════════════════════════════════
+// UI
+// ══════════════════════════════════════════════════════════════
+function cityChange(){
+  const v=document.getElementById('bCity').value;
+  document.getElementById('customCoords').style.display=v==='custom'?'block':'none';
+}
+
+function go(){
+  const dv=document.getElementById('bDate').value;
+  if(!dv){alert('Inserisci la data di nascita.');return;}
+  const tv=document.getElementById('bTime').value||'12:00';
+  const cityVal=document.getElementById('bCity').value;
+  let lat=0,lon=0;
+  if(cityVal&&cityVal!=='custom'){[lat,lon]=cityVal.split(',').map(Number);}
+  else if(cityVal==='custom'){
+    lat=parseFloat(document.getElementById('bLat').value)||45;
+    lon=parseFloat(document.getElementById('bLon').value)||9;
+  } else {lat=45.47;lon=9.19;}
+
+  const [y,mo,day]=dv.split('-').map(Number);
+  const [hh,mm]=tv.split(':').map(Number);
+  const utcHour=hh+mm/60;// approximate: no timezone correction for simplicity
+  const d=daysSince2000(y,mo,day,utcHour);
+
+  // Planetary longitudes
+  const positions={};
+  positions.sun={lon:sunLon(d),retro:false};
+  positions.moon={lon:moonLon(d),retro:false};
+  for(const id of['mercury','venus','mars','jupiter','saturn','uranus','neptune','pluto']){
+    positions[id]={lon:geocentricLon(d,id),retro:isRetrograde(d,id)};
+  }
+
+  // Ascendant & MC
+  const ascLon=ascendant(d,lat,lon);
+  const mcLon=midheaven(d,lon);
+  positions.asc={lon:ascLon,retro:false};
+  positions.mc={lon:mcLon,retro:false};
+
+  // House cusps (Whole Sign)
+  const cusps=houseCusps(ascLon);
+
+  // Assign houses to planets
+  const planetData=PLANETS.map(p=>({
+    ...p,
+    lon:positions[p.id].lon,
+    retro:positions[p.id].retro,
+    signIdx:Math.floor(positions[p.id].lon/30),
+    degree:positions[p.id].lon%30,
+    house:houseOf(positions[p.id].lon,cusps)
+  }));
+  const ascSignIdx=Math.floor(ascLon/30);
+  const sunPl=planetData.find(p=>p.id==='sun');
+  const moonPl=planetData.find(p=>p.id==='moon');
+
+  // Header
+  const MONTHS=['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+  const DAYS=['Domenica','Lunedi','Martedi','Mercoledi','Giovedi','Venerdi','Sabato'];
+  const bd=new Date(y,mo-1,day);
+  const cityName=document.getElementById('bCity').options[document.getElementById('bCity').selectedIndex]?.text||'';
+  document.getElementById('rTitle').textContent=`${DAYS[bd.getDay()]} ${day} ${MONTHS[mo-1]} ${y}${tv?' · ore '+tv:''}`;
+  document.getElementById('rSub').textContent=`${cityName||'Posizione personalizzata'} · Lat ${lat.toFixed(2)}° Lon ${lon.toFixed(2)}°`;
+
+  // Big 3
+  document.getElementById('big3').innerHTML=`
+    <div class="b3card"><div class="b3sym">☉</div><div class="b3label">Sole — Chi sei</div><div class="b3val">${SIGNS[sunPl.signIdx].sym} ${SIGNS[sunPl.signIdx].n}</div></div>
+    <div class="b3card"><div class="b3sym">☽</div><div class="b3label">Luna — Come senti</div><div class="b3val">${SIGNS[moonPl.signIdx].sym} ${SIGNS[moonPl.signIdx].n}</div></div>
+    <div class="b3card"><div class="b3sym">⬆</div><div class="b3label">Ascendente — Come appari</div><div class="b3val">${SIGNS[ascSignIdx].sym} ${SIGNS[ascSignIdx].n}</div></div>`;
+
+  // Planet table
+  const tbody=document.getElementById('planetTbody');
+  tbody.innerHTML='';
+  for(const p of planetData){
+    const sign=SIGNS[p.signIdx];
+    tbody.innerHTML+=`<tr>
+      <td><span class="psym" style="color:${p.color}">${p.sym}</span>${p.n}${p.retro?'<span class="retro">℞</span>':''}</td>
+      <td><span style="color:${sign.col}">${sign.sym}</span> ${sign.n}</td>
+      <td class="deg">${p.degree.toFixed(1)}°</td>
+      <td>${p.house}ª</td>
+    </tr>`;
+  }
+  // Add Asc and MC rows
+  const ascSign=SIGNS[ascSignIdx];
+  const mcSign=SIGNS[Math.floor(mcLon/30)];
+  tbody.innerHTML+=`<tr><td><span class="psym" style="color:#d4a017">⬆</span>Ascendente</td><td><span style="color:${ascSign.col}">${ascSign.sym}</span> ${ascSign.n}</td><td class="deg">${(ascLon%30).toFixed(1)}°</td><td>1ª</td></tr>`;
+  tbody.innerHTML+=`<tr><td><span class="psym" style="color:#d4a017">⬆</span>Medio Cielo</td><td><span style="color:${mcSign.col}">${mcSign.sym}</span> ${mcSign.n}</td><td class="deg">${(mcLon%30).toFixed(1)}°</td><td>10ª</td></tr>`;
+
+  // Aspects
+  const ASPS=[{type:'conj',deg:0,orb:8,n:'Congiunzione',cls:'asp-conj'},{type:'trine',deg:120,orb:6,n:'Trigono',cls:'asp-trine'},{type:'square',deg:90,orb:6,n:'Quadratura',cls:'asp-square'},{type:'opp',deg:180,orb:8,n:'Opposizione',cls:'asp-opp'},{type:'sext',deg:60,orb:4,n:'Sestile',cls:'asp-sext'}];
+  const aspList=document.getElementById('aspList');
+  aspList.innerHTML='';
+  for(let a=0;a<planetData.length;a++){
+    for(let b=a+1;b<planetData.length;b++){
+      const pa=planetData[a],pb=planetData[b];
+      const angle=Math.abs(norm180(pb.lon-pa.lon));
+      for(const asp of ASPS){
+        const orb=Math.abs(angle-asp.deg);
+        if(orb<asp.orb){
+          aspList.innerHTML+=`<div class="asp-row">
+            <span style="color:${pa.color}">${pa.sym}</span>
+            <span class="asp-type ${asp.cls}">${asp.n}</span>
+            <span style="color:${pb.color}">${pb.sym}</span>
+            <span>${pa.n} — ${pb.n}</span>
+            <span class="asp-orb">orb ${orb.toFixed(1)}°</span>
+          </div>`;
+          break;
+        }
+      }
+    }
+  }
+
+  // Interpretation cards
+  const icol=['ic-gold','ic-silver','ic-red','ic-blue','ic-green'];
+  const KEY=[
+    {sym:'☉',label:'Sole in '+SIGNS[sunPl.signIdx].n,text:SUN_INTERP[sunPl.signIdx]},
+    {sym:'☽',label:'Luna in '+SIGNS[moonPl.signIdx].n,text:MOON_INTERP[moonPl.signIdx]},
+    {sym:'⬆',label:'Ascendente '+SIGNS[ascSignIdx].n,text:ASC_INTERP[ascSignIdx]},
+    ...['mercury','venus','mars','jupiter','saturn'].map((id,i)=>{
+      const p=planetData.find(x=>x.id===id);
+      return{sym:p.sym,label:p.n+' in '+SIGNS[p.signIdx].n,text:PLANET_INTERP[id]?PLANET_INTERP[id][p.signIdx]:'Posizione significativa nel tema.'};
+    })
+  ];
+  document.getElementById('interpCards').innerHTML=KEY.map((k,i)=>`
+    <div class="icard2 ${icol[i%5]}">
+      <div class="ic-sym">${k.sym}</div>
+      <div class="ic-label">Interpretazione</div>
+      <div class="ic-title">${k.label}</div>
+      <div class="ic-text">${k.text}</div>
+    </div>`).join('');
+
+  // Houses grid
+  const hGrid=document.getElementById('houseGrid');
+  hGrid.innerHTML=cusps.map((cuspLon,i)=>{
+    const sign=SIGNS[Math.floor(cuspLon/30)];
+    const planetsInHouse=planetData.filter(p=>p.house===i+1).map(p=>p.sym+' '+p.n).join(', ');
+    return`<div class="hcard">
+      <div class="hcard-num">Casa ${i+1}</div>
+      <div class="hcard-sign"><span style="color:${sign.col}">${sign.sym}</span> ${sign.n}</div>
+      <div class="hcard-theme">${HOUSE_THEMES[i]}</div>
+      ${planetsInHouse?`<div class="hcard-planets">● ${planetsInHouse}</div>`:''}
+    </div>`;
+  }).join('');
+
+  // Draw SVG chart
+  const chartPositions={};
+  for(const p of planetData)chartPositions[p.id]={lon:p.lon};
+  chartPositions.asc={lon:ascLon};chartPositions.mc={lon:mcLon};
+  drawChart(chartPositions,ascLon,mcLon);
+
+  document.getElementById('inputSection').style.display='none';
+  document.getElementById('results').style.display='block';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function doReset(){
+  document.getElementById('inputSection').style.display='block';
+  document.getElementById('results').style.display='none';
+}
+
+document.getElementById('bDate').max=new Date().toISOString().slice(0,10);
+</script>
+</body>
+</html>
