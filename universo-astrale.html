@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Il Tuo Universo Astrale</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{
+  --bg:#07071a;--g1:rgba(100,30,180,.35);--g2:rgba(30,100,200,.3);--g3:rgba(180,30,100,.25);
+  --a1:#ff6b9d;--a2:#ffd93d;
+  --card:rgba(255,255,255,.035);--card-b:rgba(255,255,255,.07);--card-h:rgba(255,255,255,.16);
+  --tx:#fff;--txm:rgba(255,255,255,.42);--txd:rgba(255,255,255,.6);
+  --ibg:rgba(255,255,255,.07);--ib:rgba(255,255,255,.12);
+  --gc:rgba(255,255,255,.03);--panel:rgba(15,10,35,.92);
+  --fs:1rem;
+}
+.th-ocean{--bg:#020f1f;--g1:rgba(0,100,200,.4);--g2:rgba(0,180,180,.3);--g3:rgba(0,50,150,.2);--a1:#00dfd8;--a2:#4d96ff;--panel:rgba(0,15,35,.92)}
+.th-forest{--bg:#030a05;--g1:rgba(20,120,40,.4);--g2:rgba(40,160,60,.25);--g3:rgba(80,200,80,.15);--a1:#6bcb77;--a2:#c8f557;--panel:rgba(3,12,6,.92)}
+.th-sunset{--bg:#150500;--g1:rgba(200,80,0,.4);--g2:rgba(220,50,30,.3);--g3:rgba(180,120,0,.2);--a1:#ff9f1c;--a2:#ff4500;--panel:rgba(20,5,0,.92)}
+.th-night{--bg:#000;--g1:rgba(30,30,30,.6);--g2:rgba(20,20,20,.4);--g3:rgba(50,50,50,.2);--a1:#d0d0d0;--a2:#888;--panel:rgba(10,10,10,.95)}
+.th-light{
+  --bg:#eef0f8;--g1:rgba(100,60,220,.1);--g2:rgba(60,120,220,.08);--g3:rgba(180,60,120,.07);
+  --a1:#7928ca;--a2:#ff0080;
+  --card:rgba(255,255,255,.85);--card-b:rgba(0,0,0,.08);--card-h:rgba(0,0,0,.14);
+  --tx:#1a1a2e;--txm:rgba(0,0,0,.45);--txd:rgba(0,0,0,.65);
+  --ibg:rgba(255,255,255,.95);--ib:rgba(0,0,0,.15);--gc:rgba(0,0,0,.04);--panel:rgba(240,238,255,.97)
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);min-height:100vh;overflow-x:hidden;color:var(--tx);font-size:var(--fs);transition:background .35s,color .35s}
+
+.bg{position:fixed;inset:0;z-index:-2;background:radial-gradient(ellipse at 15% 40%,var(--g1),transparent 55%),radial-gradient(ellipse at 85% 20%,var(--g2),transparent 55%),radial-gradient(ellipse at 50% 85%,var(--g3),transparent 55%),var(--bg);transition:background .35s}
+.bg-grid{position:fixed;inset:0;z-index:-1;background-image:linear-gradient(var(--gc) 1px,transparent 1px),linear-gradient(90deg,var(--gc) 1px,transparent 1px);background-size:50px 50px}
+
+@keyframes floatUp{0%{transform:translateY(100vh);opacity:0}10%{opacity:.6}90%{opacity:.6}100%{transform:translateY(-20vh);opacity:0}}
+.pt{position:fixed;border-radius:50%;pointer-events:none;animation:floatUp linear infinite}
+
+/* INPUT */
+.hero{text-align:center;padding:30px 16px 30px}
+@media(max-height:680px){.hero{padding-top:14px;padding-bottom:14px}}
+.hero h1{font-size:clamp(1.7rem,5vw,4rem);font-weight:900;background:linear-gradient(135deg,var(--a1),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px;line-height:1.1}
+.hero p{color:var(--txd);font-size:.95rem;margin-bottom:22px}
+.icard{max-width:440px;margin:0 auto;background:var(--card);backdrop-filter:blur(20px);border:1px solid var(--card-b);border-radius:24px;padding:24px;box-shadow:0 30px 80px rgba(0,0,0,.5)}
+label{display:block;color:var(--txd);font-size:.78rem;letter-spacing:.8px;text-transform:uppercase;margin-bottom:7px;font-weight:600}
+input[type=date],input[type=time]{width:100%;padding:13px 16px;background:var(--ibg);border:1px solid var(--ib);border-radius:12px;color:var(--tx);font-size:1rem;margin-bottom:20px;outline:none;transition:all .3s;color-scheme:dark}
+.th-light input[type=date],.th-light input[type=time]{color-scheme:light}
+input:focus{border-color:rgba(140,50,220,.7);box-shadow:0 0 0 3px rgba(140,50,220,.15)}
+.hint{color:var(--txm);font-size:.75rem;margin-top:-14px;margin-bottom:18px;padding-left:4px}
+.btn{width:100%;padding:16px;background:linear-gradient(135deg,#7928ca,#ff0080);border:none;border-radius:12px;color:#fff;font-size:1rem;font-weight:800;cursor:pointer;transition:all .3s;letter-spacing:.3px;text-transform:uppercase}
+.btn:hover{transform:translateY(-3px);box-shadow:0 14px 36px rgba(120,0,120,.5)}
+
+/* RESULTS */
+#results{display:none;max-width:1200px;margin:0 auto;padding:30px 16px 60px}
+
+/* ACTION BAR */
+.action-bar{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:28px}
+.abtn{display:flex;align-items:center;gap:7px;padding:10px 20px;background:var(--card);border:1px solid var(--card-b);border-radius:12px;color:var(--txd);cursor:pointer;font-size:.85rem;font-weight:600;transition:all .3s;backdrop-filter:blur(10px)}
+.abtn:hover{background:var(--card-h);color:var(--tx);transform:translateY(-2px)}
+.abtn.pdf{border-color:rgba(255,107,157,.4);color:#ff6b9d}
+.abtn.share{border-color:rgba(77,150,255,.4);color:#4d96ff}
+.abtn.reset{border-color:rgba(255,255,255,.15)}
+
+/* TICKER */
+.ticker-wrap{text-align:center;padding:36px 24px;background:var(--card);border:1px solid var(--card-b);border-radius:24px;margin-bottom:28px;position:relative;overflow:hidden}
+.ticker-wrap::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(120,0,200,.08),rgba(255,0,128,.08))}
+.ticker-label{color:var(--txm);font-size:.74rem;letter-spacing:3px;text-transform:uppercase;margin-bottom:12px}
+.ticker-main{font-size:clamp(1.8rem,5.5vw,4rem);font-weight:900;background:linear-gradient(135deg,var(--a1),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-variant-numeric:tabular-nums;font-feature-settings:"tnum";line-height:1;letter-spacing:-1px}
+.ticker-sub{color:var(--txm);font-size:.82rem;margin-top:10px;font-variant-numeric:tabular-nums}
+
+/* CARDS */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.card{background:var(--card);backdrop-filter:blur(12px);border:1px solid var(--card-b);border-radius:20px;padding:24px;transition:all .3s cubic-bezier(.2,.8,.2,1);position:relative;overflow:hidden;animation:cardIn .5s ease both}
+@keyframes cardIn{from{opacity:0;transform:translateY(24px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+.card:hover{transform:translateY(-4px);border-color:var(--card-h);box-shadow:0 20px 44px rgba(0,0,0,.4)}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:20px 20px 0 0}
+.c-p::before{background:linear-gradient(90deg,#7928ca,#ff0080)}
+.c-b::before{background:linear-gradient(90deg,#0070f3,#00dfd8)}
+.c-g::before{background:linear-gradient(90deg,#17c964,#5ea2ef)}
+.c-o::before{background:linear-gradient(90deg,#f5a623,#f56767)}
+.c-pk::before{background:linear-gradient(90deg,#ff4ecd,#a855f7)}
+.c-cy::before{background:linear-gradient(90deg,#06b6d4,#3b82f6)}
+.c-l::before{background:linear-gradient(90deg,#84cc16,#22c55e)}
+.c-r::before{background:linear-gradient(90deg,#ef4444,#f97316)}
+.c-y::before{background:linear-gradient(90deg,#eab308,#f59e0b)}
+.emo{font-size:2.2rem;margin-bottom:9px;display:block}
+.clabel{color:var(--txm);font-size:.68rem;letter-spacing:1.8px;text-transform:uppercase;margin-bottom:6px}
+.cval{font-size:1.55rem;font-weight:800;color:var(--tx);line-height:1.2;margin-bottom:5px;font-variant-numeric:tabular-nums}
+.cdesc{color:var(--txm);font-size:.88rem;line-height:1.6}
+
+/* ZODIAC WIDE */
+.zodiac-card{grid-column:span 2}
+@media(max-width:600px){.zodiac-card{grid-column:span 1}}
+.zi{display:flex;align-items:center;gap:20px}
+@media(max-width:600px){.zi{flex-direction:column;text-align:center}}
+.z-sym{font-size:5rem;line-height:1;flex-shrink:0}
+.z-name{font-size:2rem;font-weight:900;color:var(--tx);margin-bottom:3px}
+.z-dates{color:var(--txm);font-size:.8rem;margin-bottom:7px;letter-spacing:.5px}
+.z-traits{color:var(--txd);font-size:.86rem;line-height:1.65}
+
+/* FLOAT CONTROLS */
+.fab{position:fixed;bottom:24px;right:24px;z-index:200;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+.fab-btn{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#7928ca,#ff0080);border:none;color:#fff;font-size:1.4rem;cursor:pointer;box-shadow:0 6px 24px rgba(120,0,120,.5);transition:all .3s;display:flex;align-items:center;justify-content:center}
+.fab-btn:hover{transform:scale(1.1) rotate(30deg)}
+.fab-panel{background:var(--panel);backdrop-filter:blur(24px);border:1px solid var(--card-b);border-radius:20px;padding:20px;width:260px;display:none;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.fab-panel.open{display:block;animation:panelIn .25s ease}
+@keyframes panelIn{from{opacity:0;transform:translateY(10px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+.panel-title{color:var(--txm);font-size:.7rem;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;font-weight:700}
+.themes{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.tswatch{width:34px;height:34px;border-radius:50%;border:2.5px solid transparent;cursor:pointer;transition:all .2s;position:relative}
+.tswatch:hover,.tswatch.active{border-color:#fff;transform:scale(1.15)}
+.th-light .tswatch:hover,.th-light .tswatch.active{border-color:#555}
+.tswatch[data-th=""]      {background:linear-gradient(135deg,#7928ca,#ff0080)}
+.tswatch[data-th="ocean"] {background:linear-gradient(135deg,#0070f3,#00dfd8)}
+.tswatch[data-th="forest"]{background:linear-gradient(135deg,#17c964,#c8f557)}
+.tswatch[data-th="sunset"]{background:linear-gradient(135deg,#ff9f1c,#ff4500)}
+.tswatch[data-th="night"] {background:linear-gradient(135deg,#333,#888)}
+.tswatch[data-th="light"] {background:linear-gradient(135deg,#eef0f8,#c8b4ff);border-color:rgba(0,0,0,.2)!important}
+.tswatch[data-th="light"]:hover{border-color:#7928ca!important}
+.fs-ctrl{display:flex;align-items:center;gap:8px}
+.fs-btn{width:32px;height:32px;border-radius:8px;background:var(--card);border:1px solid var(--card-b);color:var(--tx);font-size:1.1rem;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center}
+.fs-btn:hover{background:var(--card-h)}
+.fs-val{color:var(--txd);font-size:.85rem;font-weight:700;flex:1;text-align:center;min-width:36px}
+.divider{height:1px;background:var(--card-b);margin:14px 0}
+
+/* TOAST */
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(50,200,100,.9);color:#fff;padding:10px 24px;border-radius:12px;font-size:.88rem;font-weight:600;opacity:0;transition:all .3s;pointer-events:none;z-index:300}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+/* ---- NATAL SECTION ---- */
+.natal-divider{text-align:center;margin:10px 0 26px;position:relative}
+.natal-divider::before{content:'';position:absolute;top:50%;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(180,130,255,.4),transparent)}
+.natal-divider span{background:var(--bg);color:rgba(180,130,255,.8);font-size:.8rem;letter-spacing:4px;font-weight:700;padding:0 16px;position:relative}
+.natal-big3{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin-bottom:24px}
+.nb3{text-align:center;padding:14px 20px;background:rgba(180,130,255,.06);border:1px solid rgba(180,130,255,.18);border-radius:18px;min-width:120px}
+.nb3-sym{font-size:2rem;line-height:1;margin-bottom:4px}
+.nb3-label{color:var(--txm);font-size:.62rem;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:3px}
+.nb3-val{font-size:1rem;font-weight:800;color:#d4a017}
+.natal-layout{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:start}
+@media(max-width:700px){.natal-layout{grid-template-columns:1fr}}
+.natal-chart-wrap{background:rgba(15,5,35,.6);border:1px solid rgba(180,130,255,.18);border-radius:18px;padding:14px}
+.natal-chart-label{color:rgba(180,130,255,.6);font-size:.65rem;letter-spacing:2px;text-transform:uppercase;text-align:center;margin-bottom:8px}
+.natal-sec-title{color:var(--txm);font-size:.66rem;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid rgba(255,255,255,.07);font-weight:700}
+.natal-table{width:100%;border-collapse:collapse;font-size:.8rem}
+.natal-table th{color:var(--txm);font-size:.62rem;letter-spacing:1px;text-transform:uppercase;text-align:left;padding:4px 6px;border-bottom:1px solid rgba(255,255,255,.07)}
+.natal-table td{padding:5px 6px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:middle}
+.natal-table tr:hover td{background:rgba(255,255,255,.02)}
+.retro{color:#f87171;font-size:.62rem;font-weight:700;margin-left:2px}
+.asp-row{display:flex;align-items:center;gap:7px;padding:5px 8px;background:rgba(255,255,255,.025);border-radius:7px;font-size:.75rem;margin-bottom:4px}
+.asp-orb{color:var(--txm);font-size:.68rem;margin-left:auto}
+.asp-conj{color:#f5d76e;font-weight:700}.asp-trine{color:#34d399;font-weight:700}.asp-square{color:#fb923c;font-weight:700}.asp-opp{color:#f87171;font-weight:700}.asp-sext{color:#60a5fa;font-weight:700}
+.narrative-block{background:rgba(180,130,255,.05);border:1px solid rgba(180,130,255,.15);border-radius:16px;padding:22px 24px;line-height:1.8;font-size:.88rem;color:var(--txd)}
+.narrative-block p{margin-bottom:14px}.narrative-block p:last-child{margin-bottom:0}
+.narrative-block strong{color:#d4a017}
+.house-mini-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:7px}
+.hm{background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.06);border-radius:9px;padding:9px 11px}
+.hm-num{color:var(--txm);font-size:.62rem;letter-spacing:1px;text-transform:uppercase;font-weight:700}
+.hm-sign{font-size:.88rem;font-weight:700;color:var(--tx);margin:2px 0}
+.hm-theme{color:var(--txm);font-size:.7rem;line-height:1.4}
+.hm-planets{color:#d4a017;font-size:.7rem;margin-top:3px}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="bg-grid"></div>
+<div class="toast" id="toast"></div>
+
+<!-- INPUT -->
+<div id="inputSection">
+  <div class="hero">
+    <h1>🌌 Il Tuo Universo Astrale</h1>
+    <p>Dati di vita, distanze cosmiche e tema natale completo con posizione dei pianeti</p>
+    <div class="icard">
+      <label>Data di nascita</label>
+      <input type="date" id="birthDate">
+      <label>Ora di nascita <span style="color:#f5a623;font-weight:700">★ obbligatoria per il tema natale</span></label>
+      <input type="time" id="birthTime">
+      <label>Luogo di nascita</label>
+      <select id="bCity" onchange="cityChange()" style="width:100%;padding:12px 14px;background:var(--ibg);border:1px solid var(--ib);border-radius:12px;color:var(--tx);font-size:.95rem;margin-bottom:8px;outline:none;color-scheme:dark">
+        <option value="">— Seleziona città —</option>
+        <option value="45.47,9.19">Milano</option><option value="41.90,12.49">Roma</option>
+        <option value="40.85,14.27">Napoli</option><option value="45.07,7.69">Torino</option>
+        <option value="45.44,12.32">Venezia</option><option value="43.77,11.25">Firenze</option>
+        <option value="44.50,11.34">Bologna</option><option value="44.41,8.93">Genova</option>
+        <option value="38.12,13.36">Palermo</option><option value="45.66,9.44">Bergamo</option>
+        <option value="45.82,8.83">Varese</option><option value="37.50,15.09">Catania</option>
+        <option value="46.07,11.12">Trento</option><option value="46.01,8.97">Lugano (CH)</option>
+        <option value="47.38,8.54">Zurigo (CH)</option><option value="46.94,7.45">Berna (CH)</option>
+        <option value="46.20,6.14">Ginevra (CH)</option><option value="48.85,2.35">Parigi</option>
+        <option value="51.51,-0.13">Londra</option><option value="52.52,13.40">Berlino</option>
+        <option value="40.42,-3.70">Madrid</option><option value="48.21,16.37">Vienna</option>
+        <option value="40.71,-74.01">New York</option><option value="34.05,-118.24">Los Angeles</option>
+        <option value="custom">Inserisci coordinate...</option>
+      </select>
+      <div id="customCoords" style="display:none;margin-bottom:10px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div><label style="margin-bottom:4px">Latitudine °N</label><input type="number" id="bLat" placeholder="45.47" step="0.01" min="-90" max="90" style="margin-bottom:0"></div>
+          <div><label style="margin-bottom:4px">Longitudine °E</label><input type="number" id="bLon" placeholder="9.19" step="0.01" min="-180" max="180" style="margin-bottom:0"></div>
+        </div>
+      </div>
+      <div class="hint">Ora e luogo necessari per Ascendente, Case e Tema Natale completo</div>
+      <button class="btn" onclick="go()">✨ Scopri il tuo Universo Astrale</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div id="results">
+  <div class="action-bar" id="actionBar">
+    <button class="abtn pdf" onclick="makePDF()">📄 Scarica PDF</button>
+    <button class="abtn share" onclick="doShare()">🔗 Condividi link</button>
+    <button class="abtn reset" onclick="doReset()">← Cambia data</button>
+  </div>
+  <div class="ticker-wrap">
+    <div class="ticker-label">🎂 Sei vivo da esattamente</div>
+    <div class="ticker-main" id="tickerMain">-</div>
+    <div class="ticker-sub" id="tickerSub">-</div>
+  </div>
+  <div class="grid" id="grid"></div>
+
+  <!-- TEMA NATALE SECTION -->
+  <div id="natalSection" style="display:none;margin-top:36px">
+    <div class="natal-divider">
+      <span>✦ TEMA NATALE ✦</span>
+    </div>
+    <div class="natal-big3" id="natalBig3"></div>
+    <div class="natal-layout">
+      <div class="natal-chart-wrap">
+        <div class="natal-chart-label">Ruota Astrale</div>
+        <svg id="natalSVG" viewBox="0 0 340 340" style="width:100%;max-width:340px;display:block;margin:0 auto"></svg>
+      </div>
+      <div>
+        <div class="natal-sec-title">Pianeti nei Segni e nelle Case</div>
+        <table class="natal-table">
+          <thead><tr><th>Pianeta</th><th>Segno</th><th>°</th><th>Casa</th></tr></thead>
+          <tbody id="natalTbody"></tbody>
+        </table>
+        <div class="natal-sec-title" style="margin-top:14px">Aspetti Principali</div>
+        <div id="natalAspects"></div>
+      </div>
+    </div>
+    <div class="natal-sec-title" style="margin-top:22px">Lettura Astrale Completa</div>
+    <div id="natalNarrative"></div>
+    <div class="natal-sec-title" style="margin-top:18px">Le Dodici Case</div>
+    <div id="natalHouses"></div>
+  </div>
+
+<!-- FAB CONTROLS -->
+<div class="fab">
+  <div class="fab-panel" id="fabPanel">
+    <div class="panel-title">Tema colore</div>
+    <div class="themes">
+      <div class="tswatch active" data-th="" title="Viola" onclick="setTheme(this)"></div>
+      <div class="tswatch" data-th="ocean" title="Oceano" onclick="setTheme(this)"></div>
+      <div class="tswatch" data-th="forest" title="Foresta" onclick="setTheme(this)"></div>
+      <div class="tswatch" data-th="sunset" title="Tramonto" onclick="setTheme(this)"></div>
+      <div class="tswatch" data-th="night" title="Notte" onclick="setTheme(this)"></div>
+      <div class="tswatch" data-th="light" title="Chiaro" onclick="setTheme(this)"></div>
+    </div>
+    <div class="divider"></div>
+    <div class="panel-title">Dimensione testo</div>
+    <div class="fs-ctrl">
+      <button class="fs-btn" onclick="changeFS(-1)">A−</button>
+      <div class="fs-val" id="fsVal">100%</div>
+      <button class="fs-btn" onclick="changeFS(1)">A+</button>
+    </div>
+  </div>
+  <button class="fab-btn" onclick="togglePanel()" title="Personalizza">⚙️</button>
+</div>
+
+<script>
+// ===== DATA =====
+const SAINTS={'01-01':'Maria SS. Madre di Dio','01-02':'Basilio Magno e Gregorio','01-03':'Genoveffa','01-04':'Elisabetta Ann Seton','01-05':'Amelia','01-06':'Epifania del Signore','01-07':'Raimondo da Peñafort','01-08':'Massimo','01-09':'Adriano','01-10':'Aldo','01-11':'Igino Papa','01-12':'Modesto','01-13':'Ilario','01-14':'Felice da Nola','01-15':'Mauro e Placido','01-16':'Marcello I Papa','01-17':'Antonio Abate','01-18':'Liberata','01-19':'Mario e Marta','01-20':'Fabiano e Sebastiano','01-21':'Agnese','01-22':'Vincenzo e Anastasio','01-23':'Emerenziana','01-24':'Francesco di Sales','01-25':'Conversione di San Paolo','01-26':'Timoteo e Tito','01-27':'Angela Merici','01-28':"Tommaso d'Aquino",'01-29':'Costanzo','01-30':'Martina','01-31':'Giovanni Bosco','02-01':'Verdiana','02-02':'Presentazione del Signore','02-03':'Biagio','02-04':'Gilberto','02-05':'Agata','02-06':'Paolo Miki e compagni','02-07':'Teodoro','02-08':'Gerolamo Emiliani','02-09':'Apollonia','02-10':'Scolastica','02-11':'Nostra Signora di Lourdes','02-12':'Eulalia di Barcellona','02-13':'Beatrice','02-14':'Valentino / Cirillo e Metodio','02-15':'Faustino e Giovita','02-16':'Giuliana','02-17':'Sette Fondatori dei Serviti','02-18':'Simone','02-19':'Corrado Confalonieri','02-20':'Eleuterio','02-21':'Pier Damiani','02-22':'Cattedra di San Pietro','02-23':'Policarpo','02-24':'Sergio','02-25':'Cesario','02-26':'Nestore','02-27':"Gabriele dell'Addolorata",'02-28':'Romano','02-29':'Romano','03-01':'Albino','03-02':'Simplicio Papa','03-03':'Cunegonda','03-04':'Casimiro','03-05':'Adriano','03-06':'Colette','03-07':'Perpetua e Felicita','03-08':'Giovanni di Dio','03-09':'Francesca Romana','03-10':'Macario','03-11':'Costantino','03-12':'Gregorio Magno','03-13':'Rodrigo','03-14':'Matilde','03-15':'Luisa de Marillac','03-16':'Eriberto','03-17':'Patrizio','03-18':'Cirillo di Gerusalemme','03-19':'Giuseppe','03-20':'Cutberto','03-21':'Nicola da Flue','03-22':'Lea','03-23':'Turibio di Mongrovejo','03-24':'Oscar','03-25':'Annunciazione del Signore','03-26':'Emanuele','03-27':'Ruperto','03-28':'Sisto III','03-29':'Bertoldo','03-30':'Amedeo','03-31':'Beniamino','04-01':'Ugo di Grenoble','04-02':'Francesco di Paola','04-03':'Riccardo di Chichester','04-04':'Isidoro di Siviglia','04-05':'Vincenzo Ferrer','04-06':'Guglielmo','04-07':'Giovanni Battista de la Salle','04-08':'Alberto','04-09':'Maria Cleofe','04-10':'Ezechiele','04-11':'Stanislao','04-12':'Zeno di Verona','04-13':'Ermenegildo','04-14':'Valeriano','04-15':'Damiano','04-16':'Bernardette Soubirous','04-17':'Aniceto','04-18':'Apollonio','04-19':'Leone IX','04-20':'Adalberto','04-21':"Anselmo d'Aosta",'04-22':'Caio Papa','04-23':'Giorgio','04-24':'Fedele da Sigmaringen','04-25':'Marco Evangelista','04-26':'Marcellino','04-27':'Zita','04-28':'Luigi Maria Grignion','04-29':'Caterina da Siena','04-30':'Pio V','05-01':'Giuseppe Lavoratore','05-02':'Atanasio','05-03':'Filippo e Giacomo Apostoli','05-04':'Ciriaco','05-05':'Gottardo','05-06':'Domenica','05-07':'Flavia','05-08':'Vittore','05-09':'Pacomio','05-10':'Antonino','05-11':'Fabio','05-12':'Nereo e Achilleo','05-13':'Nostra Signora di Fatima','05-14':'Mattia Apostolo','05-15':'Isidoro Agricoltore','05-16':'Ubaldo','05-17':'Pasquale Baylon','05-18':'Giovanni I Papa','05-19':'Celestino V','05-20':'Bernardino da Siena','05-21':'Vittorio','05-22':'Rita da Cascia','05-23':'Desiderio','05-24':'Maria Ausiliatrice','05-25':'Beda il Venerabile','05-26':'Filippo Neri','05-27':'Agostino di Canterbury','05-28':'Germano di Parigi','05-29':'Massimino','05-30':"Giovanna d'Arco",'05-31':'Visitazione di Maria','06-01':'Giustino','06-02':'Marcellino e Pietro','06-03':'Carlo Lwanga e compagni','06-04':'Francesco Caracciolo','06-05':'Bonifacio di Magonza','06-06':'Norberto','06-07':'Roberto di Molesme','06-08':'Medardo','06-09':'Efrem il Siro','06-10':'Getulio','06-11':'Barnaba Apostolo','06-12':'Leo III Papa','06-13':'Antonio da Padova','06-14':'Eliseo Profeta','06-15':'Vito Modesto Crescenza','06-16':'Aureliano','06-17':'Gregorio Barbarigo','06-18':'Marcello','06-19':'Romualdo','06-20':'Silverio Papa','06-21':'Luigi Gonzaga','06-22':'Paolino da Nola','06-23':'Giuseppe Cafasso','06-24':'San Giovanni Battista','06-25':'Guglielmo da Vercelli','06-26':'Antimo','06-27':'Cirillo di Alessandria','06-28':'Ireneo di Lione','06-29':'Pietro e Paolo Apostoli','06-30':'Primi Martiri della Chiesa','07-01':'Ester Regina','07-02':'Ottone','07-03':'Tommaso Apostolo','07-04':'Elisabetta del Portogallo','07-05':'Antonio Maria Zaccaria','07-06':'Maria Goretti','07-07':'Claudio','07-08':'Adriano III Papa','07-09':'Veronica Giuliani','07-10':'Amalia','07-11':'Benedetto da Norcia','07-12':'Giovanni Gualberto','07-13':'Enrico di Baviera','07-14':'Camillo de Lellis','07-15':'Bonaventura','07-16':'Nostra Signora del Carmelo','07-17':'Alessio','07-18':'Federico','07-19':'Arsenio','07-20':'Apollinare','07-21':'Lorenzo da Brindisi','07-22':'Maria Maddalena','07-23':'Brigida di Svezia','07-24':'Cristina','07-25':'Giacomo il Maggiore Apostolo','07-26':'Gioacchino e Anna','07-27':'Celestino I Papa','07-28':'Nazario e Celso','07-29':'Marta','07-30':'Pietro Crisologo','07-31':'Ignazio di Loyola','08-01':"Alfonso M. de' Liguori",'08-02':'Eusebio di Vercelli','08-03':'Lidia','08-04':'Giovanni Maria Vianney','08-05':'Dedicazione S. Maria Maggiore','08-06':'Trasfigurazione del Signore','08-07':'Sisto II e compagni','08-08':'Domenico','08-09':'Teresa Benedetta della Croce','08-10':'Lorenzo Martire','08-11':"Chiara d'Assisi",'08-12':'Giovanna Francesca de Chantal','08-13':'Ippolito e Ponziano','08-14':'Massimiliano Kolbe','08-15':'Assunzione di Maria','08-16':'Rocco','08-17':'Giacinto','08-18':'Elena','08-19':'Giovanni Eudes','08-20':'Bernardo di Chiaravalle','08-21':'Pio X','08-22':'Vergine Maria Regina','08-23':'Rosa da Lima','08-24':'Bartolomeo Apostolo','08-25':'Luigi IX re di Francia','08-26':'Alessandro','08-27':'Monica','08-28':'Agostino di Ippona','08-29':'Martirio di Giovanni Battista','08-30':'Felice e Adautto','08-31':'Raimondo Nonnato','09-01':'Egidio','09-02':'Elpidio','09-03':'Gregorio Magno','09-04':'Rosalia di Palermo','09-05':'Teresa di Calcutta','09-06':'Eleuterio','09-07':'Regina','09-08':'Nativita di Maria','09-09':'Pietro Claver','09-10':'Nicola da Tolentino','09-11':'Proto e Giacinto','09-12':'SS. Nome di Maria','09-13':'Giovanni Crisostomo','09-14':'Esaltazione della Santa Croce','09-15':'Madonna Addolorata','09-16':'Cornelio e Cipriano','09-17':'Roberto Bellarmino','09-18':'Giuseppe da Copertino','09-19':'Gennaro','09-20':'Andrea Kim e compagni','09-21':'Matteo Apostolo ed Evangelista','09-22':'Maurizio e compagni','09-23':'Pio da Pietrelcina (Padre Pio)','09-24':'Nostra Signora della Mercede','09-25':'Sergio','09-26':'Cosma e Damiano','09-27':"Vincenzo de' Paoli",'09-28':'Venceslao','09-29':'Michele, Gabriele e Raffaele Arcangeli','09-30':'Girolamo','10-01':'Teresa di Gesu Bambino','10-02':'Angeli Custodi','10-03':'Geraldo','10-04':"Francesco d'Assisi",'10-05':'Placido e compagni','10-06':'Bruno di Colonia','10-07':'Nostra Signora del Rosario','10-08':'Pelagia','10-09':'Dionigi e compagni','10-10':'Daniele Comboni','10-11':'Giovanni XXIII','10-12':'Serafino da Montegranaro','10-13':'Edoardo','10-14':'Callisto I Papa','10-15':"Teresa d'Avila",'10-16':'Margherita Maria Alacoque','10-17':'Ignazio di Antiochia','10-18':'Luca Evangelista','10-19':'Paolo della Croce','10-20':'Irene','10-21':'Orsola e compagni','10-22':'Giovanni Paolo II','10-23':'Giovanni da Capestrano','10-24':'Antonio Maria Claret','10-25':'Crispino e Crispiniano','10-26':'Evaristo Papa','10-27':'Fiorenzo','10-28':'Simone e Giuda Apostoli','10-29':'Ermelinda','10-30':'Germano di Capua','10-31':'Vigilia di Ognissanti','11-01':'Tutti i Santi','11-02':'Commemorazione dei Defunti','11-03':'Martino de Porres','11-04':'Carlo Borromeo','11-05':'Zaccaria e Elisabetta','11-06':'Leonardo da Noblac','11-07':'Ernesto','11-08':'Gottfredo','11-09':'Dedicazione Basilica Lateranense','11-10':'Leone Magno','11-11':'Martino di Tours','11-12':'Giosafat Kuncewic','11-13':'Omobono','11-14':'Nicasio','11-15':'Alberto Magno','11-16':'Margherita di Scozia e Geltrude','11-17':'Elisabetta di Ungheria','11-18':'Dedicazione Basiliche di Pietro e Paolo','11-19':'Matilde di Ringelheim','11-20':'Edmondo','11-21':'Presentazione di Maria','11-22':'Cecilia','11-23':'Clemente I Papa','11-24':'Andrea Dung-Lac e compagni','11-25':"Caterina d'Alessandria",'11-26':'Silvestro Gozzolini','11-27':'Virgilio','11-28':'Giacomo della Marca','11-29':'Saturnino','11-30':'Andrea Apostolo','12-01':'Eligio','12-02':'Bibiana','12-03':'Francesco Saverio','12-04':'Giovanni Damasceno','12-05':'Sabba','12-06':'Nicola di Bari','12-07':'Ambrogio','12-08':'Immacolata Concezione di Maria','12-09':'Juan Diego','12-10':'Nostra Signora di Loreto','12-11':'Damaso I Papa','12-12':'Nostra Signora di Guadalupe','12-13':'Lucia di Siracusa','12-14':'Giovanni della Croce','12-15':'Virginia','12-16':'Adelaide','12-17':'Lazzaro','12-18':'Graziano','12-19':'Fausta','12-20':'Ursicino','12-21':'Pietro Canisio','12-22':'Francesca Saverio Cabrini','12-23':'Giovanni da Kety','12-24':'Vigilia di Natale','12-25':'Nativita di Gesu Cristo','12-26':'Stefano Protomartire','12-27':'Giovanni Apostolo','12-28':'Santi Innocenti','12-29':'Tommaso Becket','12-30':'Ruggero','12-31':'Silvestro I Papa'};
+
+const POP=[[1900,1.60],[1910,1.75],[1920,1.86],[1930,2.07],[1940,2.30],[1950,2.50],[1955,2.77],[1960,3.03],[1965,3.34],[1970,3.70],[1975,4.07],[1980,4.43],[1985,4.83],[1990,5.31],[1995,5.72],[2000,6.10],[2005,6.54],[2010,6.93],[2015,7.38],[2020,7.80],[2025,8.20],[2030,8.55]];
+function worldPop(y){for(let i=0;i<POP.length-1;i++){if(y>=POP[i][0]&&y<POP[i+1][0]){const t=(y-POP[i][0])/(POP[i+1][0]-POP[i][0]);return(POP[i][1]+t*(POP[i+1][1]-POP[i][1])).toFixed(2);}}return y<POP[0][0]?POP[0][1].toFixed(2):POP[POP.length-1][1].toFixed(2);}
+
+const ZODIAC=[
+  {n:'Capricorno',s:'♑',e:'🐐',sm:12,sd:22,em:1,ed:19,el:'Terra',pl:'Saturno',t:'Ambizioso, disciplinato, paziente. Costruisce con metodo cio che dura nel tempo.'},
+  {n:'Acquario',s:'♒',e:'🏺',sm:1,sd:20,em:2,ed:18,el:'Aria',pl:'Urano',t:'Originale, visionario, indipendente. Pensa fuori dagli schemi, cambia il mondo.'},
+  {n:'Pesci',s:'♓',e:'🐟',sm:2,sd:19,em:3,ed:20,el:'Acqua',pl:'Nettuno',t:'Sensibile, intuitivo, creativo. Vive tra sogno e realta con grazia.'},
+  {n:'Ariete',s:'♈',e:'🐏',sm:3,sd:21,em:4,ed:19,el:'Fuoco',pl:'Marte',t:'Coraggioso, energico, pioniere. Sempre il primo a lanciarsi nelle avventure.'},
+  {n:'Toro',s:'♉',e:'🐂',sm:4,sd:20,em:5,ed:20,el:'Terra',pl:'Venere',t:'Affidabile, determinato, sensuale. Ama la qualita, la stabilita e il bello.'},
+  {n:'Gemelli',s:'♊',e:'👫',sm:5,sd:21,em:6,ed:20,el:'Aria',pl:'Mercurio',t:'Curioso, versatile, brillante. Si annoia raramente e parla di tutto.'},
+  {n:'Cancro',s:'♋',e:'🦀',sm:6,sd:21,em:7,ed:22,el:'Acqua',pl:'Luna',t:'Protettivo, empatico, fedele. Il cuore caldo di ogni famiglia.'},
+  {n:'Leone',s:'♌',e:'🦁',sm:7,sd:23,em:8,ed:22,el:'Fuoco',pl:'Sole',t:'Generoso, carismatico, creativo. Nato per brillare e ispirare.'},
+  {n:'Vergine',s:'♍',e:'🌾',sm:8,sd:23,em:9,ed:22,el:'Terra',pl:'Mercurio',t:'Analitico, preciso, metodico. Perfezionista con un cuore grande.'},
+  {n:'Bilancia',s:'♎',e:'⚖️',sm:9,sd:23,em:10,ed:22,el:'Aria',pl:'Venere',t:'Diplomatico, estetico, giusto. Cerca sempre equilibrio e armonia.'},
+  {n:'Scorpione',s:'♏',e:'🦂',sm:10,sd:23,em:11,ed:21,el:'Acqua',pl:'Plutone',t:'Intenso, perspicace, trasformativo. Vede oltre le apparenze.'},
+  {n:'Sagittario',s:'♐',e:'🏹',sm:11,sd:22,em:12,ed:21,el:'Fuoco',pl:'Giove',t:'Avventuroso, ottimista, filosofo. Ama esplorare mondi nuovi.'},
+];
+function getZodiac(m,d){for(const z of ZODIAC){if(z.sm===12&&z.em===1){if((m===12&&d>=z.sd)||(m===1&&d<=z.ed))return z;}else{if((m===z.sm&&d>=z.sd)||(m===z.em&&d<=z.ed))return z;}}return ZODIAC[0];}
+
+const CHZ=[
+  {n:'Topo',   art:'del',  e:'🐀'},
+  {n:'Bue',    art:'del',  e:'🐂'},
+  {n:'Tigre',  art:'della',e:'🐯'},
+  {n:'Coniglio',art:'del', e:'🐇'},
+  {n:'Drago',  art:'del',  e:'🐉'},
+  {n:'Serpente',art:'del', e:'🐍'},
+  {n:'Cavallo',art:'del',  e:'🐴'},
+  {n:'Capra',  art:'della',e:'🐐'},
+  {n:'Scimmia',art:'della',e:'🐒'},
+  {n:'Gallo',  art:'del',  e:'🐓'},
+  {n:'Cane',   art:'del',  e:'🐕'},
+  {n:'Maiale', art:'del',  e:'🐷'},
+];
+function getChinese(y){return CHZ[((y-1900)%12+12)%12];}
+
+function moonPhase(date){
+  const y=date.getFullYear(),m=date.getMonth()+1,d=date.getDate();
+  let yr=y,mo=m;if(mo<3){yr--;mo+=12;}
+  const a=Math.floor(yr/100),b=2-a+Math.floor(a/4);
+  const jd=Math.floor(365.25*(yr+4716))+Math.floor(30.6001*(mo+1))+d+b-1524.5;
+  const ph=((jd-2451550.1)%29.530588+29.530588)%29.530588;
+  const ps=[['🌑','Luna Nuova',0,1.85],['🌒','Crescente',1.85,7.38],['🌓','Primo Quarto',7.38,11.08],['🌔','Gibbosa Crescente',11.08,14.77],['🌕','Luna Piena',14.77,18.46],['🌖','Gibbosa Calante',18.46,22.15],['🌗','Ultimo Quarto',22.15,25.85],['🌘','Calante',25.85,29.53]];
+  for(const p of ps)if(ph>=p[2]&&ph<p[3])return{e:p[0],n:p[1]};
+  return{e:'🌑',n:'Luna Nuova'};
+}
+
+function julianDay(date){
+  const y=date.getFullYear(),m=date.getMonth()+1,d=date.getDate();
+  let yr=y,mo=m;if(mo<3){yr--;mo+=12;}
+  const a=Math.floor(yr/100),b=2-a+Math.floor(a/4);
+  return Math.floor(365.25*(yr+4716))+Math.floor(30.6001*(mo+1))+d+b-1524.5;
+}
+
+function getSeason(m,d){
+  if((m===3&&d>=20)||m===4||m===5||(m===6&&d<21))return{e:'🌸',n:'Primavera',prep:"della Primavera"};
+  if((m===6&&d>=21)||m===7||m===8||(m===9&&d<23))return{e:'☀️',n:'Estate',prep:"dell'Estate"};
+  if((m===9&&d>=23)||m===10||m===11||(m===12&&d<21))return{e:'🍂',n:'Autunno',prep:"dell'Autunno"};
+  return{e:'❄️',n:'Inverno',prep:"dell'Inverno"};
+}
+
+const DAYS=['Domenica','Lunedi','Martedi','Mercoledi','Giovedi','Venerdi','Sabato'];
+const MONTHS=['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+function fmtKm(km){return Math.floor(km).toLocaleString('it-IT')+' km';}
+function fmt(n){return Math.floor(n).toLocaleString('it-IT');}
+function pad(n){return String(n).padStart(2,'0');}
+
+// ===== GLOBAL STATE =====
+let birthDT=null,liveTimer=null,fsLevel=0;
+let _years,_totalDays,_totalHr,_totalMin,_weeks,_sleepDays,_weekends,_daysNext;
+let _bloodL,_earthMM,_coffee,_hairCm,_awakeMin,_steps,_jd;
+let _kmGalassia,_kmAndromeda,_kmCosmo,_luneOrbite;
+let _zodiac,_chinese,_moon,_season,_saint,_pop,_dowStr,_bday,_tv,_m,_d,_y;
+
+// ===== PARTICLES =====
+function spawnParticles(){
+  const colors=['#ff6b9d','#ffd93d','#6bcb77','#4d96ff','#c77dff','#ff9f1c','#00dfd8'];
+  for(let i=0;i<30;i++){
+    const p=document.createElement('div');p.className='pt';
+    const sz=Math.random()*4+2;
+    Object.assign(p.style,{width:sz+'px',height:sz+'px',background:colors[Math.floor(Math.random()*colors.length)],left:Math.random()*100+'vw',animationDuration:(Math.random()*18+14)+'s',animationDelay:(Math.random()*-25)+'s',opacity:.5});
+    document.body.appendChild(p);
+  }
+}
+
+// ===== THEME =====
+function setTheme(el){
+  document.querySelectorAll('.tswatch').forEach(s=>s.classList.remove('active'));
+  el.classList.add('active');
+  const t=el.dataset.th;
+  document.body.className=document.body.className.replace(/th-\w+/g,'').trim();
+  if(t)document.body.classList.add('th-'+t);
+  localStorage.setItem('bday-theme',t);
+}
+
+// ===== FONT SIZE =====
+const FS_STEPS=[80,90,100,110,120,135,150];
+function applyFS(){
+  const pct=FS_STEPS[fsLevel+3];
+  document.documentElement.style.fontSize=(pct/100*16)+'px';
+  document.getElementById('fsVal').textContent=pct+'%';
+  localStorage.setItem('bday-fs',fsLevel);
+}
+function changeFS(dir){
+  const ni=fsLevel+dir;
+  if(ni>=-3&&ni<=3){fsLevel=ni;applyFS();}
+}
+
+// ===== FAB =====
+function togglePanel(){
+  document.getElementById('fabPanel').classList.toggle('open');
+}
+document.addEventListener('click',e=>{
+  const fab=document.querySelector('.fab');
+  if(!fab.contains(e.target))document.getElementById('fabPanel').classList.remove('open');
+});
+
+// ===== TOAST =====
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+// ===== SHARE =====
+function doShare(){
+  const dv=document.getElementById('birthDate').value;
+  const tv=document.getElementById('birthTime').value;
+  let url=location.href.split('?')[0]+'?d='+dv;
+  if(tv)url+='&t='+encodeURIComponent(tv);
+  navigator.clipboard.writeText(url).then(()=>showToast('✅ Link copiato!')).catch(()=>{
+    prompt('Copia il link:',url);
+  });
+}
+
+// ===== COUNTER ANIMATION =====
+function animateCounter(el,target,duration=1400){
+  const start=performance.now();
+  const step=time=>{
+    const p=Math.min((time-start)/duration,1);
+    const ease=1-Math.pow(1-p,3);
+    el.textContent=fmt(Math.floor(ease*target));
+    if(p<1)requestAnimationFrame(step);
+    else el.textContent=fmt(target);
+  };
+  requestAnimationFrame(step);
+}
+function startCounters(){
+  document.querySelectorAll('[data-cnt]').forEach(el=>{
+    const delay=parseInt(el.dataset.delay||0);
+    setTimeout(()=>animateCounter(el,parseFloat(el.dataset.cnt)),delay);
+  });
+}
+
+// ===== LIVE TICKER =====
+function tick(){
+  if(!birthDT)return;
+  const now=new Date(),ms=now-birthDT;
+  const sec=Math.floor(ms/1000),min=Math.floor(ms/60000),hr=Math.floor(ms/3600000);
+  const days=Math.floor(ms/86400000);
+  const y=Math.floor(days/365.25),rd=Math.floor(days-y*365.25);
+  const rh=Math.floor((ms%86400000)/3600000);
+  const rm=Math.floor((ms%3600000)/60000);
+  const rs=Math.floor((ms%60000)/1000);
+  document.getElementById('tickerMain').textContent=`${y}a ${rd}g ${pad(rh)}:${pad(rm)}:${pad(rs)}`;
+  document.getElementById('tickerSub').textContent=`${fmt(sec)} secondi  •  ${fmt(min)} minuti  •  ${fmt(hr)} ore`;
+  const upd=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=fmt(v);};
+  const updK=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=fmtKm(v);};
+  upd('lv-sec',sec);
+  upd('lv-hb',sec*70/60);
+  upd('lv-br',sec*16/60);
+  upd('lv-blinks',(ms/3600000)*(16/24)*15*60);
+  // distanze live: velocità × secondi
+  updK('lv-sun', sec * 29.78);    // Terra attorno al Sole
+  updK('lv-gal', sec * 220);      // Sole attorno al centro galattico (arco)
+  updK('lv-and', sec * 110);      // Avvicinamento Andromeda
+  updK('lv-cmb', sec * 627);      // Moto vs fondo cosmico CMB
+}
+
+// ===== MAIN CALCULATE =====
+function go(){
+  const dv=document.getElementById('birthDate').value;
+  if(!dv){alert('Inserisci la data di nascita!');return;}
+  const tv=document.getElementById('birthTime').value;
+  const[y,m,d]=dv.split('-').map(Number);
+  birthDT=tv?new Date(y,m-1,d,...tv.split(':').map(Number),0):new Date(y,m-1,d,0,0,0);
+  _tv=tv;_m=m;_d=d;_y=y;
+
+  const now=new Date(),ms=now-birthDT;
+  const days=ms/86400e3,totalMin=ms/6e4;
+  _totalDays=Math.floor(days);_totalHr=Math.floor(ms/36e5);_totalMin=Math.floor(totalMin);
+  _weeks=Math.floor(_totalDays/7);_years=Math.floor(_totalDays/365.25);
+  _sleepDays=Math.floor(_totalDays*7/24);_weekends=_weeks*2;
+  _awakeMin=totalMin*(16/24);_bloodL=Math.floor(totalMin*70*.07);
+  _steps=Math.floor(_totalDays*8000);
+  const coffeeDays=Math.max(0,_totalDays-17*365.25);
+  _coffee=Math.floor(coffeeDays*1.5);
+  _hairCm=Math.floor(_totalDays*.35/10);
+  _earthMM=(_totalDays/365.25*940).toFixed(1);
+  // Distanze astronomiche: km/giorno = velocità km/s × 86400
+  // Sole attorno galassia: 220 km/s → 19.008 Mln km/giorno
+  // Milky Way verso Andromeda: 110 km/s → 9.504 Mln km/giorno
+  // Sistema solare nel cosmo (vs CMB): 627 km/s → 54.2 Mln km/giorno
+  _kmGalassia  = (_totalDays * 19.008).toFixed(0);   // Mln km
+  _kmAndromeda = (_totalDays * 9.504).toFixed(0);    // Mln km
+  _kmCosmo     = (_totalDays * 54.173).toFixed(0);   // Mln km
+  _luneOrbite  = Math.floor(_totalDays / 27.3);
+  _jd=julianDay(birthDT);
+
+  let nb=new Date(now.getFullYear(),m-1,d);if(nb<=now)nb=new Date(now.getFullYear()+1,m-1,d);
+  _daysNext=Math.ceil((nb-now)/864e5);
+
+  _zodiac=getZodiac(m,d);_chinese=getChinese(y);_moon=moonPhase(birthDT);_season=getSeason(m,d);
+  const mmdd=pad(m)+'-'+pad(d);_saint=SAINTS[mmdd]||'N/D';_pop=worldPop(y);
+  _dowStr=DAYS[birthDT.getDay()];_bday=`${d} ${MONTHS[m-1]} ${y}`;
+
+  document.getElementById('inputSection').style.display='none';
+  document.getElementById('results').style.display='block';
+  if(liveTimer)clearInterval(liveTimer);tick();liveTimer=setInterval(tick,1000);
+
+  buildCards();
+  setTimeout(startCounters,200);
+
+  // ── NATAL CHART ──
+  if(tv){
+    const[hh2,mm2]=tv.split(':').map(Number);
+    const ll=getLatLon();
+    buildNatal(y,m,d,hh2,mm2,ll.lat,ll.lon);
+  } else {
+    // no time: calculate with noon, hide asc/house
+    const ll=getLatLon();
+    buildNatal(y,m,d,12,0,ll.lat,ll.lon);
+  }
+
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function buildCards(){
+  const grid=document.getElementById('grid');
+  const C=(col,emo,label,val,desc,delay=0,raw=null)=>{
+    const cntAttr=raw!=null?` data-cnt="${raw}" data-delay="${delay+200}"`:''
+    const v=raw!=null?'0':val;
+    return`<div class="card ${col}" style="animation-delay:${delay}ms">
+      <span class="emo">${emo}</span>
+      <div class="clabel">${label}</div>
+      <div class="cval"${cntAttr}>${v}</div>
+      <div class="cdesc">${desc}</div>
+    </div>`;
+  };
+
+  const zcard=`<div class="card zodiac-card c-pk" style="animation-delay:0ms">
+    <div class="zi">
+      <div class="z-sym">${_zodiac.e}</div>
+      <div>
+        <div class="clabel">Segno Zodiacale${_tv?' (con ora di nascita)':''}</div>
+        <div class="z-name">${_zodiac.s} ${_zodiac.n}</div>
+        <div class="z-dates">Elemento: ${_zodiac.el}  |  Pianeta: ${_zodiac.pl}</div>
+        <div class="z-traits">${_zodiac.t}</div>
+      </div>
+    </div>
+  </div>`;
+
+  const cards=[
+    C('c-p','📅','Nato il',_bday+(_tv?' alle '+_tv:''),_dowStr,60),
+    C('c-b','🗓️','Giorni di vita','',`${fmt(_weeks)} settimane complete`,120,_totalDays),
+    C('c-g','😴','Giorni dormendo','',`Media 7h/notte = ${fmt(_sleepDays*7)} ore`,180,_sleepDays),
+    C('c-o','⛪','Santo del giorno',_saint,`${_d} ${MONTHS[_m-1]}`,240),
+    C('c-pk','🌍','Popolazione mondiale',`${_pop} miliardi`,`Stima all'anno ${_y} — oggi ~8.2 miliardi`,300),
+    C('c-cy',_moon.e,'Luna alla nascita',_moon.n,`Fase lunare nel giorno in cui sei arrivato`,360),
+    C('c-l',_season.e,'Stagione di nascita',_season.n,`Sei figlio/a ${_season.prep}`,420),
+    C('c-r','🐉','Zodiaco Cinese',`Anno ${_chinese.art} ${_chinese.n} ${_chinese.e}`,`Ciclo lunare dell'anno ${_y}`,480),
+    C('c-y','🔢','Giorno Giuliano',Math.floor(_jd).toLocaleString('it-IT'),`JDN: numero assoluto dei giorni astronomici`,540),
+    C('c-p','❤️','Battiti del cuore',`<span id="lv-hb">...</span>`,`~70 bpm — live`,600),
+    C('c-b','⏱️','Secondi vissuti',`<span id="lv-sec">...</span>`,'Conta live',660),
+    C('c-g','🫁','Respiri presi',`<span id="lv-br">...</span>`,'~16/min — live',720),
+    C('c-o','😉','Battiti di ciglia',`<span id="lv-blinks">...</span>`,'~15/min da sveglio — live',780),
+    C('c-pk','👣','Passi stimati','',`Media 8.000 passi/giorno`,840,_steps),
+    C('c-cy','☀️','Arco orbita attorno al Sole',`<span id="lv-sun" style="font-size:1.05rem">...</span>`,`29.78 km/s — arco di orbita circolare. 1 giro completo = ~940 Mln km`,900),
+    C('c-pk','🌌','Arco orbita attorno alla Galassia',`<span id="lv-gal" style="font-size:1.05rem">...</span>`,`220 km/s — arco percorso sul giro galattico. 1 orbita dura 230 milioni di anni`,960),
+    C('c-b','🔵','Avvicinamento ad Andromeda',`<span id="lv-and" style="font-size:1.05rem">...</span>`,`110 km/s — moto relativo. Le due galassie si fonderanno tra ~4.5 miliardi di anni`,1020),
+    C('c-r','🌀','Moto nel cosmo (vs fondo CMB)',`<span id="lv-cmb" style="font-size:1.05rem">...</span>`,`627 km/s — velocità del Sistema Solare rispetto al fondo cosmico a microonde`,1080),
+    C('c-y','🌙','Orbite complete della Luna',`${fmt(_luneOrbite)}`,`La Luna orbita attorno alla Terra ogni 27.3 giorni`,1140),
+    C('c-l','🩸','Sangue pompato','',`~70ml per battito a 70 bpm`,1200,_bloodL),
+    C('c-r','☕','Caffe stimati','',`Media italiana: 1.5/giorno`,1260,_coffee),
+    C('c-y','💇','Capelli senza tagli',`~${_hairCm} cm`,`0.35mm al giorno — lunghissimi!`,1320),
+    C('c-p','🎉','Weekend vissuti','',`${fmt(_weeks)} settimane`,1380,_weekends),
+    C('c-b','🎂','Prossimo compleanno',`fra ${_daysNext} giorni`,`${_d} ${MONTHS[_m-1]} ${new Date().getFullYear()+(new Date()>new Date(new Date().getFullYear(),_m-1,_d)?1:0)}`,1440),
+  ];
+  grid.innerHTML=zcard+cards.join('');
+}
+
+// ===== PDF =====
+function makePDF(){
+  if(!window.jspdf){showToast('Libreria PDF non caricata');return;}
+  const{jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const W=210,H=297,mg=15,now=new Date(),sec=(now-birthDT)/1000;
+  // strip emoji - jsPDF Helvetica non li supporta
+  const T=(s,x,y,o)=>doc.text(String(s).replace(/[^\x00-\x7E\u00C0-\u024F]/g,'').trim(),x,y,o||{});
+  const F=(st)=>doc.setFont('helvetica',st);
+  const S=(n)=>doc.setFontSize(n);
+  const FC=(...c)=>doc.setFillColor(...c);
+  const TC=(...c)=>doc.setTextColor(...c);
+  const DC=(...c)=>doc.setDrawColor(...c);
+  const R=(x,y,w,h)=>doc.rect(x,y,w,h,'F');
+  const cw=(W-2*mg)/2-1;
+
+  // ── HEADER 44mm ──
+  FC(14,6,40); R(0,0,W,44);
+  FC(255,107,157);R(0,0,W/4,2.5); FC(255,210,50);R(W/4,0,W/4,2.5);
+  FC(107,200,119);R(W/2,0,W/4,2.5); FC(77,150,255);R(3*W/4,0,W/4,2.5);
+  FC(255,107,157);R(0,41.5,W/4,2.5); FC(255,210,50);R(W/4,41.5,W/4,2.5);
+  FC(107,200,119);R(W/2,41.5,W/4,2.5); FC(77,150,255);R(3*W/4,41.5,W/4,2.5);
+  TC(255,255,255); F('bold'); S(20);
+  T('IL TUO UNIVERSO PERSONALE',W/2,16,{align:'center'});
+  DC(140,100,220); doc.setLineWidth(0.25);
+  doc.line(mg+15,19.5,W-mg-15,19.5);
+  TC(210,190,255); F('bold'); S(11.5);
+  T(`${_dowStr}, ${_d} ${MONTHS[_m-1]} ${_y}${_tv?' - ore '+_tv:''}`,W/2,27.5,{align:'center'});
+  TC(150,125,200); F('normal'); S(7.5);
+  T(`${_zodiac.n}  |  Anno ${_chinese.art} ${_chinese.n}  |  ${_season.n}  |  ${_moon.n}`,W/2,35,{align:'center'});
+  TC(110,88,160); S(6.5);
+  T(`Generato il ${now.toLocaleDateString('it-IT')} alle ${now.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})}  -  cad3d.expert`,W/2,40.5,{align:'center'});
+
+  let y=50;
+
+  // ── DUE BOX AFFIANCATI ──
+  const bw=(W-3*mg)/2,bx1=mg,bx2=mg*2+bw,bh=78;
+  FC(244,240,255); R(bx1,y,bw,bh);
+  FC(255,240,250); R(bx2,y,bw,bh);
+  FC(90,25,170); R(bx1,y,bw,8.5);
+  FC(185,0,100); R(bx2,y,bw,8.5);
+  TC(255,255,255); F('bold'); S(7.5);
+  T('ANAGRAFE E ORIGINI',bx1+bw/2,y+5.8,{align:'center'});
+  T('SEGNO ZODIACALE',bx2+bw/2,y+5.8,{align:'center'});
+
+  // dot leader filler between label and value
+  const dotLeader=(x1,x2,yy)=>{
+    DC(180,165,215); doc.setLineWidth(0.15);
+    const dots='. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .';
+    TC(190,175,220); F('normal'); S(6);
+    T(dots,x1,yy,{maxWidth:x2-x1-2,charSpace:0.5});
+  };
+
+  const bRow=(label,val,bx,ry)=>{
+    TC(55,40,90); F('bold'); S(7.2); T(label,bx+3,ry);
+    const lw=doc.getTextWidth(label);
+    dotLeader(bx+3+lw+2,bx+bw-3,ry);
+    TC(10,5,35); F('bold'); S(7.8);
+    T(String(val),bx+bw-3,ry,{align:'right'});
+  };
+  let by=y+15;
+  bRow('Nato il:',`${_dowStr} ${_d} ${MONTHS[_m-1]} ${_y}`,bx1,by); by+=7.5;
+  bRow('Santo del giorno:',_saint,bx1,by); by+=7.5;
+  bRow('Stagione:',_season.n,bx1,by); by+=7.5;
+  bRow('Fase lunare:',_moon.n,bx1,by); by+=7.5;
+  bRow('Giorno Giuliano:',Math.floor(_jd).toLocaleString('it-IT'),bx1,by); by+=7.5;
+  bRow('Popolazione mondiale:',_pop+' miliardi ('+_y+')',bx1,by); by+=7.5;
+  bRow('Zodiaco Cinese:','Anno '+_chinese.art+' '+_chinese.n,bx1,by);
+
+  by=y+14;
+  TC(185,0,100); F('bold'); S(28); T(_zodiac.n[0],bx2+bw/2,by+14,{align:'center'});
+  TC(20,12,45); F('bold'); S(14); T(_zodiac.n,bx2+bw/2,by+26,{align:'center'});
+  DC(185,0,100); doc.setLineWidth(0.2); doc.line(bx2+10,by+29,bx2+bw-10,by+29);
+  TC(90,25,170); F('normal'); S(8); T(_zodiac.el+' / '+_zodiac.pl,bx2+bw/2,by+35,{align:'center'});
+  TC(70,60,100); F('italic'); S(7);
+  const trl=doc.splitTextToSize(_zodiac.t.replace(/[^\x00-\x7E\u00C0-\u024F ]/g,''),bw-10);
+  doc.text(trl,bx2+bw/2,by+43,{align:'center'});
+  y+=bh+5;
+
+  // ── SECTION HEADER ──
+  const secH=(title,r,g,b)=>{
+    FC(r,g,b); R(mg,y,W-2*mg,8.5);
+    TC(255,255,255); F('bold'); S(8.5); T(title,W/2,y+5.8,{align:'center'});
+    y+=11;
+  };
+
+  // ── GRIGLIA 2 COLONNE con dot leader ──
+  const grid2=(items,r,g,b)=>{
+    items.forEach(([la,va],i)=>{
+      const col=i%2,rowI=Math.floor(i/2);
+      const cx=mg+col*(cw+2),cy=y+rowI*8;
+      if(col===0){if(rowI%2===0){FC(248,245,255);}else{FC(253,251,255);}R(mg,cy-2.5,W-2*mg,7.5);}
+      FC(r,g,b); R(cx+1,cy-1.5,1.8,1.8);
+      TC(55,40,90); F('bold'); S(7.2); T(la,cx+4.5,cy);
+      const lw=doc.getTextWidth(la);
+      dotLeader(cx+4.5+lw+2,cx+cw-1,cy);
+      TC(10,5,35); F('bold'); S(8.5); T(String(va),cx+cw,cy,{align:'right'});
+    });
+    y+=Math.ceil(items.length/2)*8+4;
+  };
+
+  // ── RIGHE FULL WIDTH con dot leader ──
+  const gridFull=(items,r,g,b)=>{
+    items.forEach(([la,va],i)=>{
+      if(i%2===0){FC(248,245,255);}else{FC(253,251,255);}R(mg,y-2.5,W-2*mg,7.5);
+      FC(r,g,b); R(mg+1,y-1.5,1.8,1.8);
+      TC(55,40,90); F('bold'); S(7.2); T(la,mg+4.5,y);
+      const lw=doc.getTextWidth(la);
+      dotLeader(mg+4.5+lw+2,W-mg-2,y);
+      TC(10,5,35); F('bold'); S(8.5); T(String(va),W-mg,y,{align:'right'});
+      y+=8;
+    });
+    y+=4;
+  };
+
+  // ── CRONOLOGIA ──
+  secH('CRONOLOGIA DI VITA',90,25,170);
+  grid2([
+    ['Eta anagrafica',`${_years} anni`],['Giorni vissuti',fmt(_totalDays)+' giorni'],
+    ['Settimane complete',fmt(_weeks)],['Ore totali',fmt(_totalHr)],
+    ['Minuti vissuti',fmt(Math.floor(sec/60))],['Secondi vissuti',fmt(Math.floor(sec))],
+    ['Giorni dormendo',fmt(_sleepDays)+' (7h/notte)'],['Weekend vissuti',fmt(_weekends)],
+    ['Orbite della Luna',fmt(_luneOrbite)+' orbite'],['Prossimo compleanno','fra '+_daysNext+' giorni'],
+  ],90,25,170);
+
+  // ── BIOLOGIA ──
+  secH('STIME BIOLOGICHE',190,100,0);
+  grid2([
+    ['Battiti del cuore','~'+fmt(sec*70/60)],['Respiri presi','~'+fmt(sec*16/60)],
+    ['Battiti di ciglia','~'+fmt(sec*(16/24)*15/60)],['Passi stimati','~'+fmt(_steps)],
+    ['Sangue pompato','~'+fmt(_bloodL)+' litri'],['Caffe (da 17 anni)','~'+fmt(_coffee)],
+    ['Capelli cresciuti','~'+_hairCm+' cm'],['Pizza stimate','~'+fmt(Math.floor(Math.max(0,_totalDays-17*365.25)/8))],
+  ],190,100,0);
+
+  // ── ASTRONOMIA ──
+  secH('DISTANZE PERCORSE (al momento della stampa)',0,85,200);
+  TC(100,90,130); F('italic'); S(6.5);
+  T('Velocita x secondi vissuti. Valori in km interi.',mg+2,y-3);
+  gridFull([
+    ['Arco orbita attorno al Sole  (29.78 km/s)',fmtKm(sec*29.78)],
+    ['Arco orbita galattica  (220 km/s)',fmtKm(sec*220)],
+    ['Avvicinamento ad Andromeda  (110 km/s)',fmtKm(sec*110)],
+    ['Moto nel cosmo vs fondo CMB  (627 km/s)',fmtKm(sec*627)],
+  ],0,85,200);
+
+  // ── FOOTER ──
+  FC(14,6,40); R(0,H-15,W,15);
+  FC(255,107,157);R(0,H-15,W/4,1.5); FC(255,210,50);R(W/4,H-15,W/4,1.5);
+  FC(107,200,119);R(W/2,H-15,W/4,1.5); FC(77,150,255);R(3*W/4,H-15,W/4,1.5);
+  TC(170,148,220); F('bold'); S(8); T('Il Tuo Universo Personale',W/2,H-8,{align:'center'});
+  TC(110,90,165); F('normal'); S(6.5);
+  T('cad3d.expert/ai/universo-astrale.html  -  Dati stimati a scopo informativo',W/2,H-3.5,{align:'center'});
+
+  // ══ PAGINA 2: TEMA NATALE ══════════════════════════════════
+  if(_natalData){
+    doc.addPage();
+    const{pdata,asc,mc,aspects}=_natalData;
+
+    // Header p2
+    FC(14,6,40); R(0,0,W,44);
+    FC(180,100,255);R(0,0,W/3,2.5); FC(212,160,23);R(W/3,0,W/3,2.5); FC(180,100,255);R(2*W/3,0,W/3,2.5);
+    FC(180,100,255);R(0,41.5,W/3,2.5); FC(212,160,23);R(W/3,41.5,W/3,2.5); FC(180,100,255);R(2*W/3,41.5,W/3,2.5);
+    TC(255,255,255); F('bold'); S(18); T('TEMA NATALE',W/2,16,{align:'center'});
+    DC(180,100,255); doc.setLineWidth(.2); doc.line(mg+15,20,W-mg-15,20);
+    const ascSgn2=NSIGNS[Math.floor(asc/30)],mcSgn2=NSIGNS[Math.floor(mc/30)];
+    const sun2=pdata.find(p=>p.id==='sun'),moon2=pdata.find(p=>p.id==='moon');
+    TC(210,180,255); F('normal'); S(9);
+    T(`Sole: ${NSIGNS[sun2.signIdx].n}  |  Luna: ${NSIGNS[moon2.signIdx].n}  |  Ascendente: ${ascSgn2.n}  |  MC: ${mcSgn2.n}`,W/2,28,{align:'center'});
+    TC(160,130,210); S(7); T(`Lat ${_natalData.lat.toFixed(2)} Lon ${_natalData.lon.toFixed(2)}  -  Generato il ${now.toLocaleDateString('it-IT')}`,W/2,38,{align:'center'});
+    y=50;
+
+    // Planets table (2 columns)
+    secH('PIANETI NEI SEGNI E NELLE CASE',90,40,180);
+    grid2(pdata.map(p=>[
+      `${p.n}${p.retro?' ℞':''}`,
+      `${NSIGNS[p.signIdx].n} ${p.degree.toFixed(1)}° | Casa ${p.house}`
+    ]).concat([
+      ['Ascendente',`${ascSgn2.n} ${(asc%30).toFixed(1)}° | Casa 1`],
+      ['Medio Cielo',`${mcSgn2.n} ${(mc%30).toFixed(1)}° | Casa 10`],
+    ]),90,40,180);
+
+    // Aspects
+    secH('ASPETTI PRINCIPALI',150,20,120);
+    const aspNames={Congiunzione:'Cong.',Trigono:'Trig.',Quadratura:'Quad.',Opposizione:'Oppos.',Sestile:'Sest.'};
+    grid2(aspects.slice(0,8).map(a=>[
+      `${aspNames[a.type]||a.type}: ${a.p1}`,`${a.p2}  orb ${a.orb.toFixed(1)}`
+    ]),150,20,120);
+
+    // Narrative text on PDF
+    secH('LETTURA ASTRALE',70,60,160);
+    // build plain text narrative
+    const elCnt2={Fuoco:0,Terra:0,Aria:0,Acqua:0};
+    pdata.slice(0,8).forEach(p=>{elCnt2[NSIGNS[p.signIdx].el]++;});
+    const domElName2=Object.entries(elCnt2).sort((a,b)=>b[1]-a[1])[0][0];
+    const venP2=pdata.find(p=>p.id==='venus'),marP2=pdata.find(p=>p.id==='mars');
+    const jupP2=pdata.find(p=>p.id==='jupiter'),satP2=pdata.find(p=>p.id==='saturn');
+    const narrativeLines=[
+      `Il Sole in ${NSIGNS[sun2.signIdx].n} rivela una personalita ${SUN_K[sun2.signIdx]}. L'energia vitale si esprime attraverso ${NSIGNS[sun2.signIdx].el==='Fuoco'?"l'azione":NSIGNS[sun2.signIdx].el==='Terra'?'la concretezza':NSIGNS[sun2.signIdx].el==='Aria'?'il pensiero':'la sensibilita'}.`,
+      `Sul piano emotivo, la Luna in ${NSIGNS[moon2.signIdx].n} porta ${MOON_K[moon2.signIdx]}. E' la mente inconscia, la bussola interiore.`,
+      `Con l'Ascendente in ${ascSgn2.n}, il mondo percepisce questa persona come ${ASC_K[Math.floor(asc/30)]}. Il tema e' ${EL_DESC[domElName2]}.`,
+      `In amore, Venere in ${NSIGNS[venP2.signIdx].n} e Marte in ${NSIGNS[marP2.signIdx].n} definiscono il profilo relazionale e la modalita di azione.`,
+      `Il Medio Cielo in ${mcSgn2.n} indica vocazione verso ${mcSgn2.el==='Fuoco'?'leadership e innovazione':mcSgn2.el==='Terra'?'costruzione e concretezza':mcSgn2.el==='Aria'?'comunicazione e idee':'cura e ispirazione'}.`,
+      `Giove in ${NSIGNS[jupP2.signIdx].n} porta espansione. Saturno in ${NSIGNS[satP2.signIdx].n} e' la grande scuola di vita.`,
+      aspects.length>0?`Aspetti chiave: ${aspects.slice(0,2).map(a=>`${a.p1} ${a.type_it||a.type} ${a.p2} (orb ${a.orb.toFixed(1)})`).join('; ')}.`:'',
+    ].filter(Boolean);
+
+    narrativeLines.forEach((line,ni)=>{
+      if(y>H-30){doc.addPage();y=mg;}
+      const wrapped=doc.splitTextToSize(line,W-2*mg-4);
+      if(ni%2===0){FC(248,244,255);}else{FC(253,250,255);}
+      R(mg,y-2.5,W-2*mg,wrapped.length*5.5+4);
+      TC(40,30,80); F('normal'); S(7.8);
+      doc.text(wrapped,mg+3,y);
+      y+=wrapped.length*5.5+6;
+    });
+
+    // Footer p2
+    FC(14,6,40); R(0,H-15,W,15);
+    FC(180,100,255);R(0,H-15,W/2,1.5); FC(212,160,23);R(W/2,H-15,W/2,1.5);
+    TC(180,140,230); F('bold'); S(8); T('Tema Natale — Il Tuo Universo Astrale',W/2,H-8,{align:'center'});
+    TC(130,100,180); F('normal'); S(6.5); T('cad3d.expert/ai/universo-astrale.html',W/2,H-3.5,{align:'center'});
+  }
+
+  doc.save(`universo-astrale-${_y}-${pad(_m)}-${pad(_d)}.pdf`);
+  showToast('PDF 2 pagine scaricato!');
+}
+
+
+function doReset(){
+  if(liveTimer)clearInterval(liveTimer);birthDT=null;_natalData=null;
+  document.getElementById('inputSection').style.display='block';
+  document.getElementById('results').style.display='none';
+  document.getElementById('natalSection').style.display='none';
+}
+
+// ===== CITY HELPER =====
+function cityChange(){
+  const v=document.getElementById('bCity').value;
+  document.getElementById('customCoords').style.display=v==='custom'?'block':'none';
+}
+function getLatLon(){
+  const v=document.getElementById('bCity').value;
+  if(v&&v!=='custom'){const[a,b]=v.split(',').map(Number);return{lat:a,lon:b,name:document.getElementById('bCity').options[document.getElementById('bCity').selectedIndex].text};}
+  if(v==='custom'){return{lat:parseFloat(document.getElementById('bLat').value)||45,lon:parseFloat(document.getElementById('bLon').value)||9,name:'Coordinate personalizzate'};}
+  return{lat:45.47,lon:9.19,name:'(Milano, default)'};
+}
+
+// ===== ASTRONOMY =====
+const _rad=x=>x*Math.PI/180,_deg=x=>x*180/Math.PI;
+const norm360=x=>((x%360)+360)%360;
+const norm180=x=>{let r=norm360(x);return r>180?r-360:r;};
+function daysJ2000(y,m,d,h){
+  const jd=367*y-Math.floor(7*(y+Math.floor((m+9)/12))/4)+Math.floor(275*m/9)+d+1721013.5+h/24;
+  return jd-2451545.0;
+}
+function solveK(M,e){
+  let E=M+_deg(e)*Math.sin(_rad(M))*(1+e*Math.cos(_rad(M)));
+  for(let i=0;i<6;i++){const dE=(M-_deg(E)+_deg(e)*Math.sin(_rad(E)))/(1-e*Math.cos(_rad(E)));E+=dE;if(Math.abs(dE)<0.0001)break;}
+  return E;
+}
+function trueV(M,e){
+  const E=solveK(M,e);
+  return norm360(_deg(2*Math.atan2(Math.sqrt(1+e)*Math.sin(_rad(E/2)),Math.sqrt(1-e)*Math.cos(_rad(E/2)))));
+}
+function orbEls(d){
+  return{
+    sun:{w:norm360(282.9404+4.70935e-5*d),a:1,e:0.016709-1.151e-9*d,M:norm360(356.047+0.9856002585*d)},
+    mercury:{N:norm360(48.3313+3.24587e-5*d),i:7.0047,w:norm360(29.1241+1.01444e-5*d),a:0.387098,e:0.205635,M:norm360(168.6562+4.0923344368*d)},
+    venus:{N:norm360(76.6799+2.4659e-5*d),i:3.3946,w:norm360(54.891+1.38374e-5*d),a:0.72333,e:0.006773,M:norm360(48.0052+1.6021302244*d)},
+    mars:{N:norm360(49.5574+2.11081e-5*d),i:1.8497,w:norm360(286.5016+2.92961e-5*d),a:1.523688,e:0.093405,M:norm360(18.6021+0.5240207766*d)},
+    jupiter:{N:norm360(100.4542+2.76854e-5*d),i:1.303,w:norm360(273.8777+1.64505e-5*d),a:5.20256,e:0.048498,M:norm360(19.895+0.0830853001*d)},
+    saturn:{N:norm360(113.6634+2.3898e-5*d),i:2.4886,w:norm360(339.3939+2.97661e-5*d),a:9.55475,e:0.055546,M:norm360(316.967+0.0334442282*d)},
+    uranus:{N:norm360(74.0005+1.3978e-5*d),i:0.7733,w:norm360(96.6612+3.0565e-5*d),a:19.18171,e:0.047318,M:norm360(142.5905+0.011725806*d)},
+    neptune:{N:norm360(131.7806+3.0173e-5*d),i:1.77,w:norm360(272.8461-6.027e-6*d),a:30.05826,e:0.008606,M:norm360(260.2471+0.005995147*d)},
+    pluto:{N:norm360(110.3),i:17.14,w:norm360(113.768+0.0003246*d),a:39.543,e:0.249,M:norm360(14.882+0.00397*d)},
+  };
+}
+function helioXY(el){
+  const v=trueV(el.M,el.e);
+  const r=el.a*(1-el.e*el.e)/(1+el.e*Math.cos(_rad(v)));
+  const vw=_rad(v+(el.w||0)),N=_rad(el.N||0),i=_rad(el.i||0);
+  return{x:r*(Math.cos(N)*Math.cos(vw)-Math.sin(N)*Math.sin(vw)*Math.cos(i)),y:r*(Math.sin(N)*Math.cos(vw)+Math.cos(N)*Math.sin(vw)*Math.cos(i))};
+}
+function geoLon(d,id){
+  const els=orbEls(d);
+  const se=els.sun,sv=trueV(se.M,se.e),sr=se.a*(1-se.e*se.e)/(1+se.e*Math.cos(_rad(sv)));
+  const sl=norm360(sv+se.w),xs=-sr*Math.cos(_rad(sl)),ys=-sr*Math.sin(_rad(sl));
+  const ph=helioXY(els[id]);
+  return norm360(_deg(Math.atan2(ph.y+ys,ph.x+xs)));
+}
+function sunL(d){const e=orbEls(d).sun;return norm360(trueV(e.M,e.e)+e.w);}
+function moonL(d){
+  const N=norm360(125.1228-0.0529538083*d),w=norm360(318.0634+0.1643573223*d),M=norm360(115.3654+13.0649929509*d),e=0.0549;
+  const v=trueV(M,e),lon=norm360(N+w+v),D=norm360(lon-sunL(d)),Ms=orbEls(d).sun.M;
+  return norm360(lon-1.274*Math.sin(_rad(M-2*D))+0.658*Math.sin(_rad(2*D))-0.186*Math.sin(_rad(Ms))-0.059*Math.sin(_rad(2*M-2*D))+0.053*Math.sin(_rad(M+2*D))+0.046*Math.sin(_rad(2*D-Ms))-0.035*Math.sin(_rad(D)));
+}
+function obliq(d){return 23.4393-3.563e-7*d;}
+function calcAsc(d,lat,lon){
+  const T=d/36525,GMST=norm360(280.46061837+360.98564736629*d+0.000387933*T*T),LST=norm360(GMST+lon);
+  const RAMC=_rad(LST),eps=_rad(obliq(d)),phi=_rad(lat);
+  return norm360(_deg(Math.atan2(Math.cos(RAMC),-(Math.sin(RAMC)*Math.cos(eps)+Math.tan(phi)*Math.sin(eps)))));
+}
+function calcMC(d,lon){
+  const T=d/36525,GMST=norm360(280.46061837+360.98564736629*d+0.000387933*T*T),LST=norm360(GMST+lon);
+  return norm360(_deg(Math.atan2(Math.sin(_rad(LST)),Math.cos(_rad(LST))*Math.cos(_rad(obliq(d))))));
+}
+function isRetro(d,id){
+  if(id==='sun'||id==='moon')return false;
+  const f=id==='sun'?sunL:id==='moon'?moonL:dd=>geoLon(dd,id);
+  return norm180(f(d+1)-f(d))<0;
+}
+function houseOf(lon,asc){
+  const ascSign=Math.floor(asc/30);
+  for(let h=0;h<12;h++){const c1=norm360((ascSign+h)*30),c2=norm360(c1+30);if(((lon-c1+360)%360)<30)return h+1;}
+  return 1;
+}
+
+// ===== NATAL DATA =====
+const NSIGNS=[
+  {n:'Ariete',s:'♈',el:'Fuoco',ru:'Marte',col:'#e74c3c'},
+  {n:'Toro',s:'♉',el:'Terra',ru:'Venere',col:'#27ae60'},
+  {n:'Gemelli',s:'♊',el:'Aria',ru:'Mercurio',col:'#f39c12'},
+  {n:'Cancro',s:'♋',el:'Acqua',ru:'Luna',col:'#3498db'},
+  {n:'Leone',s:'♌',el:'Fuoco',ru:'Sole',col:'#e67e22'},
+  {n:'Vergine',s:'♍',el:'Terra',ru:'Mercurio',col:'#8e44ad'},
+  {n:'Bilancia',s:'♎',el:'Aria',ru:'Venere',col:'#16a085'},
+  {n:'Scorpione',s:'♏',el:'Acqua',ru:'Plutone',col:'#c0392b'},
+  {n:'Sagittario',s:'♐',el:'Fuoco',ru:'Giove',col:'#9b59b6'},
+  {n:'Capricorno',s:'♑',el:'Terra',ru:'Saturno',col:'#7f8c8d'},
+  {n:'Acquario',s:'♒',el:'Aria',ru:'Urano',col:'#2980b9'},
+  {n:'Pesci',s:'♓',el:'Acqua',ru:'Nettuno',col:'#1abc9c'},
+];
+const NPLANETS=[
+  {id:'sun',n:'Sole',sym:'☉',color:'#f5d76e'},
+  {id:'moon',n:'Luna',sym:'☽',color:'#c0c0d0'},
+  {id:'mercury',n:'Mercurio',sym:'☿',color:'#a0d8ef'},
+  {id:'venus',n:'Venere',sym:'♀',color:'#ff9daa'},
+  {id:'mars',n:'Marte',sym:'♂',color:'#ff6b6b'},
+  {id:'jupiter',n:'Giove',sym:'♃',color:'#ffd59e'},
+  {id:'saturn',n:'Saturno',sym:'♄',color:'#b0a080'},
+  {id:'uranus',n:'Urano',sym:'♅',color:'#7ec8e3'},
+  {id:'neptune',n:'Nettuno',sym:'♆',color:'#8080ff'},
+  {id:'pluto',n:'Plutone',sym:'♇',color:'#c080ff'},
+];
+const HOUSE_TH=['Identità e personalità','Denaro e valori materiali','Comunicazione e mente','Casa e famiglia','Creatività e amore','Lavoro e salute','Relazioni e partnership','Trasformazione e risorse','Filosofia e viaggi lontani','Carriera e vocazione','Amicizie e ideali','Inconscio e karma'];
+
+const SUN_K=['Pioniere energico, ama iniziare, diretto','Stabile e sensoriale, cerca sicurezza e piacere','Versatile e curioso, mente acuta e comunicativa','Intuitivo e protettivo, viscerale e fedele','Generoso e creativo, nato per brillare','Analitico e preciso, trova forza nel servizio','Diplomatico e raffinato, cerca equilibrio e bellezza','Intenso e trasformativo, va sempre in profondità','Avventuriero e filosófico, ama la libertà di pensiero','Ambizioso e disciplinato, costruisce con pazienza','Originale e visionario, pensa al futuro','Sensibile ed empatico, vive tra sogno e realtà'];
+const MOON_K=['reazioni rapide e istintive, cuore coraggioso','profondo bisogno di stabilità e sicurezza affettiva','emozioni elaborate con la mente, dialogo interiore costante','sensibilità lunare amplificata, forte legame con la casa','cuore caldo e generoso, ha bisogno di amore e riconoscimento','emozioni controllate dall\'analisi, tendenza all\'autocritica','bisogno di armonia nelle relazioni, equilibrio come priorità','emozioni profonde e difficili da esternare, intuizione potente','spirito libero anche emotivamente, paura dell\'imprigionamento','emozioni trattenute, senso del dovere forte, vulnerabilità nascosta','distacco emotivo come difesa, empatia verso l\'umanità','confini porosi, grande capacità empatica e assorbimento altrui'];
+const ASC_K=['energia diretta, appare sicuro e determinato','calmo e affidabile, trasmette solidità e concretezza','vivace e curioso, lascia un\'impressione di intelligenza','premuroso e riservato, trasmette calore e protezione','carismatico e luminoso, presenza che non passa inosservata','preciso e umile, trasmette competenza e attenzione','elegante e diplomatico, appare raffinato ed equilibrato','intenso e magnetico, avvolto da un\'aura di mistero','entusiasta e aperto, trasmette libertà e ottimismo','serio e responsabile, ispira fiducia e affidabilità','originale e distaccato, appare unico e poco convenzionale','dolce e sfuggente, trasmette empatia e una certa magia'];
+const EL_DESC={Fuoco:'dominata dal Fuoco, con slancio e passione come motori principali',Terra:'radicata nella Terra, con pragmatismo e concretezza come punti di forza',Aria:'guidata dall\'Aria, con mente vivace e grande capacità comunicativa',Acqua:'immersa nell\'Acqua, con sensibilità profonda e forte intuizione'};
+
+// ===== NATAL SVG CHART =====
+function lonXY(lon,asc,R,cx,cy){
+  const delta=norm360(lon-asc);
+  const ang=((180-delta)%360+360)%360;
+  const r=_rad(ang);
+  return{x:cx+R*Math.cos(r),y:cy+R*Math.sin(r)};
+}
+function drawNatal(pdata,asc,mc){
+  const svg=document.getElementById('natalSVG');
+  const cx=170,cy=170;
+  const Ro=158,Rzi=122,Rh=112,Rp=100,Ri=82;
+  let s=`<circle cx="${cx}" cy="${cy}" r="${Ro}" fill="#0d0620" stroke="rgba(180,130,255,.25)" stroke-width="1"/>`;
+  // zodiac segments
+  for(let i=0;i<12;i++){
+    const sg=NSIGNS[i];
+    const p1=lonXY(i*30,asc,Ro,cx,cy),p2=lonXY(i*30+30,asc,Ro,cx,cy);
+    const p3=lonXY(i*30+30,asc,Rzi,cx,cy),p4=lonXY(i*30,asc,Rzi,cx,cy);
+    s+=`<path d="M${p1.x},${p1.y} A${Ro},${Ro} 0 0,0 ${p2.x},${p2.y} L${p3.x},${p3.y} A${Rzi},${Rzi} 0 0,1 ${p4.x},${p4.y} Z" fill="${sg.col}18" stroke="rgba(180,130,255,.12)" stroke-width=".7"/>`;
+    const mid=lonXY(i*30+15,asc,Ro-18,cx,cy);
+    s+=`<text x="${mid.x}" y="${mid.y}" text-anchor="middle" dominant-baseline="central" font-size="11" fill="${sg.col}" opacity=".85">${sg.s}</text>`;
+    const dl=lonXY(i*30,asc,Ro,cx,cy),dl2=lonXY(i*30,asc,Rzi,cx,cy);
+    s+=`<line x1="${dl.x}" y1="${dl.y}" x2="${dl2.x}" y2="${dl2.y}" stroke="rgba(180,130,255,.18)" stroke-width=".6"/>`;
+  }
+  s+=`<circle cx="${cx}" cy="${cy}" r="${Rzi}" fill="none" stroke="rgba(180,130,255,.2)" stroke-width=".8"/>`;
+  // house divisions (whole sign)
+  const ascSign=Math.floor(asc/30);
+  for(let i=0;i<12;i++){
+    const cl=norm360((ascSign+i)*30);
+    const a=lonXY(cl,asc,Rzi,cx,cy),b=lonXY(cl,asc,Ri,cx,cy);
+    const isMaj=i===0||i===3||i===6||i===9;
+    s+=`<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="rgba(180,130,255,${isMaj?.45:.25})" stroke-width="${isMaj?1.4:.5}"/>`;
+    const mn=lonXY(cl+15,asc,Rh,cx,cy);
+    s+=`<text x="${mn.x}" y="${mn.y}" text-anchor="middle" dominant-baseline="central" font-size="8.5" fill="rgba(180,130,255,.5)">${i+1}</text>`;
+  }
+  s+=`<circle cx="${cx}" cy="${cy}" r="${Ri}" fill="#06030f" stroke="rgba(180,130,255,.18)" stroke-width=".7"/>`;
+  // aspect lines
+  const ASPC=[{d:0,o:8,c:'rgba(245,215,110,.3)'},{d:120,o:6,c:'rgba(52,211,153,.25)'},{d:90,o:6,c:'rgba(251,146,60,.2)'},{d:180,o:8,c:'rgba(248,113,113,.2)'},{d:60,o:4,c:'rgba(96,165,250,.2)'}];
+  for(let a=0;a<pdata.length;a++)for(let b=a+1;b<pdata.length;b++){
+    const ang=Math.abs(norm180(pdata[b].lon-pdata[a].lon));
+    for(const ap of ASPC)if(Math.abs(ang-ap.d)<ap.o){
+      const pa=lonXY(pdata[a].lon,asc,Ri-3,cx,cy),pb=lonXY(pdata[b].lon,asc,Ri-3,cx,cy);
+      s+=`<line x1="${pa.x}" y1="${pa.y}" x2="${pb.x}" y2="${pb.y}" stroke="${ap.c}" stroke-width="1"/>`;break;
+    }
+  }
+  // planets
+  for(const p of pdata){
+    const pr=lonXY(p.lon,asc,Rp,cx,cy);
+    const pd=NPLANETS.find(x=>x.id===p.id)||{sym:'?',color:'#fff'};
+    s+=`<circle cx="${pr.x}" cy="${pr.y}" r="9" fill="#0d0620" stroke="${pd.color}" stroke-width="1.5"/>`;
+    s+=`<text x="${pr.x}" y="${pr.y}" text-anchor="middle" dominant-baseline="central" font-size="10" fill="${pd.color}" font-weight="bold">${pd.sym}</text>`;
+  }
+  // cardinal points
+  ['Asc','MC','Dsc','IC'].forEach((lbl,i)=>{
+    const lon2=[asc,mc,asc+180,mc+180][i];
+    const pt=lonXY(lon2,asc,Rzi+5,cx,cy);
+    s+=`<text x="${pt.x}" y="${pt.y}" text-anchor="middle" dominant-baseline="central" font-size="8" fill="#d4a017" font-weight="bold">${lbl}</text>`;
+  });
+  svg.innerHTML=s;
+}
+
+// ===== NATAL NARRATIVE =====
+function generateNarrative(pdata,asc,mc,aspects){
+  const sunP=pdata.find(p=>p.id==='sun'),moonP=pdata.find(p=>p.id==='moon');
+  const ascSgn=NSIGNS[Math.floor(asc/30)],mcSgn=NSIGNS[Math.floor(mc/30)];
+  const sunSgn=NSIGNS[sunP.signIdx],moonSgn=NSIGNS[moonP.signIdx];
+  const venP=pdata.find(p=>p.id==='venus'),marP=pdata.find(p=>p.id==='mars');
+  const jupP=pdata.find(p=>p.id==='jupiter'),satP=pdata.find(p=>p.id==='saturn');
+  // dominant element
+  const elCnt={Fuoco:0,Terra:0,Aria:0,Acqua:0};
+  pdata.slice(0,8).forEach(p=>{elCnt[NSIGNS[p.signIdx].el]++;});
+  const domEl=Object.entries(elCnt).sort((a,b)=>b[1]-a[1])[0][0];
+  // key aspect text
+  const aspText=aspects.slice(0,2).map(a=>`${a.p1} ${a.type_it} ${a.p2} (orb ${a.orb.toFixed(1)}°)`).join(', ');
+
+  return`<div class="narrative-block">
+<p>Il tuo tema natale racconta di una personalità <strong>${SUN_K[sunP.signIdx]}</strong>. Con il Sole in <strong>${sunSgn.n}</strong>, l'energia vitale si esprime attraverso ${sunSgn.el === 'Fuoco' ? 'l\'azione e l\'entusiasmo' : sunSgn.el === 'Terra' ? 'la concretezza e la perseveranza' : sunSgn.el === 'Aria' ? 'il pensiero e la comunicazione' : 'la sensibilità e l\'intuizione'}. È il tuo segno solare il motore di fondo, la bussola con cui navighi la vita e costruisci la tua identità nel mondo.</p>
+<p>Sul piano emotivo e istintivo, la Luna in <strong>${moonSgn.n}</strong> rivela un mondo interiore caratterizzato da <strong>${MOON_K[moonP.signIdx]}</strong>. Questo si riflette nel modo in cui elabori le esperienze, cerchi conforto e costruisci relazioni significative. La Luna è la tua mente inconscia: ascoltarla significa conoscersi davvero.</p>
+<p>Con l'Ascendente in <strong>${ascSgn.n}</strong>, il mondo ti percepisce come ${ASC_K[Math.floor(asc/30)]}. È la maschera che indossi all'inizio di ogni incontro, il modo in cui filtri le esperienze prima che raggiungano il cuore. Il tuo tema è <strong>${EL_DESC[domEl]}</strong>: ${domEl==='Fuoco'?'hai bisogno di stimoli e libertà di espressione':domEl==='Terra'?'hai bisogno di struttura e risultati tangibili':domEl==='Aria'?'hai bisogno di stimoli intellettuali e connessioni':' hai bisogno di profondità e autenticità emotiva'}.</p>
+<p>In amore e nei valori personali, Venere in <strong>${NSIGNS[venP.signIdx].n}</strong> e Marte in <strong>${NSIGNS[marP.signIdx].n}</strong> definiscono il tuo stile relazionale: cerchi ${venP.signIdx<3?'passione e intensità':venP.signIdx<6?'armonia e bellezza':venP.signIdx<9?'complicità intellettuale':'profondità e lealtà'}, e agisci con ${marP.signIdx<3?'impulsività e coraggio':marP.signIdx<6?'tenacia e determinazione':marP.signIdx<9?'strategia e adattabilità':'intensità e controllo'}. ${aspText?`Gli aspetti più significativi del tuo tema sono: ${aspText}.`:''}</p>
+<p>Il Medio Cielo in <strong>${mcSgn.n}</strong> indica il tuo cammino verso la realizzazione professionale e sociale: sei vocato a ${mcSgn.el==='Fuoco'?'ruoli di leadership e innovazione':mcSgn.el==='Terra'?'costruire qualcosa di concreto e duraturo':mcSgn.el==='Aria'?'comunicare, connettere e diffondere idee':'aiutare, guarire o ispirare gli altri'}. Giove in <strong>${NSIGNS[jupP.signIdx].n}</strong> porta espansione e fortuna attraverso ${jupP.house<=3?'l\'espressione personale e la comunicazione':jupP.house<=6?'il lavoro e le relazioni':jupP.house<=9?'la crescita filosofica e i viaggi':'la carriera e il riconoscimento sociale'}. Saturno in <strong>${NSIGNS[satP.signIdx].n}</strong> è invece la tua grande scuola di vita: le sfide che porta non sono punizioni ma appuntamenti con la tua parte più profonda e duratura.</p>
+</div>`;
+}
+
+// ===== BUILD NATAL SECTION =====
+let _natalData=null; // store for PDF
+
+function buildNatal(y,m,day,hh,mm,lat,lon){
+  const d=daysJ2000(y,m,day,hh+mm/60);
+  const asc=calcAsc(d,lat,lon),mc=calcMC(d,lon);
+
+  const pdata=NPLANETS.map(p=>{
+    const lon2=p.id==='sun'?sunL(d):p.id==='moon'?moonL(d):geoLon(d,p.id);
+    return{...p,lon:lon2,signIdx:Math.floor(lon2/30),degree:lon2%30,house:houseOf(lon2,asc),retro:isRetro(d,p.id)};
+  });
+
+  // Aspects
+  const ASPS=[{type:'Congiunzione',type_it:'in congiunzione con',d:0,o:8,cls:'asp-conj'},{type:'Trigono',type_it:'in trigono con',d:120,o:6,cls:'asp-trine'},{type:'Quadratura',type_it:'in quadratura con',d:90,o:6,cls:'asp-square'},{type:'Opposizione',type_it:'in opposizione a',d:180,o:8,cls:'asp-opp'},{type:'Sestile',type_it:'in sestile con',d:60,o:4,cls:'asp-sext'}];
+  const aspects=[];
+  for(let a=0;a<pdata.length;a++)for(let b=a+1;b<pdata.length;b++){
+    const ang=Math.abs(norm180(pdata[b].lon-pdata[a].lon));
+    for(const ap of ASPS)if(Math.abs(ang-ap.d)<ap.o){
+      aspects.push({p1:pdata[a].n,p2:pdata[b].n,p1sym:pdata[a].sym,p2sym:pdata[b].sym,p1col:pdata[a].color,p2col:pdata[b].color,...ap,orb:Math.abs(ang-ap.d)});break;
+    }
+  }
+  aspects.sort((a,b)=>a.orb-b.orb);
+
+  _natalData={pdata,asc,mc,aspects,lat,lon};
+
+  // Big 3
+  const ascSgn=NSIGNS[Math.floor(asc/30)],sunSgn=NSIGNS[pdata[0].signIdx],moonSgn=NSIGNS[pdata[1].signIdx];
+  document.getElementById('natalBig3').innerHTML=[
+    {sym:'☉',label:'Sole — Chi sei',val:`${sunSgn.s} ${sunSgn.n}`,col:sunSgn.col},
+    {sym:'☽',label:'Luna — Come senti',val:`${moonSgn.s} ${moonSgn.n}`,col:moonSgn.col},
+    {sym:'⬆',label:'Ascendente — Come appari',val:`${ascSgn.s} ${ascSgn.n}`,col:ascSgn.col},
+  ].map(b=>`<div class="nb3"><div class="nb3-sym">${b.sym}</div><div class="nb3-label">${b.label}</div><div class="nb3-val" style="color:${b.col}">${b.val}</div></div>`).join('');
+
+  // Planet table
+  document.getElementById('natalTbody').innerHTML=pdata.map(p=>{
+    const sg=NSIGNS[p.signIdx];
+    return`<tr><td><span style="color:${p.color};font-size:1rem">${p.sym}</span> ${p.n}${p.retro?'<span class="retro">℞</span>':''}</td><td><span style="color:${sg.col}">${sg.s}</span> ${sg.n}</td><td style="color:var(--txm);font-size:.75rem">${p.degree.toFixed(1)}°</td><td>${p.house}ª</td></tr>`;
+  }).join('')+
+  `<tr><td><span style="color:#d4a017">⬆</span> Ascendente</td><td><span style="color:${ascSgn.col}">${ascSgn.s}</span> ${ascSgn.n}</td><td style="color:var(--txm);font-size:.75rem">${(asc%30).toFixed(1)}°</td><td>1ª</td></tr>
+   <tr><td><span style="color:#d4a017">↑</span> Medio Cielo</td><td><span style="color:${NSIGNS[Math.floor(mc/30)].col}">${NSIGNS[Math.floor(mc/30)].s}</span> ${NSIGNS[Math.floor(mc/30)].n}</td><td style="color:var(--txm);font-size:.75rem">${(mc%30).toFixed(1)}°</td><td>10ª</td></tr>`;
+
+  // Aspects
+  document.getElementById('natalAspects').innerHTML=aspects.slice(0,12).map(a=>
+    `<div class="asp-row"><span style="color:${a.p1col}">${a.p1sym}</span><span class="${a.cls}">${a.type}</span><span style="color:${a.p2col}">${a.p2sym}</span><span>${a.p1} – ${a.p2}</span><span class="asp-orb">orb ${a.orb.toFixed(1)}°</span></div>`
+  ).join('');
+
+  // Narrative
+  document.getElementById('natalNarrative').innerHTML=generateNarrative(pdata,asc,mc,aspects);
+
+  // Houses
+  const ascSign=Math.floor(asc/30);
+  document.getElementById('natalHouses').innerHTML=`<div class="house-mini-grid">${Array.from({length:12},(_,i)=>{
+    const sg=NSIGNS[(ascSign+i)%12];
+    const planets=pdata.filter(p=>p.house===i+1).map(p=>p.sym+' '+p.n).join(', ');
+    return`<div class="hm"><div class="hm-num">Casa ${i+1}</div><div class="hm-sign" style="color:${sg.col}">${sg.s} ${sg.n}</div><div class="hm-theme">${HOUSE_TH[i]}</div>${planets?`<div class="hm-planets">● ${planets}</div>`:''}</div>`;
+  }).join('')}</div>`;
+
+  // Draw chart
+  drawNatal(pdata,asc,mc);
+  document.getElementById('natalSection').style.display='block';
+}
+
+
+function checkURL(){
+  const p=new URLSearchParams(location.search);
+  const dv=p.get('d'),tv=p.get('t');
+  if(dv){
+    document.getElementById('birthDate').value=dv;
+    if(tv)document.getElementById('birthTime').value=tv;
+    setTimeout(go,300);
+  }
+}
+
+// ===== INIT =====
+document.getElementById('birthDate').max=new Date().toISOString().slice(0,10);
+spawnParticles();
+
+// Restore prefs
+const savedTheme=localStorage.getItem('bday-theme')||'';
+const savedFS=parseInt(localStorage.getItem('bday-fs')||0);
+fsLevel=savedFS;applyFS();
+if(savedTheme){
+  const sw=document.querySelector(`.tswatch[data-th="${savedTheme}"]`);
+  if(sw)setTheme(sw);
+} else {
+  document.querySelector('.tswatch[data-th=""]').classList.add('active');
+}
+
+checkURL();
+</script>
+</body>
+</html>
