@@ -43,8 +43,10 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);min-height
 .hero p{color:var(--txd);font-size:.95rem;margin-bottom:22px}
 .icard{max-width:440px;margin:0 auto;background:var(--card);backdrop-filter:blur(20px);border:1px solid var(--card-b);border-radius:24px;padding:24px;box-shadow:0 30px 80px rgba(0,0,0,.5)}
 label{display:block;color:var(--txd);font-size:.78rem;letter-spacing:.8px;text-transform:uppercase;margin-bottom:7px;font-weight:600}
-input[type=date],input[type=time]{width:100%;padding:13px 16px;background:var(--ibg);border:1px solid var(--ib);border-radius:12px;color:var(--tx);font-size:1rem;margin-bottom:20px;outline:none;transition:all .3s;color-scheme:dark}
-.th-light input[type=date],.th-light input[type=time]{color-scheme:light}
+input[type=date],input[type=time],select.city-sel{width:100%;padding:13px 16px;background:var(--ibg);border:1px solid var(--ib);border-radius:12px;color:var(--tx);font-size:1rem;margin-bottom:20px;outline:none;transition:all .3s;color-scheme:dark;appearance:auto}
+select.city-sel option{background:#1a0840;color:#e8e0ff}
+.th-light input[type=date],.th-light input[type=time],.th-light select.city-sel{color-scheme:light}
+.th-light select.city-sel option{background:#f0eeff;color:#1a0840}
 input:focus{border-color:rgba(140,50,220,.7);box-shadow:0 0 0 3px rgba(140,50,220,.15)}
 .hint{color:var(--txm);font-size:.75rem;margin-top:-14px;margin-bottom:18px;padding-left:4px}
 .btn{width:100%;padding:16px;background:linear-gradient(135deg,#7928ca,#ff0080);border:none;border-radius:12px;color:#fff;font-size:1rem;font-weight:800;cursor:pointer;transition:all .3s;letter-spacing:.3px;text-transform:uppercase}
@@ -175,21 +177,184 @@ input:focus{border-color:rgba(140,50,220,.7);box-shadow:0 0 0 3px rgba(140,50,22
       <label>Ora di nascita <span style="color:#f5a623;font-weight:700">★ obbligatoria per il tema natale</span></label>
       <input type="time" id="birthTime">
       <label>Luogo di nascita</label>
-      <select id="bCity" onchange="cityChange()" style="width:100%;padding:12px 14px;background:var(--ibg);border:1px solid var(--ib);border-radius:12px;color:var(--tx);font-size:.95rem;margin-bottom:8px;outline:none;color-scheme:dark">
+      <select id="bCity" class="city-sel" onchange="cityChange()">
         <option value="">— Seleziona città —</option>
-        <option value="45.47,9.19">Milano</option><option value="41.90,12.49">Roma</option>
-        <option value="40.85,14.27">Napoli</option><option value="45.07,7.69">Torino</option>
-        <option value="45.44,12.32">Venezia</option><option value="43.77,11.25">Firenze</option>
-        <option value="44.50,11.34">Bologna</option><option value="44.41,8.93">Genova</option>
-        <option value="38.12,13.36">Palermo</option><option value="45.66,9.44">Bergamo</option>
-        <option value="45.82,8.83">Varese</option><option value="37.50,15.09">Catania</option>
-        <option value="46.07,11.12">Trento</option><option value="46.01,8.97">Lugano (CH)</option>
-        <option value="47.38,8.54">Zurigo (CH)</option><option value="46.94,7.45">Berna (CH)</option>
-        <option value="46.20,6.14">Ginevra (CH)</option><option value="48.85,2.35">Parigi</option>
-        <option value="51.51,-0.13">Londra</option><option value="52.52,13.40">Berlino</option>
-        <option value="40.42,-3.70">Madrid</option><option value="48.21,16.37">Vienna</option>
-        <option value="40.71,-74.01">New York</option><option value="34.05,-118.24">Los Angeles</option>
-        <option value="custom">Inserisci coordinate...</option>
+        <optgroup label="🇮🇹 Italia">
+          <option value="41.90,12.49">Roma</option>
+          <option value="45.47,9.19">Milano</option>
+          <option value="40.85,14.27">Napoli</option>
+          <option value="45.07,7.69">Torino</option>
+          <option value="45.44,12.32">Venezia</option>
+          <option value="43.77,11.25">Firenze</option>
+          <option value="44.50,11.34">Bologna</option>
+          <option value="44.41,8.93">Genova</option>
+          <option value="38.12,13.36">Palermo</option>
+          <option value="45.66,9.44">Bergamo</option>
+          <option value="45.82,8.83">Varese</option>
+          <option value="45.55,11.55">Vicenza</option>
+          <option value="45.41,11.88">Padova</option>
+          <option value="45.65,13.77">Trieste</option>
+          <option value="46.07,11.12">Trento</option>
+          <option value="46.49,11.35">Bolzano</option>
+          <option value="43.83,11.20">Prato</option>
+          <option value="43.31,11.33">Siena</option>
+          <option value="44.40,8.95">La Spezia</option>
+          <option value="44.09,9.84">Parma</option>
+          <option value="44.65,10.92">Modena</option>
+          <option value="44.15,12.24">Rimini</option>
+          <option value="43.72,12.62">Pesaro</option>
+          <option value="43.61,13.51">Ancona</option>
+          <option value="41.65,13.78">Frosinone</option>
+          <option value="42.36,13.40">L'Aquila</option>
+          <option value="41.47,14.17">Campobasso</option>
+          <option value="41.12,16.87">Bari</option>
+          <option value="40.64,15.80">Potenza</option>
+          <option value="38.91,16.59">Catanzaro</option>
+          <option value="38.11,15.65">Reggio Calabria</option>
+          <option value="37.50,15.09">Catania</option>
+          <option value="36.99,14.73">Ragusa</option>
+          <option value="39.22,9.12">Cagliari</option>
+          <option value="40.72,8.56">Sassari</option>
+        </optgroup>
+        <optgroup label="🇨🇭 Svizzera">
+          <option value="46.01,8.97">Lugano</option>
+          <option value="47.38,8.54">Zurigo</option>
+          <option value="46.94,7.45">Berna</option>
+          <option value="46.20,6.14">Ginevra</option>
+          <option value="47.56,7.59">Basilea</option>
+          <option value="46.52,6.63">Losanna</option>
+          <option value="46.00,8.95">Locarno</option>
+          <option value="46.20,7.36">Sion</option>
+          <option value="47.00,8.30">Lucerna</option>
+        </optgroup>
+        <optgroup label="🇫🇷 Francia">
+          <option value="48.85,2.35">Parigi</option>
+          <option value="43.30,5.37">Marsiglia</option>
+          <option value="45.75,4.83">Lione</option>
+          <option value="43.60,1.44">Tolosa</option>
+          <option value="44.84,-0.58">Bordeaux</option>
+          <option value="48.11,-1.68">Rennes</option>
+          <option value="47.32,5.04">Digione</option>
+          <option value="43.70,7.27">Nizza</option>
+          <option value="43.93,4.81">Avignone</option>
+          <option value="50.63,3.07">Lille</option>
+          <option value="48.58,7.75">Strasburgo</option>
+          <option value="45.89,6.13">Annecy</option>
+          <option value="45.19,5.73">Grenoble</option>
+        </optgroup>
+        <optgroup label="🇩🇪 Germania">
+          <option value="52.52,13.40">Berlino</option>
+          <option value="48.14,11.58">Monaco</option>
+          <option value="53.55,10.00">Amburgo</option>
+          <option value="51.23,6.79">Düsseldorf</option>
+          <option value="50.94,6.96">Colonia</option>
+          <option value="50.11,8.68">Francoforte</option>
+          <option value="48.78,9.18">Stoccarda</option>
+          <option value="51.51,7.46">Dortmund</option>
+          <option value="53.08,8.81">Brema</option>
+          <option value="51.05,13.74">Dresda</option>
+          <option value="51.34,12.37">Lipsia</option>
+          <option value="47.99,7.85">Friburgo</option>
+          <option value="48.37,10.90">Augusta</option>
+          <option value="49.45,11.08">Norimberga</option>
+        </optgroup>
+        <optgroup label="🇬🇧 Regno Unito">
+          <option value="51.51,-0.13">Londra</option>
+          <option value="53.48,-2.24">Manchester</option>
+          <option value="52.48,-1.90">Birmingham</option>
+          <option value="55.86,-4.25">Glasgow</option>
+          <option value="53.80,-1.55">Leeds</option>
+          <option value="55.95,-3.19">Edimburgo</option>
+          <option value="51.45,-2.59">Bristol</option>
+          <option value="53.38,-1.47">Sheffield</option>
+          <option value="51.88,0.54">Norwich</option>
+          <option value="50.82,-0.14">Brighton</option>
+        </optgroup>
+        <optgroup label="🇪🇸 Spagna">
+          <option value="40.42,-3.70">Madrid</option>
+          <option value="41.39,2.17">Barcellona</option>
+          <option value="37.39,-5.99">Siviglia</option>
+          <option value="39.47,-0.38">Valencia</option>
+          <option value="43.26,-2.93">Bilbao</option>
+          <option value="37.98,-1.13">Murcia</option>
+          <option value="36.72,-4.42">Malaga</option>
+          <option value="41.65,-0.88">Saragozza</option>
+          <option value="39.57,2.65">Palma di Maiorca</option>
+          <option value="28.12,-15.43">Las Palmas</option>
+        </optgroup>
+        <optgroup label="🇵🇹 Portogallo">
+          <option value="38.72,-9.14">Lisbona</option>
+          <option value="41.15,-8.61">Porto</option>
+          <option value="37.02,-7.93">Faro</option>
+        </optgroup>
+        <optgroup label="🇦🇹 Austria">
+          <option value="48.21,16.37">Vienna</option>
+          <option value="47.81,13.05">Salisburgo</option>
+          <option value="47.26,11.39">Innsbruck</option>
+          <option value="47.07,15.44">Graz</option>
+        </optgroup>
+        <optgroup label="🇧🇪 Belgio · 🇳🇱 Olanda">
+          <option value="50.85,4.35">Bruxelles</option>
+          <option value="51.22,4.40">Anversa</option>
+          <option value="50.63,5.57">Liegi</option>
+          <option value="52.37,4.90">Amsterdam</option>
+          <option value="51.92,4.48">Rotterdam</option>
+          <option value="52.09,5.12">Utrecht</option>
+          <option value="52.08,4.31">L'Aia</option>
+        </optgroup>
+        <optgroup label="🇱🇺🇩🇰🇸🇪🇳🇴🇫🇮 Nord Europa">
+          <option value="49.61,6.13">Lussemburgo</option>
+          <option value="55.68,12.57">Copenaghen</option>
+          <option value="59.33,18.07">Stoccolma</option>
+          <option value="57.71,11.97">Göteborg</option>
+          <option value="59.91,10.75">Oslo</option>
+          <option value="60.45,22.27">Turku</option>
+          <option value="60.17,24.94">Helsinki</option>
+          <option value="64.14,-21.94">Reykjavik</option>
+        </optgroup>
+        <optgroup label="🇨🇿🇵🇱🇭🇺🇷🇴 Europa Centro-Est">
+          <option value="50.09,14.42">Praga</option>
+          <option value="52.23,21.01">Varsavia</option>
+          <option value="50.06,19.94">Cracovia</option>
+          <option value="47.50,19.04">Budapest</option>
+          <option value="44.80,20.46">Belgrado</option>
+          <option value="45.81,15.98">Zagabria</option>
+          <option value="46.05,14.51">Lubiana</option>
+          <option value="44.42,26.10">Bucarest</option>
+          <option value="42.70,23.32">Sofia</option>
+          <option value="48.15,17.11">Bratislava</option>
+          <option value="54.69,25.28">Vilnius</option>
+          <option value="56.95,24.11">Riga</option>
+          <option value="59.44,24.75">Tallinn</option>
+        </optgroup>
+        <optgroup label="🇬🇷🇹🇷 Sud-Est Europa">
+          <option value="37.98,23.73">Atene</option>
+          <option value="40.64,22.94">Salonicco</option>
+          <option value="35.34,25.13">Heraklion</option>
+          <option value="41.01,28.95">Istanbul</option>
+          <option value="39.93,32.85">Ankara</option>
+        </optgroup>
+        <optgroup label="🌍 Fuori Europa">
+          <option value="40.71,-74.01">New York</option>
+          <option value="34.05,-118.24">Los Angeles</option>
+          <option value="41.88,-87.63">Chicago</option>
+          <option value="25.77,-80.19">Miami</option>
+          <option value="45.50,-73.57">Montreal</option>
+          <option value="43.65,-79.38">Toronto</option>
+          <option value="49.28,-123.12">Vancouver</option>
+          <option value="-33.87,151.21">Sydney</option>
+          <option value="-37.81,144.96">Melbourne</option>
+          <option value="35.69,139.69">Tokyo</option>
+          <option value="22.28,114.16">Hong Kong</option>
+          <option value="-23.55,-46.63">São Paulo</option>
+          <option value="-34.61,-58.38">Buenos Aires</option>
+          <option value="19.43,-99.13">Città del Messico</option>
+          <option value="-1.29,36.82">Nairobi</option>
+          <option value="30.06,31.25">Il Cairo</option>
+          <option value="24.47,54.37">Abu Dhabi</option>
+          <option value="25.20,55.27">Dubai</option>
+        </optgroup>
+        <option value="custom">✏️ Inserisci coordinate manualmente...</option>
       </select>
       <div id="customCoords" style="display:none;margin-bottom:10px">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
@@ -922,20 +1087,23 @@ function lonXY(lon,asc,R,cx,cy){
 function drawNatal(pdata,asc,mc){
   const svg=document.getElementById('natalSVG');
   const cx=170,cy=170;
-  const Ro=158,Rzi=122,Rh=112,Rp=100,Ri=82;
+  const Ro=158,Rzi=118,Rh=108,Rp=97,Ri=80;
   let s=`<circle cx="${cx}" cy="${cy}" r="${Ro}" fill="#0d0620" stroke="rgba(180,130,255,.25)" stroke-width="1"/>`;
-  // zodiac segments
+  // zodiac segments — wider ring for bigger symbols
   for(let i=0;i<12;i++){
     const sg=NSIGNS[i];
     const p1=lonXY(i*30,asc,Ro,cx,cy),p2=lonXY(i*30+30,asc,Ro,cx,cy);
     const p3=lonXY(i*30+30,asc,Rzi,cx,cy),p4=lonXY(i*30,asc,Rzi,cx,cy);
-    s+=`<path d="M${p1.x},${p1.y} A${Ro},${Ro} 0 0,0 ${p2.x},${p2.y} L${p3.x},${p3.y} A${Rzi},${Rzi} 0 0,1 ${p4.x},${p4.y} Z" fill="${sg.col}18" stroke="rgba(180,130,255,.12)" stroke-width=".7"/>`;
-    const mid=lonXY(i*30+15,asc,Ro-18,cx,cy);
-    s+=`<text x="${mid.x}" y="${mid.y}" text-anchor="middle" dominant-baseline="central" font-size="11" fill="${sg.col}" opacity=".85">${sg.s}</text>`;
+    s+=`<path d="M${p1.x},${p1.y} A${Ro},${Ro} 0 0,0 ${p2.x},${p2.y} L${p3.x},${p3.y} A${Rzi},${Rzi} 0 0,1 ${p4.x},${p4.y} Z" fill="${sg.col}20" stroke="rgba(180,130,255,.15)" stroke-width=".8"/>`;
+    // Symbol — large, centred in ring midpoint
+    const midR=(Ro+Rzi)/2;
+    const symPt=lonXY(i*30+15,asc,midR,cx,cy);
+    s+=`<text x="${symPt.x}" y="${symPt.y}" text-anchor="middle" dominant-baseline="central" font-size="15" fill="${sg.col}" opacity=".95" font-weight="bold">${sg.s}</text>`;
+    // Divider lines
     const dl=lonXY(i*30,asc,Ro,cx,cy),dl2=lonXY(i*30,asc,Rzi,cx,cy);
-    s+=`<line x1="${dl.x}" y1="${dl.y}" x2="${dl2.x}" y2="${dl2.y}" stroke="rgba(180,130,255,.18)" stroke-width=".6"/>`;
+    s+=`<line x1="${dl.x}" y1="${dl.y}" x2="${dl2.x}" y2="${dl2.y}" stroke="rgba(180,130,255,.2)" stroke-width=".7"/>`;
   }
-  s+=`<circle cx="${cx}" cy="${cy}" r="${Rzi}" fill="none" stroke="rgba(180,130,255,.2)" stroke-width=".8"/>`;
+  s+=`<circle cx="${cx}" cy="${cy}" r="${Rzi}" fill="none" stroke="rgba(180,130,255,.22)" stroke-width=".9"/>`;
   // house divisions (whole sign)
   const ascSign=Math.floor(asc/30);
   for(let i=0;i<12;i++){
