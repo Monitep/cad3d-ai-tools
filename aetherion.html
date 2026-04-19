@@ -8,9 +8,9 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--gold:#c9a84c;--gl:#e8cc7a;--gd:#8a6820;--blood:#8b1a1a;--night:#05050f;--pt:#f4e8c1;--txt:#2a1f0e;--cc:#c0392b;--mc:#8e44ad;--hc:#27ae60}
-html,body{width:100%;height:100%;overflow:hidden;background:var(--night);font-family:'EB Garamond',Georgia,serif}
+html,body{width:100%;min-height:100%;background:var(--night);font-family:'EB Garamond',Georgia,serif}
 #bgc{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
-#app{position:relative;z-index:1;width:100%;height:100vh;display:flex;align-items:center;justify-content:center;padding:12px;overflow-y:auto}
+#app{position:relative;z-index:1;width:100%;min-height:100dvh;min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:12px 12px env(safe-area-inset-bottom,20px);padding-bottom:max(24px,env(safe-area-inset-bottom,24px))}
 
 /* TITLE */
 #ts{text-align:center;color:var(--gold);max-width:700px;width:100%}
@@ -25,8 +25,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--night);font-fa
 /* CARD */
 #gc{display:none;max-width:820px;width:100%;background:linear-gradient(165deg,#f6ead5 0%,#e8d4a0 45%,#d4bf78 100%);border-radius:3px;position:relative;
   box-shadow:0 0 0 1px var(--gd),0 0 0 3px #2a1f0e,0 0 0 5px var(--gd),0 6px 70px rgba(0,0,0,.85);
-  overflow:hidden;max-height:96vh;overflow-y:auto}
-#gc::-webkit-scrollbar{width:5px}#gc::-webkit-scrollbar-thumb{background:var(--gd);border-radius:3px}
+  overflow:hidden;margin:auto}
 .crn{position:absolute;width:55px;height:55px;z-index:5;pointer-events:none}
 .c1{top:0;left:0}.c2{top:0;right:0;transform:scaleX(-1)}.c3{bottom:0;left:0;transform:scaleY(-1)}.c4{bottom:0;right:0;transform:scale(-1)}
 #art{width:100%;height:185px;overflow:hidden;border-bottom:2px solid var(--gd);flex-shrink:0}
@@ -57,6 +56,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--night);font-fa
 #ov{position:fixed;inset:0;z-index:100;background:radial-gradient(ellipse at center,#150520 0%,#000 100%);pointer-events:none;opacity:0;transition:opacity .45s}
 #ov.on{opacity:1;pointer-events:all}
 @media(max-width:600px){#art{height:135px}#stxt{padding:0 .9rem .9rem}#chs{padding:.2rem .8rem 1.1rem}.cb{padding:.62rem .85rem}#ts h1{font-size:clamp(1.6rem,10vw,2.8rem)}}
+#ts{padding-top:clamp(20px,8vw,60px);padding-bottom:40px}
 
 /* ── SETTINGS ── */
 /* Font size via body class */
@@ -353,7 +353,8 @@ function render(id){
     b.addEventListener('click',()=>goTo(ch.next,ch.effect));
     chs.appendChild(b);
   });
-  document.getElementById('gc').scrollTop=0;
+  document.getElementById('gc').scrollIntoView({behavior:'smooth',block:'start'});
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 
 function goTo(id,eff){
