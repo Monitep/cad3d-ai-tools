@@ -14,8 +14,8 @@ html, body { width:100%; height:100%; overflow:hidden; background:#060f1c; }
 #loading {
   position:absolute; inset:0; z-index:200;
   display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px;
-  background:#060f1c; color:#38bdf8;
-  font-family:'Courier New',monospace; font-size:12px; letter-spacing:2px;
+  background:#060f1c; color:#38bdf8; font-family:'Courier New',monospace;
+  font-size:12px; letter-spacing:2px;
 }
 .spin {
   width:38px; height:38px; border-radius:50%;
@@ -28,8 +28,8 @@ html, body { width:100%; height:100%; overflow:hidden; background:#060f1c; }
 #topbar {
   position:absolute; top:0; left:0; right:0; z-index:10; height:50px;
   display:flex; align-items:center; padding:0 12px; gap:10px;
-  background:rgba(4,12,24,0.9); border-bottom:1px solid rgba(56,189,248,0.1);
-  backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+  background:rgba(4,12,24,0.92); border-bottom:1px solid rgba(56,189,248,0.1);
+  backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
   font-family:'Courier New',monospace;
 }
 #tb-logo { font-size:8px; letter-spacing:3px; color:#38bdf8; flex-shrink:0; white-space:nowrap; }
@@ -53,7 +53,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:#060f1c; }
 #sover {
   display:none; position:absolute; top:0; left:0; right:0; z-index:20;
   height:50px; padding:0 12px; gap:8px; align-items:center;
-  background:rgba(4,12,24,0.98); border-bottom:1px solid rgba(56,189,248,0.2);
+  background:rgba(4,12,24,0.99); border-bottom:1px solid rgba(56,189,248,0.2);
 }
 #sover.open { display:flex; }
 #sin {
@@ -66,21 +66,21 @@ html, body { width:100%; height:100%; overflow:hidden; background:#060f1c; }
 #sin::placeholder { color:#1e3a5f; }
 #scls { background:none; border:none; color:#38bdf8; font-size:20px; cursor:pointer; padding:4px 6px; touch-action:manipulation; }
 #slist {
-  display:none; position:absolute; top:50px; left:12px; right:12px;
-  background:rgba(4,12,24,0.98); border:1px solid rgba(56,189,248,0.18);
-  border-radius:0 0 10px 10px; max-height:250px; overflow-y:auto; z-index:21;
+  display:none; position:absolute; top:50px; left:12px; right:12px; z-index:22;
+  background:rgba(4,12,24,0.99); border:1px solid rgba(56,189,248,0.18);
+  border-radius:0 0 10px 10px; max-height:240px; overflow-y:auto;
 }
 .si { padding:10px 16px; font-size:12px; color:#7facc5; font-family:'Courier New',monospace; cursor:pointer; border-bottom:1px solid rgba(56,189,248,0.04); }
 .si:hover { background:rgba(56,189,248,0.08); color:#e2e8f0; }
 #slist::-webkit-scrollbar { width:3px; }
 #slist::-webkit-scrollbar-thumb { background:rgba(56,189,248,0.2); border-radius:2px; }
 
-/* Info card - bottom slide up */
+/* Info card */
 #icard {
   position:absolute; bottom:0; left:0; right:0; z-index:10;
   background:rgba(4,12,24,0.93); border-top:1px solid rgba(56,189,248,0.12);
-  backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
-  padding:12px 16px 18px; font-family:'Courier New',monospace;
+  backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+  padding:10px 16px 16px; font-family:'Courier New',monospace;
   transform:translateY(100%); transition:transform 0.22s cubic-bezier(0.4,0,0.2,1);
   pointer-events:none;
 }
@@ -89,7 +89,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:#060f1c; }
 #ic-name { font-size:17px; font-weight:700; color:#f1f5f9; font-family:'Segoe UI',system-ui,sans-serif; }
 .row {
   display:flex; justify-content:space-between; align-items:baseline;
-  padding:5px 0; border-top:1px solid rgba(56,189,248,0.07); font-size:11px; margin-top:4px;
+  padding:5px 0; border-top:1px solid rgba(56,189,248,0.07); font-size:11px; margin-top:3px;
 }
 .rl { color:#234058; } .rv { font-weight:700; font-size:11.5px; }
 #ic-reset {
@@ -100,24 +100,53 @@ html, body { width:100%; height:100%; overflow:hidden; background:#060f1c; }
   touch-action:manipulation;
 }
 
-/* Chips */
+/* Bottom chip bar */
 #chips {
   position:absolute; bottom:0; left:0; right:0; z-index:9;
   padding:10px 12px 14px; display:flex; gap:7px; overflow-x:auto;
-  scrollbar-width:none; pointer-events:none;
+  scrollbar-width:none; align-items:center;
   transition:transform 0.22s cubic-bezier(0.4,0,0.2,1);
 }
-#chips.hidden { transform:translateY(100%); }
+#chips.hidden { transform:translateY(100%); pointer-events:none; }
 #chips::-webkit-scrollbar { display:none; }
-#chips-lbl { font-size:8px; letter-spacing:2px; color:#1a3352; text-transform:uppercase; white-space:nowrap; flex-shrink:0; font-family:'Courier New',monospace; align-self:center; }
 .chip {
-  flex-shrink:0; padding:6px 12px;
+  flex-shrink:0; padding:6px 13px;
   background:rgba(4,12,24,0.88); border:1px solid rgba(56,189,248,0.18);
   border-radius:20px; color:#38bdf8; font-size:11px; font-family:'Courier New',monospace;
-  cursor:pointer; pointer-events:all; touch-action:manipulation; white-space:nowrap;
-  transition:background 0.12s, border-color 0.12s;
+  cursor:pointer; touch-action:manipulation; white-space:nowrap;
 }
-.chip:hover { background:rgba(56,189,248,0.1); border-color:rgba(56,189,248,0.35); }
+.chip:hover, .chip.active { background:rgba(56,189,248,0.12); border-color:rgba(56,189,248,0.4); }
+
+/* Europa panel */
+#eu-panel {
+  display:none; position:absolute; bottom:0; left:0; right:0; z-index:15;
+  background:rgba(4,12,24,0.96); border-top:1px solid rgba(56,189,248,0.15);
+  backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+  padding:12px 14px 18px; max-height:55vh; overflow-y:auto;
+}
+#eu-panel.open { display:block; }
+#eu-header {
+  display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;
+}
+#eu-title { font-family:'Courier New',monospace; font-size:9px; letter-spacing:3px; color:#38bdf8; text-transform:uppercase; }
+#eu-close {
+  background:none; border:1px solid rgba(56,189,248,0.2); border-radius:6px;
+  color:#38bdf8; font-size:13px; padding:3px 10px; cursor:pointer;
+  font-family:'Courier New',monospace; touch-action:manipulation;
+}
+#eu-grid {
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); gap:6px;
+}
+.eu-btn {
+  padding:8px 10px; background:rgba(56,189,248,0.05);
+  border:1px solid rgba(56,189,248,0.15); border-radius:7px;
+  color:#94a3b8; font-size:11.5px; font-family:'Segoe UI',system-ui,sans-serif;
+  cursor:pointer; touch-action:manipulation; text-align:left;
+  transition:background 0.12s, color 0.12s, border-color 0.12s;
+}
+.eu-btn:hover { background:rgba(56,189,248,0.12); color:#f1f5f9; border-color:rgba(56,189,248,0.35); }
+#eu-panel::-webkit-scrollbar { width:3px; }
+#eu-panel::-webkit-scrollbar-thumb { background:rgba(56,189,248,0.2); border-radius:2px; }
 
 /* Drag badge */
 #badge {
@@ -159,192 +188,418 @@ html, body { width:100%; height:100%; overflow:hidden; background:#060f1c; }
 </div>
 
 <div id="chips">
-  <span id="chips-lbl">esempi</span>
   <button class="chip" data-n="Groenlandia">Groenlandia</button>
   <button class="chip" data-n="Russia">Russia</button>
   <button class="chip" data-n="Canada">Canada</button>
   <button class="chip" data-n="Australia">Australia</button>
-  <button class="chip" data-n="India">India</button>
-  <button class="chip" data-n="Stati Uniti">USA</button>
+  <button class="chip" id="chip-eu">🇪🇺 Europa ▸</button>
+</div>
+
+<!-- Europa panel -->
+<div id="eu-panel">
+  <div id="eu-header">
+    <span id="eu-title">Paesi Europei</span>
+    <button id="eu-close">✕ chiudi</button>
+  </div>
+  <div id="eu-grid"></div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
 <script>
 'use strict';
-const NAMES={4:"Afghanistan",8:"Albania",12:"Algeria",20:"Andorra",24:"Angola",32:"Argentina",36:"Australia",40:"Austria",31:"Azerbaijan",50:"Bangladesh",56:"Belgio",64:"Bhutan",68:"Bolivia",70:"Bosnia-Erzegovina",76:"Brasile",100:"Bulgaria",104:"Myanmar",108:"Burundi",116:"Cambogia",120:"Camerun",124:"Canada",140:"R. Centrafricana",144:"Sri Lanka",152:"Cile",156:"Cina",170:"Colombia",178:"Congo",180:"R.D. Congo",188:"Costa Rica",191:"Croazia",192:"Cuba",196:"Cipro",203:"Cechia",204:"Benin",208:"Danimarca",214:"Rep. Dominicana",218:"Ecuador",818:"Egitto",222:"El Salvador",231:"Etiopia",233:"Estonia",246:"Finlandia",250:"Francia",266:"Gabon",276:"Germania",288:"Ghana",300:"Grecia",304:"Groenlandia",320:"Guatemala",324:"Guinea",328:"Guyana",332:"Haiti",340:"Honduras",348:"Ungheria",356:"India",360:"Indonesia",364:"Iran",368:"Iraq",372:"Irlanda",376:"Israele",380:"Italia",388:"Giamaica",392:"Giappone",400:"Giordania",398:"Kazakhstan",404:"Kenya",408:"Corea del Nord",410:"Corea del Sud",414:"Kuwait",417:"Kirghizistan",418:"Laos",422:"Libano",426:"Lesotho",428:"Lettonia",430:"Liberia",434:"Libia",440:"Lituania",442:"Lussemburgo",450:"Madagascar",454:"Malawi",458:"Malaysia",466:"Mali",478:"Mauritania",484:"Messico",496:"Mongolia",498:"Moldova",504:"Marocco",508:"Mozambico",516:"Namibia",524:"Nepal",528:"Paesi Bassi",554:"Nuova Zelanda",562:"Niger",566:"Nigeria",578:"Norvegia",512:"Oman",586:"Pakistan",591:"Panama",598:"Papua Nuova Guinea",604:"Perù",608:"Filippine",616:"Polonia",620:"Portogallo",634:"Qatar",643:"Russia",646:"Ruanda",682:"Arabia Saudita",686:"Senegal",688:"Serbia",694:"Sierra Leone",703:"Slovacchia",705:"Slovenia",706:"Somalia",710:"Sudafrica",716:"Zimbabwe",724:"Spagna",728:"Sud Sudan",729:"Sudan",752:"Svezia",756:"Svizzera",760:"Siria",764:"Tailandia",788:"Tunisia",792:"Turchia",795:"Turkmenistan",800:"Uganda",804:"Ucraina",784:"Emirati Arabi",826:"Regno Unito",840:"Stati Uniti",858:"Uruguay",860:"Uzbekistan",862:"Venezuela",704:"Vietnam",887:"Yemen",894:"Zambia",499:"Montenegro",807:"Macedonia del Nord",51:"Armenia",268:"Georgia",112:"Bielorussia",762:"Tagikistan"};
 
-const canvas=document.getElementById('canvas'),ctx=canvas.getContext('2d'),badge=document.getElementById('badge');
-let W,H,proj,geoPath,countries=[],sel=null,dragC=null,isDrag=false,ptDown=false,ptMoved=false,ptStart=null,rafId=null;
-const TOP=50,DTHR=5;
+const NAMES={
+  4:"Afghanistan",8:"Albania",12:"Algeria",20:"Andorra",24:"Angola",
+  32:"Argentina",36:"Australia",40:"Austria",31:"Azerbaijan",
+  50:"Bangladesh",56:"Belgio",64:"Bhutan",68:"Bolivia",70:"Bosnia-Erzegovina",
+  76:"Brasile",100:"Bulgaria",104:"Myanmar",108:"Burundi",116:"Cambogia",
+  120:"Camerun",124:"Canada",140:"R. Centrafricana",144:"Sri Lanka",
+  152:"Cile",156:"Cina",170:"Colombia",178:"Congo",180:"R.D. Congo",
+  188:"Costa Rica",191:"Croazia",192:"Cuba",196:"Cipro",203:"Cechia",
+  208:"Danimarca",214:"Rep. Dominicana",218:"Ecuador",818:"Egitto",
+  222:"El Salvador",231:"Etiopia",233:"Estonia",246:"Finlandia",
+  250:"Francia",266:"Gabon",276:"Germania",288:"Ghana",300:"Grecia",
+  304:"Groenlandia",320:"Guatemala",324:"Guinea",332:"Haiti",340:"Honduras",
+  348:"Ungheria",352:"Islanda",356:"India",360:"Indonesia",364:"Iran",
+  368:"Iraq",372:"Irlanda",376:"Israele",380:"Italia",388:"Giamaica",
+  392:"Giappone",400:"Giordania",398:"Kazakhstan",404:"Kenya",
+  408:"Corea del Nord",410:"Corea del Sud",414:"Kuwait",417:"Kirghizistan",
+  418:"Laos",422:"Libano",426:"Lesotho",428:"Lettonia",430:"Liberia",
+  434:"Libia",440:"Lituania",442:"Lussemburgo",450:"Madagascar",454:"Malawi",
+  458:"Malaysia",466:"Mali",478:"Mauritania",484:"Messico",496:"Mongolia",
+  498:"Moldova",504:"Marocco",508:"Mozambico",516:"Namibia",524:"Nepal",
+  528:"Paesi Bassi",554:"Nuova Zelanda",562:"Niger",566:"Nigeria",
+  578:"Norvegia",512:"Oman",586:"Pakistan",591:"Panama",
+  598:"Papua Nuova Guinea",604:"Perù",608:"Filippine",616:"Polonia",
+  620:"Portogallo",634:"Qatar",642:"Romania",643:"Russia",646:"Ruanda",
+  682:"Arabia Saudita",686:"Senegal",688:"Serbia",694:"Sierra Leone",
+  703:"Slovacchia",705:"Slovenia",706:"Somalia",710:"Sudafrica",
+  716:"Zimbabwe",724:"Spagna",728:"Sud Sudan",729:"Sudan",752:"Svezia",
+  756:"Svizzera",760:"Siria",764:"Tailandia",788:"Tunisia",792:"Turchia",
+  795:"Turkmenistan",800:"Uganda",804:"Ucraina",784:"Emirati Arabi",
+  826:"Regno Unito",840:"Stati Uniti",858:"Uruguay",860:"Uzbekistan",
+  862:"Venezuela",704:"Vietnam",887:"Yemen",894:"Zambia",
+  499:"Montenegro",807:"Macedonia del Nord",51:"Armenia",268:"Georgia",
+  112:"Bielorussia",762:"Tagikistan"
+};
 
-function mscale(lat){const r=Math.min(Math.abs(lat),85)*Math.PI/180;return 1/Math.cos(r);}
+// European country IDs
+const EU_IDS = new Set([
+  8,20,40,56,70,100,191,203,196,208,233,246,250,276,300,348,352,
+  372,376,380,392,428,440,442,498,499,528,578,616,620,642,643,
+  688,703,705,724,752,756,792,804,826,807,112
+]);
 
-function shiftFeature(f,dlon,dlat){
-  const sc=([lo,la])=>{let l=lo+dlon;while(l>180)l-=360;while(l<-180)l+=360;return[l,Math.max(-85,Math.min(85,la+dlat))];};
-  const shR=r=>r.map(sc),shP=p=>p.map(shR),g=f.geometry;
-  return{type:'Feature',geometry:{type:g.type,coordinates:g.type==='Polygon'?shP(g.coordinates):g.coordinates.map(shP)}};
+// ── Canvas & state ──────────────────────────────────────
+const canvas = document.getElementById('canvas');
+const ctx    = canvas.getContext('2d');
+const badge  = document.getElementById('badge');
+
+let W, H, proj, geoPath;
+let countries  = [];
+let sel        = null;
+let dragPx     = null;   // pixel position [x,y] where country is dragged
+let isDrag     = false;
+let ptDown     = false;
+let ptMoved    = false;
+let ptStart    = null;
+let rafId      = null;
+const TOP = 50, DTHR = 5;
+
+// ── Mercator scale factor ────────────────────────────────
+function mscale(lat) {
+  return 1 / Math.cos(Math.min(Math.abs(lat), 85) * Math.PI / 180);
 }
 
-function render(){
-  ctx.clearRect(0,0,W,H);
-  const og=ctx.createLinearGradient(0,0,0,H);og.addColorStop(0,'#040c18');og.addColorStop(1,'#060f1c');
-  ctx.fillStyle=og;ctx.fillRect(0,0,W,H);
-  ctx.beginPath();geoPath(d3.geoGraticule()());ctx.strokeStyle='rgba(255,255,255,0.03)';ctx.lineWidth=0.5;ctx.stroke();
-  [[0,'rgba(56,189,248,0.22)',1],[23.44,'rgba(251,191,36,0.07)',0.5],[-23.44,'rgba(251,191,36,0.07)',0.5],[66.56,'rgba(148,163,184,0.06)',0.5],[-66.56,'rgba(148,163,184,0.06)',0.5]].forEach(([lat,c,lw])=>{
-    ctx.beginPath();geoPath({type:'LineString',coordinates:[[-180,lat],[180,lat]]});ctx.strokeStyle=c;ctx.lineWidth=lw;ctx.stroke();
+// ── Draw country at a new pixel position using canvas transform
+//    This preserves the exact shape and correctly scales for latitude
+function drawCountryAt(country, px, py, alpha, glowAmt) {
+  const origPx = proj(country.centroid);
+  if (!origPx) return;
+
+  const origLat = country.centroid[1];
+  const geo = proj.invert([px, py]);
+  if (!geo) return;
+  const newLat = Math.max(-85, Math.min(85, geo[1]));
+
+  // Scale factor: how the country should appear at newLat vs origLat
+  // At equator scale=1 (reference), at high lat scale > 1 (Mercator exaggerates)
+  const s = Math.cos(origLat * Math.PI / 180) / Math.cos(newLat * Math.PI / 180);
+
+  ctx.save();
+
+  // Canvas transform: translate to drag point, scale, translate back by original centroid
+  // Result: country centroid lands on (px,py), everything else scales around it
+  ctx.translate(px, py);
+  ctx.scale(s, s);
+  ctx.translate(-origPx[0], -origPx[1]);
+
+  if (glowAmt > 0) {
+    ctx.shadowColor = '#f97316';
+    ctx.shadowBlur  = glowAmt / s; // compensate for scale
+  }
+
+  ctx.beginPath();
+  geoPath(country);
+
+  ctx.fillStyle   = `rgba(249,115,22,${alpha})`;
+  ctx.strokeStyle = '#fed7aa';
+  ctx.lineWidth   = 1.5 / s;   // keep stroke width consistent in screen pixels
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.shadowBlur = 0;
+  ctx.restore();
+}
+
+// ── Render ───────────────────────────────────────────────
+function render() {
+  ctx.clearRect(0, 0, W, H);
+
+  // Ocean
+  const og = ctx.createLinearGradient(0, 0, 0, H);
+  og.addColorStop(0, '#040c18'); og.addColorStop(1, '#060f1c');
+  ctx.fillStyle = og; ctx.fillRect(0, 0, W, H);
+
+  // Graticule
+  ctx.beginPath(); geoPath(d3.geoGraticule()());
+  ctx.strokeStyle = 'rgba(255,255,255,0.03)'; ctx.lineWidth = 0.5; ctx.stroke();
+
+  // Reference parallels
+  [[0,'rgba(56,189,248,0.22)',1],[23.44,'rgba(251,191,36,0.08)',0.5],
+   [-23.44,'rgba(251,191,36,0.08)',0.5],[66.56,'rgba(148,163,184,0.07)',0.5],
+   [-66.56,'rgba(148,163,184,0.07)',0.5]].forEach(([lat,c,lw]) => {
+    ctx.beginPath();
+    geoPath({ type:'LineString', coordinates:[[-180,lat],[180,lat]] });
+    ctx.strokeStyle = c; ctx.lineWidth = lw; ctx.stroke();
   });
-  countries.forEach(c=>{
-    if(sel&&c.id===sel.id)return;
-    ctx.beginPath();geoPath(c);ctx.fillStyle='#122b43';ctx.strokeStyle='#060f1c';ctx.lineWidth=0.3;ctx.fill();ctx.stroke();
+
+  // All countries (skip selected)
+  countries.forEach(c => {
+    if (sel && c.id === sel.id) return;
+    ctx.beginPath(); geoPath(c);
+    ctx.fillStyle = '#122b43'; ctx.strokeStyle = '#060f1c'; ctx.lineWidth = 0.3;
+    ctx.fill(); ctx.stroke();
   });
-  if(sel){
-    if(dragC){
-      ctx.beginPath();geoPath(sel);ctx.fillStyle='rgba(249,115,22,0.05)';ctx.strokeStyle='rgba(249,115,22,0.2)';ctx.lineWidth=0.8;ctx.fill();ctx.stroke();
-      const shifted=shiftFeature(sel,dragC[0]-sel.centroid[0],dragC[1]-sel.centroid[1]);
-      ctx.shadowColor='#f97316';ctx.shadowBlur=isDrag?24:12;
-      ctx.beginPath();geoPath(shifted);ctx.fillStyle='rgba(249,115,22,0.72)';ctx.strokeStyle='#fed7aa';ctx.lineWidth=1.5;ctx.fill();ctx.stroke();
-      ctx.shadowBlur=0;
-    }else{
-      ctx.shadowColor='#38bdf8';ctx.shadowBlur=10;
-      ctx.beginPath();geoPath(sel);ctx.fillStyle='rgba(249,115,22,0.55)';ctx.strokeStyle='#fb923c';ctx.lineWidth=1.5;ctx.fill();ctx.stroke();
-      ctx.shadowBlur=0;
+
+  if (sel) {
+    if (dragPx) {
+      // Ghost at original position
+      ctx.beginPath(); geoPath(sel);
+      ctx.fillStyle   = 'rgba(249,115,22,0.05)';
+      ctx.strokeStyle = 'rgba(249,115,22,0.18)'; ctx.lineWidth = 0.7;
+      ctx.fill(); ctx.stroke();
+
+      // Dragged at new position with correct scale
+      drawCountryAt(sel, dragPx[0], dragPx[1], isDrag ? 0.72 : 0.62, isDrag ? 22 : 10);
+    } else {
+      // Highlighted at original position
+      ctx.shadowColor = '#38bdf8'; ctx.shadowBlur = 10;
+      ctx.beginPath(); geoPath(sel);
+      ctx.fillStyle   = 'rgba(249,115,22,0.55)';
+      ctx.strokeStyle = '#fb923c'; ctx.lineWidth = 1.5;
+      ctx.fill(); ctx.stroke();
+      ctx.shadowBlur = 0;
     }
   }
 }
 
-function sched(){if(!rafId)rafId=requestAnimationFrame(()=>{rafId=null;render();});}
-
-function slabel(d){
-  if(d<1.08)return{txt:'1:1 — dimensione reale',cls:'c-good'};
-  if(d<2.0) return{txt:`${d.toFixed(2)}× esagerata`,cls:'c-info'};
-  return          {txt:`${d.toFixed(2)}× esagerata`,cls:'c-warn'};
+function sched() {
+  if (!rafId) rafId = requestAnimationFrame(() => { rafId = null; render(); });
 }
 
-function selectCountry(c){
-  sel=c;dragC=null;isDrag=false;
-  const lat=c.centroid[1],sl=slabel(mscale(lat));
-  document.getElementById('tb-name').textContent=c.name;
+// ── Scale label ──────────────────────────────────────────
+function slabel(d) {
+  if (d < 1.08) return { txt:'1:1 — dimensione reale', cls:'c-good' };
+  if (d < 2.0)  return { txt:`${d.toFixed(2)}× esagerata`, cls:'c-info' };
+  return              { txt:`${d.toFixed(2)}× esagerata`, cls:'c-warn' };
+}
+
+// ── Select / deselect ────────────────────────────────────
+function selectCountry(c) {
+  sel = c; dragPx = null; isDrag = false;
+  const lat = c.centroid[1];
+  const sl  = slabel(mscale(lat));
+
+  document.getElementById('tb-name').textContent = c.name;
   document.getElementById('tb-name').classList.remove('empty');
-  const td=document.getElementById('tb-dist');td.textContent=sl.txt;td.className=sl.cls;
-  document.getElementById('ic-name').textContent=c.name;
-  document.getElementById('ic-lat').textContent=`${lat.toFixed(1)}°`;
-  const id=document.getElementById('ic-dist');id.textContent=sl.txt;id.className=`rv ${sl.cls}`;
-  document.getElementById('ic-cur-row').style.display='none';
-  document.getElementById('ic-sc-row').style.display='none';
-  document.getElementById('ic-reset').style.display='none';
+  const td = document.getElementById('tb-dist'); td.textContent = sl.txt; td.className = sl.cls;
+
+  document.getElementById('ic-name').textContent = c.name;
+  document.getElementById('ic-lat').textContent  = `${lat.toFixed(1)}°`;
+  const id = document.getElementById('ic-dist'); id.textContent = sl.txt; id.className = `rv ${sl.cls}`;
+  document.getElementById('ic-cur-row').style.display = 'none';
+  document.getElementById('ic-sc-row').style.display  = 'none';
+  document.getElementById('ic-reset').style.display   = 'none';
   document.getElementById('icard').classList.add('open');
   document.getElementById('chips').classList.add('hidden');
+  document.getElementById('eu-panel').classList.remove('open');
   sched();
 }
 
-function deselectCountry(){
-  sel=null;dragC=null;isDrag=false;
-  document.getElementById('tb-name').textContent='tocca un paese';
+function deselectCountry() {
+  sel = null; dragPx = null; isDrag = false;
+  document.getElementById('tb-name').textContent = 'tocca un paese';
   document.getElementById('tb-name').classList.add('empty');
-  document.getElementById('tb-dist').textContent='';
+  document.getElementById('tb-dist').textContent = '';
   document.getElementById('icard').classList.remove('open');
   document.getElementById('chips').classList.remove('hidden');
   sched();
 }
 
-function updateDrag(lat){
-  const sl=slabel(mscale(lat));
-  const td=document.getElementById('tb-dist');td.textContent=sl.txt;td.className=sl.cls;
-  document.getElementById('ic-cur-row').style.display='flex';
-  document.getElementById('ic-sc-row').style.display='flex';
-  document.getElementById('ic-cur').textContent=`${lat.toFixed(1)}°`;
-  const sc=document.getElementById('ic-sc');sc.textContent=sl.txt;sc.className=`rv ${sl.cls}`;
-  document.getElementById('ic-reset').style.display='block';
-  badge.textContent=sl.txt;
+function updateDrag(px, py) {
+  const geo = proj.invert([px, py]);
+  if (!geo) return;
+  const lat = Math.max(-78, Math.min(78, geo[1]));
+  const sl  = slabel(mscale(lat));
+
+  const td = document.getElementById('tb-dist'); td.textContent = sl.txt; td.className = sl.cls;
+  document.getElementById('ic-cur-row').style.display = 'flex';
+  document.getElementById('ic-sc-row').style.display  = 'flex';
+  document.getElementById('ic-cur').textContent = `${lat.toFixed(1)}°`;
+  const sc = document.getElementById('ic-sc'); sc.textContent = sl.txt; sc.className = `rv ${sl.cls}`;
+  document.getElementById('ic-reset').style.display = 'block';
+  badge.textContent = sl.txt;
 }
 
-canvas.addEventListener('pointerdown',e=>{
-  e.preventDefault();ptDown=true;ptMoved=false;isDrag=false;ptStart=[e.clientX,e.clientY];
+// ── Pointer events ───────────────────────────────────────
+canvas.addEventListener('pointerdown', e => {
+  e.preventDefault();
+  ptDown = true; ptMoved = false; isDrag = false;
+  ptStart = [e.clientX, e.clientY];
   canvas.setPointerCapture(e.pointerId);
-},{passive:false});
+}, { passive: false });
 
-canvas.addEventListener('pointermove',e=>{
-  if(!ptDown)return;
-  const dx=e.clientX-ptStart[0],dy=e.clientY-ptStart[1];
-  if(!ptMoved&&Math.hypot(dx,dy)>DTHR){
-    ptMoved=true;
-    if(sel){isDrag=true;canvas.classList.add('grabbing');badge.style.display='block';}
-  }
-  if(isDrag){
-    let geo=proj.invert([e.clientX,e.clientY]);if(!geo)return;
-    geo[1]=Math.max(-78,Math.min(78,geo[1]));
-    dragC=geo;updateDrag(geo[1]);
-    badge.style.left=(e.clientX+16)+'px';badge.style.top=(e.clientY-32)+'px';
-    sched();
-  }
-},{passive:true});
-
-canvas.addEventListener('pointerup',e=>{
-  badge.style.display='none';
-  if(!ptMoved){
-    if(e.clientY<TOP){ptDown=false;return;}
-    const geo=proj.invert([e.clientX,e.clientY]);
-    if(geo){
-      const hit=countries.find(c=>d3.geoContains(c,geo));
-      if(hit){if(sel&&hit.id===sel.id&&!dragC)deselectCountry();else selectCountry(hit);}
-      else deselectCountry();
+canvas.addEventListener('pointermove', e => {
+  if (!ptDown) return;
+  const dx = e.clientX - ptStart[0], dy = e.clientY - ptStart[1];
+  if (!ptMoved && Math.hypot(dx, dy) > DTHR) {
+    ptMoved = true;
+    if (sel) {
+      isDrag = true;
+      canvas.classList.add('grabbing');
+      badge.style.display = 'block';
     }
   }
-  ptDown=false;ptMoved=false;isDrag=false;canvas.classList.remove('grabbing');
-},{passive:true});
+  if (isDrag) {
+    dragPx = [e.clientX, e.clientY];
+    updateDrag(e.clientX, e.clientY);
+    badge.style.left = (e.clientX + 16) + 'px';
+    badge.style.top  = (e.clientY - 32) + 'px';
+    sched();
+  }
+}, { passive: true });
 
-canvas.addEventListener('pointercancel',()=>{badge.style.display='none';ptDown=false;ptMoved=false;isDrag=false;canvas.classList.remove('grabbing');});
+canvas.addEventListener('pointerup', e => {
+  badge.style.display = 'none';
+  if (!ptMoved) {
+    if (e.clientY < TOP) { ptDown = false; return; }
+    const geo = proj.invert([e.clientX, e.clientY]);
+    if (geo) {
+      const hit = countries.find(c => d3.geoContains(c, geo));
+      if (hit) {
+        if (sel && hit.id === sel.id && !dragPx) deselectCountry();
+        else selectCountry(hit);
+      } else {
+        deselectCountry();
+      }
+    }
+  }
+  ptDown = false; ptMoved = false; isDrag = false;
+  canvas.classList.remove('grabbing');
+}, { passive: true });
 
-document.getElementById('ic-reset').addEventListener('pointerdown',e=>{
-  e.stopPropagation();dragC=null;isDrag=false;
-  document.getElementById('ic-cur-row').style.display='none';
-  document.getElementById('ic-sc-row').style.display='none';
-  document.getElementById('ic-reset').style.display='none';
-  if(sel){const sl=slabel(mscale(sel.centroid[1]));const td=document.getElementById('tb-dist');td.textContent=sl.txt;td.className=sl.cls;}
+canvas.addEventListener('pointercancel', () => {
+  badge.style.display = 'none';
+  ptDown = false; ptMoved = false; isDrag = false;
+  canvas.classList.remove('grabbing');
+});
+
+// ── Reset button ─────────────────────────────────────────
+document.getElementById('ic-reset').addEventListener('pointerdown', e => {
+  e.stopPropagation();
+  dragPx = null; isDrag = false;
+  document.getElementById('ic-cur-row').style.display = 'none';
+  document.getElementById('ic-sc-row').style.display  = 'none';
+  document.getElementById('ic-reset').style.display   = 'none';
+  if (sel) {
+    const sl = slabel(mscale(sel.centroid[1]));
+    const td = document.getElementById('tb-dist'); td.textContent = sl.txt; td.className = sl.cls;
+  }
   sched();
 });
 
-document.getElementById('tb-sbtn').addEventListener('pointerdown',e=>{e.stopPropagation();document.getElementById('sover').classList.add('open');setTimeout(()=>document.getElementById('sin').focus(),50);});
-document.getElementById('scls').addEventListener('pointerdown',e=>{e.stopPropagation();document.getElementById('sover').classList.remove('open');document.getElementById('sin').value='';document.getElementById('slist').style.display='none';});
-
-document.getElementById('sin').addEventListener('input',()=>{
-  const q=document.getElementById('sin').value.toLowerCase().trim();
-  const sl=document.getElementById('slist');sl.innerHTML='';
-  if(q.length<2){sl.style.display='none';return;}
-  const hits=countries.filter(c=>c.name.toLowerCase().includes(q)).sort((a,b)=>a.name.toLowerCase().indexOf(q)-b.name.toLowerCase().indexOf(q)).slice(0,12);
-  if(!hits.length){sl.style.display='none';return;}
-  hits.forEach(c=>{const d=document.createElement('div');d.className='si';d.textContent=c.name;d.addEventListener('pointerdown',ev=>{ev.stopPropagation();ev.preventDefault();selectCountry(c);document.getElementById('sin').value='';sl.style.display='none';document.getElementById('sover').classList.remove('open');});sl.appendChild(d);});
-  sl.style.display='block';
+// ── Search ───────────────────────────────────────────────
+document.getElementById('tb-sbtn').addEventListener('pointerdown', e => {
+  e.stopPropagation();
+  document.getElementById('sover').classList.add('open');
+  setTimeout(() => document.getElementById('sin').focus(), 50);
+});
+document.getElementById('scls').addEventListener('pointerdown', e => {
+  e.stopPropagation();
+  document.getElementById('sover').classList.remove('open');
+  document.getElementById('sin').value = '';
+  document.getElementById('slist').style.display = 'none';
+});
+document.getElementById('sin').addEventListener('input', () => {
+  const q   = document.getElementById('sin').value.toLowerCase().trim();
+  const sl  = document.getElementById('slist');
+  sl.innerHTML = '';
+  if (q.length < 2) { sl.style.display = 'none'; return; }
+  const hits = countries
+    .filter(c => c.name.toLowerCase().includes(q))
+    .sort((a, b) => a.name.toLowerCase().indexOf(q) - b.name.toLowerCase().indexOf(q))
+    .slice(0, 12);
+  if (!hits.length) { sl.style.display = 'none'; return; }
+  hits.forEach(c => {
+    const d = document.createElement('div');
+    d.className = 'si'; d.textContent = c.name;
+    d.addEventListener('pointerdown', ev => {
+      ev.stopPropagation(); ev.preventDefault();
+      selectCountry(c);
+      document.getElementById('sin').value = '';
+      sl.style.display = 'none';
+      document.getElementById('sover').classList.remove('open');
+    });
+    sl.appendChild(d);
+  });
+  sl.style.display = 'block';
 });
 
-document.querySelectorAll('.chip').forEach(btn=>{
-  btn.addEventListener('pointerdown',e=>{e.stopPropagation();const c=countries.find(x=>x.name===btn.dataset.n);if(c)selectCountry(c);});
+// ── Preset chips ─────────────────────────────────────────
+document.querySelectorAll('.chip[data-n]').forEach(btn => {
+  btn.addEventListener('pointerdown', e => {
+    e.stopPropagation();
+    const c = countries.find(x => x.name === btn.dataset.n);
+    if (c) selectCountry(c);
+  });
 });
 
-function resize(){
-  W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;
-  const scale=(W-3)/(2*Math.PI);
-  proj=d3.geoMercator().scale(scale).translate([W/2,(H+TOP)/2+20]);
-  geoPath=d3.geoPath().projection(proj).context(ctx);
+// ── Europa panel ─────────────────────────────────────────
+document.getElementById('chip-eu').addEventListener('pointerdown', e => {
+  e.stopPropagation();
+  document.getElementById('eu-panel').classList.toggle('open');
+});
+document.getElementById('eu-close').addEventListener('pointerdown', e => {
+  e.stopPropagation();
+  document.getElementById('eu-panel').classList.remove('open');
+});
+
+// ── Resize ───────────────────────────────────────────────
+function resize() {
+  W = canvas.width  = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+  const scale = (W - 3) / (2 * Math.PI);
+  proj    = d3.geoMercator().scale(scale).translate([W / 2, (H + TOP) / 2 + 20]);
+  geoPath = d3.geoPath().projection(proj).context(ctx);
   sched();
 }
-window.addEventListener('resize',resize);
+window.addEventListener('resize', resize);
 
-async function init(){
-  try{
-    const topo=await d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json');
-    const geo=topojson.feature(topo,topo.objects.countries);
-    countries=geo.features.map(f=>({...f,id:+f.id,name:NAMES[+f.id]||`[${+f.id}]`,centroid:d3.geoCentroid(f)}))
-      .filter(c=>c.id!==10&&isFinite(c.centroid[0])&&isFinite(c.centroid[1])&&Math.abs(c.centroid[1])<85);
-    countries.sort((a,b)=>a.name.localeCompare(b.name,'it'));
-    document.getElementById('loading').style.display='none';
+// ── Init ─────────────────────────────────────────────────
+async function init() {
+  try {
+    const topo = await d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json');
+    const geo  = topojson.feature(topo, topo.objects.countries);
+    countries  = geo.features.map(f => ({
+      ...f,
+      id:       +f.id,
+      name:     NAMES[+f.id] || `[${+f.id}]`,
+      centroid: d3.geoCentroid(f)
+    })).filter(c =>
+      c.id !== 10 &&
+      isFinite(c.centroid[0]) && isFinite(c.centroid[1]) &&
+      Math.abs(c.centroid[1]) < 85
+    );
+    countries.sort((a, b) => a.name.localeCompare(b.name, 'it'));
+
+    // Build Europa grid
+    const euGrid = document.getElementById('eu-grid');
+    countries
+      .filter(c => EU_IDS.has(c.id))
+      .sort((a, b) => a.name.localeCompare(b.name, 'it'))
+      .forEach(c => {
+        const btn = document.createElement('button');
+        btn.className   = 'eu-btn';
+        btn.textContent = c.name;
+        btn.addEventListener('pointerdown', e => {
+          e.stopPropagation();
+          selectCountry(c);
+        });
+        euGrid.appendChild(btn);
+      });
+
+    document.getElementById('loading').style.display = 'none';
     resize();
-  }catch(err){
-    document.getElementById('loading').innerHTML='<div style="color:#ef4444;font-family:monospace">ERRORE CARICAMENTO</div>';
+  } catch (err) {
+    document.getElementById('loading').innerHTML =
+      '<div style="color:#ef4444;font-family:monospace">ERRORE CARICAMENTO</div>';
   }
 }
-resize();init();
+
+resize();
+init();
 </script>
 </body>
 </html>
