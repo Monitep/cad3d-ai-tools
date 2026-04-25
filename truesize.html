@@ -7,600 +7,344 @@
 <style>
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 html, body { width:100%; height:100%; overflow:hidden; background:#060f1c; }
-
-#canvas {
-  position:absolute; top:0; left:0;
-  cursor:crosshair; touch-action:none;
-}
+#canvas { position:absolute; top:0; left:0; cursor:crosshair; touch-action:none; }
 #canvas.grabbing { cursor:grabbing; }
 
-/* ── Loading ─────────────────────────────────────────── */
+/* Loading */
 #loading {
   position:absolute; inset:0; z-index:200;
-  display:flex; flex-direction:column;
-  align-items:center; justify-content:center; gap:18px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px;
   background:#060f1c; color:#38bdf8;
-  font-family:'Courier New',monospace; font-size:13px;
-  letter-spacing:2px;
+  font-family:'Courier New',monospace; font-size:12px; letter-spacing:2px;
 }
 .spin {
-  width:42px; height:42px; border-radius:50%;
-  border:2px solid rgba(56,189,248,0.15);
-  border-top-color:#38bdf8;
+  width:38px; height:38px; border-radius:50%;
+  border:2px solid rgba(56,189,248,0.15); border-top-color:#38bdf8;
   animation:sp 0.9s linear infinite;
 }
 @keyframes sp { to { transform:rotate(360deg); } }
 
-/* ── Panel left ──────────────────────────────────────── */
-#panel {
-  position:absolute; top:14px; left:14px; z-index:10;
-  background:rgba(4,14,28,0.92);
-  border:1px solid rgba(56,189,248,0.18);
-  border-radius:12px; padding:16px 18px;
-  min-width:250px; max-width:290px;
+/* Top bar */
+#topbar {
+  position:absolute; top:0; left:0; right:0; z-index:10; height:50px;
+  display:flex; align-items:center; padding:0 12px; gap:10px;
+  background:rgba(4,12,24,0.9); border-bottom:1px solid rgba(56,189,248,0.1);
+  backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
   font-family:'Courier New',monospace;
-  color:#e2e8f0; backdrop-filter:blur(10px);
-  -webkit-backdrop-filter:blur(10px);
+}
+#tb-logo { font-size:8px; letter-spacing:3px; color:#38bdf8; flex-shrink:0; white-space:nowrap; }
+#tb-sep  { width:1px; height:20px; background:rgba(56,189,248,0.15); flex-shrink:0; }
+#tb-name {
+  flex:1; font-size:15px; font-weight:700; color:#f1f5f9;
+  font-family:'Segoe UI',system-ui,sans-serif;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+#tb-name.empty { color:#1e3a5f; font-size:11px; font-family:'Courier New',monospace; font-weight:400; }
+#tb-dist { font-size:10.5px; flex-shrink:0; white-space:nowrap; }
+.c-warn { color:#f97316; } .c-info { color:#38bdf8; } .c-good { color:#22c55e; }
+#tb-sbtn {
+  flex-shrink:0; background:none; border:1px solid rgba(56,189,248,0.2);
+  border-radius:7px; width:34px; height:34px; color:#38bdf8; font-size:17px;
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+  touch-action:manipulation;
+}
+
+/* Search overlay */
+#sover {
+  display:none; position:absolute; top:0; left:0; right:0; z-index:20;
+  height:50px; padding:0 12px; gap:8px; align-items:center;
+  background:rgba(4,12,24,0.98); border-bottom:1px solid rgba(56,189,248,0.2);
+}
+#sover.open { display:flex; }
+#sin {
+  flex:1; height:34px; padding:0 14px;
+  background:rgba(56,189,248,0.06); color:#e2e8f0;
+  border:1px solid rgba(56,189,248,0.22); border-radius:7px;
+  font-size:13px; font-family:'Courier New',monospace; outline:none;
+  touch-action:manipulation;
+}
+#sin::placeholder { color:#1e3a5f; }
+#scls { background:none; border:none; color:#38bdf8; font-size:20px; cursor:pointer; padding:4px 6px; touch-action:manipulation; }
+#slist {
+  display:none; position:absolute; top:50px; left:12px; right:12px;
+  background:rgba(4,12,24,0.98); border:1px solid rgba(56,189,248,0.18);
+  border-radius:0 0 10px 10px; max-height:250px; overflow-y:auto; z-index:21;
+}
+.si { padding:10px 16px; font-size:12px; color:#7facc5; font-family:'Courier New',monospace; cursor:pointer; border-bottom:1px solid rgba(56,189,248,0.04); }
+.si:hover { background:rgba(56,189,248,0.08); color:#e2e8f0; }
+#slist::-webkit-scrollbar { width:3px; }
+#slist::-webkit-scrollbar-thumb { background:rgba(56,189,248,0.2); border-radius:2px; }
+
+/* Info card - bottom slide up */
+#icard {
+  position:absolute; bottom:0; left:0; right:0; z-index:10;
+  background:rgba(4,12,24,0.93); border-top:1px solid rgba(56,189,248,0.12);
+  backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+  padding:12px 16px 18px; font-family:'Courier New',monospace;
+  transform:translateY(100%); transition:transform 0.22s cubic-bezier(0.4,0,0.2,1);
   pointer-events:none;
 }
-#panel-title {
-  font-size:9px; letter-spacing:4px; text-transform:uppercase;
-  color:#38bdf8; margin-bottom:12px; font-weight:400;
-}
-#p-name {
-  font-size:22px; font-weight:700; min-height:30px; line-height:1.2;
-  font-family:'Segoe UI',system-ui,sans-serif; color:#f8fafc;
-}
-#p-sub {
-  font-size:10px; color:#334e68; margin-top:4px;
-  letter-spacing:0.5px;
-}
+#icard.open { transform:translateY(0); pointer-events:all; }
+#ic-handle { width:32px; height:3px; background:rgba(56,189,248,0.18); border-radius:2px; margin:0 auto 10px; }
+#ic-name { font-size:17px; font-weight:700; color:#f1f5f9; font-family:'Segoe UI',system-ui,sans-serif; }
 .row {
   display:flex; justify-content:space-between; align-items:baseline;
-  padding:6px 0; border-top:1px solid rgba(56,189,248,0.07);
-  font-size:11px; margin-top:5px;
+  padding:5px 0; border-top:1px solid rgba(56,189,248,0.07); font-size:11px; margin-top:4px;
 }
-.rl { color:#334e68; letter-spacing:0.3px; }
-.rv { font-weight:700; font-size:11.5px; }
-.c-warn { color:#f97316; }
-.c-info { color:#38bdf8; }
-.c-good { color:#22c55e; }
-
-#p-reset {
-  display:none; width:100%; margin-top:12px;
-  padding:8px 0; background:rgba(249,115,22,0.1);
-  border:1px solid rgba(249,115,22,0.3); border-radius:7px;
-  color:#f97316; font-size:10px; letter-spacing:1.5px;
+.rl { color:#234058; } .rv { font-weight:700; font-size:11.5px; }
+#ic-reset {
+  display:none; width:100%; margin-top:10px; padding:8px 0;
+  background:rgba(249,115,22,0.1); border:1px solid rgba(249,115,22,0.28);
+  border-radius:7px; color:#f97316; font-size:10px; letter-spacing:2px;
   text-transform:uppercase; cursor:pointer; font-family:'Courier New',monospace;
-  pointer-events:all; touch-action:manipulation;
-  transition:background 0.15s;
-}
-#p-reset:hover { background:rgba(249,115,22,0.2); }
-
-/* Presets */
-#presets {
-  display:none; flex-direction:column; gap:6px;
-  margin-top:12px; pointer-events:all;
-}
-#presets-label {
-  font-size:8px; letter-spacing:3px; color:#1e3a5f;
-  text-transform:uppercase; margin-bottom:2px;
-}
-.preset-row { display:flex; gap:5px; flex-wrap:wrap; }
-.pb {
-  padding:5px 10px;
-  background:rgba(56,189,248,0.07);
-  border:1px solid rgba(56,189,248,0.18);
-  border-radius:5px; color:#38bdf8;
-  font-size:10px; font-family:'Courier New',monospace;
-  cursor:pointer; letter-spacing:0.5px;
-  touch-action:manipulation;
-  transition:background 0.15s, border-color 0.15s;
-}
-.pb:hover { background:rgba(56,189,248,0.15); border-color:rgba(56,189,248,0.4); }
-
-/* ── Search ──────────────────────────────────────────── */
-#search-wrap {
-  position:absolute; top:14px; right:14px; z-index:10;
-}
-@media (max-width: 520px) {
-  #panel { min-width:0; width:calc(100vw - 28px); max-width:none; }
-  #search-wrap { top:auto; bottom:46px; right:14px; }
-  #s-in { width:calc(100vw - 28px); }
-  #s-list { width:calc(100vw - 28px); }
-}
-#s-in {
-  display:block; width:210px; padding:10px 16px;
-  background:rgba(4,14,28,0.92); color:#e2e8f0;
-  border:1px solid rgba(56,189,248,0.18); border-radius:9px;
-  font-size:12px; font-family:'Courier New',monospace;
-  letter-spacing:0.5px; outline:none;
-  backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
   touch-action:manipulation;
 }
-#s-in::placeholder { color:#1e3a5f; }
-#s-in:focus { border-color:rgba(56,189,248,0.45); }
 
-#s-list {
-  display:none; position:absolute; top:calc(100% + 4px); right:0;
-  width:210px; background:rgba(4,14,28,0.97);
-  border:1px solid rgba(56,189,248,0.18); border-radius:9px;
-  max-height:250px; overflow-y:auto;
+/* Chips */
+#chips {
+  position:absolute; bottom:0; left:0; right:0; z-index:9;
+  padding:10px 12px 14px; display:flex; gap:7px; overflow-x:auto;
+  scrollbar-width:none; pointer-events:none;
+  transition:transform 0.22s cubic-bezier(0.4,0,0.2,1);
 }
-.si {
-  padding:9px 16px; font-size:11px; color:#7facc5;
-  font-family:'Courier New',monospace; cursor:pointer;
-  border-bottom:1px solid rgba(56,189,248,0.04);
-  letter-spacing:0.3px;
+#chips.hidden { transform:translateY(100%); }
+#chips::-webkit-scrollbar { display:none; }
+#chips-lbl { font-size:8px; letter-spacing:2px; color:#1a3352; text-transform:uppercase; white-space:nowrap; flex-shrink:0; font-family:'Courier New',monospace; align-self:center; }
+.chip {
+  flex-shrink:0; padding:6px 12px;
+  background:rgba(4,12,24,0.88); border:1px solid rgba(56,189,248,0.18);
+  border-radius:20px; color:#38bdf8; font-size:11px; font-family:'Courier New',monospace;
+  cursor:pointer; pointer-events:all; touch-action:manipulation; white-space:nowrap;
+  transition:background 0.12s, border-color 0.12s;
 }
-.si:hover { background:rgba(56,189,248,0.08); color:#e2e8f0; }
-#s-list::-webkit-scrollbar { width:3px; }
-#s-list::-webkit-scrollbar-thumb { background:rgba(56,189,248,0.2); border-radius:2px; }
+.chip:hover { background:rgba(56,189,248,0.1); border-color:rgba(56,189,248,0.35); }
 
-/* ── Bottom bar ──────────────────────────────────────── */
-#bot {
-  position:absolute; bottom:14px; left:50%; z-index:10;
-  transform:translateX(-50%);
-  background:rgba(4,14,28,0.82); border:1px solid rgba(56,189,248,0.1);
-  border-radius:20px; padding:7px 22px;
-  font-family:'Courier New',monospace;
-  font-size:10px; color:#1e3a5f; white-space:nowrap;
-  letter-spacing:1.5px; text-transform:uppercase;
-  backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
-  pointer-events:none; user-select:none;
-}
-
-/* ── Tooltip ─────────────────────────────────────────── */
-#tooltip {
-  position:absolute; z-index:20; display:none;
-  background:rgba(4,14,28,0.9); border:1px solid rgba(56,189,248,0.25);
+/* Drag badge */
+#badge {
+  position:absolute; z-index:15; display:none;
+  background:rgba(4,12,24,0.92); border:1px solid rgba(56,189,248,0.25);
   border-radius:6px; padding:5px 10px;
-  font-family:'Courier New',monospace; font-size:11px; color:#38bdf8;
-  pointer-events:none; letter-spacing:0.5px;
+  font-family:'Courier New',monospace; font-size:10px; color:#38bdf8;
+  pointer-events:none; letter-spacing:1px; white-space:nowrap;
 }
 </style>
 </head>
 <body>
-
 <div id="loading"><div class="spin"></div><span>CARICAMENTO MAPPA...</span></div>
 <canvas id="canvas"></canvas>
-<div id="tooltip"></div>
+<div id="badge"></div>
 
-<div id="panel">
-  <div id="panel-title">True Size / Dimensioni Reali</div>
-  <div id="p-name">—</div>
-  <div id="p-sub">Clicca un paese sulla mappa</div>
-
-  <div id="p-rows" style="display:none">
-    <div class="row">
-      <span class="rl">Latitudine centroide</span>
-      <span class="rv c-info" id="p-lat">—</span>
-    </div>
-    <div class="row">
-      <span class="rl">Distorsione Mercator</span>
-      <span class="rv" id="p-dist">—</span>
-    </div>
-    <div class="row" id="r-cur" style="display:none">
-      <span class="rl">Posizione attuale</span>
-      <span class="rv c-good" id="p-cur">—</span>
-    </div>
-    <div class="row" id="r-scale" style="display:none">
-      <span class="rl">Scala corrente</span>
-      <span class="rv" id="p-scale">—</span>
-    </div>
-  </div>
-
-  <button id="p-reset">↩ Ripristina posizione originale</button>
-
-  <div id="presets">
-    <div id="presets-label">Esempi classici di distorsione</div>
-    <div class="preset-row">
-      <button class="pb" data-n="Groenlandia">Groenlandia</button>
-      <button class="pb" data-n="Russia">Russia</button>
-      <button class="pb" data-n="Canada">Canada</button>
-    </div>
-    <div class="preset-row">
-      <button class="pb" data-n="Australia">Australia</button>
-      <button class="pb" data-n="India">India</button>
-      <button class="pb" data-n="Stati Uniti">USA</button>
-    </div>
-  </div>
+<div id="topbar">
+  <span id="tb-logo">TRUE SIZE</span>
+  <div id="tb-sep"></div>
+  <span id="tb-name" class="empty">tocca un paese</span>
+  <span id="tb-dist"></span>
+  <button id="tb-sbtn">⌕</button>
 </div>
 
-<div id="search-wrap">
-  <input id="s-in" type="text" placeholder="Cerca paese..." autocomplete="off" spellcheck="false">
-  <div id="s-list"></div>
+<div id="sover">
+  <input id="sin" type="text" placeholder="Cerca paese..." autocomplete="off" spellcheck="false">
+  <button id="scls">✕</button>
+  <div id="slist"></div>
 </div>
 
-<div id="bot">Seleziona un paese · trascinalo · confronta la dimensione reale</div>
+<div id="icard">
+  <div id="ic-handle"></div>
+  <div id="ic-name">—</div>
+  <div class="row"><span class="rl">Latitudine centroide</span><span class="rv c-info" id="ic-lat">—</span></div>
+  <div class="row"><span class="rl">Distorsione Mercator</span><span class="rv" id="ic-dist">—</span></div>
+  <div class="row" id="ic-cur-row" style="display:none"><span class="rl">Latitudine attuale</span><span class="rv c-good" id="ic-cur">—</span></div>
+  <div class="row" id="ic-sc-row" style="display:none"><span class="rl">Scala corrente</span><span class="rv" id="ic-sc">—</span></div>
+  <button id="ic-reset">↩ Ripristina posizione originale</button>
+</div>
+
+<div id="chips">
+  <span id="chips-lbl">esempi</span>
+  <button class="chip" data-n="Groenlandia">Groenlandia</button>
+  <button class="chip" data-n="Russia">Russia</button>
+  <button class="chip" data-n="Canada">Canada</button>
+  <button class="chip" data-n="Australia">Australia</button>
+  <button class="chip" data-n="India">India</button>
+  <button class="chip" data-n="Stati Uniti">USA</button>
+</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
 <script>
 'use strict';
+const NAMES={4:"Afghanistan",8:"Albania",12:"Algeria",20:"Andorra",24:"Angola",32:"Argentina",36:"Australia",40:"Austria",31:"Azerbaijan",50:"Bangladesh",56:"Belgio",64:"Bhutan",68:"Bolivia",70:"Bosnia-Erzegovina",76:"Brasile",100:"Bulgaria",104:"Myanmar",108:"Burundi",116:"Cambogia",120:"Camerun",124:"Canada",140:"R. Centrafricana",144:"Sri Lanka",152:"Cile",156:"Cina",170:"Colombia",178:"Congo",180:"R.D. Congo",188:"Costa Rica",191:"Croazia",192:"Cuba",196:"Cipro",203:"Cechia",204:"Benin",208:"Danimarca",214:"Rep. Dominicana",218:"Ecuador",818:"Egitto",222:"El Salvador",231:"Etiopia",233:"Estonia",246:"Finlandia",250:"Francia",266:"Gabon",276:"Germania",288:"Ghana",300:"Grecia",304:"Groenlandia",320:"Guatemala",324:"Guinea",328:"Guyana",332:"Haiti",340:"Honduras",348:"Ungheria",356:"India",360:"Indonesia",364:"Iran",368:"Iraq",372:"Irlanda",376:"Israele",380:"Italia",388:"Giamaica",392:"Giappone",400:"Giordania",398:"Kazakhstan",404:"Kenya",408:"Corea del Nord",410:"Corea del Sud",414:"Kuwait",417:"Kirghizistan",418:"Laos",422:"Libano",426:"Lesotho",428:"Lettonia",430:"Liberia",434:"Libia",440:"Lituania",442:"Lussemburgo",450:"Madagascar",454:"Malawi",458:"Malaysia",466:"Mali",478:"Mauritania",484:"Messico",496:"Mongolia",498:"Moldova",504:"Marocco",508:"Mozambico",516:"Namibia",524:"Nepal",528:"Paesi Bassi",554:"Nuova Zelanda",562:"Niger",566:"Nigeria",578:"Norvegia",512:"Oman",586:"Pakistan",591:"Panama",598:"Papua Nuova Guinea",604:"Perù",608:"Filippine",616:"Polonia",620:"Portogallo",634:"Qatar",643:"Russia",646:"Ruanda",682:"Arabia Saudita",686:"Senegal",688:"Serbia",694:"Sierra Leone",703:"Slovacchia",705:"Slovenia",706:"Somalia",710:"Sudafrica",716:"Zimbabwe",724:"Spagna",728:"Sud Sudan",729:"Sudan",752:"Svezia",756:"Svizzera",760:"Siria",764:"Tailandia",788:"Tunisia",792:"Turchia",795:"Turkmenistan",800:"Uganda",804:"Ucraina",784:"Emirati Arabi",826:"Regno Unito",840:"Stati Uniti",858:"Uruguay",860:"Uzbekistan",862:"Venezuela",704:"Vietnam",887:"Yemen",894:"Zambia",499:"Montenegro",807:"Macedonia del Nord",51:"Armenia",268:"Georgia",112:"Bielorussia",762:"Tagikistan"};
 
-/* ── Country names (ISO 3166-1 numeric) ─────────────────────────────────── */
-const NAMES = {
-  4:"Afghanistan",8:"Albania",12:"Algeria",20:"Andorra",24:"Angola",
-  28:"Antigua e Barbuda",32:"Argentina",36:"Australia",40:"Austria",
-  31:"Azerbaijan",44:"Bahamas",50:"Bangladesh",56:"Belgio",60:"Bermuda",
-  64:"Bhutan",68:"Bolivia",70:"Bosnia-Erzegovina",76:"Brasile",
-  100:"Bulgaria",104:"Myanmar",108:"Burundi",116:"Cambogia",120:"Camerun",
-  124:"Canada",140:"Rep. Centrafricana",144:"Sri Lanka",152:"Cile",
-  156:"Cina",170:"Colombia",174:"Comore",178:"Congo",180:"R.D. Congo",
-  188:"Costa Rica",191:"Croazia",192:"Cuba",196:"Cipro",203:"Cechia",
-  204:"Benin",208:"Danimarca",214:"Rep. Dominicana",218:"Ecuador",
-  818:"Egitto",222:"El Salvador",231:"Etiopia",233:"Estonia",246:"Finlandia",
-  250:"Francia",266:"Gabon",276:"Germania",288:"Ghana",300:"Grecia",
-  304:"Groenlandia",320:"Guatemala",324:"Guinea",328:"Guyana",332:"Haiti",
-  340:"Honduras",348:"Ungheria",356:"India",360:"Indonesia",364:"Iran",
-  368:"Iraq",372:"Irlanda",376:"Israele",380:"Italia",388:"Giamaica",
-  392:"Giappone",400:"Giordania",398:"Kazakhstan",404:"Kenya",
-  408:"Corea del Nord",410:"Corea del Sud",414:"Kuwait",417:"Kirghizistan",
-  418:"Laos",422:"Libano",426:"Lesotho",428:"Lettonia",430:"Liberia",
-  434:"Libia",440:"Lituania",442:"Lussemburgo",450:"Madagascar",454:"Malawi",
-  458:"Malaysia",466:"Mali",478:"Mauritania",484:"Messico",496:"Mongolia",
-  498:"Moldova",504:"Marocco",508:"Mozambico",516:"Namibia",524:"Nepal",
-  528:"Paesi Bassi",540:"Nuova Caledonia",554:"Nuova Zelanda",562:"Niger",
-  566:"Nigeria",578:"Norvegia",512:"Oman",586:"Pakistan",591:"Panama",
-  598:"Papua Nuova Guinea",604:"Perù",608:"Filippine",616:"Polonia",
-  620:"Portogallo",634:"Qatar",643:"Russia",646:"Ruanda",
-  682:"Arabia Saudita",686:"Senegal",688:"Serbia",694:"Sierra Leone",
-  703:"Slovacchia",705:"Slovenia",706:"Somalia",710:"Sudafrica",
-  716:"Zimbabwe",724:"Spagna",728:"Sud Sudan",729:"Sudan",752:"Svezia",
-  756:"Svizzera",760:"Siria",762:"Tagikistan",764:"Tailandia",788:"Tunisia",
-  792:"Turchia",795:"Turkmenistan",800:"Uganda",804:"Ucraina",
-  784:"Emirati Arabi",826:"Regno Unito",840:"Stati Uniti",858:"Uruguay",
-  860:"Uzbekistan",862:"Venezuela",704:"Vietnam",887:"Yemen",894:"Zambia",
-  499:"Montenegro",807:"Macedonia del Nord",51:"Armenia",268:"Georgia",
-  112:"Bielorussia",10:"Antartide"
-};
+const canvas=document.getElementById('canvas'),ctx=canvas.getContext('2d'),badge=document.getElementById('badge');
+let W,H,proj,geoPath,countries=[],sel=null,dragC=null,isDrag=false,ptDown=false,ptMoved=false,ptStart=null,rafId=null;
+const TOP=50,DTHR=5;
 
-/* ── State ───────────────────────────────────────────── */
-const canvas  = document.getElementById('canvas');
-const ctx     = canvas.getContext('2d');
-const tooltip = document.getElementById('tooltip');
+function mscale(lat){const r=Math.min(Math.abs(lat),85)*Math.PI/180;return 1/Math.cos(r);}
 
-let W, H, proj, geoPath;
-let countries  = [];
-let sel        = null;   // selected country feature
-let dragC      = null;   // [lon,lat] of dragged centroid (null = original)
-let isDrag     = false;
-let ptDown     = false;
-let ptMoved    = false;
-let ptStart    = null;
-let hoverName  = null;
-let rafId      = null;
-
-const DRAG_THR = 6;
-
-/* ── Mercator scale factor at latitude ────────────────── */
-function mscale(lat) {
-  const r = Math.min(Math.abs(lat), 85.0) * Math.PI / 180;
-  return 1 / Math.cos(r);
+function shiftFeature(f,dlon,dlat){
+  const sc=([lo,la])=>{let l=lo+dlon;while(l>180)l-=360;while(l<-180)l+=360;return[l,Math.max(-85,Math.min(85,la+dlat))];};
+  const shR=r=>r.map(sc),shP=p=>p.map(shR),g=f.geometry;
+  return{type:'Feature',geometry:{type:g.type,coordinates:g.type==='Polygon'?shP(g.coordinates):g.coordinates.map(shP)}};
 }
 
-/* ── Shift all coordinates of a feature ──────────────── */
-function shiftFeature(f, dlon, dlat) {
-  const sc = ([lo, la]) => {
-    let l = lo + dlon;
-    while (l >  180) l -= 360;
-    while (l < -180) l += 360;
-    return [l, Math.max(-85, Math.min(85, la + dlat))];
-  };
-  const shR = r => r.map(sc);
-  const shP = p => p.map(shR);
-  const g = f.geometry;
-  return {
-    type: 'Feature',
-    geometry: {
-      type: g.type,
-      coordinates: g.type === 'Polygon' ? shP(g.coordinates) : g.coordinates.map(shP)
-    }
-  };
-}
-
-/* ── Render ─────────────────────────────────────────────── */
-function render() {
-  ctx.clearRect(0, 0, W, H);
-
-  // Ocean gradient
-  const og = ctx.createLinearGradient(0, 0, 0, H);
-  og.addColorStop(0,   '#050d18');
-  og.addColorStop(0.5, '#071424');
-  og.addColorStop(1,   '#060f1c');
-  ctx.fillStyle = og;
-  ctx.fillRect(0, 0, W, H);
-
-  // Graticule
-  ctx.beginPath();
-  geoPath(d3.geoGraticule()());
-  ctx.strokeStyle = 'rgba(255,255,255,0.028)';
-  ctx.lineWidth   = 0.5;
-  ctx.stroke();
-
-  // Reference parallels
-  const lines = [
-    [0,     'rgba(56,189,248,0.2)',  0.9],  // equatore
-    [23.44, 'rgba(251,191,36,0.08)',0.5],   // tropico cancro
-    [-23.44,'rgba(251,191,36,0.08)',0.5],   // tropico capricorno
-    [66.56, 'rgba(148,163,184,0.07)',0.5],  // circolo artico
-    [-66.56,'rgba(148,163,184,0.07)',0.5],  // circolo antartico
-  ];
-  lines.forEach(([lat, color, lw]) => {
-    ctx.beginPath();
-    geoPath({ type:'LineString', coordinates:[[-180,lat],[180,lat]] });
-    ctx.strokeStyle = color; ctx.lineWidth = lw; ctx.stroke();
+function render(){
+  ctx.clearRect(0,0,W,H);
+  const og=ctx.createLinearGradient(0,0,0,H);og.addColorStop(0,'#040c18');og.addColorStop(1,'#060f1c');
+  ctx.fillStyle=og;ctx.fillRect(0,0,W,H);
+  ctx.beginPath();geoPath(d3.geoGraticule()());ctx.strokeStyle='rgba(255,255,255,0.03)';ctx.lineWidth=0.5;ctx.stroke();
+  [[0,'rgba(56,189,248,0.22)',1],[23.44,'rgba(251,191,36,0.07)',0.5],[-23.44,'rgba(251,191,36,0.07)',0.5],[66.56,'rgba(148,163,184,0.06)',0.5],[-66.56,'rgba(148,163,184,0.06)',0.5]].forEach(([lat,c,lw])=>{
+    ctx.beginPath();geoPath({type:'LineString',coordinates:[[-180,lat],[180,lat]]});ctx.strokeStyle=c;ctx.lineWidth=lw;ctx.stroke();
   });
-
-  // All countries (skip selected)
-  countries.forEach(c => {
-    if (sel && c.id === sel.id) return;
-    ctx.beginPath(); geoPath(c);
-    // Antarctica in a different tone
-    if (c.id === 10) {
-      ctx.fillStyle   = '#0f2030';
-      ctx.strokeStyle = '#071424';
-    } else {
-      ctx.fillStyle   = '#153250';
-      ctx.strokeStyle = '#071424';
-    }
-    ctx.lineWidth = 0.35;
-    ctx.fill(); ctx.stroke();
+  countries.forEach(c=>{
+    if(sel&&c.id===sel.id)return;
+    ctx.beginPath();geoPath(c);ctx.fillStyle='#122b43';ctx.strokeStyle='#060f1c';ctx.lineWidth=0.3;ctx.fill();ctx.stroke();
   });
-
-  // Selected country handling
-  if (sel) {
-    if (dragC) {
-      // Ghost at original position
-      ctx.beginPath(); geoPath(sel);
-      ctx.fillStyle   = 'rgba(249,115,22,0.05)';
-      ctx.strokeStyle = 'rgba(249,115,22,0.2)';
-      ctx.lineWidth   = 0.7; ctx.fill(); ctx.stroke();
-
-      // Compute shift
-      const dlon = dragC[0] - sel.centroid[0];
-      const dlat = dragC[1] - sel.centroid[1];
-      const shifted = shiftFeature(sel, dlon, dlat);
-
-      // Glow
-      ctx.shadowColor = '#f97316';
-      ctx.shadowBlur  = isDrag ? 22 : 12;
-
-      ctx.beginPath(); geoPath(shifted);
-      ctx.fillStyle   = isDrag ? 'rgba(249,115,22,0.75)' : 'rgba(249,115,22,0.62)';
-      ctx.strokeStyle = '#fed7aa';
-      ctx.lineWidth   = 1.5; ctx.fill(); ctx.stroke();
-      ctx.shadowBlur  = 0;
-
-    } else {
-      // Highlighted at original
-      ctx.shadowColor = '#38bdf8';
-      ctx.shadowBlur  = 12;
-      ctx.beginPath(); geoPath(sel);
-      ctx.fillStyle   = 'rgba(249,115,22,0.55)';
-      ctx.strokeStyle = '#fb923c';
-      ctx.lineWidth   = 1.5; ctx.fill(); ctx.stroke();
-      ctx.shadowBlur  = 0;
+  if(sel){
+    if(dragC){
+      ctx.beginPath();geoPath(sel);ctx.fillStyle='rgba(249,115,22,0.05)';ctx.strokeStyle='rgba(249,115,22,0.2)';ctx.lineWidth=0.8;ctx.fill();ctx.stroke();
+      const shifted=shiftFeature(sel,dragC[0]-sel.centroid[0],dragC[1]-sel.centroid[1]);
+      ctx.shadowColor='#f97316';ctx.shadowBlur=isDrag?24:12;
+      ctx.beginPath();geoPath(shifted);ctx.fillStyle='rgba(249,115,22,0.72)';ctx.strokeStyle='#fed7aa';ctx.lineWidth=1.5;ctx.fill();ctx.stroke();
+      ctx.shadowBlur=0;
+    }else{
+      ctx.shadowColor='#38bdf8';ctx.shadowBlur=10;
+      ctx.beginPath();geoPath(sel);ctx.fillStyle='rgba(249,115,22,0.55)';ctx.strokeStyle='#fb923c';ctx.lineWidth=1.5;ctx.fill();ctx.stroke();
+      ctx.shadowBlur=0;
     }
   }
 }
 
-function scheduleRender() {
-  if (!rafId) rafId = requestAnimationFrame(() => { rafId = null; render(); });
+function sched(){if(!rafId)rafId=requestAnimationFrame(()=>{rafId=null;render();});}
+
+function slabel(d){
+  if(d<1.08)return{txt:'1:1 — dimensione reale',cls:'c-good'};
+  if(d<2.0) return{txt:`${d.toFixed(2)}× esagerata`,cls:'c-info'};
+  return          {txt:`${d.toFixed(2)}× esagerata`,cls:'c-warn'};
 }
 
-/* ── UI helpers ─────────────────────────────────────── */
-function distLabel(lat) {
-  const d = mscale(lat);
-  if (d < 1.08) return { txt:`1:1 — scala reale`, cls:'c-good' };
-  if (d < 2.0)  return { txt:`${d.toFixed(2)}x esagerata`, cls:'c-info' };
-  return             { txt:`${d.toFixed(2)}x esagerata`, cls:'c-warn' };
+function selectCountry(c){
+  sel=c;dragC=null;isDrag=false;
+  const lat=c.centroid[1],sl=slabel(mscale(lat));
+  document.getElementById('tb-name').textContent=c.name;
+  document.getElementById('tb-name').classList.remove('empty');
+  const td=document.getElementById('tb-dist');td.textContent=sl.txt;td.className=sl.cls;
+  document.getElementById('ic-name').textContent=c.name;
+  document.getElementById('ic-lat').textContent=`${lat.toFixed(1)}°`;
+  const id=document.getElementById('ic-dist');id.textContent=sl.txt;id.className=`rv ${sl.cls}`;
+  document.getElementById('ic-cur-row').style.display='none';
+  document.getElementById('ic-sc-row').style.display='none';
+  document.getElementById('ic-reset').style.display='none';
+  document.getElementById('icard').classList.add('open');
+  document.getElementById('chips').classList.add('hidden');
+  sched();
 }
 
-function selectCountry(c) {
-  sel = c; dragC = null; isDrag = false;
-  const lat  = c.centroid[1];
-  const dl   = distLabel(lat);
-
-  document.getElementById('p-name').textContent = c.name;
-  document.getElementById('p-sub').textContent  = 'Trascina per confrontare la dimensione reale';
-  document.getElementById('p-rows').style.display = 'block';
-  document.getElementById('presets').style.display = 'none';
-  document.getElementById('p-lat').textContent  = `${lat.toFixed(1)}°`;
-
-  const dEl = document.getElementById('p-dist');
-  dEl.textContent = dl.txt; dEl.className = `rv ${dl.cls}`;
-
-  document.getElementById('r-cur').style.display   = 'none';
-  document.getElementById('r-scale').style.display = 'none';
-  document.getElementById('p-reset').style.display = 'none';
-  scheduleRender();
+function deselectCountry(){
+  sel=null;dragC=null;isDrag=false;
+  document.getElementById('tb-name').textContent='tocca un paese';
+  document.getElementById('tb-name').classList.add('empty');
+  document.getElementById('tb-dist').textContent='';
+  document.getElementById('icard').classList.remove('open');
+  document.getElementById('chips').classList.remove('hidden');
+  sched();
 }
 
-function deselectCountry() {
-  sel = null; dragC = null; isDrag = false;
-  document.getElementById('p-name').textContent = '—';
-  document.getElementById('p-sub').textContent  = 'Clicca un paese sulla mappa';
-  document.getElementById('p-rows').style.display   = 'none';
-  document.getElementById('presets').style.display  = 'flex';
-  document.getElementById('p-reset').style.display  = 'none';
-  scheduleRender();
+function updateDrag(lat){
+  const sl=slabel(mscale(lat));
+  const td=document.getElementById('tb-dist');td.textContent=sl.txt;td.className=sl.cls;
+  document.getElementById('ic-cur-row').style.display='flex';
+  document.getElementById('ic-sc-row').style.display='flex';
+  document.getElementById('ic-cur').textContent=`${lat.toFixed(1)}°`;
+  const sc=document.getElementById('ic-sc');sc.textContent=sl.txt;sc.className=`rv ${sl.cls}`;
+  document.getElementById('ic-reset').style.display='block';
+  badge.textContent=sl.txt;
 }
 
-function updateDragPanel(lat) {
-  const dl = distLabel(lat);
-  document.getElementById('r-cur').style.display   = 'flex';
-  document.getElementById('r-scale').style.display = 'flex';
-  document.getElementById('p-cur').textContent = `${lat.toFixed(1)}°`;
-  const sEl = document.getElementById('p-scale');
-  sEl.textContent = dl.txt; sEl.className = `rv ${dl.cls}`;
-  document.getElementById('p-reset').style.display = 'block';
-}
-
-/* ── Pointer events ─────────────────────────────────── */
-canvas.addEventListener('pointerdown', e => {
-  e.preventDefault();
-  ptDown = true; ptMoved = false; isDrag = false;
-  ptStart = [e.clientX, e.clientY];
+canvas.addEventListener('pointerdown',e=>{
+  e.preventDefault();ptDown=true;ptMoved=false;isDrag=false;ptStart=[e.clientX,e.clientY];
   canvas.setPointerCapture(e.pointerId);
-}, { passive: false });
+},{passive:false});
 
-canvas.addEventListener('pointermove', e => {
-  if (!ptDown) {
-    // Hover: find country name for tooltip
-    const geo = proj.invert([e.clientX, e.clientY]);
-    if (geo) {
-      const hit = countries.find(c => d3.geoContains(c, geo));
-      if (hit && hit.name !== hoverName) {
-        hoverName = hit.name;
-        tooltip.textContent = hit.name;
-        tooltip.style.display = 'block';
-      } else if (!hit) {
-        hoverName = null;
-        tooltip.style.display = 'none';
-      }
-      if (tooltip.style.display === 'block') {
-        tooltip.style.left = (e.clientX + 14) + 'px';
-        tooltip.style.top  = (e.clientY - 8) + 'px';
-      }
-    }
-    return;
+canvas.addEventListener('pointermove',e=>{
+  if(!ptDown)return;
+  const dx=e.clientX-ptStart[0],dy=e.clientY-ptStart[1];
+  if(!ptMoved&&Math.hypot(dx,dy)>DTHR){
+    ptMoved=true;
+    if(sel){isDrag=true;canvas.classList.add('grabbing');badge.style.display='block';}
   }
+  if(isDrag){
+    let geo=proj.invert([e.clientX,e.clientY]);if(!geo)return;
+    geo[1]=Math.max(-78,Math.min(78,geo[1]));
+    dragC=geo;updateDrag(geo[1]);
+    badge.style.left=(e.clientX+16)+'px';badge.style.top=(e.clientY-32)+'px';
+    sched();
+  }
+},{passive:true});
 
-  const dx = e.clientX - ptStart[0], dy = e.clientY - ptStart[1];
-  if (!ptMoved && Math.hypot(dx, dy) > DRAG_THR) {
-    ptMoved = true;
-    if (sel) { isDrag = true; canvas.classList.add('grabbing'); }
-  }
-  if (isDrag) {
-    let geo = proj.invert([e.clientX, e.clientY]);
-    if (!geo) return;
-    geo[1] = Math.max(-79, Math.min(79, geo[1]));
-    dragC = geo;
-    updateDragPanel(geo[1]);
-    scheduleRender();
-  }
-}, { passive: true });
-
-canvas.addEventListener('pointerup', e => {
-  tooltip.style.display = 'none';
-  if (!ptMoved) {
-    const geo = proj.invert([e.clientX, e.clientY]);
-    if (geo) {
-      const hit = countries.find(c => d3.geoContains(c, geo));
-      if (hit) {
-        if (sel && hit.id === sel.id && !dragC) deselectCountry();
-        else selectCountry(hit);
-      } else {
-        deselectCountry();
-      }
+canvas.addEventListener('pointerup',e=>{
+  badge.style.display='none';
+  if(!ptMoved){
+    if(e.clientY<TOP){ptDown=false;return;}
+    const geo=proj.invert([e.clientX,e.clientY]);
+    if(geo){
+      const hit=countries.find(c=>d3.geoContains(c,geo));
+      if(hit){if(sel&&hit.id===sel.id&&!dragC)deselectCountry();else selectCountry(hit);}
+      else deselectCountry();
     }
   }
-  ptDown = false; ptMoved = false; isDrag = false;
-  canvas.classList.remove('grabbing');
-}, { passive: true });
+  ptDown=false;ptMoved=false;isDrag=false;canvas.classList.remove('grabbing');
+},{passive:true});
 
-canvas.addEventListener('pointerleave', () => {
-  tooltip.style.display = 'none'; hoverName = null;
-});
-canvas.addEventListener('pointercancel', () => {
-  ptDown = false; ptMoved = false; isDrag = false;
-  canvas.classList.remove('grabbing');
-});
+canvas.addEventListener('pointercancel',()=>{badge.style.display='none';ptDown=false;ptMoved=false;isDrag=false;canvas.classList.remove('grabbing');});
 
-/* ── Reset ──────────────────────────────────────────── */
-document.getElementById('p-reset').addEventListener('pointerdown', e => {
-  e.stopPropagation();
-  dragC = null; isDrag = false;
-  document.getElementById('r-cur').style.display   = 'none';
-  document.getElementById('r-scale').style.display = 'none';
-  document.getElementById('p-reset').style.display = 'none';
-  document.getElementById('p-sub').textContent = 'Trascina per confrontare la dimensione reale';
-  scheduleRender();
+document.getElementById('ic-reset').addEventListener('pointerdown',e=>{
+  e.stopPropagation();dragC=null;isDrag=false;
+  document.getElementById('ic-cur-row').style.display='none';
+  document.getElementById('ic-sc-row').style.display='none';
+  document.getElementById('ic-reset').style.display='none';
+  if(sel){const sl=slabel(mscale(sel.centroid[1]));const td=document.getElementById('tb-dist');td.textContent=sl.txt;td.className=sl.cls;}
+  sched();
 });
 
-/* ── Presets ─────────────────────────────────────────── */
-document.querySelectorAll('.pb').forEach(btn => {
-  btn.addEventListener('pointerdown', e => {
-    e.stopPropagation();
-    const n = btn.dataset.n;
-    const c = countries.find(x => x.name === n || x.name.includes(n.split(' ')[0]));
-    if (c) selectCountry(c);
-  });
+document.getElementById('tb-sbtn').addEventListener('pointerdown',e=>{e.stopPropagation();document.getElementById('sover').classList.add('open');setTimeout(()=>document.getElementById('sin').focus(),50);});
+document.getElementById('scls').addEventListener('pointerdown',e=>{e.stopPropagation();document.getElementById('sover').classList.remove('open');document.getElementById('sin').value='';document.getElementById('slist').style.display='none';});
+
+document.getElementById('sin').addEventListener('input',()=>{
+  const q=document.getElementById('sin').value.toLowerCase().trim();
+  const sl=document.getElementById('slist');sl.innerHTML='';
+  if(q.length<2){sl.style.display='none';return;}
+  const hits=countries.filter(c=>c.name.toLowerCase().includes(q)).sort((a,b)=>a.name.toLowerCase().indexOf(q)-b.name.toLowerCase().indexOf(q)).slice(0,12);
+  if(!hits.length){sl.style.display='none';return;}
+  hits.forEach(c=>{const d=document.createElement('div');d.className='si';d.textContent=c.name;d.addEventListener('pointerdown',ev=>{ev.stopPropagation();ev.preventDefault();selectCountry(c);document.getElementById('sin').value='';sl.style.display='none';document.getElementById('sover').classList.remove('open');});sl.appendChild(d);});
+  sl.style.display='block';
 });
 
-/* ── Search ─────────────────────────────────────────── */
-const sIn   = document.getElementById('s-in');
-const sList = document.getElementById('s-list');
-
-sIn.addEventListener('input', () => {
-  const q = sIn.value.toLowerCase().trim();
-  sList.innerHTML = '';
-  if (q.length < 2) { sList.style.display = 'none'; return; }
-  const hits = countries
-    .filter(c => c.name.toLowerCase().includes(q))
-    .sort((a, b) => a.name.toLowerCase().indexOf(q) - b.name.toLowerCase().indexOf(q))
-    .slice(0, 14);
-  if (!hits.length) { sList.style.display = 'none'; return; }
-  hits.forEach(c => {
-    const d = document.createElement('div');
-    d.className = 'si'; d.textContent = c.name;
-    d.addEventListener('pointerdown', ev => {
-      ev.stopPropagation(); ev.preventDefault();
-      selectCountry(c); sIn.value = ''; sList.style.display = 'none';
-    });
-    sList.appendChild(d);
-  });
-  sList.style.display = 'block';
+document.querySelectorAll('.chip').forEach(btn=>{
+  btn.addEventListener('pointerdown',e=>{e.stopPropagation();const c=countries.find(x=>x.name===btn.dataset.n);if(c)selectCountry(c);});
 });
-sIn.addEventListener('blur',  () => setTimeout(() => sList.style.display = 'none', 200));
-sIn.addEventListener('focus', () => { if (sList.children.length) sList.style.display = 'block'; });
 
-/* ── Resize ─────────────────────────────────────────── */
-function resize() {
-  W = canvas.width  = window.innerWidth;
-  H = canvas.height = window.innerHeight;
-  const scale = (W - 3) / (2 * Math.PI);
-  proj    = d3.geoMercator().scale(scale).translate([W / 2, H * 0.58]);
-  geoPath = d3.geoPath().projection(proj).context(ctx);
-  scheduleRender();
+function resize(){
+  W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;
+  const scale=(W-3)/(2*Math.PI);
+  proj=d3.geoMercator().scale(scale).translate([W/2,(H+TOP)/2+20]);
+  geoPath=d3.geoPath().projection(proj).context(ctx);
+  sched();
 }
-window.addEventListener('resize', resize);
+window.addEventListener('resize',resize);
 
-/* ── Init ───────────────────────────────────────────── */
-async function init() {
-  try {
-    const topo = await d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json');
-    const geo  = topojson.feature(topo, topo.objects.countries);
-
-    countries = geo.features.map(f => ({
-      ...f,
-      id:       +f.id,
-      name:     NAMES[+f.id] || `[${+f.id}]`,
-      centroid: d3.geoCentroid(f)
-    }));
-    // Remove Antarctica (id=10) — occupa tutta la mappa Mercator e blocca i click
-    // Rimuovi anche paesi con centroide degenere
-    countries = countries.filter(c =>
-      c.id !== 10 &&
-      isFinite(c.centroid[0]) && isFinite(c.centroid[1]) &&
-      Math.abs(c.centroid[1]) < 85
-    );
-
-    countries.sort((a, b) => a.name.localeCompare(b.name, 'it'));
-
-    document.getElementById('loading').style.display = 'none';
-    document.getElementById('presets').style.display = 'flex';
+async function init(){
+  try{
+    const topo=await d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json');
+    const geo=topojson.feature(topo,topo.objects.countries);
+    countries=geo.features.map(f=>({...f,id:+f.id,name:NAMES[+f.id]||`[${+f.id}]`,centroid:d3.geoCentroid(f)}))
+      .filter(c=>c.id!==10&&isFinite(c.centroid[0])&&isFinite(c.centroid[1])&&Math.abs(c.centroid[1])<85);
+    countries.sort((a,b)=>a.name.localeCompare(b.name,'it'));
+    document.getElementById('loading').style.display='none';
     resize();
-  } catch (err) {
-    document.getElementById('loading').innerHTML =
-      '<div style="color:#ef4444;font-family:monospace;letter-spacing:2px">ERRORE CARICAMENTO DATI</div>';
+  }catch(err){
+    document.getElementById('loading').innerHTML='<div style="color:#ef4444;font-family:monospace">ERRORE CARICAMENTO</div>';
   }
 }
-
-resize();
-init();
+resize();init();
 </script>
 </body>
 </html>
