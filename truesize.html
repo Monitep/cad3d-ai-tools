@@ -103,6 +103,12 @@ html, body { width:100%; height:100%; overflow:hidden; background:#060f1c; }
 #search-wrap {
   position:absolute; top:14px; right:14px; z-index:10;
 }
+@media (max-width: 520px) {
+  #panel { min-width:0; width:calc(100vw - 28px); max-width:none; }
+  #search-wrap { top:auto; bottom:46px; right:14px; }
+  #s-in { width:calc(100vw - 28px); }
+  #s-list { width:calc(100vw - 28px); }
+}
 #s-in {
   display:block; width:210px; padding:10px 16px;
   background:rgba(4,14,28,0.92); color:#e2e8f0;
@@ -195,8 +201,8 @@ html, body { width:100%; height:100%; overflow:hidden; background:#060f1c; }
     </div>
     <div class="preset-row">
       <button class="pb" data-n="Australia">Australia</button>
-      <button class="pb" data-n="Antartide">Antartide</button>
-      <button class="pb" data-n="Alaska / USA">USA</button>
+      <button class="pb" data-n="India">India</button>
+      <button class="pb" data-n="Stati Uniti">USA</button>
     </div>
   </div>
 </div>
@@ -574,8 +580,13 @@ async function init() {
       name:     NAMES[+f.id] || `[${+f.id}]`,
       centroid: d3.geoCentroid(f)
     }));
-    // keep Antarctica but filter truly degenerate
-    countries = countries.filter(c => isFinite(c.centroid[0]) && isFinite(c.centroid[1]));
+    // Remove Antarctica (id=10) — occupa tutta la mappa Mercator e blocca i click
+    // Rimuovi anche paesi con centroide degenere
+    countries = countries.filter(c =>
+      c.id !== 10 &&
+      isFinite(c.centroid[0]) && isFinite(c.centroid[1]) &&
+      Math.abs(c.centroid[1]) < 85
+    );
 
     countries.sort((a, b) => a.name.localeCompare(b.name, 'it'));
 
