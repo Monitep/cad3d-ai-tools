@@ -5,585 +5,477 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>DroneCheck Italia</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;600;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;600;700;900&display=swap');
+:root{
+  --bg:#070a0e;--surface:#0d1117;--surface2:#111620;--border:#1c2333;
+  --green:#00e87a;--yellow:#ffcc00;--red:#ff3355;--blue:#4d9fff;--orange:#ff8c00;
+  --text:#c8d6e8;--muted:#4a5568;
+  --mono:'Share Tech Mono',monospace;--sans:'Barlow Condensed',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;
+  background-image:linear-gradient(rgba(77,159,255,.025) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(77,159,255,.025) 1px,transparent 1px);
+  background-size:36px 36px;pointer-events:none;z-index:0}
+.app{position:relative;z-index:1;max-width:480px;margin:0 auto;padding:18px 14px 50px}
 
-  :root {
-    --bg: #070a0e;
-    --surface: #0d1117;
-    --surface2: #111620;
-    --border: #1c2333;
-    --green: #00e87a;
-    --green-dim: #00e87a18;
-    --yellow: #ffcc00;
-    --yellow-dim: #ffcc0018;
-    --red: #ff3355;
-    --red-dim: #ff335518;
-    --blue: #4d9fff;
-    --blue-dim: #4d9fff18;
-    --text: #c8d6e8;
-    --muted: #4a5568;
-    --mono: 'Share Tech Mono', monospace;
-    --sans: 'Barlow Condensed', sans-serif;
-  }
+/* HEADER */
+.header{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.logo{font-family:var(--mono);font-size:10px;color:var(--blue);letter-spacing:.15em;opacity:.7;margin-bottom:2px}
+.title{font-size:24px;font-weight:900;letter-spacing:.04em;text-transform:uppercase;line-height:1}
+.title small{display:block;font-size:10px;font-weight:400;letter-spacing:.22em;color:var(--muted);margin-top:3px}
+.drone-ico{font-size:30px;margin-left:auto}
 
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+/* STATUS CARD */
+.status-card{border-radius:14px;padding:22px 18px;margin-bottom:14px;
+  border:1px solid var(--border);background:var(--surface);position:relative;overflow:hidden;transition:border-color .4s,background .4s}
+.status-card.green{border-color:var(--green);background:linear-gradient(135deg,#0d1117 60%,#00e87a08)}
+.status-card.yellow{border-color:var(--yellow);background:linear-gradient(135deg,#0d1117 60%,#ffcc0008)}
+.status-card.red{border-color:var(--red);background:linear-gradient(135deg,#0d1117 60%,#ff335508)}
+.slabel{font-family:var(--mono);font-size:9px;letter-spacing:.22em;color:var(--muted);margin-bottom:10px}
+.smain{display:flex;align-items:center;gap:16px}
+.sball{width:60px;height:60px;border-radius:50%;border:2px solid var(--border);
+  display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;position:relative;transition:border-color .4s}
+.green .sball{border-color:var(--green)}
+.yellow .sball{border-color:var(--yellow)}
+.red .sball{border-color:var(--red)}
+.sball.pulse::after{content:'';position:absolute;inset:-6px;border-radius:50%;border:2px solid currentColor;animation:pring 2s infinite}
+.green .sball.pulse{color:var(--green)}.yellow .sball.pulse{color:var(--yellow)}.red .sball.pulse{color:var(--red)}
+@keyframes pring{0%{transform:scale(.9);opacity:.9}100%{transform:scale(1.5);opacity:0}}
+.sverdict{font-size:34px;font-weight:900;text-transform:uppercase;line-height:1;transition:color .4s}
+.green .sverdict{color:var(--green)}.yellow .sverdict{color:var(--yellow)}.red .sverdict{color:var(--red)}
+.ssub{font-size:13px;color:var(--text);margin-top:4px;opacity:.75;line-height:1.35}
+.gps-row{display:flex;align-items:center;gap:8px;margin-top:14px;padding-top:14px;
+  border-top:1px solid var(--border);font-family:var(--mono);font-size:11px;color:var(--muted)}
+.gps-dot{width:7px;height:7px;border-radius:50%;background:var(--muted);flex-shrink:0}
+.gps-dot.on{background:var(--green);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.gps-val{color:var(--text);flex:1;font-size:12px}
+.acc{font-family:var(--mono);font-size:10px;color:var(--muted);
+  background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:5px;padding:2px 6px}
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--sans);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
+/* SECTIONS */
+.stitle{font-family:var(--mono);font-size:9px;letter-spacing:.22em;color:var(--muted);text-transform:uppercase;
+  margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.stitle::after{content:'';flex:1;height:1px;background:var(--border)}
 
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(77,159,255,0.025) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(77,159,255,0.025) 1px, transparent 1px);
-    background-size: 36px 36px;
-    pointer-events: none;
-    z-index: 0;
-  }
+/* ZONE ITEMS */
+.zlist{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.zitem{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:11px 13px;
+  display:flex;align-items:flex-start;gap:11px}
+.zitem.zi{border-color:rgba(255,51,85,.4);background:rgba(255,51,85,.05)}
+.zitem.zy{border-color:rgba(255,204,0,.3);background:rgba(255,204,0,.04)}
+.zitem.zb{border-color:rgba(77,159,255,.25)}
+.zdot{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.zi .zdot{background:var(--red)}.zy .zdot{background:var(--yellow)}.zb .zdot{background:var(--blue)}
+.zinfo{flex:1;min-width:0}
+.zname{font-size:14px;font-weight:700;line-height:1.2}
+.ztype{font-size:11px;color:var(--muted);margin-top:1px}
+.zalt{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:3px}
+.zright{text-align:right;flex-shrink:0}
+.zbadge{display:inline-block;font-family:var(--mono);font-size:10px;padding:2px 6px;border-radius:4px;font-weight:bold}
+.zi .zbadge{background:rgba(255,51,85,.2);color:var(--red)}
+.zy .zbadge{background:rgba(255,204,0,.2);color:var(--yellow)}
+.zb .zbadge{background:rgba(77,159,255,.15);color:var(--blue)}
 
-  .app {
-    position: relative;
-    z-index: 1;
-    max-width: 480px;
-    margin: 0 auto;
-    padding: 18px 14px 50px;
-  }
+/* NOTAM BOX */
+.notam-box{background:var(--surface);border:1px solid rgba(77,159,255,.3);
+  background:rgba(77,159,255,.04);border-radius:10px;padding:14px;margin-bottom:14px}
+.notam-box p{font-size:12px;color:rgba(77,159,255,.85);line-height:1.5;margin-bottom:12px}
+.notam-airports{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.notam-ap{display:flex;align-items:center;gap:10px;padding:8px 10px;
+  background:var(--surface);border:1px solid var(--border);border-radius:8px}
+.notam-icao{font-family:var(--mono);font-size:13px;color:var(--blue);min-width:44px;font-weight:bold}
+.notam-name{font-size:12px;color:var(--muted);flex:1}
+.notam-dist{font-family:var(--mono);font-size:11px;color:var(--muted)}
 
-  .header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 20px;
-  }
-  .header-left { flex: 1; }
-  .logo { font-family: var(--mono); font-size: 10px; color: var(--blue); letter-spacing: 0.15em; opacity: 0.7; margin-bottom: 2px; }
-  .header-title { font-size: 24px; font-weight: 900; letter-spacing: 0.04em; text-transform: uppercase; line-height: 1; }
-  .header-title small { display: block; font-size: 10px; font-weight: 400; letter-spacing: 0.22em; color: var(--muted); margin-top: 3px; }
-  .header-drone { font-size: 30px; }
+/* DISCLAIMER */
+.disc{background:rgba(255,204,0,.04);border:1px solid rgba(255,204,0,.18);
+  border-radius:10px;padding:11px 13px;margin-bottom:14px;display:flex;gap:9px;align-items:flex-start}
+.disc p{font-size:11px;line-height:1.5;color:rgba(255,204,0,.75)}
 
-  .status-card {
-    border-radius: 14px;
-    padding: 22px 18px;
-    margin-bottom: 14px;
-    border: 1px solid var(--border);
-    background: var(--surface);
-    position: relative;
-    overflow: hidden;
-    transition: border-color 0.4s, background 0.4s;
-  }
-  .status-card.green  { border-color: var(--green);  background: linear-gradient(135deg, #0d1117 60%, #00e87a08); }
-  .status-card.yellow { border-color: var(--yellow); background: linear-gradient(135deg, #0d1117 60%, #ffcc0008); }
-  .status-card.red    { border-color: var(--red);    background: linear-gradient(135deg, #0d1117 60%, #ff335508); }
+/* BUTTONS */
+.bgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:9px}
+.btn{border:1px solid var(--border);background:var(--surface);color:var(--text);
+  border-radius:11px;padding:13px 10px;font-family:var(--sans);font-size:13px;font-weight:700;
+  letter-spacing:.04em;text-transform:uppercase;cursor:pointer;display:flex;flex-direction:column;
+  align-items:center;gap:5px;transition:transform .1s,opacity .1s;text-decoration:none;
+  touch-action:manipulation;user-select:none}
+.btn:active{transform:scale(.95);opacity:.75}
+.btn .ico{font-size:22px}
+.bblu{border-color:rgba(77,159,255,.5);background:rgba(77,159,255,.1);color:var(--blue)}
+.bfull{grid-column:1/-1;flex-direction:row;justify-content:center;
+  padding:15px;font-size:14px;gap:8px;border-color:rgba(77,159,255,.4);background:rgba(77,159,255,.08);color:var(--blue)}
 
-  .status-label { font-family: var(--mono); font-size: 9px; letter-spacing: 0.22em; color: var(--muted); margin-bottom: 10px; }
-  .status-main { display: flex; align-items: center; gap: 16px; }
+/* LOADING */
+.loading{text-align:center;padding:50px 20px}
+.spinner{width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--blue);
+  border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading p{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.loading .sub{font-size:11px;opacity:.6;margin-top:4px}
+.mini-spin{width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--blue);
+  border-radius:50%;animation:spin .6s linear infinite;flex-shrink:0}
+.fetching{display:flex;align-items:center;gap:10px;padding:14px;
+  background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:14px}
+.fetching span{font-family:var(--mono);font-size:11px;color:var(--muted)}
 
-  .status-indicator {
-    width: 60px; height: 60px;
-    border-radius: 50%;
-    border: 2px solid var(--border);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 26px; flex-shrink: 0;
-    position: relative; transition: border-color 0.4s;
-  }
-  .green  .status-indicator { border-color: var(--green); }
-  .yellow .status-indicator { border-color: var(--yellow); }
-  .red    .status-indicator { border-color: var(--red); }
+/* ERROR */
+.errc{background:var(--surface);border:1px solid rgba(255,51,85,.35);
+  border-radius:14px;padding:28px 18px;text-align:center;margin-bottom:14px}
+.errc h3{font-size:18px;font-weight:800;color:var(--red);margin-bottom:8px}
+.errc p{font-size:13px;color:var(--muted);line-height:1.5}
 
-  .status-indicator.pulse::after {
-    content: ''; position: absolute; inset: -6px;
-    border-radius: 50%; border: 2px solid currentColor;
-    animation: pulse-ring 2s infinite;
-  }
-  .green  .status-indicator.pulse { color: var(--green); }
-  .yellow .status-indicator.pulse { color: var(--yellow); }
-  .red    .status-indicator.pulse { color: var(--red); }
-  @keyframes pulse-ring { 0%{transform:scale(0.9);opacity:0.9} 100%{transform:scale(1.5);opacity:0} }
+/* UPDATE BAR */
+.ubar{display:flex;align-items:center;justify-content:space-between;
+  padding:8px 13px;background:var(--surface2);border:1px solid var(--border);
+  border-radius:8px;margin-bottom:14px;font-family:var(--mono);font-size:10px;color:var(--muted)}
+.ufresh{color:var(--green)}
+.umanual{color:var(--yellow)}
 
-  .status-text { flex: 1; }
-  .status-verdict { font-size: 34px; font-weight: 900; text-transform: uppercase; line-height: 1; transition: color 0.4s; }
-  .green  .status-verdict { color: var(--green); }
-  .yellow .status-verdict { color: var(--yellow); }
-  .red    .status-verdict { color: var(--red); }
-  .status-sub { font-size: 13px; color: var(--text); margin-top: 4px; opacity: 0.75; line-height: 1.35; }
+.footnote{font-size:10px;color:var(--muted);font-family:var(--mono);text-align:center;margin-top:10px;opacity:.5}
+@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.fi{animation:fi .3s ease forwards}
 
-  .gps-row {
-    display: flex; align-items: center; gap: 8px;
-    margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border);
-    font-family: var(--mono); font-size: 11px; color: var(--muted);
-  }
-  .gps-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); flex-shrink: 0; }
-  .gps-dot.active { background: var(--green); animation: blink 2s infinite; }
-  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
-  .gps-coords { color: var(--text); flex: 1; font-size: 12px; }
-  .acc-badge {
-    font-family: var(--mono); font-size: 10px; color: var(--muted);
-    background: rgba(255,255,255,0.03); border: 1px solid var(--border);
-    border-radius: 5px; padding: 2px 6px;
-  }
-
-  .section-title {
-    font-family: var(--mono); font-size: 9px; letter-spacing: 0.22em;
-    color: var(--muted); text-transform: uppercase;
-    margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
-  }
-  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-
-  .zones-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
-  .zone-item {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 10px; padding: 11px 13px;
-    display: flex; align-items: center; gap: 11px;
-  }
-  .zone-item.red-zone   { border-color: rgba(255,51,85,0.35);  background: rgba(255,51,85,0.04); }
-  .zone-item.yellow-zone{ border-color: rgba(255,204,0,0.3);   background: rgba(255,204,0,0.04); }
-  .zone-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
-  .red-zone    .zone-dot { background: var(--red); }
-  .yellow-zone .zone-dot { background: var(--yellow); }
-  .zone-info { flex: 1; }
-  .zone-name { font-size: 14px; font-weight: 700; line-height: 1.2; }
-  .zone-type { font-size: 11px; color: var(--muted); margin-top: 1px; }
-  .zone-dist { font-family: var(--mono); font-size: 13px; text-align: right; flex-shrink: 0; }
-  .red-zone    .zone-dist { color: var(--red); }
-  .yellow-zone .zone-dist { color: var(--yellow); }
-
-  .notam-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
-  .notam-item {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 10px; padding: 12px 13px; cursor: pointer;
-    touch-action: manipulation; user-select: none;
-  }
-  .notam-item.n-active   { border-color: rgba(255,51,85,0.4);  background: rgba(255,51,85,0.05); }
-  .notam-item.n-upcoming { border-color: rgba(255,204,0,0.3);  background: rgba(255,204,0,0.04); }
-  .notam-item.n-info     { border-color: rgba(77,159,255,0.25); }
-
-  .notam-header { display: flex; align-items: flex-start; gap: 9px; }
-  .notam-badge {
-    font-family: var(--mono); font-size: 10px; font-weight: bold;
-    padding: 2px 7px; border-radius: 4px; flex-shrink: 0; margin-top: 1px;
-  }
-  .n-active   .notam-badge { background: rgba(255,51,85,0.2);  color: var(--red); }
-  .n-upcoming .notam-badge { background: rgba(255,204,0,0.2);  color: var(--yellow); }
-  .n-info     .notam-badge { background: rgba(77,159,255,0.15);color: var(--blue); }
-
-  .notam-id  { font-family: var(--mono); font-size: 11px; color: var(--blue); flex: 1; word-break: break-all; }
-  .notam-loc { font-family: var(--mono); font-size: 11px; color: var(--muted); flex-shrink: 0; }
-  .notam-summary { font-size: 13px; color: var(--text); margin-top: 6px; line-height: 1.45; opacity: 0.85; }
-  .notam-time { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-top: 6px; }
-  .notam-full {
-    display: none; margin-top: 10px; padding-top: 10px;
-    border-top: 1px solid var(--border);
-    font-family: var(--mono); font-size: 11px; color: var(--muted);
-    line-height: 1.6; word-break: break-all; white-space: pre-wrap;
-  }
-  .notam-item.expanded .notam-full { display: block; }
-
-  .empty-box {
-    text-align: center; padding: 20px;
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 10px; margin-bottom: 14px;
-  }
-  .empty-box .ico { font-size: 28px; margin-bottom: 6px; }
-  .empty-box p { font-size: 12px; color: var(--muted); line-height: 1.5; }
-
-  .loading { text-align: center; padding: 50px 20px; }
-  .spinner { width: 44px; height: 44px; border: 3px solid var(--border); border-top-color: var(--blue); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto 16px; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .loading p { font-family: var(--mono); font-size: 12px; color: var(--muted); }
-  .loading .sub { font-size: 11px; opacity: 0.6; margin-top: 4px; }
-
-  .notam-loading {
-    display: flex; align-items: center; gap: 10px;
-    padding: 14px; background: var(--surface); border: 1px solid var(--border);
-    border-radius: 10px; margin-bottom: 14px;
-  }
-  .mini-spinner { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--blue); border-radius: 50%; animation: spin 0.6s linear infinite; flex-shrink: 0; }
-  .notam-loading span { font-family: var(--mono); font-size: 11px; color: var(--muted); }
-
-  .disclaimer {
-    background: rgba(255,204,0,0.04); border: 1px solid rgba(255,204,0,0.18);
-    border-radius: 10px; padding: 11px 13px; margin-bottom: 14px;
-    display: flex; gap: 9px; align-items: flex-start;
-  }
-  .disclaimer-ico { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
-  .disclaimer p { font-size: 11px; line-height: 1.5; color: rgba(255,204,0,0.75); }
-
-  .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-bottom: 9px; }
-  .btn {
-    border: 1px solid var(--border); background: var(--surface); color: var(--text);
-    border-radius: 11px; padding: 13px 10px;
-    font-family: var(--sans); font-size: 13px; font-weight: 700;
-    letter-spacing: 0.04em; text-transform: uppercase;
-    cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px;
-    transition: transform 0.1s, opacity 0.1s; text-decoration: none;
-    touch-action: manipulation; user-select: none;
-  }
-  .btn:active { transform: scale(0.95); opacity: 0.75; }
-  .btn .ico { font-size: 22px; }
-  .btn.blue-btn { border-color: rgba(77,159,255,0.5); background: var(--blue-dim); color: var(--blue); }
-  .btn-full {
-    grid-column: 1 / -1; flex-direction: row; justify-content: center;
-    padding: 15px; font-size: 14px; gap: 8px;
-    border-color: rgba(77,159,255,0.4); background: var(--blue-dim); color: var(--blue);
-  }
-
-  .update-bar {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 8px 13px; background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 8px; margin-bottom: 14px;
-    font-family: var(--mono); font-size: 10px; color: var(--muted);
-  }
-  .update-bar .fresh { color: var(--green); }
-
-  .err-card {
-    background: var(--surface); border: 1px solid rgba(255,51,85,0.35);
-    border-radius: 14px; padding: 28px 18px; text-align: center; margin-bottom: 14px;
-  }
-  .err-card .ico { font-size: 38px; margin-bottom: 10px; }
-  .err-card h3 { font-size: 18px; font-weight: 800; color: var(--red); margin-bottom: 8px; }
-  .err-card p { font-size: 13px; color: var(--muted); line-height: 1.5; }
-
-  .altitude-note { font-size: 10px; color: var(--muted); font-family: var(--mono); text-align: center; margin-top: 10px; opacity: 0.5; }
-
-  @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
-  .fade-in { animation: fadeIn 0.3s ease forwards; }
+.empty{text-align:center;padding:18px;background:var(--surface);
+  border:1px solid var(--border);border-radius:10px;margin-bottom:14px}
+.empty .eico{font-size:26px;margin-bottom:6px}
+.empty p{font-size:12px;color:var(--muted);line-height:1.5}
 </style>
 </head>
 <body>
 <div class="app">
-
   <div class="header">
-    <div class="header-left">
-      <div class="logo">ENAC / D-FLIGHT // NOTAM LIVE</div>
-      <div class="header-title">
-        DroneCheck
-        <small>ITALIA — REAL-TIME AIRSPACE</small>
-      </div>
+    <div>
+      <div class="logo">OPENAIP · D-FLIGHT · NOTAM</div>
+      <div class="title">DroneCheck<small>ITALIA — LIVE AIRSPACE</small></div>
     </div>
-    <div class="header-drone">🛸</div>
+    <div class="drone-ico">🛸</div>
   </div>
-
-  <div id="main-content">
-    <div class="loading">
-      <div class="spinner"></div>
-      <p>Rilevamento GPS...</p>
-      <p class="sub">Assicurati di avere il GPS attivo</p>
-    </div>
+  <div id="mc">
+    <div class="loading"><div class="spinner"></div><p>Rilevamento GPS...</p><p class="sub">Assicurati di avere il GPS attivo</p></div>
   </div>
-
 </div>
-
 <script>
-// ── AIRPORT DATABASE ──────────────────────────────────────────────────────────
-// [name, ICAO, lat, lon, red_km, yellow_km, type]
+const OAIP_KEY = '1f30b1d752ccf615a93897fd493c488f';
+
+// ── TYPE MAP ─────────────────────────────────────────────────────────────────
+const TYPES = {
+  0:{l:'Airspace',s:'info'},
+  1:{l:'RESTRICTED',s:'red'},
+  2:{l:'DANGER',s:'red'},
+  3:{l:'PROHIBITED',s:'red'},
+  4:{l:'CTR',s:'red'},
+  5:{l:'TMA',s:'yellow'},
+  6:{l:'TMZ',s:'yellow'},
+  7:{l:'RMZ',s:'yellow'},
+  8:{l:'ATZ',s:'yellow'},
+  9:{l:'ATZ Airport',s:'yellow'},
+  10:{l:'Airway',s:'info'},
+  11:{l:'MTR',s:'info'},
+  12:{l:'Alert',s:'yellow'},
+  13:{l:'ADIZ',s:'yellow'},
+  14:{l:'NOTAM Zone',s:'yellow'},
+};
+
+// ── NEARBY AIRPORTS for NOTAM link ───────────────────────────────────────────
 const AIRPORTS = [
-  ["Milano Malpensa",           "LIMC", 45.6306,  8.7281,  5, 10, "Aeroporto Internazionale"],
-  ["Milano Linate",             "LIML", 45.4454,  9.2797,  5, 10, "Aeroporto Internazionale"],
-  ["Milano Bresso",             "LIMB", 45.5422,  9.2025,  3,  6, "Aviosuperficie"],
-  ["Torino Caselle",            "LIMF", 45.2008,  7.6497,  5, 10, "Aeroporto Internazionale"],
-  ["Genova",                    "LIMJ", 44.4133,  8.8375,  5,  9, "Aeroporto"],
-  ["Lugano (CH)",               "LSZA", 45.9728,  8.9106,  4,  8, "Aeroporto (Svizzera)"],
-  ["Bergamo Orio al Serio",     "LIME", 45.6739,  9.7042,  5, 10, "Aeroporto Internazionale"],
-  ["Brescia Montichiari",       "LIPO", 45.4289, 10.3306,  4,  8, "Aeroporto"],
-  ["Verona Villafranca",        "LIPX", 45.3957, 10.8886,  5, 10, "Aeroporto Internazionale"],
-  ["Venezia Marco Polo",        "LIPZ", 45.5053, 12.3519,  5, 10, "Aeroporto Internazionale"],
-  ["Treviso",                   "LIPH", 45.6484, 12.1944,  4,  8, "Aeroporto"],
-  ["Trieste",                   "LIPQ", 45.8275, 13.4722,  4,  8, "Aeroporto"],
-  ["Bolzano",                   "LIPB", 46.4602, 11.3264,  3,  7, "Aeroporto"],
-  ["Bologna Marconi",           "LIPE", 44.5354, 11.2887,  5, 10, "Aeroporto Internazionale"],
-  ["Firenze Vespucci",          "LIRQ", 43.8100, 11.2051,  5,  9, "Aeroporto"],
-  ["Pisa Galileo Galilei",      "LIRP", 43.6839, 10.3927,  5, 10, "Aeroporto Internazionale"],
-  ["Ancona",                    "LIPY", 43.6161, 13.3622,  4,  8, "Aeroporto"],
-  ["Perugia",                   "LIRZ", 43.1059, 12.5132,  3,  7, "Aeroporto"],
-  ["Roma Fiumicino",            "LIRF", 41.7999, 12.2462,  6, 12, "Aeroporto Internazionale"],
-  ["Roma Ciampino",             "LIRA", 41.7994, 12.5949,  5, 10, "Aeroporto"],
-  ["Napoli Capodichino",        "LIRN", 40.8860, 14.2908,  5, 10, "Aeroporto Internazionale"],
-  ["Bari Karol Wojtyla",        "LIBD", 41.1389, 16.7606,  5,  9, "Aeroporto Internazionale"],
-  ["Brindisi",                  "LIBR", 40.6576, 17.9469,  4,  8, "Aeroporto"],
-  ["Lamezia Terme",             "LICA", 38.9054, 16.2422,  4,  8, "Aeroporto"],
-  ["Reggio Calabria",           "LICR", 38.0712, 15.6516,  3,  7, "Aeroporto"],
-  ["Palermo Falcone Borsellino","LICJ", 38.1760, 13.0910,  5,  9, "Aeroporto Internazionale"],
-  ["Catania Fontanarossa",      "LICC", 37.4668, 15.0664,  5,  9, "Aeroporto Internazionale"],
-  ["Trapani",                   "LICT", 37.9113, 12.4881,  4,  8, "Aeroporto"],
-  ["Cagliari Elmas",            "LIEE", 39.2515,  9.0543,  5,  9, "Aeroporto Internazionale"],
-  ["Olbia Costa Smeralda",      "LIEO", 40.8987,  9.5177,  4,  8, "Aeroporto"],
-  ["Alghero",                   "LIEA", 40.6321,  8.2908,  4,  8, "Aeroporto"],
-  // Zone speciali (no ICAO query)
-  ["Vaticano",                  null,   41.9022, 12.4539,  3,  5, "Zona vietata permanente"],
-  ["Area TMA Roma",             null,   41.9028, 12.4964,  0, 25, "Spazio aereo controllato"],
+  ["Milano Malpensa","LIMC",45.6306,8.7281],["Milano Linate","LIML",45.4454,9.2797],
+  ["Bergamo","LIME",45.6739,9.7042],["Lugano CH","LSZA",45.9728,8.9106],
+  ["Torino","LIMF",45.2008,7.6497],["Genova","LIMJ",44.4133,8.8375],
+  ["Brescia","LIPO",45.4289,10.3306],["Verona","LIPX",45.3957,10.8886],
+  ["Venezia","LIPZ",45.5053,12.3519],["Treviso","LIPH",45.6484,12.1944],
+  ["Trieste","LIPQ",45.8275,13.4722],["Bolzano","LIPB",46.4602,11.3264],
+  ["Bologna","LIPE",44.5354,11.2887],["Firenze","LIRQ",43.810,11.2051],
+  ["Pisa","LIRP",43.6839,10.3927],["Roma FCO","LIRF",41.7999,12.2462],
+  ["Roma CIA","LIRA",41.7994,12.5949],["Napoli","LIRN",40.886,14.2908],
+  ["Bari","LIBD",41.1389,16.7606],["Palermo","LICJ",38.176,13.091],
+  ["Catania","LICC",37.4668,15.0664],["Cagliari","LIEE",39.2515,9.0543],
 ];
 
 // ── UTILS ─────────────────────────────────────────────────────────────────────
-function haversine(la1,lo1,la2,lo2){
+function hav(la1,lo1,la2,lo2){
   const R=6371,dL=(la2-la1)*Math.PI/180,dO=(lo2-lo1)*Math.PI/180;
   const a=Math.sin(dL/2)**2+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dO/2)**2;
   return R*2*Math.asin(Math.sqrt(a));
 }
-function fmtDist(d){ return d<1?(d*1000).toFixed(0)+'m':d.toFixed(1)+'km'; }
-function fmtTime(d){
-  if(!d) return '—';
-  return d.toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit',year:'2-digit'})+' '+
-         d.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})+' UTC';
-}
-function esc(s){ return s?s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'):''; }
+function fmtD(d){return d<1?(d*1000).toFixed(0)+'m':d.toFixed(1)+'km'}
+function esc(s){return s?String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'):''}
 
-// ── ZONE CHECK ────────────────────────────────────────────────────────────────
-function checkZones(lat,lon){
-  return AIRPORTS.map(([name,icao,alat,alon,rr,ry,type])=>{
-    const d=haversine(lat,lon,alat,alon);
-    if(d>ry) return null;
-    return {name,icao,d,sev:d<=rr?'red':'yellow',type};
-  }).filter(Boolean).sort((a,b)=>a.d-b.d);
+// ── POINT IN POLYGON (ray casting) ───────────────────────────────────────────
+function pip(lon,lat,ring){
+  let inside=false;
+  for(let i=0,j=ring.length-1;i<ring.length;j=i++){
+    const [xi,yi]=ring[i],[xj,yj]=ring[j];
+    if(((yi>lat)!==(yj>lat))&&(lon<(xj-xi)*(lat-yi)/(yj-yi)+xi)) inside=!inside;
+  }
+  return inside;
 }
-
-// ── NEARBY ICAO ──────────────────────────────────────────────────────────────
-function getNearbyIcao(lat,lon){
-  return AIRPORTS
-    .filter(([,icao,,alat,alon])=>icao&&haversine(lat,lon,alat,alon)<=120)
-    .map(([name,icao,,alat,alon])=>({name,icao,d:haversine(lat,lon,alat,alon)}))
-    .sort((a,b)=>a.d-b.d)
-    .slice(0,6);
+function inGeom(lon,lat,geom){
+  if(!geom) return false;
+  if(geom.type==='Polygon') return pip(lon,lat,geom.coordinates[0]);
+  if(geom.type==='MultiPolygon') return geom.coordinates.some(p=>pip(lon,lat,p[0]));
+  return false;
 }
 
-// ── NOTAM FETCH ──────────────────────────────────────────────────────────────
-// aviationweather.gov blocca proxy con 403.
-// Tentativo diretto: funziona se il browser gestisce CORS.
-// Fallback: restituiamo ICAO vicini per link diretto FAA NOTAM (pubblico, no login).
-async function fetchNotams(lat,lon){
-  const pad=0.8;
-  const w=(lon-pad).toFixed(3), s=(lat-pad).toFixed(3);
-  const e=(lon+pad).toFixed(3), n=(lat+pad).toFixed(3);
-  const url=`https://aviationweather.gov/api/data/notam?format=json&bbox=${w},${s},${e},${n}&limit=100`;
+// ── ALT FORMAT ───────────────────────────────────────────────────────────────
+function fmtAlt(lim){
+  if(!lim) return '';
+  const v=lim.value??lim.val??0;
+  const unit=(lim.unit?.shortName||lim.unit||'FT').toString().toUpperCase();
+  const ref=(lim.referenceDatum?.shortName||lim.referenceDatum||'MSL').toString().toUpperCase();
+  if(v===0&&(ref==='GND'||ref==='SFC')) return 'GND';
+  if(unit==='FL'||unit==='6') return `FL${String(v).padStart(3,'0')}`;
+  return `${v}ft ${ref}`;
+}
+
+// Check if airspace affects drones at 0-120m (roughly)
+function affectsDrone(as){
+  const t=as.type?.value??as.type??-1;
+  // Skip pure airways and military training routes
+  if(t===10||t===11) return false;
+  // Check lower limit: skip if starts above FL010 (~1000ft)
+  const ll=as.lowerLimit||as.lower_limit;
+  if(!ll) return true; // include if unknown
+  const v=ll.value??ll.val??0;
+  const unit=(ll.unit?.shortName||ll.unit||'FT').toString().toUpperCase();
+  if(unit==='FL'&&v>10) return false; // FL010+ above drone ceiling
+  if((unit==='FT'||unit==='0')&&v>1000) return false; // above 1000ft
+  return true;
+}
+
+// ── FETCH AIRSPACES FROM OPENAIP ─────────────────────────────────────────────
+async function fetchAirspaces(lat,lon){
+  const pad=0.5;
+  const poly=JSON.stringify({
+    type:'Polygon',
+    coordinates:[[[lon-pad,lat-pad],[lon+pad,lat-pad],[lon+pad,lat+pad],[lon-pad,lat+pad],[lon-pad,lat-pad]]]
+  });
+
+  const headers={'x-openaip-api-key':OAIP_KEY,'Accept':'application/json'};
+  const sig=AbortSignal.timeout(12000);
+
+  // Try 1: geometry bbox query
   try{
-    const r=await fetch(url,{signal:AbortSignal.timeout(8000),headers:{'Accept':'application/json'}});
+    const url=`https://api.core.openaip.net/api/airspaces?geometry=${encodeURIComponent(poly)}&limit=300`;
+    const r=await fetch(url,{headers,signal:sig});
+    if(r.ok){const d=await r.json(); if(d.items?.length>=0) return {ok:true,items:d.items}}
+  }catch(_){}
+
+  // Try 2: country query + client bbox filter
+  try{
+    const sig2=AbortSignal.timeout(15000);
+    const url=`https://api.core.openaip.net/api/airspaces?country=IT&limit=500&page=1`;
+    const r=await fetch(url,{headers,signal:sig2});
     if(r.ok){
-      const data=await r.json();
-      if(Array.isArray(data)) return {ok:true, data};
+      const d=await r.json();
+      const items=(d.items||[]).filter(as=>{
+        const c=as.centroid||as.geometry;
+        if(!c) return true;
+        const coord=c.coordinates||[];
+        const [clon,clat]=c.type==='Point'?coord:(coord[0]?.[0]||[0,0]);
+        return Math.abs(clat-lat)<1&&Math.abs(clon-lon)<1;
+      });
+      return {ok:true,items};
     }
   }catch(_){}
-  return {ok:false, nearby:getNearbyIcao(lat,lon)};
+
+  return {ok:false,items:[]};
 }
 
-// ── NOTAM PARSE ──────────────────────────────────────────────────────────────
-function parseNotams(arr){
-  if(!Array.isArray(arr)) return [];
-  const now=Date.now();
-  return arr.map(n=>{
-    const id   = n.notamID||n.id||'?';
-    const icao = n.icaoLocation||n.location||'';
-    const text = n.traditionalMessage||n.text||n.message||'';
-    let start=null,end=null,isActive=false,isUpcoming=false;
-    try{
-      if(n.startTime) start=new Date(n.startTime);
-      if(n.endTime)   end  =new Date(n.endTime);
-      if(start&&end){ isActive=start<=now&&end>=now; isUpcoming=start>now&&start<now+86400000*3; }
-      else { isActive=true; }
-    }catch(_){}
-    const up=text.toUpperCase();
-    const isHigh=/UAS|DRONE|UAV|RPAS|VIETATO|PROHIBITED|RESTRICTED|DANGER|TFR|\bD\d|\bR\d|\bP\d/.test(up);
-    const lines=text.split(/\r?\n/).map(l=>l.trim()).filter(l=>l.length>5);
-    const summary=lines.slice(0,2).join(' ').substring(0,130)+(text.length>130?'\u2026':'');
-    return {id,icao,text,summary,start,end,isActive,isUpcoming,isHigh};
-  })
-  .filter(n=>n.isActive||n.isUpcoming)
-  .sort((a,b)=>{
-    if(a.isActive!==b.isActive) return a.isActive?-1:1;
-    if(a.isHigh!==b.isHigh) return a.isHigh?-1:1;
-    return 0;
-  });
+// ── NEARBY AIRPORTS for NOTAM ─────────────────────────────────────────────────
+function nearbyAP(lat,lon){
+  return AIRPORTS.map(([name,icao,alat,alon])=>({name,icao,d:hav(lat,lon,alat,alon)}))
+    .sort((a,b)=>a.d-b.d).slice(0,5);
 }
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
-let curLat=null,curLon=null,curAcc=null,lastUpdate=null;
+let LAT=null,LON=null,ACC=null,lastUp=null;
 
 // ── RENDER ────────────────────────────────────────────────────────────────────
-function render(notamRaw){
-  const zones=checkZones(curLat,curLon);
-  const redZ=zones.filter(z=>z.sev==='red');
-  const yelZ=zones.filter(z=>z.sev==='yellow');
-  // Parse NOTAM result (new format: {ok, data} or {ok:false, nearby})
-  let notamList=[], notamOk=false, notamNearby=[];
-  if(notamRaw){
-    if(notamRaw.ok && notamRaw.data){ notamList=parseNotams(notamRaw.data); notamOk=true; }
-    else if(!notamRaw.ok && notamRaw.nearby){ notamNearby=notamRaw.nearby; }
-  }
-  const activeHigh=notamList.filter(n=>n.isActive&&n.isHigh);
-
-  let stClass,stIco,verdict,sub;
-  if(redZ.length>0||activeHigh.length>0){
-    stClass='red';stIco='⛔';verdict='VIETATO';
-    const r=[];
-    if(redZ.length) r.push(redZ.length+' zona CTR');
-    if(activeHigh.length) r.push(activeHigh.length+' NOTAM critico');
-    sub=r.join(' + ')+' rilevat'+(r.length>1||redZ.length+activeHigh.length>1?'i':'o');
-  } else if(yelZ.length||notamList.filter(n=>n.isActive).length){
-    stClass='yellow';stIco='⚠️';verdict='ATTENZIONE';
-    sub='Verifica necessaria: zone o NOTAM attivi vicino a te';
-  } else if(!notamRaw){
-    stClass='yellow';stIco='⏳';verdict='VERIFICA';
-    sub='Zone aeree OK — NOTAM in caricamento...';
-  } else {
-    stClass='green';stIco='✅';verdict='LIBERO';
-    sub='Nessuna restrizione rilevata'+(notamOk?'':' — verifica NOTAM manuale consigliata');
-  }
-
+function render(oaipResult){
   const dfUrl='https://www.d-flight.it/web-app';
-  const amUrl=`https://map.airmap.com/?lat=${curLat.toFixed(5)}&lng=${curLon.toFixed(5)}&zoom=13`;
-  const gmUrl=`https://www.google.com/maps?q=${curLat.toFixed(6)},${curLon.toFixed(6)}`;
+  const gmUrl=`https://www.google.com/maps?q=${LAT.toFixed(6)},${LON.toFixed(6)}`;
 
-  // Zones
-  const zonesHtml=zones.length===0
-    ?`<div class="empty-box"><div class="ico">🌿</div><p>Nessun aeroporto nel raggio di 10 km.</p></div>`
-    :`<div class="zones-list">${zones.map(z=>`
-        <div class="zone-item ${z.sev}-zone">
-          <div class="zone-dot"></div>
-          <div class="zone-info">
-            <div class="zone-name">${esc(z.name)}${z.icao?` <span style="font-family:var(--mono);font-size:10px;color:var(--muted)">${z.icao}</span>`:''}</div>
-            <div class="zone-type">${esc(z.type)}</div>
-          </div>
-          <div class="zone-dist">${fmtDist(z.d)}</div>
-        </div>`).join('')}
-      </div>`;
-
-  // NOTAMs HTML
-  let notamsHtml='';
-  if(!notamRaw){
-    notamsHtml=`<div class="notam-loading"><div class="mini-spinner"></div><span>Recupero NOTAM live in corso...</span></div>`;
-  } else if(notamOk && notamList.length===0){
-    notamsHtml=`<div class="empty-box"><div class="ico">📭</div><p>Nessun NOTAM attivo nel raggio ~80 km.<br><span style="font-size:10px;opacity:0.6">${lastUpdate?'Aggiornato: '+fmtTime(lastUpdate):''}</span></p></div>`;
-  } else if(notamOk && notamList.length>0){
-    notamsHtml=`<div class="notam-list">${notamList.map(n=>{
-      const cls=n.isHigh&&n.isActive?'n-active':n.isUpcoming?'n-upcoming':'n-info';
-      const badge=n.isHigh&&n.isActive?'CRITICO':n.isUpcoming?'FUTURO':'INFO';
-      return `<div class="notam-item ${cls}" onclick="this.classList.toggle('expanded')">
-        <div class="notam-header">
-          <div class="notam-badge">${badge}</div>
-          <div class="notam-id">${esc(n.id)}</div>
-          <div class="notam-loc">${esc(n.icao)}</div>
-        </div>
-        <div class="notam-summary">${esc(n.summary)}</div>
-        ${n.start?`<div class="notam-time">▶ ${fmtTime(n.start)}${n.end?' — '+fmtTime(n.end):''}</div>`:''}
-        <div class="notam-full">${esc(n.text)}</div>
-      </div>`;
-    }).join('')}</div>`;
+  // Process airspaces
+  let inside=[], nearby=[], fetchFailed=false;
+  if(!oaipResult){
+    // still loading
+  } else if(!oaipResult.ok||!oaipResult.items){
+    fetchFailed=true;
   } else {
-    // Fallback: CORS bloccato — link diretto FAA NOTAM con ICAO vicini
-    const icaoStr=notamNearby.map(a=>a.icao).join(',');
-    const faaUrl=`https://notams.aim.faa.gov/notamSearch/?searchType=0&designatorsForLocation=${icaoStr}`;
-    const icaoList=notamNearby.map(a=>`
-      <div class="zone-item" style="border-color:rgba(77,159,255,0.25)">
-        <div style="font-family:var(--mono);font-size:13px;color:var(--blue);min-width:44px">${esc(a.icao)}</div>
-        <div class="zone-info"><div class="zone-name">${esc(a.name)}</div></div>
-        <div class="zone-dist" style="color:var(--muted)">${fmtDist(a.d)}</div>
-      </div>`).join('');
-    notamsHtml=`
-      <div class="disclaimer" style="border-color:rgba(77,159,255,0.3);background:rgba(77,159,255,0.04)">
-        <div class="disclaimer-ico">ℹ️</div>
-        <p style="color:rgba(77,159,255,0.85)">NOTAM auto-fetch non disponibile su questa rete (blocco CORS). Tocca il bottone per controllare i NOTAM degli aeroporti vicini in un click — fonte FAA/ICAO pubblica, nessun login.</p>
-      </div>
-      <div class="zones-list" style="margin-bottom:10px">${icaoList}</div>
-      <a href="${faaUrl}" target="_blank" class="btn btn-full blue-btn" style="margin-bottom:8px">
-        <span class="ico">📋</span>&nbsp; Controlla NOTAM (${notamNearby.length} aeroporti)
-      </a>`;
+    const items=oaipResult.items.filter(affectsDrone);
+    for(const as of items){
+      const t=as.type?.value??as.type??0;
+      const info=TYPES[t]||{l:'Zona',s:'info'};
+      const name=as.name||'Zona senza nome';
+      const altLow=fmtAlt(as.lowerLimit||as.lower_limit);
+      const altHigh=fmtAlt(as.upperLimit||as.upper_limit);
+      const obj={name,typeLabel:info.l,sev:info.s,altLow,altHigh,icaoClass:as.icaoClass?.shortName||as.icaoClass||''};
+
+      // Check if inside polygon
+      if(as.geometry&&inGeom(LON,LAT,as.geometry)){
+        obj.status='DENTRO';
+        inside.push(obj);
+      } else {
+        // check centroid distance for "nearby"
+        const cent=as.centroid;
+        if(cent?.type==='Point'){
+          const [clon,clat]=cent.coordinates;
+          const d=hav(LAT,LON,clat,clon);
+          if(d<15){obj.status='VICINO';obj.dist=d;nearby.push(obj);}
+        }
+      }
+    }
+    nearby.sort((a,b)=>(a.dist||99)-(b.dist||99));
   }
 
-  const updateBar=!notamRaw
-    ?`<span>Caricamento NOTAM...</span>`
-    :notamOk
-      ?`<span class="fresh">● LIVE</span>&nbsp; aggiornato ${fmtTime(lastUpdate)}`
-      :`<span style="color:var(--yellow)">⚠ NOTAM manuale richiesto</span>`;
+  // Verdict
+  const redInside=inside.filter(z=>z.sev==='red');
+  const yelInside=inside.filter(z=>z.sev!=='red'&&z.sev!=='info');
+  let cls,ico,verdict,sub;
+  if(redInside.length>0){
+    cls='red';ico='⛔';verdict='VIETATO';
+    sub=`Sei dentro ${redInside.length} zona${redInside.length>1?'e':''} critica${redInside.length>1?'e':''}`;
+  } else if(yelInside.length>0||inside.length>0){
+    cls='yellow';ico='⚠️';verdict='ATTENZIONE';
+    sub=`Sei dentro ${inside.length} zona${inside.length>1?'e':''} con restrizioni`;
+  } else if(!oaipResult){
+    cls='yellow';ico='⏳';verdict='VERIFICA';sub='Caricamento dati spazio aereo...';
+  } else if(fetchFailed){
+    cls='yellow';ico='📡';verdict='OFFLINE';sub='Dati aereo non disponibili — verifica manuale';
+  } else {
+    cls='green';ico='✅';verdict='LIBERO';sub='Nessuna zona critica rilevata in questa posizione';
+  }
 
-  document.getElementById('main-content').innerHTML=`
-    <div class="status-card ${stClass} fade-in">
-      <div class="status-label">// STATO VOLO — POSIZIONE CORRENTE</div>
-      <div class="status-main">
-        <div class="status-indicator${stClass==='green'?' pulse':''}">${stIco}</div>
-        <div class="status-text">
-          <div class="status-verdict">${verdict}</div>
-          <div class="status-sub">${sub}</div>
+  // Zones HTML
+  const allZones=[...inside,...nearby.slice(0,5)];
+  let zonesHtml='';
+  if(!oaipResult){
+    zonesHtml=`<div class="fetching"><div class="mini-spin"></div><span>Caricamento dati OpenAIP...</span></div>`;
+  } else if(fetchFailed){
+    zonesHtml=`<div class="empty"><div class="eico">📡</div><p>Servizio OpenAIP non raggiungibile.<br>Controlla la connessione.</p></div>`;
+  } else if(allZones.length===0){
+    zonesHtml=`<div class="empty"><div class="eico">🌿</div><p>Nessuna zona aeronautica rilevata<br>in questa posizione (raggio ~55 km).</p></div>`;
+  } else {
+    const cls2z={red:'zi',yellow:'zy',info:'zb'};
+    zonesHtml=`<div class="zlist">${allZones.map(z=>`
+      <div class="zitem ${cls2z[z.sev]||'zb'}">
+        <div class="zdot"></div>
+        <div class="zinfo">
+          <div class="zname">${esc(z.name)}</div>
+          <div class="ztype">${esc(z.typeLabel)}${z.icaoClass?' · Classe '+esc(z.icaoClass):''}</div>
+          ${(z.altLow||z.altHigh)?`<div class="zalt">${z.altLow||'?'} → ${z.altHigh||'?'}</div>`:''}
+        </div>
+        <div class="zright">
+          <span class="zbadge">${esc(z.status)}${z.dist?' '+fmtD(z.dist):''}</span>
+        </div>
+      </div>`).join('')}</div>`;
+  }
+
+  // NOTAM section
+  const aps=nearbyAP(LAT,LON);
+  const icaoStr=aps.map(a=>a.icao).join(',');
+  const faaUrl=`https://notams.aim.faa.gov/notamSearch/?searchType=0&designatorsForLocation=${icaoStr}`;
+  const notamHtml=`
+    <div class="notam-box">
+      <p>I NOTAM non sono disponibili in-app (nessuna API pubblica CORS-compatible per EU). Tocca sotto per controllare i NOTAM degli aeroporti più vicini su FAA/ICAO — pubblico, nessun login.</p>
+      <div class="notam-airports">${aps.map(a=>`
+        <div class="notam-ap">
+          <span class="notam-icao">${esc(a.icao)}</span>
+          <span class="notam-name">${esc(a.name)}</span>
+          <span class="notam-dist">${fmtD(a.d)}</span>
+        </div>`).join('')}
+      </div>
+      <a href="${faaUrl}" target="_blank" class="btn bfull" style="text-decoration:none">
+        <span class="ico">📋</span>&nbsp;Controlla NOTAM (${aps.length} aeroporti)
+      </a>
+    </div>`;
+
+  const ubar=!oaipResult
+    ?`<span>Caricamento...</span>`
+    :oaipResult.ok
+      ?`<span class="ufresh">● OpenAIP LIVE</span>&nbsp; ${lastUp?lastUp.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})+' UTC':''}`
+      :`<span class="umanual">⚠ Offline — dati non aggiornati</span>`;
+
+  document.getElementById('mc').innerHTML=`
+    <div class="status-card ${cls} fi">
+      <div class="slabel">// STATO VOLO — POSIZIONE CORRENTE</div>
+      <div class="smain">
+        <div class="sball${cls==='green'?' pulse':''}">${ico}</div>
+        <div>
+          <div class="sverdict">${verdict}</div>
+          <div class="ssub">${sub}</div>
         </div>
       </div>
       <div class="gps-row">
-        <div class="gps-dot active"></div>
-        <div class="gps-coords">${curLat.toFixed(5)}, ${curLon.toFixed(5)}</div>
-        <div class="acc-badge">±${curAcc<10000?Math.round(curAcc):'>1k'}m</div>
+        <div class="gps-dot on"></div>
+        <div class="gps-val">${LAT.toFixed(5)}, ${LON.toFixed(5)}</div>
+        <div class="acc">±${ACC<10000?Math.round(ACC):'>1k'}m</div>
       </div>
     </div>
 
-    <div class="update-bar">${updateBar}</div>
+    <div class="ubar">${ubar}</div>
 
-    <div class="section-title">Zone aeree — ${zones.length} trovate</div>
+    <div class="stitle">Zone aeree${oaipResult?.ok?' — '+allZones.length+' rilevate':''}</div>
     ${zonesHtml}
 
-    <div class="section-title">NOTAM${notamOk?' live — '+notamList.length+' nel raggio':' — verifica manuale'}</div>
-    ${notamsHtml}
+    <div class="stitle">NOTAM</div>
+    ${notamHtml}
 
-    <div class="disclaimer">
-      <div class="disclaimer-ico">⚠️</div>
-      <p>NOTAM in tempo reale da fonte ICAO/FAA. Tocca ogni NOTAM per il testo completo. Possono mancare zone militari classificate. Verifica sempre su D-Flight prima di volare.</p>
+    <div class="disc">
+      <div style="font-size:14px;flex-shrink:0;margin-top:1px">⚠️</div>
+      <p>Dati spazio aereo da OpenAIP (aggiornati mensilmente). Possono mancare zone temporanee o militari classificate. Verifica sempre su D-Flight prima di volare.</p>
     </div>
 
-    <div class="section-title">Azioni rapide</div>
-    <div class="btn-grid">
-      <a href="${dfUrl}" target="_blank" class="btn blue-btn"><span class="ico">🛫</span>D-Flight</a>
-      <a href="${amUrl}" target="_blank" class="btn blue-btn"><span class="ico">🗺️</span>AirMap</a>
+    <div class="stitle">Azioni rapide</div>
+    <div class="bgrid">
+      <a href="${dfUrl}" target="_blank" class="btn bblu"><span class="ico">🛫</span>D-Flight</a>
       <a href="${gmUrl}" target="_blank" class="btn"><span class="ico">📍</span>Maps</a>
-      <button class="btn" id="copy-btn" onclick="copyCoords()"><span class="ico">📋</span>Copia GPS</button>
+      <button class="btn" id="cpbtn" onclick="copyC()"><span class="ico">📋</span>Copia GPS</button>
+      <button class="btn" onclick="startGPS()"><span class="ico">🔄</span>Aggiorna</button>
     </div>
-    <button class="btn btn-full" onclick="startGPS()"><span class="ico">🔄</span>&nbsp; Aggiorna tutto</button>
-    <div class="altitude-note">MAX 120m AGL — Regole ENAC UAS · Verificare sempre su D-Flight</div>
+    <div class="footnote">MAX 120m AGL · ENAC UAS-IT · Verificare sempre su D-Flight</div>
   `;
 }
 
-function copyCoords(){
-  if(!curLat) return;
-  navigator.clipboard.writeText(`${curLat.toFixed(6)}, ${curLon.toFixed(6)}`).then(()=>{
-    const b=document.getElementById('copy-btn');
+function copyC(){
+  if(!LAT) return;
+  navigator.clipboard.writeText(`${LAT.toFixed(6)}, ${LON.toFixed(6)}`).then(()=>{
+    const b=document.getElementById('cpbtn');
     if(b){const o=b.innerHTML;b.innerHTML='<span class="ico">✅</span>Copiato!';setTimeout(()=>{if(b)b.innerHTML=o;},1500);}
   });
 }
 
-// ── ENTRY POINT ───────────────────────────────────────────────────────────────
+// ── ENTRY ─────────────────────────────────────────────────────────────────────
 async function startGPS(){
-  document.getElementById('main-content').innerHTML=`
-    <div class="loading">
-      <div class="spinner"></div>
-      <p>Rilevamento GPS...</p>
-      <p class="sub">Assicurati di avere il GPS attivo</p>
-    </div>`;
+  document.getElementById('mc').innerHTML=`
+    <div class="loading"><div class="spinner"></div><p>Rilevamento GPS...</p><p class="sub">Assicurati di avere il GPS attivo</p></div>`;
 
   if(!navigator.geolocation){
-    document.getElementById('main-content').innerHTML=`
-      <div class="err-card"><div class="ico">📡</div><h3>GPS non supportato</h3><p>Usa un browser con supporto geolocalizzazione.</p></div>
-      <div class="btn-grid"><a href="https://www.d-flight.it/web-app" target="_blank" class="btn blue-btn"><span class="ico">🛫</span>D-Flight</a></div>`;
+    document.getElementById('mc').innerHTML=`
+      <div class="errc"><h3>GPS non supportato</h3><p>Usa un browser con supporto geolocalizzazione.</p></div>
+      <div class="bgrid"><a href="https://www.d-flight.it/web-app" target="_blank" class="btn bblu"><span class="ico">🛫</span>D-Flight</a></div>`;
     return;
   }
 
   navigator.geolocation.getCurrentPosition(
     async pos=>{
-      curLat=pos.coords.latitude;
-      curLon=pos.coords.longitude;
-      curAcc=pos.coords.accuracy;
-      render(null);                          // mostra zone subito
-      const raw=await fetchNotams(curLat,curLon);
-      lastUpdate=new Date();
-      render(raw);                           // aggiorna con NOTAM
+      LAT=pos.coords.latitude; LON=pos.coords.longitude; ACC=pos.coords.accuracy;
+      render(null);  // show immediately while fetching
+      const data=await fetchAirspaces(LAT,LON);
+      lastUp=new Date();
+      render(data);
     },
     err=>{
       let msg='Impossibile ottenere la posizione.';
-      if(err.code===1) msg='Accesso al GPS negato. Abilita la posizione nel browser.';
+      if(err.code===1) msg='Accesso GPS negato. Abilitalo nelle impostazioni del browser.';
       if(err.code===3) msg='Timeout GPS. Vai all\'aperto e riprova.';
-      document.getElementById('main-content').innerHTML=`
-        <div class="err-card"><div class="ico">📡</div><h3>GPS non disponibile</h3><p>${msg}</p></div>
-        <div class="btn-grid">
-          <a href="https://www.d-flight.it/web-app" target="_blank" class="btn blue-btn"><span class="ico">🛫</span>D-Flight</a>
+      document.getElementById('mc').innerHTML=`
+        <div class="errc"><h3>GPS non disponibile</h3><p>${msg}</p></div>
+        <div class="bgrid">
+          <a href="https://www.d-flight.it/web-app" target="_blank" class="btn bblu"><span class="ico">🛫</span>D-Flight</a>
           <button class="btn" onclick="startGPS()"><span class="ico">🔄</span>Riprova</button>
         </div>`;
     },
