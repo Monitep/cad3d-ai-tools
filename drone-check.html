@@ -309,7 +309,7 @@ function windArrow(deg){
 let LAT=null,LON=null,ACC=null,lastUp=null;
 
 // ── RENDER ────────────────────────────────────────────────────────────────────
-function render(zones,notams,metar,loadingZones,loadingNotams,loadingMetar){
+function render(zones,notams,metar){
   const aps=nearbyAP(LAT,LON);
   const icaoStr=aps.map(a=>a.icao).join(',');
   const faaUrl=`https://notams.aim.faa.gov/notamSearch/?searchType=0&designatorsForLocation=${icaoStr}`;
@@ -355,8 +355,8 @@ function render(zones,notams,metar,loadingZones,loadingNotams,loadingMetar){
     if(notamList.filter(n=>n.isActive).length)r.push('NOTAM attivi');
     if(metBad)r.push('meteo limitante');
     sub=r.join(' · ')||'Verifica raccomandata';
-  } else if(loadingZones||loadingNotams){
-    cls='y';ico='⏳';verdict='VERIFICA';sub='Caricamento dati in corso...';
+  } else if(!zones&&!notams){
+    cls='y';ico='⏳';verdict='CARICAMENTO';sub='Proxy non raggiungibile — verifica connessione';
   } else {
     cls='g';ico='✅';verdict='LIBERO';sub='Nessuna restrizione rilevata'+(met?` · ${met.cat||'VFR'}`:'')+' ✓';
   }
@@ -364,7 +364,7 @@ function render(zones,notams,metar,loadingZones,loadingNotams,loadingMetar){
   // ── Zones HTML ──
   const allZ=[...inside,...nearby.slice(0,5)];
   let zHtml='';
-  if(loadingZones){zHtml=`<div class="fetch-ing"><div class="ms"></div><span>Caricamento zone OpenAIP...</span></div>`;}
+  if(false){}  // placeholder
   else if(!zones){zHtml=`<div class="empty"><div class="eico">📡</div><p>Zone non disponibili</p></div>`;}
   else if(allZ.length===0){zHtml=`<div class="empty"><div class="eico">🌿</div><p>Nessuna zona aeronautica nei ~55 km.<br>Spazio aereo libero in questa area.</p></div>`;}
   else{
@@ -383,7 +383,7 @@ function render(zones,notams,metar,loadingZones,loadingNotams,loadingMetar){
 
   // ── NOTAM HTML ──
   let nHtml='';
-  if(loadingNotams){nHtml=`<div class="fetch-ing"><div class="ms"></div><span>Recupero NOTAM live...</span></div>`;}
+  if(false){}  // placeholder
   else if(!Array.isArray(notams)){
     nHtml=`<div class="empty"><div class="eico">📡</div><p>NOTAM non disponibili.<br>Proxy non raggiungibile.</p></div>`;
   } else if(notamList.length===0){
@@ -404,7 +404,7 @@ function render(zones,notams,metar,loadingZones,loadingNotams,loadingMetar){
 
   // ── METAR HTML ──
   let mHtml='';
-  if(loadingMetar){mHtml=`<div class="fetch-ing"><div class="ms"></div><span>Recupero meteo METAR...</span></div>`;}
+  if(false){}  // placeholder
   else if(!met){mHtml=`<div class="empty"><div class="eico">🌤️</div><p>Meteo non disponibile</p></div>`;}
   else{
     const catCls=met.cat&&['VFR','MVFR','IFR','LIFR'].includes(met.cat)?met.cat:'VFR';
@@ -498,9 +498,6 @@ async function go(){
 
   navigator.geolocation.getCurrentPosition(async pos=>{
     LAT=pos.coords.latitude; LON=pos.coords.longitude; ACC=pos.coords.accuracy;
-    // Show loading state immediately
-    render(null,null,null,true,true,true);
-
     const aps=nearbyAP(LAT,LON,3);
     const icaos=aps.map(a=>a.icao).join(',');
 
@@ -516,7 +513,7 @@ async function go(){
     const notams=notamsRes.status==='fulfilled'?notamsRes.value:null;
     const metar=metarRes.status==='fulfilled'?metarRes.value:null;
 
-    render(zones,notams,metar,false,false,false);
+    render(zones,notams,metar);
   },
   err=>{
     let msg='Impossibile ottenere la posizione.';
