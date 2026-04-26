@@ -247,8 +247,9 @@ function nearbyAP(lat,lon,n=4){
 async function call(params,timeout=14000){
   const url=PROXY+'?'+new URLSearchParams(params);
   const r=await fetch(url,{signal:AbortSignal.timeout(timeout)});
-  if(!r.ok)throw new Error(`HTTP ${r.status}`);
-  return r.json();
+  const data=await r.json().catch(()=>null);
+  if(!r.ok) return {_proxyError:true,_status:r.status,_detail:data?.error||data?.detail||'HTTP '+r.status};
+  return data;
 }
 
 // ── NOTAM PARSE ───────────────────────────────────────────────────────────────
@@ -316,7 +317,7 @@ function render(zones,notams,metar){
 
   // ── Process zones ──
   const inside=[],nearby=[];
-  if(zones?.items){
+  if(zones?.items&&!zones._proxyError){
     for(const as of zones.items.filter(affectsDrone)){
       const t=as.type?.value??as.type??0;
       const info=TYPES[t]||{l:'Zona',s:'b'};
@@ -365,7 +366,10 @@ function render(zones,notams,metar){
   const allZ=[...inside,...nearby.slice(0,5)];
   let zHtml='';
   if(false){}  // placeholder
-  else if(!zones){zHtml=`<div class="empty"><div class="eico">📡</div><p>Zone non disponibili</p></div>`;}
+  else if(!zones||zones._proxyError){
+    const zdetail=zones?._detail||'';
+    zHtml=`<div class="empty"><div class="eico">📡</div><p>Zone non disponibili.<br><span style="font-size:10px;opacity:.7">${esc(zdetail)}</span></p></div>`;
+  }
   else if(allZ.length===0){zHtml=`<div class="empty"><div class="eico">🌿</div><p>Nessuna zona aeronautica nei ~55 km.<br>Spazio aereo libero in questa area.</p></div>`;}
   else{
     const cmap={r:'zi',y:'zy',b:'zb'};
@@ -384,8 +388,9 @@ function render(zones,notams,metar){
   // ── NOTAM HTML ──
   let nHtml='';
   if(false){}  // placeholder
-  else if(!Array.isArray(notams)){
-    nHtml=`<div class="empty"><div class="eico">📡</div><p>NOTAM non disponibili.<br>Proxy non raggiungibile.</p></div>`;
+  else if(!notams||notams._proxyError||!Array.isArray(notams)){
+    const ndet=notams?._detail||'';
+    nHtml=`<div class="empty"><div class="eico">📡</div><p>NOTAM non disponibili.<br><span style="font-size:10px;opacity:.7">${esc(ndet||'Proxy non raggiungibile')}</span></p></div>`;
   } else if(notamList.length===0){
     nHtml=`<div class="empty"><div class="eico">📭</div><p>Nessun NOTAM attivo nel raggio ~80 km.</p></div>`;
   } else {
@@ -405,7 +410,10 @@ function render(zones,notams,metar){
   // ── METAR HTML ──
   let mHtml='';
   if(false){}  // placeholder
-  else if(!met){mHtml=`<div class="empty"><div class="eico">🌤️</div><p>Meteo non disponibile</p></div>`;}
+  else if(!met){
+    const mdetail=metar?._detail||'';
+    mHtml=`<div class="empty"><div class="eico">🌤️</div><p>Meteo non disponibile${mdetail?' — '+esc(mdetail):''}</p></div>`;
+  }
   else{
     const catCls=met.cat&&['VFR','MVFR','IFR','LIFR'].includes(met.cat)?met.cat:'VFR';
     const windStr=met.wspd!=null?`${windArrow(met.wdir)}${met.wdir!=null?met.wdir+'°&nbsp;':''}<b>${met.wspd}</b><span class="met-unit">kt</span>${met.wgst?`&nbsp;G<b>${met.wgst}</b>kt`:''}`:'-';
