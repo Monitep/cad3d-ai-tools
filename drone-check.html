@@ -246,48 +246,74 @@ function affectsDrone(as){
 }
 
 // ── FETCH AIRSPACES FROM OPENAIP ─────────────────────────────────────────────
+let _debugRaw = null; // for debug button
+
+// Extract items from any OpenAIP response format
+function extractItems(d){
+  if(Array.isArray(d)) return d;
+  const keys = ['items','data','airspaces','results','features'];
+  for(const k of keys){ if(d[k] && Array.isArray(d[k])) return d[k]; }
+  return [];
+}
+
 async function fetchAirspaces(lat,lon){
-  const pad=0.5;
-  const poly=JSON.stringify({
-    type:'Polygon',
-    coordinates:[[[lon-pad,lat-pad],[lon+pad,lat-pad],[lon+pad,lat+pad],[lon-pad,lat+pad],[lon-pad,lat-pad]]]
-  });
-
+  const pad=0.6;
+  const minLon=(lon-pad).toFixed(4), minLat=(lat-pad).toFixed(4);
+  const maxLon=(lon+pad).toFixed(4), maxLat=(lat+pad).toFixed(4);
   const headers={'x-openaip-api-key':OAIP_KEY,'Accept':'application/json'};
-  const sig=AbortSignal.timeout(12000);
 
-  // Try 1: geometry bbox query
+  // Strategy 1: bbox parameter (most standard REST approach)
   try{
-    const url=`https://api.core.openaip.net/api/airspaces?geometry=${encodeURIComponent(poly)}&limit=300`;
-    const r=await fetch(url,{headers,signal:sig});
-    if(r.ok){const d=await r.json(); if(d.items?.length>=0) return {ok:true,items:d.items}}
-  }catch(_){}
-
-  // Try 2: country query + client bbox filter
-  try{
-    const sig2=AbortSignal.timeout(15000);
-    const url=`https://api.core.openaip.net/api/airspaces?country=IT&limit=500&page=1`;
-    const r=await fetch(url,{headers,signal:sig2});
+    const url=`https://api.core.openaip.net/api/airspaces?bbox=${minLon},${minLat},${maxLon},${maxLat}&limit=300`;
+    const r=await fetch(url,{headers,signal:AbortSignal.timeout(12000)});
     if(r.ok){
-      const d=await r.json();
-      const items=(d.items||[]).filter(as=>{
-        const c=as.centroid||as.geometry;
-        if(!c) return true;
-        const coord=c.coordinates||[];
-        const [clon,clat]=c.type==='Point'?coord:(coord[0]?.[0]||[0,0]);
-        return Math.abs(clat-lat)<1&&Math.abs(clon-lon)<1;
-      });
-      return {ok:true,items};
+      const d=await r.json(); _debugRaw={strategy:'bbox',url,status:r.status,raw:d};
+      const items=extractItems(d);
+      if(items.length>0) return {ok:true,items,strategy:'bbox'};
     }
-  }catch(_){}
+  }catch(e){_debugRaw={strategy:'bbox',error:e.message};}
 
+  // Strategy 2: geometry as GeoJSON Polygon
+  try{
+    const poly=JSON.stringify({type:'Polygon',
+      coordinates:[[[lon-pad,lat-pad],[lon+pad,lat-pad],[lon+pad,lat+pad],[lon-pad,lat+pad],[lon-pad,lat-pad]]]});
+    const url=`https://api.core.openaip.net/api/airspaces?geometry=${encodeURIComponent(poly)}&limit=300`;
+    const r=await fetch(url,{headers,signal:AbortSignal.timeout(12000)});
+    if(r.ok){
+      const d=await r.json(); _debugRaw={strategy:'geometry',url,status:r.status,raw:d};
+      const items=extractItems(d);
+      if(items.length>0) return {ok:true,items,strategy:'geometry'};
+    }
+  }catch(e){_debugRaw={strategy:'geometry',error:e.message};}
+
+  // Strategy 3: country=IT page 1 + centroid filter
+  try{
+    const url=`https://api.core.openaip.net/api/airspaces?country=IT&limit=500`;
+    const r=await fetch(url,{headers,signal:AbortSignal.timeout(15000)});
+    if(r.ok){
+      const d=await r.json(); _debugRaw={strategy:'country',url,status:r.status,raw:d};
+      const all=extractItems(d);
+      const items=all.filter(as=>{
+        const c=as.centroid||as.center;
+        if(!c?.coordinates) return true; // include if no centroid
+        const [clon,clat]=c.coordinates;
+        return Math.abs(clat-lat)<1.5&&Math.abs(clon-lon)<1.5;
+      });
+      return {ok:true,items,strategy:'country',total:all.length};
+    }
+  }catch(e){_debugRaw={strategy:'country',error:e.message};}
+
+  if(_debugRaw) return {ok:false,items:[],debug:_debugRaw};
   return {ok:false,items:[]};
 }
 
 // ── NEARBY AIRPORTS for NOTAM ─────────────────────────────────────────────────
 function nearbyAP(lat,lon){
+  const seen=new Set();
   return AIRPORTS.map(([name,icao,alat,alon])=>({name,icao,d:hav(lat,lon,alat,alon)}))
-    .sort((a,b)=>a.d-b.d).slice(0,5);
+    .sort((a,b)=>a.d-b.d)
+    .filter(a=>{if(seen.has(a.icao))return false;seen.add(a.icao);return true;})
+    .slice(0,5);
 }
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
@@ -393,11 +419,13 @@ function render(oaipResult){
       </a>
     </div>`;
 
+  const strategy=oaipResult?.strategy?' ['+oaipResult.strategy+']':'';
+  const totalDbg=oaipResult?.total?' tot:'+oaipResult.total:'';
   const ubar=!oaipResult
     ?`<span>Caricamento...</span>`
     :oaipResult.ok
-      ?`<span class="ufresh">● OpenAIP LIVE</span>&nbsp; ${lastUp?lastUp.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})+' UTC':''}`
-      :`<span class="umanual">⚠ Offline — dati non aggiornati</span>`;
+      ?`<span class="ufresh">● OpenAIP LIVE</span>${strategy}${totalDbg}&nbsp; ${lastUp?lastUp.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})+' UTC':''}&nbsp;<button onclick="showDebug()" style="font-family:var(--mono);font-size:9px;background:none;border:1px solid var(--muted);color:var(--muted);border-radius:3px;padding:1px 5px;cursor:pointer;touch-action:manipulation">DBG</button>`
+      :`<span class="umanual">⚠ Offline</span>&nbsp;<button onclick="showDebug()" style="font-family:var(--mono);font-size:9px;background:none;border:1px solid var(--muted);color:var(--muted);border-radius:3px;padding:1px 5px;cursor:pointer;touch-action:manipulation">DBG</button>`;
 
   document.getElementById('mc').innerHTML=`
     <div class="status-card ${cls} fi">
@@ -440,6 +468,14 @@ function render(oaipResult){
   `;
 }
 
+function showDebug(){
+  const dbg=_debugRaw||{note:'no data yet'};
+  const el=document.createElement('div');
+  el.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:999;overflow:auto;padding:16px';
+  el.innerHTML='<div style="font-family:monospace;font-size:10px;color:#4d9fff;white-space:pre-wrap;word-break:break-all">'+esc(JSON.stringify(dbg,null,2))+'</div>'
+    +'<button onclick="this.parentElement.remove()" style="position:sticky;bottom:8px;display:block;margin:12px auto 0;padding:10px 24px;background:#ff3355;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;touch-action:manipulation">CHIUDI</button>';
+  document.body.appendChild(el);
+}
 function copyC(){
   if(!LAT) return;
   navigator.clipboard.writeText(`${LAT.toFixed(6)}, ${LON.toFixed(6)}`).then(()=>{
