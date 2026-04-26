@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>DroneCheck Italia</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;600;700;900&display=swap');
+
+  :root {
+    --bg: #070a0e;
+    --surface: #0d1117;
+    --border: #1c2333;
+    --green: #00ff88;
+    --green-dim: #00ff8822;
+    --yellow: #ffcc00;
+    --yellow-dim: #ffcc0022;
+    --red: #ff3355;
+    --red-dim: #ff335522;
+    --blue: #4d9fff;
+    --text: #c8d6e8;
+    --muted: #4a5568;
+    --mono: 'Share Tech Mono', monospace;
+    --sans: 'Barlow Condensed', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid noise background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(77,159,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(77,159,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .app {
+    position: relative;
+    z-index: 1;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 20px 16px 40px;
+  }
+
+  /* Header */
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .logo {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--blue);
+    letter-spacing: 0.15em;
+    opacity: 0.8;
+  }
+  .logo span { color: var(--muted); }
+  .header-title {
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+  .header-title small {
+    display: block;
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .header-drone {
+    margin-left: auto;
+    font-size: 28px;
+    opacity: 0.6;
+  }
+
+  /* Status Card - Main */
+  .status-card {
+    border-radius: 16px;
+    padding: 28px 20px;
+    margin-bottom: 16px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s ease;
+  }
+  .status-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+  .status-card.green { border-color: var(--green); }
+  .status-card.green::before { background: var(--green-dim); opacity: 1; }
+  .status-card.yellow { border-color: var(--yellow); }
+  .status-card.yellow::before { background: var(--yellow-dim); opacity: 1; }
+  .status-card.red { border-color: var(--red); }
+  .status-card.red::before { background: var(--red-dim); opacity: 1; }
+
+  .status-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    margin-bottom: 8px;
+    position: relative;
+  }
+
+  .status-main {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: relative;
+  }
+
+  .status-indicator {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    flex-shrink: 0;
+    transition: all 0.4s ease;
+    position: relative;
+  }
+  .status-indicator.pulse::after {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    border: 2px solid currentColor;
+    animation: pulse-ring 2s infinite;
+  }
+  @keyframes pulse-ring {
+    0% { transform: scale(0.9); opacity: 0.8; }
+    100% { transform: scale(1.4); opacity: 0; }
+  }
+  .green .status-indicator { border-color: var(--green); color: var(--green); }
+  .yellow .status-indicator { border-color: var(--yellow); color: var(--yellow); }
+  .red .status-indicator { border-color: var(--red); color: var(--red); }
+
+  .status-text {
+    flex: 1;
+  }
+  .status-verdict {
+    font-size: 32px;
+    font-weight: 900;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    line-height: 1;
+    transition: color 0.4s ease;
+  }
+  .green .status-verdict { color: var(--green); }
+  .yellow .status-verdict { color: var(--yellow); }
+  .red .status-verdict { color: var(--red); }
+
+  .status-sub {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--text);
+    margin-top: 4px;
+    line-height: 1.4;
+    opacity: 0.8;
+  }
+
+  /* GPS Info */
+  .gps-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    position: relative;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .gps-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--muted);
+    flex-shrink: 0;
+  }
+  .gps-dot.active { background: var(--green); animation: blink 2s infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .gps-coords { color: var(--text); flex:1; }
+
+  /* Zones list */
+  .section-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .zones-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .zone-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .zone-item.red-zone { border-color: rgba(255,51,85,0.3); }
+  .zone-item.yellow-zone { border-color: rgba(255,204,0,0.3); }
+
+  .zone-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .red-zone .zone-dot { background: var(--red); }
+  .yellow-zone .zone-dot { background: var(--yellow); }
+
+  .zone-info { flex: 1; }
+  .zone-name {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    line-height: 1.2;
+  }
+  .zone-type {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 1px;
+  }
+  .zone-dist {
+    font-family: var(--mono);
+    font-size: 13px;
+    text-align: right;
+  }
+  .red-zone .zone-dist { color: var(--red); }
+  .yellow-zone .zone-dist { color: var(--yellow); }
+
+  .no-zones {
+    text-align: center;
+    padding: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 16px;
+  }
+  .no-zones .icon { font-size: 32px; margin-bottom: 8px; }
+  .no-zones p { font-size: 13px; color: var(--muted); }
+
+  /* Buttons */
+  .btn-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .btn {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    border-radius: 12px;
+    padding: 14px 12px;
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s ease;
+    text-decoration: none;
+    touch-action: manipulation;
+    user-select: none;
+  }
+  .btn:active { transform: scale(0.96); opacity: 0.8; }
+  .btn .btn-icon { font-size: 22px; }
+  .btn.primary {
+    border-color: var(--blue);
+    background: rgba(77,159,255,0.1);
+    color: var(--blue);
+  }
+  .btn.refresh-btn {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    justify-content: center;
+    padding: 16px;
+    font-size: 15px;
+    font-weight: 700;
+    border-color: var(--blue);
+    background: rgba(77,159,255,0.08);
+    color: var(--blue);
+  }
+  .btn.refresh-btn .btn-icon { font-size: 18px; }
+
+  /* Disclaimer */
+  .disclaimer {
+    background: rgba(255,204,0,0.05);
+    border: 1px solid rgba(255,204,0,0.2);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 16px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .disclaimer-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .disclaimer p {
+    font-size: 12px;
+    line-height: 1.5;
+    color: rgba(255,204,0,0.8);
+  }
+
+  /* Loading state */
+  .loading {
+    text-align: center;
+    padding: 40px 20px;
+  }
+  .spinner {
+    width: 48px;
+    height: 48px;
+    border: 3px solid var(--border);
+    border-top-color: var(--blue);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 16px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading p {
+    font-size: 14px;
+    color: var(--muted);
+    font-family: var(--mono);
+  }
+
+  /* Error */
+  .error-card {
+    background: var(--surface);
+    border: 1px solid rgba(255,51,85,0.4);
+    border-radius: 16px;
+    padding: 28px 20px;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .error-card .icon { font-size: 40px; margin-bottom: 12px; }
+  .error-card h3 { font-size: 18px; font-weight: 700; color: var(--red); margin-bottom: 8px; }
+  .error-card p { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+  /* Accuracy badge */
+  .acc-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 2px 6px;
+    margin-left: auto;
+  }
+
+  /* Scan line effect */
+  @keyframes scanline {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(100vh); }
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(transparent, rgba(77,159,255,0.06), transparent);
+    animation: scanline 6s linear infinite;
+    pointer-events: none;
+    z-index: 100;
+  }
+
+  .altitude-note {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: var(--mono);
+    text-align: center;
+    margin-bottom: 8px;
+    opacity: 0.7;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <div>
+      <div class="logo">ENAC<span>/</span>D-FLIGHT<span> //</span> IT</div>
+      <div class="header-title">
+        DroneCheck
+        <small>ITALIA — AIRSPACE VERIFIER</small>
+      </div>
+    </div>
+    <div class="header-drone">🛸</div>
+  </div>
+
+  <div id="main-content">
+    <div class="loading">
+      <div class="spinner"></div>
+      <p>Rilevamento GPS...</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ─── DATABASE AEROPORTI ITALIANI + ZONE SPECIALI ─────────────────────────────
+// radius_red = km distanza zona rossa (CTR / no fly)
+// radius_yellow = km distanza zona gialla (attenzione, verifica obbligatoria)
+const ZONES = [
+  // NORD OVEST
+  { name:"Milano Malpensa", code:"MXP", lat:45.6306, lon:8.7281,  rr:5, ry:10, type:"Aeroporto Internazionale" },
+  { name:"Milano Linate",   code:"LIN", lat:45.4454, lon:9.2797,  rr:5, ry:10, type:"Aeroporto Internazionale" },
+  { name:"Milano Bresso",   code:"LIMB",lat:45.5422, lon:9.2025,  rr:3, ry:6,  type:"Aviosuperficie" },
+  { name:"Torino Caselle",  code:"TRN", lat:45.2008, lon:7.6497,  rr:5, ry:10, type:"Aeroporto Internazionale" },
+  { name:"Genova Cristoforo Colombo", code:"GOA", lat:44.4133, lon:8.8375, rr:5, ry:9, type:"Aeroporto" },
+  { name:"Lugano (CH)",     code:"LUG", lat:45.9728, lon:8.9106,  rr:4, ry:8,  type:"Aeroporto (Svizzera)" },
+  // NORD EST
+  { name:"Bergamo Orio al Serio", code:"BGY", lat:45.6739, lon:9.7042,  rr:5, ry:10, type:"Aeroporto Internazionale" },
+  { name:"Brescia Montichiari",   code:"VBS", lat:45.4289, lon:10.3306, rr:4, ry:8,  type:"Aeroporto" },
+  { name:"Verona Villafranca",    code:"VRN", lat:45.3957, lon:10.8886, rr:5, ry:10, type:"Aeroporto Internazionale" },
+  { name:"Venezia Marco Polo",    code:"VCE", lat:45.5053, lon:12.3519, rr:5, ry:10, type:"Aeroporto Internazionale" },
+  { name:"Treviso",               code:"TSF", lat:45.6484, lon:12.1944, rr:4, ry:8,  type:"Aeroporto" },
+  { name:"Trieste",               code:"TRS", lat:45.8275, lon:13.4722, rr:4, ry:8,  type:"Aeroporto" },
+  { name:"Bolzano",               code:"BZO", lat:46.4602, lon:11.3264, rr:3, ry:7,  type:"Aeroporto" },
+  { name:"Trento Mattarello",     code:"LIDT",lat:46.0213, lon:11.1244, rr:3, ry:6,  type:"Aviosuperficie" },
+  // CENTRO
+  { name:"Bologna Marconi",       code:"BLQ", lat:44.5354, lon:11.2887, rr:5, ry:10, type:"Aeroporto Internazionale" },
+  { name:"Firenze Amerigo Vespucci", code:"FLR", lat:43.8100, lon:11.2051, rr:5, ry:9, type:"Aeroporto" },
+  { name:"Pisa Galileo Galilei",  code:"PSA", lat:43.6839, lon:10.3927, rr:5, ry:10, type:"Aeroporto Internazionale" },
+  { name:"Ancona",                code:"AOI", lat:43.6161, lon:13.3622, rr:4, ry:8,  type:"Aeroporto" },
+  { name:"Perugia",               code:"PEG", lat:43.1059, lon:12.5132, rr:3, ry:7,  type:"Aeroporto" },
+  { name:"Roma Fiumicino",        code:"FCO", lat:41.7999, lon:12.2462, rr:6, ry:12, type:"Aeroporto Internazionale" },
+  { name:"Roma Ciampino",         code:"CIA", lat:41.7994, lon:12.5949, rr:5, ry:10, type:"Aeroporto" },
+  // SUD
+  { name:"Napoli Capodichino",    code:"NAP", lat:40.8860, lon:14.2908, rr:5, ry:10, type:"Aeroporto Internazionale" },
+  { name:"Bari Karol Wojtyla",    code:"BRI", lat:41.1389, lon:16.7606, rr:5, ry:9,  type:"Aeroporto Internazionale" },
+  { name:"Brindisi",              code:"BDS", lat:40.6576, lon:17.9469, rr:4, ry:8,  type:"Aeroporto" },
+  { name:"Lamezia Terme",         code:"SUF", lat:38.9054, lon:16.2422, rr:4, ry:8,  type:"Aeroporto" },
+  { name:"Reggio Calabria",       code:"REG", lat:38.0712, lon:15.6516, rr:3, ry:7,  type:"Aeroporto" },
+  // ISOLE
+  { name:"Palermo Falcone Borsellino", code:"PMO", lat:38.1760, lon:13.0910, rr:5, ry:9, type:"Aeroporto Internazionale" },
+  { name:"Catania Fontanarossa",  code:"CTA", lat:37.4668, lon:15.0664, rr:5, ry:9,  type:"Aeroporto Internazionale" },
+  { name:"Trapani",               code:"TPS", lat:37.9113, lon:12.4881, rr:4, ry:8,  type:"Aeroporto" },
+  { name:"Cagliari Elmas",        code:"CAG", lat:39.2515, lon:9.0543,  rr:5, ry:9,  type:"Aeroporto Internazionale" },
+  { name:"Olbia Costa Smeralda",  code:"OLB", lat:40.8987, lon:9.5177,  rr:4, ry:8,  type:"Aeroporto" },
+  { name:"Alghero",               code:"AHO", lat:40.6321, lon:8.2908,  rr:4, ry:8,  type:"Aeroporto" },
+  // ZONE SPECIALI
+  { name:"Area TMA Roma",         code:"SPEC",lat:41.9028, lon:12.4964, rr:0, ry:25, type:"Spazio aereo speciale — Roma" },
+  { name:"Vaticano",              code:"VATI",lat:41.9022, lon:12.4539, rr:3, ry:5,  type:"Zona vietata permanente" },
+];
+
+// ─── HAVERSINE DISTANCE ───────────────────────────────────────────────────────
+function haversine(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+  return R * 2 * Math.asin(Math.sqrt(a));
+}
+
+// ─── CHECK ZONES ─────────────────────────────────────────────────────────────
+function checkZones(lat, lon) {
+  const results = [];
+  for (const z of ZONES) {
+    const d = haversine(lat, lon, z.lat, z.lon);
+    if (d <= z.ry) {
+      results.push({ ...z, dist: d, severity: d <= z.rr ? 'red' : 'yellow' });
+    }
+  }
+  results.sort((a, b) => a.dist - b.dist);
+  return results;
+}
+
+// ─── RENDER ───────────────────────────────────────────────────────────────────
+let currentLat = null, currentLon = null, currentAcc = null;
+
+function renderResult(lat, lon, acc) {
+  currentLat = lat; currentLon = lon; currentAcc = acc;
+  const hits = checkZones(lat, lon);
+  const redHits = hits.filter(h => h.severity === 'red');
+  const yellowHits = hits.filter(h => h.severity === 'yellow');
+
+  let statusClass, statusIcon, verdict, subText;
+  if (redHits.length > 0) {
+    statusClass = 'red';
+    statusIcon = '⛔';
+    verdict = 'VIETATO';
+    subText = `${redHits.length} zona${redHits.length>1?'e':''} critica${redHits.length>1?'e':''} rilevata${redHits.length>1?'e':''}`;
+  } else if (yellowHits.length > 0) {
+    statusClass = 'yellow';
+    statusIcon = '⚠️';
+    verdict = 'ATTENZIONE';
+    subText = `${yellowHits.length} zona${yellowHits.length>1?'e':''} con restrizione${yellowHits.length>1?'i':''}`;
+  } else {
+    statusClass = 'green';
+    statusIcon = '✅';
+    verdict = 'LIBERO';
+    subText = 'Nessuna zona critica rilevata nel raggio';
+  }
+
+  const dfUrl = `https://www.d-flight.it/new_portal/it/mappa/`;
+  const amUrl = `https://map.airmap.com/?lat=${lat.toFixed(5)}&lng=${lon.toFixed(5)}&zoom=13`;
+  const gmUrl = `https://www.google.com/maps?q=${lat.toFixed(6)},${lon.toFixed(6)}`;
+
+  const zonesHTML = hits.length === 0
+    ? `<div class="no-zones">
+        <div class="icon">🌿</div>
+        <p>Nessun aeroporto o zona riservata<br>nel raggio di controllo.</p>
+       </div>`
+    : `<div class="zones-list">
+        ${hits.map(z => `
+          <div class="zone-item ${z.severity}-zone">
+            <div class="zone-dot"></div>
+            <div class="zone-info">
+              <div class="zone-name">${z.name} ${z.code !== 'SPEC' && z.code !== 'VATI' ? `<span style="font-family:var(--mono);font-size:11px;color:var(--muted)">(${z.code})</span>` : ''}</div>
+              <div class="zone-type">${z.type}</div>
+            </div>
+            <div class="zone-dist">${z.dist < 1 ? (z.dist*1000).toFixed(0)+'m' : z.dist.toFixed(1)+'km'}</div>
+          </div>
+        `).join('')}
+       </div>`;
+
+  document.getElementById('main-content').innerHTML = `
+    <div class="status-card ${statusClass}">
+      <div class="status-label">// STATO VOLO — POSIZIONE ATTUALE</div>
+      <div class="status-main">
+        <div class="status-indicator ${statusClass !== 'green' ? '' : 'pulse'}">${statusIcon}</div>
+        <div class="status-text">
+          <div class="status-verdict">${verdict}</div>
+          <div class="status-sub">${subText}</div>
+        </div>
+      </div>
+      <div class="gps-row">
+        <div class="gps-dot active"></div>
+        <div class="gps-coords">${lat.toFixed(5)}, ${lon.toFixed(5)}</div>
+        <div class="acc-badge">±${acc < 1000 ? Math.round(acc) : '>1000'}m</div>
+      </div>
+    </div>
+
+    <div class="section-title">Zone rilevate</div>
+
+    ${zonesHTML}
+
+    <div class="disclaimer">
+      <div class="disclaimer-icon">⚠️</div>
+      <p>Questo strumento verifica solo aeroporti civili e zone note. Controlla SEMPRE D-Flight prima di volare — potrebbero esserci NOTAM, zone temporanee, CTR militari o aree protette non incluse qui.</p>
+    </div>
+
+    <div class="section-title">Azioni rapide</div>
+
+    <div class="btn-grid">
+      <a href="${dfUrl}" target="_blank" class="btn primary">
+        <span class="btn-icon">🛫</span>
+        D-Flight
+      </a>
+      <a href="${amUrl}" target="_blank" class="btn primary">
+        <span class="btn-icon">🗺️</span>
+        AirMap
+      </a>
+      <a href="${gmUrl}" target="_blank" class="btn">
+        <span class="btn-icon">📍</span>
+        Maps
+      </a>
+      <button class="btn" onclick="copyCoords()" id="copy-btn">
+        <span class="btn-icon">📋</span>
+        Copia GPS
+      </button>
+    </div>
+
+    <button class="btn refresh-btn" onclick="startGPS()">
+      <span class="btn-icon">🔄</span>&nbsp; Aggiorna Posizione
+    </button>
+
+    <div class="altitude-note">MAX 120m AGL — Regole ENAC UAS IT</div>
+  `;
+}
+
+function renderLoading() {
+  document.getElementById('main-content').innerHTML = `
+    <div class="loading">
+      <div class="spinner"></div>
+      <p>Rilevamento GPS...</p>
+    </div>`;
+}
+
+function renderError(msg) {
+  document.getElementById('main-content').innerHTML = `
+    <div class="error-card">
+      <div class="icon">📡</div>
+      <h3>GPS non disponibile</h3>
+      <p>${msg}</p>
+    </div>
+    <div class="btn-grid">
+      <a href="https://www.d-flight.it/new_portal/it/mappa/" target="_blank" class="btn primary">
+        <span class="btn-icon">🛫</span>
+        D-Flight
+      </a>
+      <button class="btn" onclick="startGPS()">
+        <span class="btn-icon">🔄</span>
+        Riprova
+      </button>
+    </div>`;
+}
+
+function copyCoords() {
+  if (!currentLat) return;
+  const txt = `${currentLat.toFixed(6)}, ${currentLon.toFixed(6)}`;
+  navigator.clipboard.writeText(txt).then(() => {
+    const btn = document.getElementById('copy-btn');
+    if (btn) {
+      const orig = btn.innerHTML;
+      btn.innerHTML = '<span class="btn-icon">✅</span>Copiato!';
+      setTimeout(() => { if(btn) btn.innerHTML = orig; }, 1500);
+    }
+  });
+}
+
+function startGPS() {
+  renderLoading();
+  if (!navigator.geolocation) {
+    renderError('Il tuo browser non supporta la geolocalizzazione.');
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    pos => renderResult(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy),
+    err => {
+      let msg = 'Impossibile ottenere la posizione.';
+      if (err.code === 1) msg = 'Accesso alla posizione negato. Abilita il GPS nelle impostazioni del browser.';
+      else if (err.code === 3) msg = 'Timeout GPS. Assicurati di essere all\'aperto e riprova.';
+      renderError(msg);
+    },
+    { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
+  );
+}
+
+// Auto-start
+startGPS();
+</script>
+</body>
+</html>
