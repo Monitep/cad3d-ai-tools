@@ -343,46 +343,39 @@ function checkZones(lat,lon){
   }).filter(Boolean).sort((a,b)=>a.d-b.d);
 }
 
-// ── NOTAM FETCH ───────────────────────────────────────────────────────────────
+// ── NEARBY ICAO ──────────────────────────────────────────────────────────────
+function getNearbyIcao(lat,lon){
+  return AIRPORTS
+    .filter(([,icao,,alat,alon])=>icao&&haversine(lat,lon,alat,alon)<=120)
+    .map(([name,icao,,alat,alon])=>({name,icao,d:haversine(lat,lon,alat,alon)}))
+    .sort((a,b)=>a.d-b.d)
+    .slice(0,6);
+}
+
+// ── NOTAM FETCH ──────────────────────────────────────────────────────────────
+// aviationweather.gov blocca proxy con 403.
+// Tentativo diretto: funziona se il browser gestisce CORS.
+// Fallback: restituiamo ICAO vicini per link diretto FAA NOTAM (pubblico, no login).
 async function fetchNotams(lat,lon){
   const pad=0.8;
   const w=(lon-pad).toFixed(3), s=(lat-pad).toFixed(3);
   const e=(lon+pad).toFixed(3), n=(lat+pad).toFixed(3);
-  const target=`https://aviationweather.gov/api/data/notam?format=json&bbox=${w},${s},${e},${n}&limit=100`;
-  const enc=encodeURIComponent(target);
-
-  const sources=[
-    // 1. Diretto (funziona se il browser supporta CORS su aviationweather.gov)
-    [target, false],
-    // 2. allorigins.win/raw — risponde con il payload grezzo
-    [`https://api.allorigins.win/raw?url=${enc}`, false],
-    // 3. allorigins.win/get — wrapper JSON {contents:"..."}
-    [`https://api.allorigins.win/get?url=${enc}`, true],
-    // 4. corsproxy.io
-    [`https://corsproxy.io/?${enc}`, false],
-  ];
-
-  for(const [url, isWrapper] of sources){
-    try{
-      const r=await fetch(url,{
-        signal:AbortSignal.timeout(9000),
-        headers:{'Accept':'application/json'}
-      });
-      if(!r.ok) continue;
-      const raw=await r.json();
-      // allorigins wrapper: {contents:"[...]", status:{...}}
-      const data=isWrapper?(raw.contents?JSON.parse(raw.contents):null):raw;
-      if(Array.isArray(data)) return data;
-    }catch(_){ continue; }
-  }
-  return {_error:'All NOTAM sources failed'};
+  const url=`https://aviationweather.gov/api/data/notam?format=json&bbox=${w},${s},${e},${n}&limit=100`;
+  try{
+    const r=await fetch(url,{signal:AbortSignal.timeout(8000),headers:{'Accept':'application/json'}});
+    if(r.ok){
+      const data=await r.json();
+      if(Array.isArray(data)) return {ok:true, data};
+    }
+  }catch(_){}
+  return {ok:false, nearby:getNearbyIcao(lat,lon)};
 }
 
-// ── NOTAM PARSE ───────────────────────────────────────────────────────────────
-function parseNotams(raw){
-  if(!raw||raw._error||!Array.isArray(raw)) return {ok:false,list:[]};
+// ── NOTAM PARSE ──────────────────────────────────────────────────────────────
+function parseNotams(arr){
+  if(!Array.isArray(arr)) return [];
   const now=Date.now();
-  const list=raw.map(n=>{
+  return arr.map(n=>{
     const id   = n.notamID||n.id||'?';
     const icao = n.icaoLocation||n.location||'';
     const text = n.traditionalMessage||n.text||n.message||'';
@@ -396,7 +389,7 @@ function parseNotams(raw){
     const up=text.toUpperCase();
     const isHigh=/UAS|DRONE|UAV|RPAS|VIETATO|PROHIBITED|RESTRICTED|DANGER|TFR|\bD\d|\bR\d|\bP\d/.test(up);
     const lines=text.split(/\r?\n/).map(l=>l.trim()).filter(l=>l.length>5);
-    const summary=lines.slice(0,2).join(' ').substring(0,130)+(text.length>130?'…':'');
+    const summary=lines.slice(0,2).join(' ').substring(0,130)+(text.length>130?'\u2026':'');
     return {id,icao,text,summary,start,end,isActive,isUpcoming,isHigh};
   })
   .filter(n=>n.isActive||n.isUpcoming)
@@ -405,7 +398,6 @@ function parseNotams(raw){
     if(a.isHigh!==b.isHigh) return a.isHigh?-1:1;
     return 0;
   });
-  return {ok:true,list};
 }
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
@@ -416,8 +408,13 @@ function render(notamRaw){
   const zones=checkZones(curLat,curLon);
   const redZ=zones.filter(z=>z.sev==='red');
   const yelZ=zones.filter(z=>z.sev==='yellow');
-  const notams=notamRaw?parseNotams(notamRaw):{ok:false,list:[]};
-  const activeHigh=notams.list.filter(n=>n.isActive&&n.isHigh);
+  // Parse NOTAM result (new format: {ok, data} or {ok:false, nearby})
+  let notamList=[], notamOk=false, notamNearby=[];
+  if(notamRaw){
+    if(notamRaw.ok && notamRaw.data){ notamList=parseNotams(notamRaw.data); notamOk=true; }
+    else if(!notamRaw.ok && notamRaw.nearby){ notamNearby=notamRaw.nearby; }
+  }
+  const activeHigh=notamList.filter(n=>n.isActive&&n.isHigh);
 
   let stClass,stIco,verdict,sub;
   if(redZ.length>0||activeHigh.length>0){
@@ -426,12 +423,15 @@ function render(notamRaw){
     if(redZ.length) r.push(redZ.length+' zona CTR');
     if(activeHigh.length) r.push(activeHigh.length+' NOTAM critico');
     sub=r.join(' + ')+' rilevat'+(r.length>1||redZ.length+activeHigh.length>1?'i':'o');
-  } else if(yelZ.length||notams.list.filter(n=>n.isActive).length){
+  } else if(yelZ.length||notamList.filter(n=>n.isActive).length){
     stClass='yellow';stIco='⚠️';verdict='ATTENZIONE';
     sub='Verifica necessaria: zone o NOTAM attivi vicino a te';
+  } else if(!notamRaw){
+    stClass='yellow';stIco='⏳';verdict='VERIFICA';
+    sub='Zone aeree OK — NOTAM in caricamento...';
   } else {
     stClass='green';stIco='✅';verdict='LIBERO';
-    sub='Nessuna restrizione immediata rilevata';
+    sub='Nessuna restrizione rilevata'+(notamOk?'':' — verifica NOTAM manuale consigliata');
   }
 
   const dfUrl='https://www.d-flight.it/web-app';
@@ -452,16 +452,14 @@ function render(notamRaw){
         </div>`).join('')}
       </div>`;
 
-  // NOTAMs
+  // NOTAMs HTML
   let notamsHtml='';
   if(!notamRaw){
     notamsHtml=`<div class="notam-loading"><div class="mini-spinner"></div><span>Recupero NOTAM live in corso...</span></div>`;
-  } else if(!notams.ok){
-    notamsHtml=`<div class="empty-box"><div class="ico">⚠️</div><p>Impossibile recuperare i NOTAM.<br>Verifica la connessione e riprova.</p></div>`;
-  } else if(!notams.list.length){
-    notamsHtml=`<div class="empty-box"><div class="ico">📭</div><p>Nessun NOTAM attivo nel raggio di ~80 km.<br><span style="font-size:10px">${lastUpdate?'Aggiornato: '+fmtTime(lastUpdate):''}</span></p></div>`;
-  } else {
-    notamsHtml=`<div class="notam-list">${notams.list.map(n=>{
+  } else if(notamOk && notamList.length===0){
+    notamsHtml=`<div class="empty-box"><div class="ico">📭</div><p>Nessun NOTAM attivo nel raggio ~80 km.<br><span style="font-size:10px;opacity:0.6">${lastUpdate?'Aggiornato: '+fmtTime(lastUpdate):''}</span></p></div>`;
+  } else if(notamOk && notamList.length>0){
+    notamsHtml=`<div class="notam-list">${notamList.map(n=>{
       const cls=n.isHigh&&n.isActive?'n-active':n.isUpcoming?'n-upcoming':'n-info';
       const badge=n.isHigh&&n.isActive?'CRITICO':n.isUpcoming?'FUTURO':'INFO';
       return `<div class="notam-item ${cls}" onclick="this.classList.toggle('expanded')">
@@ -475,11 +473,32 @@ function render(notamRaw){
         <div class="notam-full">${esc(n.text)}</div>
       </div>`;
     }).join('')}</div>`;
+  } else {
+    // Fallback: CORS bloccato — link diretto FAA NOTAM con ICAO vicini
+    const icaoStr=notamNearby.map(a=>a.icao).join(',');
+    const faaUrl=`https://notams.aim.faa.gov/notamSearch/?searchType=0&designatorsForLocation=${icaoStr}`;
+    const icaoList=notamNearby.map(a=>`
+      <div class="zone-item" style="border-color:rgba(77,159,255,0.25)">
+        <div style="font-family:var(--mono);font-size:13px;color:var(--blue);min-width:44px">${esc(a.icao)}</div>
+        <div class="zone-info"><div class="zone-name">${esc(a.name)}</div></div>
+        <div class="zone-dist" style="color:var(--muted)">${fmtDist(a.d)}</div>
+      </div>`).join('');
+    notamsHtml=`
+      <div class="disclaimer" style="border-color:rgba(77,159,255,0.3);background:rgba(77,159,255,0.04)">
+        <div class="disclaimer-ico">ℹ️</div>
+        <p style="color:rgba(77,159,255,0.85)">NOTAM auto-fetch non disponibile su questa rete (blocco CORS). Tocca il bottone per controllare i NOTAM degli aeroporti vicini in un click — fonte FAA/ICAO pubblica, nessun login.</p>
+      </div>
+      <div class="zones-list" style="margin-bottom:10px">${icaoList}</div>
+      <a href="${faaUrl}" target="_blank" class="btn btn-full blue-btn" style="margin-bottom:8px">
+        <span class="ico">📋</span>&nbsp; Controlla NOTAM (${notamNearby.length} aeroporti)
+      </a>`;
   }
 
-  const updateBar=lastUpdate
-    ?`<span class="fresh">● LIVE</span>&nbsp; aggiornato ${fmtTime(lastUpdate)}`
-    :`<span>Caricamento NOTAM...</span>`;
+  const updateBar=!notamRaw
+    ?`<span>Caricamento NOTAM...</span>`
+    :notamOk
+      ?`<span class="fresh">● LIVE</span>&nbsp; aggiornato ${fmtTime(lastUpdate)}`
+      :`<span style="color:var(--yellow)">⚠ NOTAM manuale richiesto</span>`;
 
   document.getElementById('main-content').innerHTML=`
     <div class="status-card ${stClass} fade-in">
@@ -503,7 +522,7 @@ function render(notamRaw){
     <div class="section-title">Zone aeree — ${zones.length} trovate</div>
     ${zonesHtml}
 
-    <div class="section-title">NOTAM live${notams.ok?' — '+notams.list.length+' nel raggio':''}</div>
+    <div class="section-title">NOTAM${notamOk?' live — '+notamList.length+' nel raggio':' — verifica manuale'}</div>
     ${notamsHtml}
 
     <div class="disclaimer">
@@ -543,7 +562,7 @@ async function startGPS(){
   if(!navigator.geolocation){
     document.getElementById('main-content').innerHTML=`
       <div class="err-card"><div class="ico">📡</div><h3>GPS non supportato</h3><p>Usa un browser con supporto geolocalizzazione.</p></div>
-      <div class="btn-grid"><a href="https://www.d-flight.it/new_portal/it/mappa/" target="_blank" class="btn blue-btn"><span class="ico">🛫</span>D-Flight</a></div>`;
+      <div class="btn-grid"><a href="https://www.d-flight.it/web-app" target="_blank" class="btn blue-btn"><span class="ico">🛫</span>D-Flight</a></div>`;
     return;
   }
 
@@ -564,7 +583,7 @@ async function startGPS(){
       document.getElementById('main-content').innerHTML=`
         <div class="err-card"><div class="ico">📡</div><h3>GPS non disponibile</h3><p>${msg}</p></div>
         <div class="btn-grid">
-          <a href="https://www.d-flight.it/new_portal/it/mappa/" target="_blank" class="btn blue-btn"><span class="ico">🛫</span>D-Flight</a>
+          <a href="https://www.d-flight.it/web-app" target="_blank" class="btn blue-btn"><span class="ico">🛫</span>D-Flight</a>
           <button class="btn" onclick="startGPS()"><span class="ico">🔄</span>Riprova</button>
         </div>`;
     },
