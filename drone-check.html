@@ -346,18 +346,36 @@ function checkZones(lat,lon){
 // ── NOTAM FETCH ───────────────────────────────────────────────────────────────
 async function fetchNotams(lat,lon){
   const pad=0.8;
-  const bbox=`${(lon-pad).toFixed(3)},${(lat-pad).toFixed(3)},${(lon+pad).toFixed(3)},${(lat+pad).toFixed(3)}`;
-  const url=`https://aviationweather.gov/api/data/notam?format=json&bbox=${bbox}&limit=100`;
-  const tryFetch=async(u)=>{
-    const r=await fetch(u,{signal:AbortSignal.timeout(10000)});
-    if(!r.ok) throw new Error(`HTTP ${r.status}`);
-    return r.json();
-  };
-  try { return await tryFetch(url); }
-  catch(_){
-    try { return await tryFetch(`https://corsproxy.io/?${encodeURIComponent(url)}`); }
-    catch(e){ return {_error:e.message}; }
+  const w=(lon-pad).toFixed(3), s=(lat-pad).toFixed(3);
+  const e=(lon+pad).toFixed(3), n=(lat+pad).toFixed(3);
+  const target=`https://aviationweather.gov/api/data/notam?format=json&bbox=${w},${s},${e},${n}&limit=100`;
+  const enc=encodeURIComponent(target);
+
+  const sources=[
+    // 1. Diretto (funziona se il browser supporta CORS su aviationweather.gov)
+    [target, false],
+    // 2. allorigins.win/raw — risponde con il payload grezzo
+    [`https://api.allorigins.win/raw?url=${enc}`, false],
+    // 3. allorigins.win/get — wrapper JSON {contents:"..."}
+    [`https://api.allorigins.win/get?url=${enc}`, true],
+    // 4. corsproxy.io
+    [`https://corsproxy.io/?${enc}`, false],
+  ];
+
+  for(const [url, isWrapper] of sources){
+    try{
+      const r=await fetch(url,{
+        signal:AbortSignal.timeout(9000),
+        headers:{'Accept':'application/json'}
+      });
+      if(!r.ok) continue;
+      const raw=await r.json();
+      // allorigins wrapper: {contents:"[...]", status:{...}}
+      const data=isWrapper?(raw.contents?JSON.parse(raw.contents):null):raw;
+      if(Array.isArray(data)) return data;
+    }catch(_){ continue; }
   }
+  return {_error:'All NOTAM sources failed'};
 }
 
 // ── NOTAM PARSE ───────────────────────────────────────────────────────────────
@@ -416,7 +434,7 @@ function render(notamRaw){
     sub='Nessuna restrizione immediata rilevata';
   }
 
-  const dfUrl='https://www.d-flight.it/new_portal/it/mappa/';
+  const dfUrl='https://www.d-flight.it/web-app';
   const amUrl=`https://map.airmap.com/?lat=${curLat.toFixed(5)}&lng=${curLon.toFixed(5)}&zoom=13`;
   const gmUrl=`https://www.google.com/maps?q=${curLat.toFixed(6)},${curLon.toFixed(6)}`;
 
