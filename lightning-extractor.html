@@ -619,6 +619,7 @@
         <button class="btn-sm" id="selectAllBtn" onclick="selectAllFrames(true)">Seleziona tutti</button>
         <button class="btn-sm" id="deselectAllBtn" onclick="selectAllFrames(false)">Deseleziona tutti</button>
         <button class="btn-sm" id="selectBestBtn" onclick="selectBestFrames()">Solo migliori</button>
+        <button class="btn-sm" id="scrollModeBtn" onclick="toggleScrollMode()" style="margin-left:auto;border-color:var(--accent);color:var(--accent)">✋ Scroll</button>
       </div>
       <div class="frame-grid" id="frameGrid"></div>
     </div>
@@ -662,9 +663,11 @@ let currentVideoIndex = -1;
 let allFrameData = {}; // {videoIndex: [{frameIndex, time, brightness, canvas}]}
 let selectedFrames = new Set(); // "videoIdx_frameIdx"
 let outputBlob = null;
+let outputBlobExt = "mp4";
 let isProcessing = false;
 let currentClusterVideo = -1;
 let currentClusterId = -1;
+let scrollMode = false;
 
 const analyzerVideo = document.getElementById('analyzerVideo');
 const analyzerCanvas = document.getElementById('analyzerCanvas');
@@ -941,6 +944,32 @@ function detectClusters(brightnessData, vidIdx, duration) {
 }
 
 // ============================================================
+// SCROLL MODE TOGGLE
+// ============================================================
+function toggleScrollMode() {
+  scrollMode = !scrollMode;
+  const btn = document.getElementById('scrollModeBtn');
+  if (scrollMode) {
+    btn.textContent = '✓ Selezione';
+    btn.style.borderColor = 'var(--bolt)';
+    btn.style.color = 'var(--bolt)';
+    // Disable pointer events on thumbs
+    document.querySelectorAll('.frame-thumb').forEach(el => {
+      el.style.pointerEvents = 'none';
+    });
+    showToast('Scroll attivo — tocca "Selezione" per selezionare');
+  } else {
+    btn.textContent = '✋ Scroll';
+    btn.style.borderColor = 'var(--accent)';
+    btn.style.color = 'var(--accent)';
+    document.querySelectorAll('.frame-thumb').forEach(el => {
+      el.style.pointerEvents = 'auto';
+    });
+    showToast('Modalita selezione attiva');
+  }
+}
+
+// ============================================================
 // SHOW CLUSTER FRAMES
 // ============================================================
 async function showCluster(vidIdx, clusterId) {
@@ -1024,7 +1053,8 @@ function renderFrameGrid(frames, vidIdx, clusterId) {
       e.preventDefault();
       toggleFrame(key, fr);
     });
-    grid.appendChild(div);
+    if (scrollMode) div.style.pointerEvents = 'none';
+  grid.appendChild(div);
   });
 
   // Store frames for export
@@ -1109,6 +1139,7 @@ async function exportVideo() {
   recorder.onstop = () => {
     const blob = new Blob(chunks, { type: 'video/mp4' });
     outputBlob = blob;
+    outputBlobExt = 'mp4';
     const url = URL.createObjectURL(blob);
     const outVid = document.getElementById('outputVideo');
     outVid.src = url;
@@ -1133,7 +1164,7 @@ async function exportVideo() {
 }
 
 // ============================================================
-// EXPORT GIF
+// EXPORT GIF — WebM video loop (universally shareable)
 // ============================================================
 async function exportGIF() {
   const frames = getSelectedFrames();
@@ -1143,43 +1174,54 @@ async function exportGIF() {
   btn.textContent = 'GIF in corso...';
   btn.disabled = true;
 
-  // Load gifjs from CDN
-  if (!window.GIF) {
-    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js');
-  }
+  try {
+    const firstImg = await loadImage(frames[0].dataUrl);
+    const maxW = 720;
+    const scale = Math.min(1, maxW / firstImg.naturalWidth);
+    const gw = Math.floor(firstImg.naturalWidth * scale / 2) * 2;
+    const gh = Math.floor(firstImg.naturalHeight * scale / 2) * 2;
 
-  const firstImg = await loadImage(frames[0].dataUrl);
-  const maxW = 640;
-  const scale = Math.min(1, maxW / firstImg.naturalWidth);
-  const gw = Math.floor(firstImg.naturalWidth * scale);
-  const gh = Math.floor(firstImg.naturalHeight * scale);
+    const tmpC = document.createElement('canvas');
+    tmpC.width = gw; tmpC.height = gh;
+    const tmpCtx = tmpC.getContext('2d');
+    const delay = parseFloat(document.getElementById('frameDuration').value) * 1000;
 
-  const gif = new GIF({ workers: 2, quality: 8, width: gw, height: gh, workerScript: 'https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js' });
-  const delay = parseFloat(document.getElementById('frameDuration').value) * 1000;
+    // Use MediaRecorder on canvas stream — produces WebM, plays everywhere as loop
+    const stream = tmpC.captureStream(1);
+    const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
+      ? 'video/webm;codecs=vp9' : 'video/webm';
+    const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 4000000 });
+    const chunks = [];
+    recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
 
-  const tmpC = document.createElement('canvas');
-  tmpC.width = gw; tmpC.height = gh;
-  const tmpCtx = tmpC.getContext('2d');
+    recorder.onstop = () => {
+      const blob = new Blob(chunks, { type: 'video/webm' });
+      outputBlob = blob;
+      outputBlobExt = 'webm';
+      const url = URL.createObjectURL(blob);
+      const outVid = document.getElementById('outputVideo');
+      outVid.src = url;
+      outVid.loop = true;
+      document.getElementById('outputPanel').classList.add('visible');
+      btn.textContent = 'Esporta GIF';
+      btn.disabled = false;
+      showToast('Video loop pronto!');
+      document.getElementById('outputPanel').scrollIntoView({ behavior: 'smooth' });
+    };
 
-  for (const fr of frames) {
-    const img = await loadImage(fr.dataUrl);
-    tmpCtx.drawImage(img, 0, 0, gw, gh);
-    gif.addFrame(tmpC, { copy: true, delay });
-  }
+    recorder.start();
+    for (const fr of frames) {
+      const img = await loadImage(fr.dataUrl);
+      tmpCtx.drawImage(img, 0, 0, gw, gh);
+      await sleep(delay);
+    }
+    recorder.stop();
 
-  gif.on('finished', blob => {
-    outputBlob = blob;
-    const url = URL.createObjectURL(blob);
-    const outVid = document.getElementById('outputVideo');
-    outVid.src = url;
-    document.getElementById('outputPanel').classList.add('visible');
+  } catch(e) {
     btn.textContent = 'Esporta GIF';
     btn.disabled = false;
-    showToast('GIF pronta!');
-    document.getElementById('outputPanel').scrollIntoView({ behavior: 'smooth' });
-  });
-
-  gif.render();
+    showToast('Errore export: ' + e.message);
+  }
 }
 
 function getSelectedFrames() {
@@ -1197,10 +1239,9 @@ function getSelectedFrames() {
 
 function downloadResult() {
   if (!outputBlob) return;
-  const ext = outputBlob.type.includes('gif') ? 'gif' : 'mp4';
   const a = document.createElement('a');
   a.href = URL.createObjectURL(outputBlob);
-  a.download = `lightning_${Date.now()}.${ext}`;
+  a.download = `lightning_${Date.now()}.${outputBlobExt}`;
   a.click();
 }
 
