@@ -996,7 +996,6 @@ async function showCluster(vidIdx, clusterId) {
 
 async function extractFrames(vidIdx, cluster) {
   return new Promise((resolve) => {
-    const data = allFrameData[vidIdx];
     const file = videoFiles[vidIdx];
     const url = URL.createObjectURL(file);
     const vid = document.createElement('video');
@@ -1006,8 +1005,32 @@ async function extractFrames(vidIdx, cluster) {
     vid.onloadedmetadata = async () => {
       const fw = vid.videoWidth;
       const fh = vid.videoHeight;
-      // Extract at 720p max for speed
-      const scale = Math.min(1, 1280 / fw);
+      const duration = vid.duration;
+
+      // Detect real fps from cluster timing or fallback
+      // Build a dense list of every frame in the cluster time range
+      const t0 = Math.max(0, cluster.t0);
+      const t1 = Math.min(duration, cluster.t1);
+
+      // Try to detect fps: look at minimum gap between brightness samples in range
+      const data = allFrameData[vidIdx];
+      const samplesInRange = data.brightnessData.filter(d => d.time >= t0 - 0.5 && d.time <= t1 + 0.5);
+      let detectedFps = 30;
+      if (samplesInRange.length > 2) {
+        const gaps = [];
+        for (let i = 1; i < samplesInRange.length; i++) {
+          gaps.push(samplesInRange[i].time - samplesInRange[i-1].time);
+        }
+        const minGap = Math.min(...gaps);
+        // Our sample interval is ~1/15s — real fps is 30 or 60
+        // Use 60 if video is >= 50fps (Samsung 4K60)
+        detectedFps = (fw >= 3840 || fh >= 2160) ? 60 : 30;
+      }
+
+      const frameStep = 1 / detectedFps;
+
+      // Extract at 1080p max
+      const scale = Math.min(1, 1920 / fw);
       const cw = Math.floor(fw * scale);
       const ch = Math.floor(fh * scale);
 
@@ -1017,19 +1040,27 @@ async function extractFrames(vidIdx, cluster) {
       const tmpCtx = tmpCanvas.getContext('2d');
 
       const frames = [];
-      for (const frameIdx of cluster.frames) {
-        const t = cluster.times[cluster.frames.indexOf(frameIdx)];
+      let t = t0;
+      let frameIdx = 0;
+
+      setMsg(vidIdx, `Estrazione frame ${detectedFps}fps...`);
+
+      while (t <= t1 + frameStep * 0.5) {
         await new Promise(r => {
           vid.currentTime = t;
           vid.onseeked = () => {
             tmpCtx.drawImage(vid, 0, 0, cw, ch);
-            const dataUrl = tmpCanvas.toDataURL('image/jpeg', 0.88);
+            const dataUrl = tmpCanvas.toDataURL('image/jpeg', 0.90);
             frames.push({ frameIdx, time: t, dataUrl, vidIdx, w: fw, h: fh });
+            frameIdx++;
             r();
           };
         });
+        t = Math.round((t + frameStep) * 10000) / 10000;
       }
+
       URL.revokeObjectURL(url);
+      setMsg(vidIdx, `${frames.length} frame estratti`);
       resolve(frames);
     };
 
