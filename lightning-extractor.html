@@ -730,26 +730,41 @@ function handleFiles(files) {
 function renderQueue() {
   document.getElementById('queueCount').textContent = videoFiles.length;
   const list = document.getElementById('videoList');
-  list.innerHTML = '';
-  videoFiles.forEach((f, i) => {
-    const card = document.createElement('div');
-    card.className = 'video-card' + (i === currentVideoIndex ? ' active' : '');
-    card.id = 'card-' + i;
 
+  videoFiles.forEach((f, i) => {
+    let card = document.getElementById('card-' + i);
     const status = allFrameData[i] ? 'done' : (i === currentVideoIndex ? 'processing' : '');
     const clusters = allFrameData[i] ? allFrameData[i].clusters : [];
 
-    card.innerHTML = `
-      <div class="video-card-header" onclick="toggleCard(${i})" style="touch-action:manipulation">
-        <div class="video-status ${status}" id="status-${i}"></div>
-        <div class="video-name">${f.name}</div>
-        <div class="video-meta">${formatSize(f.size)}</div>
-      </div>
-      <div class="progress-bar"><div class="progress-fill" id="progress-${i}" style="width:0%"></div></div>
-      <div class="status-msg" id="msg-${i}"></div>
-      ${clusters.length ? renderClusters(i, clusters) : ''}
-    `;
-    list.appendChild(card);
+    if (!card) {
+      // Create card for the first time only
+      card = document.createElement('div');
+      card.id = 'card-' + i;
+      card.innerHTML = `
+        <div class="video-card-header" onclick="toggleCard(${i})" style="touch-action:manipulation">
+          <div class="video-status" id="status-${i}"></div>
+          <div class="video-name">${f.name}</div>
+          <div class="video-meta">${formatSize(f.size)}</div>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="progress-${i}" style="width:0%"></div></div>
+        <div class="status-msg" id="msg-${i}">In attesa...</div>
+        <div id="clusters-${i}"></div>
+      `;
+      list.appendChild(card);
+    }
+
+    // Update class without rebuilding
+    card.className = 'video-card' + (i === currentVideoIndex ? ' active' : (allFrameData[i] ? ' done' : ''));
+
+    // Update status dot
+    const statusEl = document.getElementById('status-' + i);
+    if (statusEl) statusEl.className = 'video-status ' + status;
+
+    // Update clusters area if done
+    const clustersEl = document.getElementById('clusters-' + i);
+    if (clustersEl && allFrameData[i]) {
+      clustersEl.innerHTML = clusters.length ? renderClusters(i, clusters) : `<div class="status-msg" style="color:var(--text-dim)">Nessun fulmine rilevato</div>`;
+    }
   });
 }
 
@@ -806,7 +821,7 @@ async function analyzeVideo(idx) {
       analyzerCanvas.width = cw;
       analyzerCanvas.height = ch;
 
-      setMsg(idx, `Analisi in corso... ${fw}x${fh} · ${duration.toFixed(1)}s`);
+      setMsg(idx, `Lettura video... ${fw}x${fh} · ${duration.toFixed(1)}s`);
 
       const skipFrames = parseInt(skipSlider.value);
       const fps = 30; // nominal
@@ -836,8 +851,8 @@ async function analyzeVideo(idx) {
         stepCount++;
         const pct = Math.round((stepCount / totalSteps) * 100);
         setProgress(idx, pct);
-        if (stepCount % 20 === 0) {
-          setMsg(idx, `Analisi... ${pct}% · ${stepCount}/${totalSteps} campioni`);
+        if (stepCount % 10 === 0) {
+          setMsg(idx, `Analisi luminosita... ${pct}%`);
         }
       }
 
