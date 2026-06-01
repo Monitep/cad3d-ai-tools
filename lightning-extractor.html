@@ -593,14 +593,10 @@
     </div>
     <div class="setting-block">
       <div class="setting-label">Margine frame</div>
-      <input type="range" id="marginSlider" min="0" max="10" value="3">
-      <div class="setting-value" id="marginVal">±3 frame</div>
+      <input type="range" id="marginSlider" min="0" max="30" value="15">
+      <div class="setting-value" id="marginVal">±15 frame</div>
     </div>
-    <div class="setting-block">
-      <div class="setting-label">Analisi velocita</div>
-      <input type="range" id="skipSlider" min="1" max="6" value="2">
-      <div class="setting-value" id="skipVal">1 ogni 2 frame</div>
-    </div>
+
   </div>
 
   <!-- QUEUE -->
@@ -651,7 +647,7 @@
 </main>
 
 <!-- Hidden elements for processing -->
-<video id="analyzerVideo" playsinline muted></video>
+<video id="analyzerVideo" playsinline muted preload="auto"></video>
 <canvas id="analyzerCanvas"></canvas>
 <canvas id="exportCanvas"></canvas>
 
@@ -681,16 +677,12 @@ const ectx = exportCanvas.getContext('2d');
 // ============================================================
 const sensitivitySlider = document.getElementById('sensitivitySlider');
 const marginSlider = document.getElementById('marginSlider');
-const skipSlider = document.getElementById('skipSlider');
 
 sensitivitySlider.addEventListener('input', () => {
   document.getElementById('sensitivityVal').textContent = sensitivitySlider.value + ' / 10';
 });
 marginSlider.addEventListener('input', () => {
   document.getElementById('marginVal').textContent = '±' + marginSlider.value + ' frame';
-});
-skipSlider.addEventListener('input', () => {
-  document.getElementById('skipVal').textContent = '1 ogni ' + skipSlider.value + ' frame';
 });
 
 // ============================================================
@@ -808,53 +800,57 @@ async function analyzeVideo(idx) {
     const file = videoFiles[idx];
     const url = URL.createObjectURL(file);
     analyzerVideo.src = url;
+    analyzerVideo.playbackRate = 16;
 
     analyzerVideo.onloadedmetadata = async () => {
       const duration = analyzerVideo.duration;
       const fw = analyzerVideo.videoWidth;
       const fh = analyzerVideo.videoHeight;
 
-      // Use scaled-down canvas for speed
-      const scale = Math.min(1, 320 / fw);
-      const cw = Math.floor(fw * scale);
-      const ch = Math.floor(fh * scale);
+      // Tiny canvas — only need brightness
+      const cw = 160, ch = 90;
       analyzerCanvas.width = cw;
       analyzerCanvas.height = ch;
 
-      setMsg(idx, `Lettura video... ${fw}x${fh} · ${duration.toFixed(1)}s`);
-
-      const skipFrames = parseInt(skipSlider.value);
-      const fps = 30; // nominal
-      const step = skipFrames / fps;
-      const totalSteps = Math.ceil(duration / step);
+      setMsg(idx, `Analisi in corso... ${fw}x${fh} · ${duration.toFixed(1)}s`);
 
       let brightnessData = [];
-      let t = 0;
-      let stepCount = 0;
+      let lastSampleTime = -1;
+      const sampleInterval = 1 / 15;
 
-      const sample = () => {
-        return new Promise(res => {
-          analyzerVideo.currentTime = t;
-          analyzerVideo.onseeked = () => {
+      await new Promise(res => {
+        let rafId;
+        const sample = () => {
+          const t = analyzerVideo.currentTime;
+          if (t - lastSampleTime >= sampleInterval) {
+            lastSampleTime = t;
             ctx.drawImage(analyzerVideo, 0, 0, cw, ch);
             const imageData = ctx.getImageData(0, 0, cw, ch);
             const brightness = calcBrightness(imageData.data);
             brightnessData.push({ time: t, brightness });
+            const pct = Math.round((t / duration) * 100);
+            setProgress(idx, pct);
+            if (brightnessData.length % 30 === 0) {
+              setMsg(idx, `Analisi luminosita... ${pct}%`);
+            }
+          }
+          if (analyzerVideo.ended || analyzerVideo.currentTime >= duration - 0.1) {
+            cancelAnimationFrame(rafId);
             res();
-          };
+          } else {
+            rafId = requestAnimationFrame(sample);
+          }
+        };
+        analyzerVideo.play().then(() => {
+          rafId = requestAnimationFrame(sample);
+        }).catch(() => {
+          setMsg(idx, 'Errore avvio analisi');
+          res();
         });
-      };
+      });
 
-      while (t <= duration) {
-        await sample();
-        t += step;
-        stepCount++;
-        const pct = Math.round((stepCount / totalSteps) * 100);
-        setProgress(idx, pct);
-        if (stepCount % 10 === 0) {
-          setMsg(idx, `Analisi luminosita... ${pct}%`);
-        }
-      }
+      analyzerVideo.pause();
+      analyzerVideo.playbackRate = 1;
 
       // Detect lightning clusters
       const clusters = detectClusters(brightnessData, idx, duration);
