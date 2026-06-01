@@ -339,11 +339,39 @@
     align-items: center;
   }
 
+  .frame-grid-wrap {
+    position: relative;
+  }
   .frame-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     gap: 6px;
     padding: 12px;
+    padding-right: 44px; /* leave room for scroll strip */
+  }
+  .scroll-strip {
+    position: absolute;
+    top: 0; right: 0;
+    width: 36px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(79,195,247,0.04);
+    border-left: 1px solid var(--border);
+    touch-action: pan-y;
+    cursor: ns-resize;
+    z-index: 10;
+  }
+  .scroll-strip-label {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.55rem;
+    color: var(--text-dim);
+    writing-mode: vertical-rl;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    opacity: 0.6;
+    pointer-events: none;
   }
 
   .frame-thumb {
@@ -619,9 +647,11 @@
         <button class="btn-sm" id="selectAllBtn" onclick="selectAllFrames(true)">Seleziona tutti</button>
         <button class="btn-sm" id="deselectAllBtn" onclick="selectAllFrames(false)">Deseleziona tutti</button>
         <button class="btn-sm" id="selectBestBtn" onclick="selectBestFrames()">Solo migliori</button>
-        <button class="btn-sm" id="scrollModeBtn" onclick="toggleScrollMode()" style="margin-left:auto;border-color:var(--accent);color:var(--accent)">✋ Scroll</button>
       </div>
-      <div class="frame-grid" id="frameGrid"></div>
+      <div class="frame-grid-wrap">
+        <div class="frame-grid" id="frameGrid"></div>
+        <div class="scroll-strip"><span class="scroll-strip-label">scroll</span></div>
+      </div>
     </div>
 
     <!-- ACTION BAR -->
@@ -649,8 +679,8 @@
 
 <!-- Hidden elements for processing -->
 <video id="analyzerVideo" playsinline muted preload="auto"></video>
-<canvas id="analyzerCanvas"></canvas>
-<canvas id="exportCanvas"></canvas>
+<canvas id="analyzerCanvas" style="position:fixed;left:-9999px;top:-9999px;pointer-events:none;"></canvas>
+<canvas id="exportCanvas" style="position:fixed;left:-9999px;top:-9999px;pointer-events:none;"></canvas>
 
 <div class="toast" id="toast"></div>
 
@@ -667,7 +697,6 @@ let outputBlobExt = "mp4";
 let isProcessing = false;
 let currentClusterVideo = -1;
 let currentClusterId = -1;
-let scrollMode = false;
 
 const analyzerVideo = document.getElementById('analyzerVideo');
 const analyzerCanvas = document.getElementById('analyzerCanvas');
@@ -944,32 +973,6 @@ function detectClusters(brightnessData, vidIdx, duration) {
 }
 
 // ============================================================
-// SCROLL MODE TOGGLE
-// ============================================================
-function toggleScrollMode() {
-  scrollMode = !scrollMode;
-  const btn = document.getElementById('scrollModeBtn');
-  if (scrollMode) {
-    btn.textContent = '✓ Selezione';
-    btn.style.borderColor = 'var(--bolt)';
-    btn.style.color = 'var(--bolt)';
-    // Disable pointer events on thumbs
-    document.querySelectorAll('.frame-thumb').forEach(el => {
-      el.style.pointerEvents = 'none';
-    });
-    showToast('Scroll attivo — tocca "Selezione" per selezionare');
-  } else {
-    btn.textContent = '✋ Scroll';
-    btn.style.borderColor = 'var(--accent)';
-    btn.style.color = 'var(--accent)';
-    document.querySelectorAll('.frame-thumb').forEach(el => {
-      el.style.pointerEvents = 'auto';
-    });
-    showToast('Modalita selezione attiva');
-  }
-}
-
-// ============================================================
 // SHOW CLUSTER FRAMES
 // ============================================================
 async function showCluster(vidIdx, clusterId) {
@@ -1053,8 +1056,7 @@ function renderFrameGrid(frames, vidIdx, clusterId) {
       e.preventDefault();
       toggleFrame(key, fr);
     });
-    if (scrollMode) div.style.pointerEvents = 'none';
-  grid.appendChild(div);
+    grid.appendChild(div);
   });
 
   // Store frames for export
