@@ -994,6 +994,79 @@ async function showCluster(vidIdx, clusterId) {
   renderFrameGrid(frames, vidIdx, clusterId);
 }
 
+// ============================================================
+// DETECT REAL VIDEO FPS
+// ============================================================
+async function detectVideoFps(vid) {
+  // Method 1: requestVideoFrameCallback — count frames in 0.5s of play
+  if ('requestVideoFrameCallback' in vid) {
+    return new Promise(resolve => {
+      let frameCount = 0;
+      let startTime = null;
+      const duration = 0.5; // sample 0.5 real seconds
+
+      const savedTime = vid.currentTime;
+      vid.playbackRate = 1;
+
+      const countFrame = (now, meta) => {
+        if (startTime === null) startTime = meta.mediaTime;
+        frameCount++;
+        const elapsed = meta.mediaTime - startTime;
+        if (elapsed < duration && !vid.ended) {
+          vid.requestVideoFrameCallback(countFrame);
+        } else {
+          vid.pause();
+          vid.currentTime = savedTime;
+          const measuredFps = elapsed > 0 ? frameCount / elapsed : 30;
+          // Round to nearest standard: 24, 25, 30, 50, 60
+          const standards = [24, 25, 30, 50, 60];
+          const fps = standards.reduce((a, b) => Math.abs(b - measuredFps) < Math.abs(a - measuredFps) ? b : a);
+          resolve(fps);
+        }
+      };
+
+      vid.play().then(() => {
+        vid.requestVideoFrameCallback(countFrame);
+      }).catch(() => resolve(30));
+    });
+  }
+
+  // Method 2: fallback — short play + frame count via canvas diff
+  return new Promise(resolve => {
+    const savedTime = vid.currentTime;
+    let frames = 0;
+    let lastData = null;
+    const tmpC = document.createElement('canvas');
+    tmpC.width = 64; tmpC.height = 36;
+    const tmpCtx = tmpC.getContext('2d', {willReadFrequently: true});
+    const startWall = performance.now();
+    vid.playbackRate = 1;
+
+    const tick = () => {
+      tmpCtx.drawImage(vid, 0, 0, 64, 36);
+      const data = tmpCtx.getImageData(0, 0, 64, 36).data;
+      if (lastData) {
+        let diff = 0;
+        for (let i = 0; i < data.length; i += 16) diff += Math.abs(data[i] - lastData[i]);
+        if (diff > 100) frames++;
+      }
+      lastData = new Uint8ClampedArray(data);
+      const elapsed = performance.now() - startWall;
+      if (elapsed < 500) {
+        requestAnimationFrame(tick);
+      } else {
+        vid.pause();
+        vid.currentTime = savedTime;
+        const fps = Math.round(frames / (elapsed / 1000));
+        const standards = [24, 25, 30, 50, 60];
+        const snapped = standards.reduce((a, b) => Math.abs(b - fps) < Math.abs(a - fps) ? b : a);
+        resolve(snapped || 30);
+      }
+    };
+    vid.play().then(() => requestAnimationFrame(tick)).catch(() => resolve(30));
+  });
+}
+
 async function extractFrames(vidIdx, cluster) {
   return new Promise((resolve) => {
     const file = videoFiles[vidIdx];
@@ -1022,9 +1095,8 @@ async function extractFrames(vidIdx, cluster) {
           gaps.push(samplesInRange[i].time - samplesInRange[i-1].time);
         }
         const minGap = Math.min(...gaps);
-        // Our sample interval is ~1/15s — real fps is 30 or 60
-        // Use 60 if video is >= 50fps (Samsung 4K60)
-        detectedFps = (fw >= 3840 || fh >= 2160) ? 60 : 30;
+        // Use requestVideoFrameCallback to count real fps
+        detectedFps = await detectVideoFps(vid);
       }
 
       const frameStep = 1 / detectedFps;
