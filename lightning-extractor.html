@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Lightning Extractor</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap');
+
+  :root {
+    --bg: #050608;
+    --surface: #0c0e12;
+    --surface2: #131620;
+    --border: #1e2230;
+    --accent: #4fc3f7;
+    --accent2: #ffe082;
+    --danger: #ef5350;
+    --text: #e8eaf0;
+    --text-dim: #6b7080;
+    --bolt: #ffe57a;
+    --bolt-glow: rgba(255,229,122,0.3);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    min-height: 100dvh;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 300;
+    overflow-x: hidden;
+  }
+
+  /* Noise overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.4;
+  }
+
+  header {
+    padding: 24px 20px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: 0.5;
+  }
+
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    letter-spacing: 0.08em;
+    color: var(--bolt);
+    text-shadow: 0 0 30px var(--bolt-glow);
+    line-height: 1;
+  }
+
+  .logo span { color: var(--accent); }
+
+  .tagline {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  /* MAIN LAYOUT */
+  main { padding: 20px; max-width: 900px; margin: 0 auto; }
+
+  /* DROP ZONE */
+  .drop-zone {
+    border: 1px dashed var(--border);
+    border-radius: 4px;
+    padding: 48px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--surface);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .drop-zone::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 100%, rgba(79,195,247,0.05) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .drop-zone:hover, .drop-zone.dragover {
+    border-color: var(--accent);
+    background: #0d1218;
+  }
+
+  .drop-zone.dragover { box-shadow: inset 0 0 40px rgba(79,195,247,0.08); }
+
+  .drop-icon {
+    font-size: 2.5rem;
+    margin-bottom: 12px;
+    display: block;
+    filter: drop-shadow(0 0 12px var(--bolt-glow));
+  }
+
+  .drop-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.3rem;
+    letter-spacing: 0.1em;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .drop-sub {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+  }
+
+  #fileInput { display: none; }
+
+  /* SETTINGS ROW */
+  .settings-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+
+  .setting-block {
+    flex: 1;
+    min-width: 140px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 12px 14px;
+  }
+
+  .setting-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .setting-block input[type=range] {
+    width: 100%;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+
+  .setting-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--accent);
+    margin-top: 4px;
+  }
+
+  /* VIDEO QUEUE */
+  .queue { margin-top: 24px; }
+
+  .queue-header {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .queue-count {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 2px 8px;
+    color: var(--accent);
+  }
+
+  .video-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    margin-bottom: 8px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .video-card.active { border-color: var(--accent); }
+  .video-card.done { border-color: #2a3a2a; }
+
+  .video-card-header {
+    display: flex;
+    align-items: center;
+    padding: 12px 14px;
+    gap: 10px;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+
+  .video-status {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+    flex-shrink: 0;
+  }
+
+  .video-status.processing { background: var(--accent); box-shadow: 0 0 8px var(--accent); animation: pulse 1s infinite; }
+  .video-status.done { background: #66bb6a; }
+  .video-status.error { background: var(--danger); }
+
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  .video-name {
+    flex: 1;
+    font-size: 0.82rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .video-meta {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    flex-shrink: 0;
+  }
+
+  /* PROGRESS BAR */
+  .progress-bar {
+    height: 2px;
+    background: var(--border);
+    position: relative;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--bolt));
+    transition: width 0.1s;
+    width: 0%;
+  }
+
+  /* TIMELINE */
+  .timeline-wrap {
+    padding: 0 14px 14px;
+  }
+
+  .timeline-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.62rem;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+  }
+
+  .timeline-canvas {
+    width: 100%;
+    height: 60px;
+    border-radius: 3px;
+    cursor: crosshair;
+    display: block;
+    background: var(--bg);
+    border: 1px solid var(--border);
+  }
+
+  /* CLUSTERS */
+  .clusters-wrap {
+    padding: 0 14px 14px;
+  }
+
+  .clusters-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.62rem;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+  }
+
+  .cluster-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .cluster-chip {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    padding: 4px 10px;
+    border-radius: 2px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.15s;
+    touch-action: manipulation;
+    color: var(--text-dim);
+  }
+
+  .cluster-chip:hover { border-color: var(--bolt); color: var(--bolt); }
+  .cluster-chip.selected { background: rgba(255,229,122,0.1); border-color: var(--bolt); color: var(--bolt); box-shadow: 0 0 8px rgba(255,229,122,0.15); }
+
+  /* FRAME VIEWER */
+  .frame-viewer {
+    margin-top: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .frame-viewer-header {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .frame-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 6px;
+    padding: 12px;
+  }
+
+  .frame-thumb {
+    position: relative;
+    aspect-ratio: 16/9;
+    border-radius: 3px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.15s;
+    touch-action: manipulation;
+  }
+
+  .frame-thumb img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .frame-thumb.selected {
+    border-color: var(--bolt);
+    box-shadow: 0 0 12px rgba(255,229,122,0.3);
+  }
+
+  .frame-thumb .frame-num {
+    position: absolute;
+    bottom: 3px; left: 4px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.55rem;
+    color: rgba(255,255,255,0.7);
+    background: rgba(0,0,0,0.6);
+    padding: 1px 4px;
+    border-radius: 1px;
+  }
+
+  .frame-check {
+    position: absolute;
+    top: 4px; right: 4px;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--bolt);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+    color: #000;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  .frame-thumb.selected .frame-check { opacity: 1; }
+
+  /* ACTION BAR */
+  .action-bar {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 10px 20px;
+    border-radius: 3px;
+    border: 1px solid;
+    cursor: pointer;
+    transition: all 0.15s;
+    touch-action: manipulation;
+    background: transparent;
+  }
+
+  .btn-primary {
+    border-color: var(--bolt);
+    color: var(--bolt);
+  }
+  .btn-primary:hover { background: rgba(255,229,122,0.1); box-shadow: 0 0 20px rgba(255,229,122,0.2); }
+
+  .btn-secondary {
+    border-color: var(--border);
+    color: var(--text-dim);
+  }
+  .btn-secondary:hover { border-color: var(--text-dim); color: var(--text); }
+
+  .btn-accent {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .btn-accent:hover { background: rgba(79,195,247,0.1); }
+
+  .btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  /* DURATION SETTING */
+  .duration-inline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--text-dim);
+  }
+
+  .duration-inline input[type=number] {
+    width: 56px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--accent);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    padding: 4px 8px;
+    border-radius: 3px;
+    text-align: center;
+  }
+
+  /* OUTPUT PANEL */
+  .output-panel {
+    margin-top: 16px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 16px;
+    display: none;
+  }
+
+  .output-panel.visible { display: block; }
+
+  .output-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 0.1em;
+    color: var(--bolt);
+    margin-bottom: 12px;
+  }
+
+  .output-video {
+    width: 100%;
+    border-radius: 3px;
+    margin-bottom: 12px;
+    background: #000;
+  }
+
+  .download-btns {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  /* HIDDEN UTILS */
+  #analyzerVideo { display: none; }
+  #analyzerCanvas { display: none; }
+
+  /* EMPTY STATE */
+  .empty-hint {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-dim);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+  }
+
+  /* STATUS MSG */
+  .status-msg {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--text-dim);
+    padding: 8px 14px;
+    letter-spacing: 0.05em;
+  }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 10px 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--text);
+    z-index: 10000;
+    transition: transform 0.3s;
+    white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* SELECT ALL ROW */
+  .select-row {
+    display: flex;
+    gap: 8px;
+    padding: 8px 12px;
+    border-top: 1px solid var(--border);
+  }
+
+  .btn-sm {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+    padding: 4px 10px;
+    border-radius: 2px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    color: var(--text-dim);
+    background: transparent;
+    touch-action: manipulation;
+  }
+  .btn-sm:hover { border-color: var(--bolt); color: var(--bolt); }
+
+  /* LIGHTNING ANIMATION on idle */
+  @keyframes flicker {
+    0%,95%,100% { opacity:1 }
+    96%,99% { opacity:0.2 }
+    97%,98% { opacity:0.8 }
+  }
+  .drop-icon { animation: flicker 4s infinite; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">⚡ <span>Lightning</span>Extractor</div>
+  <div class="tagline">frame detection &amp; export</div>
+</header>
+
+<main>
+  <!-- DROP ZONE -->
+  <div class="drop-zone" id="dropZone">
+    <span class="drop-icon">⚡</span>
+    <div class="drop-title">Trascina i video qui</div>
+    <div class="drop-sub" style="margin-bottom:12px">oppure tocca per selezionare</div>
+    <div class="drop-sub">MP4, MOV, AVI — 1080p, 4K, qualsiasi fps</div>
+    <input type="file" id="fileInput" accept="video/*" multiple>
+  </div>
+
+  <!-- SETTINGS -->
+  <div class="settings-row">
+    <div class="setting-block">
+      <div class="setting-label">Sensibilita fulmini</div>
+      <input type="range" id="sensitivitySlider" min="1" max="10" value="5">
+      <div class="setting-value" id="sensitivityVal">5 / 10</div>
+    </div>
+    <div class="setting-block">
+      <div class="setting-label">Margine frame</div>
+      <input type="range" id="marginSlider" min="0" max="10" value="3">
+      <div class="setting-value" id="marginVal">±3 frame</div>
+    </div>
+    <div class="setting-block">
+      <div class="setting-label">Analisi velocita</div>
+      <input type="range" id="skipSlider" min="1" max="6" value="2">
+      <div class="setting-value" id="skipVal">1 ogni 2 frame</div>
+    </div>
+  </div>
+
+  <!-- QUEUE -->
+  <div class="queue" id="queueSection" style="display:none">
+    <div class="queue-header">
+      <span>Video in coda</span>
+      <span class="queue-count" id="queueCount">0</span>
+    </div>
+    <div id="videoList"></div>
+  </div>
+
+  <!-- FRAME VIEWER -->
+  <div id="frameViewerSection" style="display:none">
+    <div class="frame-viewer">
+      <div class="frame-viewer-header">
+        <span id="frameViewerTitle">Seleziona i frame da esportare</span>
+        <span id="frameSelectedCount" style="color:var(--bolt)">0 selezionati</span>
+      </div>
+      <div class="select-row">
+        <button class="btn-sm" id="selectAllBtn" onclick="selectAllFrames(true)">Seleziona tutti</button>
+        <button class="btn-sm" id="deselectAllBtn" onclick="selectAllFrames(false)">Deseleziona tutti</button>
+        <button class="btn-sm" id="selectBestBtn" onclick="selectBestFrames()">Solo migliori</button>
+      </div>
+      <div class="frame-grid" id="frameGrid"></div>
+    </div>
+
+    <!-- ACTION BAR -->
+    <div class="action-bar">
+      <div class="duration-inline">
+        <span>Durata per frame:</span>
+        <input type="number" id="frameDuration" value="2" min="0.5" max="10" step="0.5">
+        <span>sec</span>
+      </div>
+      <button class="btn btn-primary" id="exportBtn" onclick="exportVideo()">Esporta MP4</button>
+      <button class="btn btn-accent" id="exportGifBtn" onclick="exportGIF()">Esporta GIF</button>
+      <button class="btn btn-secondary" onclick="clearAll()">Nuovo video</button>
+    </div>
+
+    <div id="outputPanel" class="output-panel">
+      <div class="output-title">Risultato</div>
+      <video class="output-video" id="outputVideo" controls playsinline></video>
+      <div class="download-btns">
+        <button class="btn btn-primary" id="downloadBtn" onclick="downloadResult()">Scarica</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- Hidden elements for processing -->
+<video id="analyzerVideo" playsinline muted></video>
+<canvas id="analyzerCanvas"></canvas>
+<canvas id="exportCanvas"></canvas>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// STATE
+// ============================================================
+let videoFiles = [];
+let currentVideoIndex = -1;
+let allFrameData = {}; // {videoIndex: [{frameIndex, time, brightness, canvas}]}
+let selectedFrames = new Set(); // "videoIdx_frameIdx"
+let outputBlob = null;
+let isProcessing = false;
+let currentClusterVideo = -1;
+let currentClusterId = -1;
+
+const analyzerVideo = document.getElementById('analyzerVideo');
+const analyzerCanvas = document.getElementById('analyzerCanvas');
+const ctx = analyzerCanvas.getContext('2d', {willReadFrequently: true});
+const exportCanvas = document.getElementById('exportCanvas');
+const ectx = exportCanvas.getContext('2d');
+
+// ============================================================
+// SETTINGS
+// ============================================================
+const sensitivitySlider = document.getElementById('sensitivitySlider');
+const marginSlider = document.getElementById('marginSlider');
+const skipSlider = document.getElementById('skipSlider');
+
+sensitivitySlider.addEventListener('input', () => {
+  document.getElementById('sensitivityVal').textContent = sensitivitySlider.value + ' / 10';
+});
+marginSlider.addEventListener('input', () => {
+  document.getElementById('marginVal').textContent = '±' + marginSlider.value + ' frame';
+});
+skipSlider.addEventListener('input', () => {
+  document.getElementById('skipVal').textContent = '1 ogni ' + skipSlider.value + ' frame';
+});
+
+// ============================================================
+// DROP ZONE
+// ============================================================
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+
+dropZone.addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('touchend', (e) => { e.preventDefault(); fileInput.click(); });
+
+dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  handleFiles(Array.from(e.dataTransfer.files));
+});
+
+fileInput.addEventListener('change', () => {
+  handleFiles(Array.from(fileInput.files));
+  fileInput.value = '';
+});
+
+function handleFiles(files) {
+  const videos = files.filter(f => f.type.startsWith('video/'));
+  if (!videos.length) { showToast('Nessun video trovato'); return; }
+  videoFiles = [...videoFiles, ...videos];
+  renderQueue();
+  document.getElementById('queueSection').style.display = 'block';
+  if (!isProcessing) processNext();
+}
+
+// ============================================================
+// QUEUE RENDERING
+// ============================================================
+function renderQueue() {
+  document.getElementById('queueCount').textContent = videoFiles.length;
+  const list = document.getElementById('videoList');
+  list.innerHTML = '';
+  videoFiles.forEach((f, i) => {
+    const card = document.createElement('div');
+    card.className = 'video-card' + (i === currentVideoIndex ? ' active' : '');
+    card.id = 'card-' + i;
+
+    const status = allFrameData[i] ? 'done' : (i === currentVideoIndex ? 'processing' : '');
+    const clusters = allFrameData[i] ? allFrameData[i].clusters : [];
+
+    card.innerHTML = `
+      <div class="video-card-header" onclick="toggleCard(${i})" style="touch-action:manipulation">
+        <div class="video-status ${status}" id="status-${i}"></div>
+        <div class="video-name">${f.name}</div>
+        <div class="video-meta">${formatSize(f.size)}</div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-${i}" style="width:0%"></div></div>
+      <div class="status-msg" id="msg-${i}"></div>
+      ${clusters.length ? renderClusters(i, clusters) : ''}
+    `;
+    list.appendChild(card);
+  });
+}
+
+function renderClusters(vidIdx, clusters) {
+  if (!clusters.length) return `<div class="status-msg" style="color:var(--text-dim)">Nessun fulmine rilevato — prova a ridurre la sensibilita</div>`;
+  let html = `<div class="clusters-wrap">
+    <div class="clusters-label">Cluster fulmini rilevati — tocca per vedere i frame</div>
+    <div class="cluster-chips">`;
+  clusters.forEach((cl, ci) => {
+    const isSelected = currentClusterVideo === vidIdx && currentClusterId === ci;
+    html += `<div class="cluster-chip${isSelected ? ' selected' : ''}" onclick="showCluster(${vidIdx},${ci})" style="touch-action:manipulation">
+      Fulmine ${ci+1} &nbsp;·&nbsp; ${cl.frames.length} frame &nbsp;·&nbsp; ${cl.timeLabel}
+    </div>`;
+  });
+  html += `</div></div>`;
+  return html;
+}
+
+function toggleCard(i) {
+  if (allFrameData[i] && allFrameData[i].clusters.length) {
+    showCluster(i, 0);
+  }
+}
+
+// ============================================================
+// VIDEO ANALYSIS
+// ============================================================
+async function processNext() {
+  const nextIdx = videoFiles.findIndex((_, i) => !allFrameData[i] && i !== currentVideoIndex);
+  if (nextIdx === -1) return;
+  currentVideoIndex = nextIdx;
+  isProcessing = true;
+  renderQueue();
+  await analyzeVideo(nextIdx);
+  isProcessing = false;
+  processNext();
+}
+
+async function analyzeVideo(idx) {
+  return new Promise((resolve) => {
+    const file = videoFiles[idx];
+    const url = URL.createObjectURL(file);
+    analyzerVideo.src = url;
+
+    analyzerVideo.onloadedmetadata = async () => {
+      const duration = analyzerVideo.duration;
+      const fw = analyzerVideo.videoWidth;
+      const fh = analyzerVideo.videoHeight;
+
+      // Use scaled-down canvas for speed
+      const scale = Math.min(1, 320 / fw);
+      const cw = Math.floor(fw * scale);
+      const ch = Math.floor(fh * scale);
+      analyzerCanvas.width = cw;
+      analyzerCanvas.height = ch;
+
+      setMsg(idx, `Analisi in corso... ${fw}x${fh} · ${duration.toFixed(1)}s`);
+
+      const skipFrames = parseInt(skipSlider.value);
+      const fps = 30; // nominal
+      const step = skipFrames / fps;
+      const totalSteps = Math.ceil(duration / step);
+
+      let brightnessData = [];
+      let t = 0;
+      let stepCount = 0;
+
+      const sample = () => {
+        return new Promise(res => {
+          analyzerVideo.currentTime = t;
+          analyzerVideo.onseeked = () => {
+            ctx.drawImage(analyzerVideo, 0, 0, cw, ch);
+            const imageData = ctx.getImageData(0, 0, cw, ch);
+            const brightness = calcBrightness(imageData.data);
+            brightnessData.push({ time: t, brightness });
+            res();
+          };
+        });
+      };
+
+      while (t <= duration) {
+        await sample();
+        t += step;
+        stepCount++;
+        const pct = Math.round((stepCount / totalSteps) * 100);
+        setProgress(idx, pct);
+        if (stepCount % 20 === 0) {
+          setMsg(idx, `Analisi... ${pct}% · ${stepCount}/${totalSteps} campioni`);
+        }
+      }
+
+      // Detect lightning clusters
+      const clusters = detectClusters(brightnessData, idx, duration);
+      setMsg(idx, clusters.length ? `${clusters.length} fulmin${clusters.length===1?'e':'i'} rilevat${clusters.length===1?'o':'i'}` : 'Nessun fulmine rilevato');
+      setStatus(idx, 'done');
+      setProgress(idx, 100);
+
+      allFrameData[idx] = { brightnessData, clusters, duration, fw, fh, url };
+      URL.revokeObjectURL(url);
+
+      renderQueue();
+
+      // Auto-show first cluster
+      if (clusters.length > 0) showCluster(idx, 0);
+
+      resolve();
+    };
+
+    analyzerVideo.onerror = () => {
+      setMsg(idx, 'Errore nel leggere il video');
+      setStatus(idx, 'error');
+      resolve();
+    };
+
+    analyzerVideo.load();
+  });
+}
+
+function calcBrightness(data) {
+  let sum = 0;
+  const len = data.length;
+  for (let i = 0; i < len; i += 4) {
+    sum += 0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2];
+  }
+  return sum / (len / 4);
+}
+
+function detectClusters(brightnessData, vidIdx, duration) {
+  const sensitivity = parseInt(sensitivitySlider.value);
+  const margin = parseInt(marginSlider.value);
+
+  // Calculate rolling baseline and std dev
+  const values = brightnessData.map(d => d.brightness);
+  const mean = values.reduce((a,b) => a+b, 0) / values.length;
+  const std = Math.sqrt(values.reduce((a,b) => a + (b-mean)**2, 0) / values.length);
+
+  // Threshold: higher sensitivity = lower threshold
+  const threshold = mean + std * (3.5 - sensitivity * 0.25);
+
+  // Find frames above threshold
+  let hotFrames = new Set();
+  values.forEach((v, i) => {
+    if (v > threshold) {
+      for (let m = Math.max(0, i-margin); m <= Math.min(values.length-1, i+margin); m++) {
+        hotFrames.add(m);
+      }
+    }
+  });
+
+  if (!hotFrames.size) return [];
+
+  // Group into clusters (gap > 1s = new cluster)
+  const sorted = Array.from(hotFrames).sort((a,b) => a-b);
+  const clusters = [];
+  let cluster = [sorted[0]];
+
+  for (let i = 1; i < sorted.length; i++) {
+    const gap = brightnessData[sorted[i]].time - brightnessData[sorted[i-1]].time;
+    if (gap > 1.5) {
+      clusters.push(cluster);
+      cluster = [];
+    }
+    cluster.push(sorted[i]);
+  }
+  clusters.push(cluster);
+
+  return clusters.map((cl, ci) => {
+    const times = cl.map(i => brightnessData[i].time);
+    const t0 = Math.max(0, times[0]);
+    const t1 = Math.min(duration, times[times.length-1]);
+    return {
+      frames: cl,
+      times: cl.map(i => brightnessData[i].time),
+      t0, t1,
+      timeLabel: formatTime(t0) + ' – ' + formatTime(t1)
+    };
+  });
+}
+
+// ============================================================
+// SHOW CLUSTER FRAMES
+// ============================================================
+async function showCluster(vidIdx, clusterId) {
+  currentClusterVideo = vidIdx;
+  currentClusterId = clusterId;
+  renderQueue(); // re-render to highlight chip
+
+  const data = allFrameData[vidIdx];
+  const cluster = data.clusters[clusterId];
+  const file = videoFiles[vidIdx];
+
+  document.getElementById('frameViewerSection').style.display = 'block';
+  document.getElementById('frameViewerTitle').textContent = `${file.name} — Fulmine ${clusterId+1}`;
+  document.getElementById('frameGrid').innerHTML = '<div class="empty-hint">Estrazione frame in corso...</div>';
+  selectedFrames.clear();
+  updateSelectedCount();
+
+  const frames = await extractFrames(vidIdx, cluster);
+  renderFrameGrid(frames, vidIdx, clusterId);
+}
+
+async function extractFrames(vidIdx, cluster) {
+  return new Promise((resolve) => {
+    const data = allFrameData[vidIdx];
+    const file = videoFiles[vidIdx];
+    const url = URL.createObjectURL(file);
+    const vid = document.createElement('video');
+    vid.src = url;
+    vid.muted = true;
+
+    vid.onloadedmetadata = async () => {
+      const fw = vid.videoWidth;
+      const fh = vid.videoHeight;
+      // Extract at 720p max for speed
+      const scale = Math.min(1, 1280 / fw);
+      const cw = Math.floor(fw * scale);
+      const ch = Math.floor(fh * scale);
+
+      const tmpCanvas = document.createElement('canvas');
+      tmpCanvas.width = cw;
+      tmpCanvas.height = ch;
+      const tmpCtx = tmpCanvas.getContext('2d');
+
+      const frames = [];
+      for (const frameIdx of cluster.frames) {
+        const t = cluster.times[cluster.frames.indexOf(frameIdx)];
+        await new Promise(r => {
+          vid.currentTime = t;
+          vid.onseeked = () => {
+            tmpCtx.drawImage(vid, 0, 0, cw, ch);
+            const dataUrl = tmpCanvas.toDataURL('image/jpeg', 0.88);
+            frames.push({ frameIdx, time: t, dataUrl, vidIdx, w: fw, h: fh });
+            r();
+          };
+        });
+      }
+      URL.revokeObjectURL(url);
+      resolve(frames);
+    };
+
+    vid.load();
+  });
+}
+
+function renderFrameGrid(frames, vidIdx, clusterId) {
+  const grid = document.getElementById('frameGrid');
+  grid.innerHTML = '';
+
+  frames.forEach((fr, i) => {
+    const key = `${vidIdx}_${clusterId}_${i}`;
+    const div = document.createElement('div');
+    div.className = 'frame-thumb';
+    div.dataset.key = key;
+    div.dataset.frame = JSON.stringify({...fr, dataUrl: ''});
+    div.innerHTML = `
+      <img src="${fr.dataUrl}" loading="lazy">
+      <div class="frame-num">${formatTime(fr.time)}</div>
+      <div class="frame-check">✓</div>
+    `;
+    div.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      toggleFrame(key, fr);
+    });
+    grid.appendChild(div);
+  });
+
+  // Store frames for export
+  window._currentFrames = frames;
+  updateSelectedCount();
+}
+
+function toggleFrame(key, fr) {
+  if (selectedFrames.has(key)) {
+    selectedFrames.delete(key);
+  } else {
+    selectedFrames.add(key);
+  }
+  const el = document.querySelector(`[data-key="${key}"]`);
+  if (el) el.classList.toggle('selected', selectedFrames.has(key));
+  updateSelectedCount();
+}
+
+function selectAllFrames(val) {
+  const thumbs = document.querySelectorAll('.frame-thumb');
+  thumbs.forEach(el => {
+    const key = el.dataset.key;
+    if (val) { selectedFrames.add(key); el.classList.add('selected'); }
+    else { selectedFrames.delete(key); el.classList.remove('selected'); }
+  });
+  updateSelectedCount();
+}
+
+function selectBestFrames() {
+  // Select frames with highest brightness
+  const frames = window._currentFrames;
+  if (!frames) return;
+  selectAllFrames(false);
+  // Sort by brightness (we already have brightness from analysis)
+  const data = allFrameData[currentClusterVideo];
+  // Just select top 50% by default
+  const n = Math.max(1, Math.ceil(frames.length * 0.5));
+  const thumbs = document.querySelectorAll('.frame-thumb');
+  for (let i = 0; i < Math.min(n, thumbs.length); i++) {
+    const el = thumbs[i];
+    const key = el.dataset.key;
+    selectedFrames.add(key);
+    el.classList.add('selected');
+  }
+  updateSelectedCount();
+}
+
+function updateSelectedCount() {
+  document.getElementById('frameSelectedCount').textContent = selectedFrames.size + ' selezionati';
+  document.getElementById('exportBtn').disabled = selectedFrames.size === 0;
+  document.getElementById('exportGifBtn').disabled = selectedFrames.size === 0;
+}
+
+// ============================================================
+// EXPORT VIDEO (MP4 via MediaRecorder)
+// ============================================================
+async function exportVideo() {
+  const frames = getSelectedFrames();
+  if (!frames.length) { showToast('Seleziona almeno un frame'); return; }
+
+  const duration = parseFloat(document.getElementById('frameDuration').value) * 1000;
+  const btn = document.getElementById('exportBtn');
+  btn.textContent = 'Esportazione...';
+  btn.disabled = true;
+
+  // Determine canvas size from first frame
+  const firstImg = await loadImage(frames[0].dataUrl);
+  const w = firstImg.naturalWidth;
+  const h = firstImg.naturalHeight;
+  exportCanvas.width = w;
+  exportCanvas.height = h;
+
+  const stream = exportCanvas.captureStream(30);
+  const recorder = new MediaRecorder(stream, {
+    mimeType: getSupportedMimeType(),
+    videoBitsPerSecond: 8000000
+  });
+
+  const chunks = [];
+  recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+
+  recorder.onstop = () => {
+    const blob = new Blob(chunks, { type: 'video/mp4' });
+    outputBlob = blob;
+    const url = URL.createObjectURL(blob);
+    const outVid = document.getElementById('outputVideo');
+    outVid.src = url;
+    document.getElementById('outputPanel').classList.add('visible');
+    btn.textContent = 'Esporta MP4';
+    btn.disabled = false;
+    showToast('Video pronto!');
+    document.getElementById('outputPanel').scrollIntoView({ behavior: 'smooth' });
+  };
+
+  recorder.start();
+
+  for (const fr of frames) {
+    const img = await loadImage(fr.dataUrl);
+    ectx.fillStyle = '#000';
+    ectx.fillRect(0, 0, w, h);
+    ectx.drawImage(img, 0, 0, w, h);
+    await sleep(duration);
+  }
+
+  recorder.stop();
+}
+
+// ============================================================
+// EXPORT GIF
+// ============================================================
+async function exportGIF() {
+  const frames = getSelectedFrames();
+  if (!frames.length) { showToast('Seleziona almeno un frame'); return; }
+
+  const btn = document.getElementById('exportGifBtn');
+  btn.textContent = 'GIF in corso...';
+  btn.disabled = true;
+
+  // Load gifjs from CDN
+  if (!window.GIF) {
+    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js');
+  }
+
+  const firstImg = await loadImage(frames[0].dataUrl);
+  const maxW = 640;
+  const scale = Math.min(1, maxW / firstImg.naturalWidth);
+  const gw = Math.floor(firstImg.naturalWidth * scale);
+  const gh = Math.floor(firstImg.naturalHeight * scale);
+
+  const gif = new GIF({ workers: 2, quality: 8, width: gw, height: gh, workerScript: 'https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js' });
+  const delay = parseFloat(document.getElementById('frameDuration').value) * 1000;
+
+  const tmpC = document.createElement('canvas');
+  tmpC.width = gw; tmpC.height = gh;
+  const tmpCtx = tmpC.getContext('2d');
+
+  for (const fr of frames) {
+    const img = await loadImage(fr.dataUrl);
+    tmpCtx.drawImage(img, 0, 0, gw, gh);
+    gif.addFrame(tmpC, { copy: true, delay });
+  }
+
+  gif.on('finished', blob => {
+    outputBlob = blob;
+    const url = URL.createObjectURL(blob);
+    const outVid = document.getElementById('outputVideo');
+    outVid.src = url;
+    document.getElementById('outputPanel').classList.add('visible');
+    btn.textContent = 'Esporta GIF';
+    btn.disabled = false;
+    showToast('GIF pronta!');
+    document.getElementById('outputPanel').scrollIntoView({ behavior: 'smooth' });
+  });
+
+  gif.render();
+}
+
+function getSelectedFrames() {
+  const all = window._currentFrames || [];
+  const thumbs = document.querySelectorAll('.frame-thumb');
+  const result = [];
+  thumbs.forEach(el => {
+    if (selectedFrames.has(el.dataset.key)) {
+      const idx = Array.from(thumbs).indexOf(el);
+      if (all[idx]) result.push(all[idx]);
+    }
+  });
+  return result;
+}
+
+function downloadResult() {
+  if (!outputBlob) return;
+  const ext = outputBlob.type.includes('gif') ? 'gif' : 'mp4';
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(outputBlob);
+  a.download = `lightning_${Date.now()}.${ext}`;
+  a.click();
+}
+
+function clearAll() {
+  videoFiles = [];
+  allFrameData = {};
+  selectedFrames.clear();
+  currentVideoIndex = -1;
+  currentClusterVideo = -1;
+  currentClusterId = -1;
+  outputBlob = null;
+  window._currentFrames = null;
+  document.getElementById('queueSection').style.display = 'none';
+  document.getElementById('frameViewerSection').style.display = 'none';
+  document.getElementById('outputPanel').classList.remove('visible');
+  renderQueue();
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function getSupportedMimeType() {
+  const types = ['video/mp4;codecs=h264', 'video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'];
+  return types.find(t => MediaRecorder.isTypeSupported(t)) || 'video/webm';
+}
+
+function loadImage(src) {
+  return new Promise((res, rej) => {
+    const img = new Image();
+    img.onload = () => res(img);
+    img.onerror = rej;
+    img.src = src;
+  });
+}
+
+function loadScript(src) {
+  return new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = res;
+    s.onerror = rej;
+    document.head.appendChild(s);
+  });
+}
+
+function sleep(ms) {
+  return new Promise(r => setTimeout(r, ms));
+}
+
+function formatTime(s) {
+  const m = Math.floor(s / 60);
+  const sec = (s % 60).toFixed(1);
+  return m > 0 ? `${m}:${sec.padStart(4,'0')}` : `${sec}s`;
+}
+
+function formatSize(bytes) {
+  if (bytes > 1e9) return (bytes/1e9).toFixed(1) + ' GB';
+  if (bytes > 1e6) return (bytes/1e6).toFixed(0) + ' MB';
+  return (bytes/1e3).toFixed(0) + ' KB';
+}
+
+function setProgress(idx, pct) {
+  const el = document.getElementById('progress-' + idx);
+  if (el) el.style.width = pct + '%';
+}
+
+function setMsg(idx, msg) {
+  const el = document.getElementById('msg-' + idx);
+  if (el) el.textContent = msg;
+}
+
+function setStatus(idx, status) {
+  const el = document.getElementById('status-' + idx);
+  if (el) { el.className = 'video-status ' + status; }
+}
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>
