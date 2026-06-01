@@ -586,6 +586,32 @@
   }
   .btn-sm:hover { border-color: var(--bolt); color: var(--bolt); }
 
+  /* EXTRACTION PROGRESS */
+  .extract-progress-wrap {
+    padding: 8px 14px 12px;
+    display: none;
+  }
+  .extract-progress-wrap.visible { display: block; }
+  .extract-progress-label {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+    margin-bottom: 5px;
+  }
+  .extract-progress-bar {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .extract-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--bolt), var(--accent));
+    transition: width 0.15s;
+    width: 0%;
+  }
+
   /* LIGHTNING ANIMATION on idle */
   @keyframes flicker {
     0%,95%,100% { opacity:1 }
@@ -648,6 +674,10 @@
         <button class="btn-sm" id="deselectAllBtn" onclick="selectAllFrames(false)">Deseleziona tutti</button>
         <button class="btn-sm" id="selectBestBtn" onclick="selectBestFrames()">Solo migliori</button>
       </div>
+      <div class="extract-progress-wrap" id="extractProgressWrap">
+        <div class="extract-progress-label" id="extractProgressLabel">Estrazione frame...</div>
+        <div class="extract-progress-bar"><div class="extract-progress-fill" id="extractProgressFill"></div></div>
+      </div>
       <div class="frame-grid-wrap">
         <div class="frame-grid" id="frameGrid"></div>
         <div class="scroll-strip"><span class="scroll-strip-label">scroll</span></div>
@@ -670,7 +700,8 @@
       <div class="output-title">Risultato</div>
       <video class="output-video" id="outputVideo" controls playsinline></video>
       <div class="download-btns">
-        <button class="btn btn-primary" id="downloadBtn" onclick="downloadResult()">Scarica</button>
+        <button class="btn btn-primary" id="downloadBtn" onclick="downloadResult()">Scarica MP4/WebM</button>
+        <button class="btn btn-accent" id="downloadFramesBtn" onclick="downloadFramesZip()">Scarica frame JPG</button>
       </div>
     </div>
   </div>
@@ -986,7 +1017,9 @@ async function showCluster(vidIdx, clusterId) {
 
   document.getElementById('frameViewerSection').style.display = 'block';
   document.getElementById('frameViewerTitle').textContent = `${file.name} — Fulmine ${clusterId+1}`;
-  document.getElementById('frameGrid').innerHTML = '<div class="empty-hint">Estrazione frame in corso...</div>';
+  document.getElementById('frameGrid').innerHTML = '';
+  setExtractProgress(0, 'Avvio estrazione...');
+  document.getElementById('extractProgressWrap').classList.add('visible');
   selectedFrames.clear();
   updateSelectedCount();
 
@@ -1114,8 +1147,10 @@ async function extractFrames(vidIdx, cluster) {
       const frames = [];
       let t = t0;
       let frameIdx = 0;
+      const totalFrames = Math.ceil((t1 - t0) / frameStep) + 1;
 
       setMsg(vidIdx, `Estrazione frame ${detectedFps}fps...`);
+      setExtractProgress(0, `0 / ${totalFrames} frame`);
 
       while (t <= t1 + frameStep * 0.5) {
         await new Promise(r => {
@@ -1125,6 +1160,8 @@ async function extractFrames(vidIdx, cluster) {
             const dataUrl = tmpCanvas.toDataURL('image/jpeg', 0.90);
             frames.push({ frameIdx, time: t, dataUrl, vidIdx, w: fw, h: fh });
             frameIdx++;
+            const pct = Math.round((frameIdx / totalFrames) * 100);
+            setExtractProgress(pct, `${frameIdx} / ${totalFrames} frame estratti`);
             r();
           };
         });
@@ -1162,6 +1199,8 @@ function renderFrameGrid(frames, vidIdx, clusterId) {
     grid.appendChild(div);
   });
 
+  // Hide progress bar
+  document.getElementById('extractProgressWrap').classList.remove('visible');
   // Store frames for export
   window._currentFrames = frames;
   updateSelectedCount();
@@ -1269,14 +1308,14 @@ async function exportVideo() {
 }
 
 // ============================================================
-// EXPORT GIF — WebM video loop (universally shareable)
+// EXPORT WEBM LOOP (sostituisce GIF)
 // ============================================================
 async function exportGIF() {
   const frames = getSelectedFrames();
   if (!frames.length) { showToast('Seleziona almeno un frame'); return; }
 
   const btn = document.getElementById('exportGifBtn');
-  btn.textContent = 'GIF in corso...';
+  btn.textContent = 'Loop in corso...';
   btn.disabled = true;
 
   try {
@@ -1286,46 +1325,55 @@ async function exportGIF() {
     const gw = Math.floor(firstImg.naturalWidth * scale / 2) * 2;
     const gh = Math.floor(firstImg.naturalHeight * scale / 2) * 2;
 
-    const tmpC = document.createElement('canvas');
-    tmpC.width = gw; tmpC.height = gh;
-    const tmpCtx = tmpC.getContext('2d');
-    const delay = parseFloat(document.getElementById('frameDuration').value) * 1000;
+    // Use the shared exportCanvas (already in DOM, off-screen)
+    exportCanvas.width = gw;
+    exportCanvas.height = gh;
 
-    // Use MediaRecorder on canvas stream — produces WebM, plays everywhere as loop
-    const stream = tmpC.captureStream(1);
+    const delay = parseFloat(document.getElementById('frameDuration').value) * 1000;
     const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
       ? 'video/webm;codecs=vp9' : 'video/webm';
+
+    const stream = exportCanvas.captureStream(30);
     const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 4000000 });
     const chunks = [];
     recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
 
-    recorder.onstop = () => {
-      const blob = new Blob(chunks, { type: 'video/webm' });
-      outputBlob = blob;
-      outputBlobExt = 'webm';
-      const url = URL.createObjectURL(blob);
-      const outVid = document.getElementById('outputVideo');
-      outVid.src = url;
-      outVid.loop = true;
-      document.getElementById('outputPanel').classList.add('visible');
-      btn.textContent = 'Esporta GIF';
-      btn.disabled = false;
-      showToast('Video loop pronto!');
-      document.getElementById('outputPanel').scrollIntoView({ behavior: 'smooth' });
-    };
+    await new Promise((res, rej) => {
+      recorder.onstop = () => {
+        const blob = new Blob(chunks, { type: 'video/webm' });
+        outputBlob = blob;
+        outputBlobExt = 'webm';
+        const url = URL.createObjectURL(blob);
+        const outVid = document.getElementById('outputVideo');
+        outVid.src = url;
+        outVid.loop = true;
+        document.getElementById('outputPanel').classList.add('visible');
+        btn.textContent = 'Esporta Loop';
+        btn.disabled = false;
+        showToast('Video loop pronto!');
+        document.getElementById('outputPanel').scrollIntoView({ behavior: 'smooth' });
+        res();
+      };
+      recorder.onerror = rej;
+      recorder.start();
 
-    recorder.start();
-    for (const fr of frames) {
-      const img = await loadImage(fr.dataUrl);
-      tmpCtx.drawImage(img, 0, 0, gw, gh);
-      await sleep(delay);
-    }
-    recorder.stop();
+      (async () => {
+        for (const fr of frames) {
+          const img = await loadImage(fr.dataUrl);
+          ectx.fillStyle = '#000';
+          ectx.fillRect(0, 0, gw, gh);
+          ectx.drawImage(img, 0, 0, gw, gh);
+          await sleep(delay);
+        }
+        recorder.stop();
+      })();
+    });
 
   } catch(e) {
-    btn.textContent = 'Esporta GIF';
-    btn.disabled = false;
+    document.getElementById('exportGifBtn').textContent = 'Esporta Loop';
+    document.getElementById('exportGifBtn').disabled = false;
     showToast('Errore export: ' + e.message);
+    console.error(e);
   }
 }
 
@@ -1368,6 +1416,52 @@ function clearAll() {
 // ============================================================
 // UTILS
 // ============================================================
+// ============================================================
+// DOWNLOAD FRAMES AS ZIP (JSZip)
+// ============================================================
+async function downloadFramesZip() {
+  const frames = getSelectedFrames();
+  if (!frames.length) { showToast('Seleziona almeno un frame'); return; }
+
+  const btn = document.getElementById('downloadFramesBtn');
+  btn.textContent = 'Preparazione ZIP...';
+  btn.disabled = true;
+
+  try {
+    if (!window.JSZip) {
+      await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
+    }
+    const zip = new JSZip();
+    frames.forEach((fr, i) => {
+      const base64 = fr.dataUrl.split(',')[1];
+      const t = fr.time.toFixed(3).replace('.', '_');
+      zip.file(`lightning_${String(i+1).padStart(3,'0')}_${t}s.jpg`, base64, { base64: true });
+    });
+    const blob = await zip.generateAsync({ type: 'blob' }, meta => {
+      btn.textContent = `ZIP ${meta.percent.toFixed(0)}%...`;
+    });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `lightning_frames_${Date.now()}.zip`;
+    a.click();
+    btn.textContent = 'Scarica frame JPG';
+    btn.disabled = false;
+    showToast(`${frames.length} frame scaricati`);
+  } catch(e) {
+    btn.textContent = 'Scarica frame JPG';
+    btn.disabled = false;
+    showToast('Errore ZIP: ' + e.message);
+    console.error(e);
+  }
+}
+
+function setExtractProgress(pct, label) {
+  const fill = document.getElementById('extractProgressFill');
+  const lbl = document.getElementById('extractProgressLabel');
+  if (fill) fill.style.width = pct + '%';
+  if (lbl) lbl.textContent = label;
+}
+
 function getSupportedMimeType() {
   const types = ['video/mp4;codecs=h264', 'video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'];
   return types.find(t => MediaRecorder.isTypeSupported(t)) || 'video/webm';
