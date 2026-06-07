@@ -3,150 +3,148 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ideogram 4 — JSON Prompt Builder</title>
+<title>Ideogram 4 — JSON Builder</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=DM+Sans:wght@300;400;500;600;700&display=swap');
 :root {
-  --bg:#0d0d12;--bg2:#13131a;--bg3:#1a1a24;--bg4:#21212e;
+  --bg:#0d0d12;--bg2:#13131a;--bg3:#1a1a24;
   --panel:#16161f;--border:#2a2a3a;--border2:#353548;
   --accent:#6366f1;--accent2:#818cf8;--accent3:#a5b4fc;
-  --green:#22c55e;--red:#f43f5e;--orange:#fb923c;
-  --yellow:#fbbf24;--cyan:#22d3ee;
+  --green:#22c55e;--red:#f43f5e;--orange:#fb923c;--yellow:#fbbf24;
   --obj:#3b82f6;--txt:#10b981;
   --text:#e2e8f0;--text2:#94a3b8;--text3:#4a5568;
-  --sw:300px;--rw:340px;--hh:50px;
+  --sw:260px;--rw:300px;--hh:46px;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;overflow:hidden;}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;}
 
-/* HEADER */
-#hdr{height:var(--hh);background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:10px;flex-shrink:0;z-index:50;}
-.logo{font-weight:700;font-size:15px;letter-spacing:-.3px;}
+#hdr{height:var(--hh);background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 12px;gap:8px;flex-shrink:0;}
+.logo{font-weight:700;font-size:14px;letter-spacing:-.3px;white-space:nowrap;}
 .logo em{color:var(--accent2);font-style:normal;}
-.pill{background:rgba(99,102,241,.15);color:var(--accent2);font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:.5px;}
+.pill{background:rgba(99,102,241,.15);color:var(--accent2);font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;letter-spacing:.5px;white-space:nowrap;}
 .hs{flex:1;}
-.hb{padding:6px 12px;border:1px solid var(--border2);border-radius:5px;background:transparent;color:var(--text2);font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px;touch-action:manipulation;}
+.hb{padding:5px 11px;border:1px solid var(--border2);border-radius:5px;background:transparent;color:var(--text2);font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px;white-space:nowrap;touch-action:manipulation;}
 .hb:hover{border-color:var(--accent);color:var(--accent2);}
 .hb.pri{background:var(--accent);border-color:var(--accent);color:#fff;}
 .hb.pri:hover{background:var(--accent2);}
-.hb.ok{background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.3);color:var(--green);}
+.hb.ok{background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.3);color:var(--green);}
 
-/* LAYOUT */
 #lay{display:flex;flex:1;overflow:hidden;}
 
 /* LEFT */
 #sl{width:var(--sw);background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;}
 .stabs{display:flex;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0;}
-.st{flex:1;padding:9px 4px;text-align:center;font-size:10px;font-weight:700;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;letter-spacing:.5px;text-transform:uppercase;transition:all .15s;}
+.st{flex:1;padding:8px 2px;text-align:center;font-size:9px;font-weight:700;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;letter-spacing:.5px;text-transform:uppercase;transition:all .15s;}
 .st.active{color:var(--accent2);border-bottom-color:var(--accent2);background:var(--panel);}
-.ss{flex:1;overflow-y:auto;padding:13px;}
+.ss{flex:1;overflow-y:auto;padding:12px;}
 
 /* CENTER */
-#ca{flex:1;display:flex;flex-direction:column;background:var(--bg);overflow:hidden;position:relative;}
-.ctb{background:var(--bg2);border-bottom:1px solid var(--border);padding:7px 12px;display:flex;align-items:center;gap:7px;flex-shrink:0;}
-.tb{padding:5px 10px;border:1px solid var(--border);border-radius:5px;background:transparent;color:var(--text2);font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px;touch-action:manipulation;}
+#ca{flex:1;display:flex;flex-direction:column;background:var(--bg);overflow:hidden;min-width:0;}
+.ctb{background:var(--bg2);border-bottom:1px solid var(--border);padding:6px 10px;display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.tb{padding:4px 9px;border:1px solid var(--border);border-radius:4px;background:transparent;color:var(--text2);font-size:10px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:4px;white-space:nowrap;touch-action:manipulation;}
 .tb:hover{border-color:var(--border2);color:var(--text);}
 .tb.sel{border-color:var(--accent);color:var(--accent2);background:rgba(99,102,241,.1);}
 .tb.obj{border-color:var(--obj);color:var(--obj);background:rgba(59,130,246,.08);}
 .tb.txt{border-color:var(--txt);color:var(--txt);background:rgba(16,185,129,.08);}
-.sep{width:1px;height:18px;background:var(--border);}
+.sep{width:1px;height:16px;background:var(--border);}
 .ts{flex:1;}
-.cw{flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:18px;position:relative;}
-#mc{display:block;box-shadow:0 8px 48px rgba(0,0,0,.7);}
+.cw{flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:14px;position:relative;background:var(--bg);}
+#mc{display:block;box-shadow:0 6px 40px rgba(0,0,0,.8);}
 
 /* RIGHT */
 #pr{width:var(--rw);background:var(--panel);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;}
 .ptabs{display:flex;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0;}
-.pt{flex:1;padding:9px 4px;text-align:center;font-size:10px;font-weight:700;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;letter-spacing:.5px;text-transform:uppercase;transition:all .15s;}
+.pt{flex:1;padding:8px 2px;text-align:center;font-size:9px;font-weight:700;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;letter-spacing:.5px;text-transform:uppercase;transition:all .15s;}
 .pt.active{color:var(--accent2);border-bottom-color:var(--accent2);background:var(--panel);}
-.ps{flex:1;overflow-y:auto;padding:13px;}
+.ps{flex:1;overflow-y:auto;padding:12px;}
 .ps.h{display:none;}
 
 /* FORM */
-.sec{margin-bottom:16px;}
-.sec-t{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:7px;display:flex;align-items:center;gap:6px;}
+.sec{margin-bottom:14px;}
+.sec-t{font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;display:flex;align-items:center;gap:5px;}
 .sec-t::after{content:'';flex:1;height:1px;background:var(--border);}
-label{display:block;font-size:11px;font-weight:600;color:var(--text2);margin-bottom:3px;}
-textarea,input[type=text],select{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;padding:6px 9px;outline:none;transition:border-color .15s;margin-bottom:9px;line-height:1.5;}
-textarea:focus,input[type=text]:focus,select:focus{border-color:var(--accent);}
+label{display:block;font-size:10px;font-weight:600;color:var(--text2);margin-bottom:3px;}
+textarea,input[type=text],input[type=number],select{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:11px;padding:5px 8px;outline:none;transition:border-color .15s;margin-bottom:8px;line-height:1.5;}
+textarea:focus,input:focus,select:focus{border-color:var(--accent);}
 textarea{resize:vertical;}
 select{cursor:pointer;}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:9px;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;}
 .g2>div textarea,.g2>div input{margin-bottom:0;}
-.togrow{display:flex;gap:4px;margin-bottom:9px;}
-.tog{flex:1;padding:6px 4px;border:1px solid var(--border);border-radius:5px;text-align:center;font-size:11px;font-weight:600;cursor:pointer;color:var(--text2);transition:all .15s;touch-action:manipulation;}
+.togrow{display:flex;gap:4px;margin-bottom:8px;}
+.tog{flex:1;padding:5px 3px;border:1px solid var(--border);border-radius:4px;text-align:center;font-size:10px;font-weight:600;cursor:pointer;color:var(--text2);transition:all .15s;touch-action:manipulation;}
 .tog.active{border-color:var(--accent);color:var(--accent2);background:rgba(99,102,241,.1);}
 
+/* RESOLUTION - ratio + axis */
+.ratio-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;margin-bottom:8px;}
+.rp{padding:4px 2px;background:var(--bg);border:1px solid var(--border);border-radius:3px;text-align:center;font-size:9px;font-weight:700;color:var(--text3);cursor:pointer;line-height:1.3;transition:all .12s;touch-action:manipulation;}
+.rp:hover,.rp.active{border-color:var(--accent);color:var(--accent2);background:rgba(99,102,241,.08);}
+.rp .rs{font-size:8px;font-weight:400;color:var(--text3);display:block;}
+.axis-row{display:grid;grid-template-columns:1fr 24px 1fr;gap:5px;align-items:center;margin-bottom:8px;}
+.axis-row .ax{text-align:center;font-size:11px;color:var(--text3);}
+.axis-row input{margin-bottom:0;text-align:center;font-family:'IBM Plex Mono',monospace;}
+.axis-row input.locked{color:var(--accent3);border-color:rgba(99,102,241,.3);}
+.lock-row{display:flex;gap:4px;margin-bottom:8px;}
+.lk{flex:1;padding:4px;border:1px solid var(--border);border-radius:4px;text-align:center;font-size:10px;font-weight:600;cursor:pointer;color:var(--text2);transition:all .15s;touch-action:manipulation;}
+.lk.active{border-color:var(--accent3);color:var(--accent3);background:rgba(165,180,252,.08);}
+.res-note{font-size:9px;color:var(--text3);margin-bottom:8px;line-height:1.5;}
+
 /* PALETTE */
-.pal{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:9px;align-items:center;}
-.sw{width:26px;height:26px;border-radius:4px;border:2px solid rgba(255,255,255,.12);cursor:pointer;position:relative;transition:transform .1s;}
+.pal{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;align-items:center;}
+.sw{width:24px;height:24px;border-radius:4px;border:2px solid rgba(255,255,255,.12);cursor:pointer;position:relative;transition:transform .1s;flex-shrink:0;}
 .sw:hover{transform:scale(1.12);}
-.sw .x{display:none;position:absolute;top:-5px;right:-5px;width:13px;height:13px;background:var(--red);border-radius:50%;align-items:center;justify-content:center;font-size:8px;color:#fff;font-weight:700;}
+.sw .x{display:none;position:absolute;top:-5px;right:-5px;width:12px;height:12px;background:var(--red);border-radius:50%;align-items:center;justify-content:center;font-size:7px;color:#fff;font-weight:700;}
 .sw:hover .x{display:flex;}
-.asw{width:26px;height:26px;border:2px dashed var(--border);border-radius:4px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text3);font-size:14px;transition:all .15s;}
+.asw{width:24px;height:24px;border:2px dashed var(--border);border-radius:4px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text3);font-size:14px;transition:all .15s;flex-shrink:0;}
 .asw:hover{border-color:var(--accent2);color:var(--accent2);}
 
 /* ELEMENTS */
-.ell{display:flex;flex-direction:column;gap:6px;margin-bottom:9px;}
-.eli{border:1px solid var(--border);border-radius:5px;overflow:hidden;cursor:pointer;}
+.ell{display:flex;flex-direction:column;gap:5px;margin-bottom:8px;}
+.eli{border:1px solid var(--border);border-radius:4px;overflow:hidden;}
 .eli:hover{border-color:var(--border2);}
 .eli.sel{border-color:var(--accent);}
 .eli.to{border-left:3px solid var(--obj);}
 .eli.tt{border-left:3px solid var(--txt);}
-.elh{padding:7px 9px;display:flex;align-items:center;gap:6px;background:var(--bg2);}
-.elb2{font-size:9px;font-weight:800;padding:2px 5px;border-radius:3px;letter-spacing:.5px;}
+.elh{padding:6px 8px;display:flex;align-items:center;gap:5px;background:var(--bg2);cursor:pointer;}
+.elb2{font-size:8px;font-weight:800;padding:1px 5px;border-radius:3px;letter-spacing:.5px;flex-shrink:0;}
 .elb2.o{background:rgba(59,130,246,.2);color:var(--obj);}
 .elb2.t{background:rgba(16,185,129,.2);color:var(--txt);}
-.eln{flex:1;font-size:11px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text2);}
+.eln{flex:1;font-size:10px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text2);}
 .ela{display:flex;gap:2px;}
-.mb{width:20px;height:20px;border:none;background:transparent;color:var(--text3);border-radius:3px;cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;transition:all .12s;touch-action:manipulation;}
+.mb{width:18px;height:18px;border:none;background:transparent;color:var(--text3);border-radius:2px;cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;transition:all .12s;touch-action:manipulation;}
 .mb:hover{background:var(--bg3);color:var(--text);}
-.mb.d:hover{color:var(--red);background:rgba(244,63,94,.1);}
-.ebody{display:none;padding:9px;background:var(--bg3);flex-direction:column;gap:5px;}
-.ebody.open{display:flex;}
-.ebody textarea,.ebody input{margin-bottom:0;}
-.binfo{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:5px 8px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--accent3);margin-bottom:6px;}
+.mb.d:hover{color:var(--red);}
 
-/* RESOLUTION GRID */
-.rg{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:9px;}
-.rp{padding:5px 3px;background:var(--bg);border:1px solid var(--border);border-radius:4px;text-align:center;font-size:9px;font-weight:600;color:var(--text3);cursor:pointer;line-height:1.4;transition:all .12s;touch-action:manipulation;}
-.rp:hover,.rp.active{border-color:var(--accent);color:var(--accent2);background:rgba(99,102,241,.08);}
-.rp .rname{font-size:8px;color:var(--text3);font-weight:400;display:block;}
-
-/* ADD ELEMENT */
-.ael{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
-.aelb{padding:7px;border:1px dashed;border-radius:5px;text-align:center;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;touch-action:manipulation;}
-.aelb.o{border-color:rgba(59,130,246,.4);color:var(--obj);background:rgba(59,130,246,.05);}
+.ael{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
+.aelb{padding:6px;border:1px dashed;border-radius:4px;text-align:center;font-size:10px;font-weight:700;cursor:pointer;transition:all .15s;touch-action:manipulation;}
+.aelb.o{border-color:rgba(59,130,246,.4);color:var(--obj);background:rgba(59,130,246,.04);}
 .aelb.o:hover{background:rgba(59,130,246,.12);}
-.aelb.t{border-color:rgba(16,185,129,.4);color:var(--txt);background:rgba(16,185,129,.05);}
+.aelb.t{border-color:rgba(16,185,129,.4);color:var(--txt);background:rgba(16,185,129,.04);}
 .aelb.t:hover{background:rgba(16,185,129,.12);}
 
-/* JSON BOX */
-.jbox{background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:11px;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:1.8;white-space:pre;overflow-x:auto;color:var(--text);}
+.binfo{background:var(--bg);border:1px solid var(--border);border-radius:3px;padding:4px 7px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--accent3);margin-bottom:6px;}
+
+/* JSON */
+.jbox{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:10px;font-family:'IBM Plex Mono',monospace;font-size:9.5px;line-height:1.8;white-space:pre;overflow-x:auto;color:var(--text);}
 .jk{color:#a5b4fc;}.js{color:#86efac;}.jn{color:var(--orange);}.jb{color:var(--yellow);}
 
-/* AI STATUS */
-.ai-box{background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:10px;font-size:11px;color:var(--text2);line-height:1.6;margin-bottom:9px;}
-.spin{display:inline-block;width:12px;height:12px;border:2px solid rgba(99,102,241,.2);border-top-color:var(--accent2);border-radius:50%;animation:sp .7s linear infinite;margin-right:6px;}
+/* AI */
+.ai-note{background:rgba(99,102,241,.06);border:1px solid rgba(99,102,241,.2);border-radius:4px;padding:8px 10px;font-size:10px;color:var(--text2);line-height:1.6;margin-bottom:8px;}
+.spin{display:inline-block;width:11px;height:11px;border:2px solid rgba(99,102,241,.2);border-top-color:var(--accent2);border-radius:50%;animation:sp .7s linear infinite;margin-right:5px;}
 @keyframes sp{to{transform:rotate(360deg);}}
+.err-box{background:rgba(244,63,94,.08);border:1px solid rgba(244,63,94,.25);border-radius:4px;padding:7px 9px;font-size:10px;color:#fb7185;line-height:1.5;margin-top:6px;}
 
-/* TOAST */
-.toast{position:fixed;bottom:18px;right:18px;background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:9px 14px;border-radius:7px;font-size:12px;font-weight:600;z-index:1000;transform:translateY(50px);opacity:0;transition:all .3s;}
+.toast{position:fixed;bottom:16px;right:16px;background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:6px;font-size:11px;font-weight:600;z-index:1000;transform:translateY(50px);opacity:0;transition:all .3s;}
 .toast.show{transform:translateY(0);opacity:1;}
 .toast.ok{border-color:var(--green);color:var(--green);}
 .toast.err{border-color:var(--red);color:var(--red);}
 
-/* HINT */
-#hint{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;color:var(--text3);font-size:12px;line-height:2.2;}
+#hint{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;color:var(--text3);font-size:11px;line-height:2.2;}
 #hint.h{display:none;}
 
-::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar{width:3px;height:3px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
-
-@media(max-width:900px){#sl{display:none;}#pr{width:260px;}}
-@media(max-width:580px){#lay{flex-direction:column;}#pr{width:100%;height:45%;border-left:none;border-top:1px solid var(--border);}}
 </style>
 </head>
 <body>
@@ -162,7 +160,7 @@ select{cursor:pointer;}
 
 <div id="lay">
 
-  <!-- ====== LEFT SIDEBAR ====== -->
+  <!-- LEFT -->
   <div id="sl">
     <div class="stabs">
       <div class="st active" onclick="showST(0)">PROMPT</div>
@@ -170,50 +168,61 @@ select{cursor:pointer;}
       <div class="st" onclick="showST(2)">✦ AI</div>
     </div>
 
-    <!-- TAB 0: PROMPT -->
+    <!-- PROMPT -->
     <div class="ss" id="st0">
       <div class="sec">
         <div class="sec-t">Descrizione generale</div>
-        <textarea id="hld" rows="4" placeholder="Descrivi la scena completa: soggetto, ambiente, mood, uso previsto..."></textarea>
+        <textarea id="hld" rows="4" placeholder="Soggetto, ambiente, mood, uso previsto..."></textarea>
       </div>
       <div class="sec">
-        <div class="sec-t">Sfondo (background)</div>
-        <textarea id="bg" rows="4" placeholder="Ambiente, atmosfera, luci, superfici, tutto ciò che NON è un elemento specifico..."></textarea>
+        <div class="sec-t">Sfondo</div>
+        <textarea id="bg" rows="4" placeholder="Ambiente, atmosfera, superfici — tutto ciò che NON è un elemento specifico..."></textarea>
       </div>
       <div class="sec">
-        <div class="sec-t">Risoluzione</div>
-        <div class="rg" id="res-grid">
+        <div class="sec-t">Formato &amp; Risoluzione</div>
 
-          <div class="rp active" onclick="setRes(1344,768,this)">1344×768<span class="rname">16:9 HD</span></div>
-          <div class="rp" onclick="setRes(1920,1088,this)">1920×1088<span class="rname">Full HD</span></div>
-          <div class="rp" onclick="setRes(2048,1152,this)">2048×1152<span class="rname">2K Wide</span></div>
-
-          <div class="rp" onclick="setRes(1024,1024,this)">1024×1024<span class="rname">Square</span></div>
-          <div class="rp" onclick="setRes(2048,2048,this)">2048×2048<span class="rname">Sq. Max</span></div>
-          <div class="rp" onclick="setRes(768,1344,this)">768×1344<span class="rname">9:16 Portrait</span></div>
-
-          <div class="rp" onclick="setRes(2048,1024,this)">2048×1024<span class="rname">Panorama 2:1</span></div>
-          <div class="rp" onclick="setRes(1792,1024,this)">1792×1024<span class="rname">Widescreen</span></div>
-          <div class="rp" onclick="setRes(1408,768,this)">1408×768<span class="rname">A3 Land.</span></div>
-
-          <div class="rp" onclick="setRes(768,1408,this)">768×1408<span class="rname">A4 Portrait</span></div>
-          <div class="rp" onclick="setRes(1024,1792,this)">1024×1792<span class="rname">Portrait Long</span></div>
-          <div class="rp" onclick="setRes(2048,576,this)">2048×576<span class="rname">Dual Monitor</span></div>
-
-          <div class="rp" onclick="setRes(2048,864,this)">2048×864<span class="rname">Ultrawide 21:9</span></div>
-          <div class="rp" onclick="setRes(1344,512,this)">1344×512<span class="rname">Banner Wide</span></div>
-          <div class="rp" onclick="setRes(512,1344,this)">512×1344<span class="rname">Banner Tall</span></div>
-
+        <!-- RATIO BUTTONS -->
+        <div class="ratio-grid" id="ratio-grid">
+          <div class="rp active" data-r="16:9" onclick="setRatio('16:9',this)">16:9<span class="rs">Wide</span></div>
+          <div class="rp" data-r="4:3" onclick="setRatio('4:3',this)">4:3<span class="rs">Standard</span></div>
+          <div class="rp" data-r="1:1" onclick="setRatio('1:1',this)">1:1<span class="rs">Square</span></div>
+          <div class="rp" data-r="9:16" onclick="setRatio('9:16',this)">9:16<span class="rs">Portrait</span></div>
+          <div class="rp" data-r="21:9" onclick="setRatio('21:9',this)">21:9<span class="rs">Ultrawide</span></div>
+          <div class="rp" data-r="32:9" onclick="setRatio('32:9',this)">32:9<span class="rs">Dual Mon.</span></div>
+          <div class="rp" data-r="3:2" onclick="setRatio('3:2',this)">3:2<span class="rs">Photo</span></div>
+          <div class="rp" data-r="2:3" onclick="setRatio('2:3',this)">2:3<span class="rs">A4 Port.</span></div>
+          <div class="rp" data-r="3:1" onclick="setRatio('3:1',this)">3:1<span class="rs">Banner</span></div>
+          <div class="rp" data-r="2:1" onclick="setRatio('2:1',this)">2:1<span class="rs">Panorama</span></div>
+          <div class="rp" data-r="4:1" onclick="setRatio('4:1',this)">4:1<span class="rs">Strip</span></div>
+          <div class="rp" data-r="free" onclick="setRatio('free',this)">Free<span class="rs">Manuale</span></div>
         </div>
-        <p style="font-size:9px;color:var(--text3);margin-bottom:8px;">⚠ Ideogram 4 max nativo: 2048px per lato. 4K/8K richiedono upscaling post.</p>
-        <div class="g2">
-          <div><label>Width px</label><input type="text" id="rw" value="1344" oninput="onRC()"></div>
-          <div><label>Height px</label><input type="text" id="rh" value="768" oninput="onRC()"></div>
+
+        <!-- AXIS LOCK -->
+        <div class="lock-row">
+          <div class="lk active" id="lk-w" onclick="setLock('w')">🔒 Blocca W →</div>
+          <div class="lk" id="lk-h" onclick="setLock('h')">🔒 Blocca H ↕</div>
+        </div>
+
+        <div class="axis-row">
+          <div>
+            <label>Width (px)</label>
+            <input type="number" id="rw" value="1344" min="256" max="2048" step="16" oninput="onAxisChange('w')">
+          </div>
+          <div class="ax">×</div>
+          <div>
+            <label>Height (px)</label>
+            <input type="number" id="rh" value="768" min="256" max="2048" step="16" oninput="onAxisChange('h')">
+          </div>
+        </div>
+
+        <div class="res-note">
+          Max nativo Ideogram 4: <strong>2048px</strong> per lato (multipli di 16).<br>
+          4K/8K → upscaling post-generazione.
         </div>
       </div>
     </div>
 
-    <!-- TAB 1: STILE -->
+    <!-- STILE -->
     <div class="ss" id="st1" style="display:none;">
       <div class="sec">
         <div class="sec-t">Tipo immagine</div>
@@ -224,7 +233,7 @@ select{cursor:pointer;}
       </div>
       <div class="sec">
         <div class="sec-t">Estetica</div>
-        <select onchange="this.nextElementSibling.value=this.value;S.style.aes=this.value;upJ()">
+        <select onchange="if(this.value){document.getElementById('sae').value=this.value;S.style.aes=this.value;upJ();}">
           <option value="">— Preset —</option>
           <optgroup label="Photo">
             <option value="cinematic, hyper-realistic, high contrast, moody, dramatic atmosphere">Cinematic</option>
@@ -234,32 +243,30 @@ select{cursor:pointer;}
             <option value="atmospheric, dreamy, soft, romantic, painterly realism">Atmospheric</option>
             <option value="aerial, drone photography, wide angle, technical, professional">Aereo/Drone</option>
             <option value="architectural, professional, clean lines, technical precision">Architettonico</option>
-            <option value="industrial, stark, high contrast, utilitarian">Industrial</option>
           </optgroup>
           <optgroup label="Art Style">
             <option value="cinematic fantasy, polished digital art, dramatic, high contrast">Fantasy Art</option>
-            <option value="sci-fi concept art, futuristic, technical, detailed environment">Sci-Fi Concept</option>
+            <option value="sci-fi concept art, futuristic, technical, detailed">Sci-Fi Concept</option>
             <option value="flat vector design, bold geometric shapes, clean minimal">Vector/Flat</option>
             <option value="vintage poster illustration, screen-print texture, limited palette">Vintage Poster</option>
-            <option value="semi-realistic anime illustration, expressive, polished rendering">Anime</option>
+            <option value="semi-realistic anime illustration, expressive, polished">Anime</option>
             <option value="high-end 3D render, glossy materials, realistic reflections">3D Render</option>
             <option value="watercolor, soft washes, organic, transparent layers">Watercolor</option>
-            <option value="comic book, heavy ink outlines, dynamic, halftone">Comic Book</option>
           </optgroup>
         </select>
         <textarea id="sae" rows="2" placeholder="Es: cinematic, hyper-realistic, high contrast..." oninput="S.style.aes=this.value;upJ()"></textarea>
       </div>
       <div class="sec">
         <div class="sec-t">Illuminazione</div>
-        <select onchange="this.nextElementSibling.value=this.value;S.style.lig=this.value;upJ()">
+        <select onchange="if(this.value){document.getElementById('sli').value=this.value;S.style.lig=this.value;upJ();}">
           <option value="">— Preset luce —</option>
-          <option value="warm golden hour sunlight from behind, long soft shadows, glowing haze, gentle lens flare">Golden Hour</option>
+          <option value="warm golden hour sunlight from behind, long soft shadows, glowing haze, lens flare">Golden Hour</option>
           <option value="soft natural overcast daylight, even diffused lighting, no harsh shadows">Overcast</option>
           <option value="dark low-key studio, narrow rim light, deep shadows, high contrast">Low-Key Studio</option>
           <option value="cool blue neon from left, magenta rim from right, wet reflections, mist glow">Neon Night</option>
-          <option value="moonlight from above, soft blue shadows, cool ambient, deep darkness">Moonlight</option>
-          <option value="harsh overhead midday sun, strong downward shadows, bleached highlights">Midday Harsh</option>
-          <option value="large softbox key upper left, cool blue rim behind, bounce fill, glossy reflections">Studio Softbox</option>
+          <option value="moonlight from above, soft blue shadows, deep darkness">Moonlight</option>
+          <option value="harsh overhead midday sun, strong shadows, bleached highlights">Midday Harsh</option>
+          <option value="large softbox key upper left, cool blue rim behind, bounce fill">Studio Softbox</option>
           <option value="volumetric god rays from above, atmospheric haze, dramatic depth">God Rays</option>
           <option value="warm candlelight, flickering orange glow, deep surrounding shadows">Candlelight</option>
         </select>
@@ -267,57 +274,56 @@ select{cursor:pointer;}
       </div>
       <div class="sec">
         <div class="sec-t" id="mlab">Camera / Photo</div>
-        <select onchange="this.nextElementSibling.value=this.value;S.style.med=this.value;upJ()">
+        <select onchange="if(this.value){document.getElementById('sme').value=this.value;S.style.med=this.value;upJ();}">
           <option value="">— Preset camera —</option>
           <option value="85mm portrait lens, shallow depth of field, sharp focus on subject, creamy bokeh, eye-level">85mm Portrait</option>
-          <option value="24mm wide-angle lens, low-angle, deep focus, dramatic foreground exaggeration">24mm Wide</option>
-          <option value="50mm standard lens, natural perspective, medium depth of field, documentary">50mm Standard</option>
+          <option value="24mm wide-angle lens, low-angle, deep focus, dramatic foreground">24mm Wide</option>
+          <option value="50mm standard lens, natural perspective, medium depth of field">50mm Standard</option>
           <option value="200mm telephoto, extreme compression, shallow depth of field, subject isolation">200mm Tele</option>
-          <option value="drone aerial view, bird's-eye perspective, wide field of view, sharp technical">Drone Aerial</option>
-          <option value="macro, 100mm lens, extremely shallow depth of field, crisp texture detail">Macro</option>
-          <option value="35mm film, slight grain, handheld framing, natural motion blur, cinematic">35mm Film</option>
-          <option value="wide anamorphic, 2.39:1, horizontal lens flares, epic cinematic scope">Anamorphic</option>
-          <option value="semi-realistic illustration, clean linework, polished shading, expressive rendering">Illustration</option>
-          <option value="3D render, perfect geometry, ray-traced reflections, studio HDRI lighting">3D Render</option>
-          <option value="flat design, geometric shapes, clean vector, minimal perspective, bold colors">Flat Design</option>
+          <option value="drone aerial view, bird's-eye perspective, wide field, sharp">Drone Aerial</option>
+          <option value="macro, 100mm lens, extremely shallow depth of field, crisp texture">Macro</option>
+          <option value="35mm film, slight grain, handheld, natural motion blur">35mm Film</option>
+          <option value="wide anamorphic, 2.39:1, horizontal lens flares, epic scope">Anamorphic</option>
+          <option value="3D render, ray-traced reflections, studio HDRI lighting">3D Render</option>
+          <option value="flat design, geometric shapes, clean vector, bold colors">Flat Design</option>
         </select>
         <textarea id="sme" rows="2" placeholder="Camera, lens, rendering style..." oninput="S.style.med=this.value;upJ()"></textarea>
       </div>
       <div class="sec">
         <div class="sec-t">Palette colori globale</div>
-        <select onchange="applyPP(this.value)" style="margin-bottom:7px;">
+        <select onchange="applyPP(this.value);this.value='';">
           <option value="">— Palette preset —</option>
           <option value='["#050816","#0B1026","#00E5FF","#FF2BD6","#F2F2F2","#1A1A1A"]'>Cyberpunk Neon</option>
           <option value='["#0D1117","#1A2332","#2A4B6F","#4A9FD4","#A8D8F0","#F0F8FF"]'>Ocean Blue</option>
           <option value='["#1A0A00","#4A1800","#B84800","#FF8C00","#FFD700","#FFF8E7"]'>Sunset Orange</option>
-          <option value='["#0A0A0F","#1A1A2E","#0F3460","#533483","#E94560"]'>Neon Purple</option>
           <option value='["#F5F0E8","#E8D5B7","#C4A882","#8B6914","#5C4A1E"]'>Warm Earth</option>
           <option value='["#0D2818","#1A4A2E","#2E7D4F","#52B788","#95D5B2","#D8F3DC"]'>Forest Green</option>
-          <option value='["#F8F9FA","#E9ECEF","#CED4DA","#6C757D","#343A40"]'>Minimal B&W</option>
+          <option value='["#F8F9FA","#E9ECEF","#6C757D","#343A40","#212529"]'>Minimal B&W</option>
           <option value='["#002147","#0056A0","#1E90FF","#87CEEB","#FFFFFF"]'>Corporate Blue</option>
           <option value='["#1A1A1A","#2D4A3E","#3D7A5A","#5DAA7A","#8FCE9E","#C5E8CE"]'>Agrivoltaico</option>
-          <option value='["#0F0A00","#3D2B00","#7A5500","#C8920A","#F2C94C","#FFFBE6"]'>Golden Tech</option>
+          <option value='["#0F0A00","#3D2B00","#C8920A","#F2C94C","#FFFBE6"]'>Golden Tech</option>
+          <option value='["#1A0020","#7B2FBE","#C77DFF","#E0AAFF","#F8F0FF"]'>Mystic Purple</option>
+          <option value='["#1C1C1E","#2C2C2E","#E31E24","#FF6B6B","#FFFFFF"]'>F1 Racing</option>
         </select>
         <div class="pal" id="gpal"><div class="asw" onclick="addC('g')">+</div></div>
       </div>
     </div>
 
-    <!-- TAB 2: AI -->
+    <!-- AI -->
     <div class="ss" id="st2" style="display:none;">
       <div class="sec">
         <div class="sec-t">Genera con AI</div>
-        <div class="ai-box">
-          Descrivi l'immagine in italiano o inglese. L'AI genera il JSON strutturato completo e lo carica nel builder.
-        </div>
+        <div class="ai-note">Descrivi l'immagine in italiano o inglese. L'AI usa il system prompt ufficiale Ideogram 4 e genera il JSON completo pronto all'uso.</div>
         <label>La tua idea</label>
         <textarea id="aiidea" rows="6" placeholder="Es: poster fotografico professionale di un impianto agrivoltaico da 10MW con pannelli bifacciali, sfondo colline toscane, tramonto, per dossier VIA..."></textarea>
-        <button class="hb pri" style="width:100%;justify-content:center;margin-bottom:9px;" onclick="genAI()" id="aibtn">✦ Genera JSON</button>
-        <div id="aistat" style="display:none;font-size:11px;color:var(--text2);margin-bottom:9px;"></div>
+        <button class="hb pri" style="width:100%;justify-content:center;margin-bottom:8px;" onclick="genAI()" id="aibtn">✦ Genera JSON</button>
+        <div id="aierr" class="err-box" style="display:none;"></div>
+        <div id="aistat" style="display:none;font-size:10px;color:var(--text2);margin-bottom:8px;"></div>
       </div>
       <div class="sec" id="airesSec" style="display:none;">
         <div class="sec-t">JSON generato</div>
-        <div class="jbox" id="airesjson" style="max-height:180px;margin-bottom:8px;"></div>
-        <div style="display:flex;gap:6px;">
+        <div class="jbox" id="airesjson" style="max-height:160px;margin-bottom:7px;"></div>
+        <div style="display:flex;gap:5px;">
           <button class="hb pri" style="flex:1;justify-content:center;" onclick="loadGenJSON()">← Carica nel Builder</button>
           <button class="hb ok" onclick="copyGen()">⎘ Copia</button>
         </div>
@@ -325,40 +331,39 @@ select{cursor:pointer;}
     </div>
   </div>
 
-  <!-- ====== CENTER CANVAS ====== -->
+  <!-- CENTER -->
   <div id="ca">
     <div class="ctb">
       <button class="tb sel" id="tool-select" onclick="setTool('select')">↖ Seleziona</button>
       <div class="sep"></div>
       <button class="tb obj" id="tool-obj" onclick="setTool('obj')">
-        <span style="width:9px;height:9px;background:var(--obj);border-radius:2px;display:inline-block;"></span>OBJ
+        <span style="width:8px;height:8px;background:var(--obj);border-radius:2px;display:inline-block;"></span>OBJ
       </button>
       <button class="tb txt" id="tool-text" onclick="setTool('text')">
-        <span style="font-weight:800;color:var(--txt);">T</span>TEXT
+        <span style="font-weight:800;color:var(--txt);font-size:12px;">T</span>TEXT
       </button>
       <div class="sep"></div>
       <button class="tb" id="btndel" style="display:none;color:var(--red);border-color:rgba(244,63,94,.3);" onclick="delSel()">✕ Elimina</button>
       <div class="ts"></div>
-      <span style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;" id="cinfo">1344×768</span>
+      <span style="font-size:9px;color:var(--text3);font-family:'IBM Plex Mono',monospace;" id="cinfo">1344×768</span>
     </div>
     <div class="cw" id="cwrap">
       <canvas id="mc"></canvas>
       <div id="hint">
-        <div style="font-size:26px;margin-bottom:6px;">🎨</div>
-        <div>Scegli uno strumento</div>
+        <div style="font-size:22px;margin-bottom:4px;">🎨</div>
+        <div>Scegli OBJ o TEXT</div>
         <div>poi disegna i riquadri sul canvas</div>
-        <div style="font-size:10px;margin-top:6px;color:var(--text3);">OBJ = oggetti/soggetti &nbsp;|&nbsp; TEXT = testi nell'immagine</div>
+        <div style="font-size:9px;margin-top:4px;color:var(--text3);">OBJ = oggetti/soggetti &nbsp;|&nbsp; TEXT = testi nell'immagine</div>
       </div>
     </div>
   </div>
 
-  <!-- ====== RIGHT PANEL ====== -->
+  <!-- RIGHT -->
   <div id="pr">
     <div class="ptabs">
       <div class="pt active" onclick="showPT('el')">ELEMENTI</div>
       <div class="pt" onclick="showPT('json')">JSON</div>
     </div>
-
     <div class="ps" id="pt-el">
       <div class="sec">
         <div class="sec-t">Layer</div>
@@ -375,13 +380,12 @@ select{cursor:pointer;}
         </div>
       </div>
     </div>
-
     <div class="ps h" id="pt-json">
-      <div style="display:flex;gap:6px;margin-bottom:9px;">
-        <button class="hb ok" style="flex:1;justify-content:center;" onclick="copyJSON()">⎘ Copia JSON</button>
+      <div style="display:flex;gap:5px;margin-bottom:8px;">
+        <button class="hb ok" style="flex:1;justify-content:center;" onclick="copyJSON()">⎘ Copia</button>
         <button class="hb pri" onclick="downloadJSON()">↓ Scarica</button>
       </div>
-      <div class="jbox" id="jout" style="font-size:9.5px;"></div>
+      <div class="jbox" id="jout" style="font-size:9px;"></div>
     </div>
   </div>
 </div>
@@ -391,16 +395,81 @@ select{cursor:pointer;}
 <script>
 const PROXY_URL = 'ideogram4-proxy.php';
 
-// STATE
-let S = {
-  hld:'', bg:'',
-  style:{mode:'photo',aes:'',lig:'',med:''},
-  pal:[], els:[], res:{w:1344,h:768}
+// RATIO MAP (w:h)
+const RATIOS = {
+  '16:9':[16,9],'4:3':[4,3],'1:1':[1,1],'9:16':[9,16],
+  '21:9':[21,9],'32:9':[32,9],'3:2':[3,2],'2:3':[2,3],
+  '3:1':[3,1],'2:1':[2,1],'4:1':[4,1],'free':null
 };
-let EC=0, selEl=null, tool='select';
-let drawing=false, drawStart=null, drawRect=null;
-let drag=null, genJSON=null;
-let canvas, ctx, cw, ch;
+
+let S = {
+  hld:'',bg:'',
+  style:{mode:'photo',aes:'',lig:'',med:''},
+  pal:[],els:[],res:{w:1344,h:768},
+  ratio:'16:9', lockAxis:'w'
+};
+let EC=0,selEl=null,tool='select';
+let drawing=false,drawStart=null,drawRect=null;
+let drag=null,genJSON=null;
+let canvas,ctx,cw,ch;
+
+// ===== RATIO & RESOLUTION =====
+function setRatio(r,btn){
+  S.ratio=r;
+  document.querySelectorAll('.rp').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  if(r!=='free') calcOtherAxis();
+  resizeC(); upJ();
+}
+
+function setLock(axis){
+  S.lockAxis=axis;
+  document.getElementById('lk-w').classList.toggle('active',axis==='w');
+  document.getElementById('lk-h').classList.toggle('active',axis==='h');
+}
+
+function onAxisChange(changed){
+  const rW=document.getElementById('rw');
+  const rH=document.getElementById('rh');
+  const v=parseInt(changed==='w'?rW.value:rH.value)||256;
+  // snap to multiple of 16
+  const snapped=Math.round(Math.min(Math.max(v,256),2048)/16)*16;
+  if(changed==='w'){rW.value=snapped;S.res.w=snapped;}
+  else{rH.value=snapped;S.res.h=snapped;}
+
+  if(S.ratio!=='free'){
+    const[rw,rh]=RATIOS[S.ratio];
+    if(changed==='w'){
+      S.res.h=Math.round(Math.min(snapped*rh/rw,2048)/16)*16;
+      rH.value=S.res.h;
+    } else {
+      S.res.w=Math.round(Math.min(snapped*rw/rh,2048)/16)*16;
+      rW.value=S.res.w;
+    }
+  } else {
+    S.res.w=parseInt(rW.value)||1344;
+    S.res.h=parseInt(rH.value)||768;
+  }
+  resizeC(); upJ();
+}
+
+function calcOtherAxis(){
+  if(S.ratio==='free')return;
+  const[rw,rh]=RATIOS[S.ratio];
+  const rW=document.getElementById('rw');
+  const rH=document.getElementById('rh');
+  if(S.lockAxis==='w'){
+    S.res.w=parseInt(rW.value)||1344;
+    S.res.w=Math.round(Math.min(S.res.w,2048)/16)*16;
+    S.res.h=Math.round(Math.min(S.res.w*rh/rw,2048)/16)*16;
+    rW.value=S.res.w; rH.value=S.res.h;
+  } else {
+    S.res.h=parseInt(rH.value)||768;
+    S.res.h=Math.round(Math.min(S.res.h,2048)/16)*16;
+    S.res.w=Math.round(Math.min(S.res.h*rw/rh,2048)/16)*16;
+    rW.value=S.res.w; rH.value=S.res.h;
+  }
+}
 
 // ===== CANVAS =====
 function initCanvas(){
@@ -417,18 +486,20 @@ function initCanvas(){
   window.addEventListener('resize',resizeC);
 }
 function t2m(e){const t=e.touches[0]||e.changedTouches[0];return{clientX:t.clientX,clientY:t.clientY};}
+
 function resizeC(){
   const wrap=document.getElementById('cwrap');
-  const mW=wrap.clientWidth-36,mH=wrap.clientHeight-36;
+  const mW=wrap.clientWidth-28,mH=wrap.clientHeight-28;
   const rat=S.res.h/S.res.w;
   let w=mW,h=mW*rat;
   if(h>mH){h=mH;w=h/rat;}
-  cw=Math.floor(w);ch=Math.floor(h);
+  cw=Math.max(Math.floor(w),100);ch=Math.max(Math.floor(h),60);
   canvas.width=cw;canvas.height=ch;
   canvas.style.width=cw+'px';canvas.style.height=ch+'px';
   redraw();
   document.getElementById('cinfo').textContent=S.res.w+'×'+S.res.h;
 }
+
 function cp(e){const r=canvas.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top};}
 function c2n(px,py){return[Math.round(py/ch*1000),Math.round(px/cw*1000)];}
 function n2c(bbox){
@@ -440,9 +511,9 @@ function clamp(v,a,b){return Math.min(Math.max(v,a),b);}
 function getHandle(el,mx,my){
   const{x,y,w,h}=n2c(el.bbox);
   const hs=7;
-  const hs2=[{id:'nw',cx:x,cy:y},{id:'ne',cx:x+w,cy:y},{id:'sw',cx:x,cy:y+h},{id:'se',cx:x+w,cy:y+h},
+  const pts=[{id:'nw',cx:x,cy:y},{id:'ne',cx:x+w,cy:y},{id:'sw',cx:x,cy:y+h},{id:'se',cx:x+w,cy:y+h},
              {id:'n',cx:x+w/2,cy:y},{id:'s',cx:x+w/2,cy:y+h},{id:'e',cx:x+w,cy:y+h/2},{id:'w',cx:x,cy:y+h/2}];
-  for(const h2 of hs2) if(Math.abs(mx-h2.cx)<=hs&&Math.abs(my-h2.cy)<=hs) return h2.id;
+  for(const p of pts) if(Math.abs(mx-p.cx)<=hs&&Math.abs(my-p.cy)<=hs) return p.id;
   return null;
 }
 function getElAt(mx,my){
@@ -458,12 +529,11 @@ function onMD(e){
   if(tool==='select'){
     if(selEl){const h=getHandle(selEl,x,y);if(h){drag={type:'resize',id:selEl.id,sx:x,sy:y,ob:[...selEl.bbox],h};return;}}
     const el=getElAt(x,y);
-    if(el){selEl=el;drag={type:'move',id:el.id,sx:x,sy:y,ob:[...el.bbox]};selEl=el;renderEll();renderElProps(el);document.getElementById('elprops').style.display='block';document.getElementById('btndel').style.display='flex';}
+    if(el){selEl=el;drag={type:'move',id:el.id,sx:x,sy:y,ob:[...el.bbox]};renderEll();renderElProps(el);
+      document.getElementById('elprops').style.display='block';document.getElementById('btndel').style.display='flex';}
     else{selEl=null;renderEll();document.getElementById('elprops').style.display='none';document.getElementById('btndel').style.display='none';}
     redraw();
-  } else {
-    drawing=true;drawStart={x,y};drawRect={x,y,w:0,h:0};
-  }
+  } else {drawing=true;drawStart={x,y};drawRect={x,y,w:0,h:0};}
 }
 function onMM(e){
   const{x,y}=cp(e);
@@ -473,15 +543,14 @@ function onMM(e){
     const c=tool==='obj'?'#3b82f6':'#10b981';
     ctx.strokeStyle=c;ctx.lineWidth=2;ctx.setLineDash([5,3]);
     ctx.strokeRect(drawRect.x+.5,drawRect.y+.5,drawRect.w,drawRect.h);
-    ctx.fillStyle=c+'25';ctx.fillRect(drawRect.x,drawRect.y,drawRect.w,drawRect.h);
+    ctx.fillStyle=c+'22';ctx.fillRect(drawRect.x,drawRect.y,drawRect.w,drawRect.h);
     ctx.setLineDash([]);
     return;
   }
   if(drag){
     const dx=x-drag.sx,dy=y-drag.sy;
     const el=S.els.find(e2=>e2.id===drag.id);if(!el)return;
-    const ob=drag.ob;
-    const dyn=Math.round(dy/ch*1000),dxn=Math.round(dx/cw*1000);
+    const ob=drag.ob,dyn=Math.round(dy/ch*1000),dxn=Math.round(dx/cw*1000);
     if(drag.type==='move'){
       el.bbox=[clamp(ob[0]+dyn,0,950),clamp(ob[1]+dxn,0,950),clamp(ob[2]+dyn,50,1000),clamp(ob[3]+dxn,50,1000)];
     } else {
@@ -493,15 +562,14 @@ function onMM(e){
       el.bbox=[ym,xm,yM,xM];
     }
     redraw();renderEll();upJ();
-    if(selEl&&selEl.id===el.id){
-      const bi=document.querySelector('.binfo');
-      if(bi)bi.textContent='['+el.bbox.join(', ')+']';
-    }
+    const bi=document.querySelector('.binfo');
+    if(bi&&selEl&&selEl.id===el.id)bi.textContent='['+el.bbox.join(', ')+']  —  y_min, x_min, y_max, x_max';
   }
-  // cursor
   if(tool==='select'){
     let cur='default';
-    if(selEl){const h=getHandle(selEl,x,y);if(h){const m={n:'n-resize',s:'s-resize',e:'e-resize',w:'w-resize',nw:'nw-resize',ne:'ne-resize',sw:'sw-resize',se:'se-resize'};cur=m[h]||'move';}else{if(getElAt(x,y))cur='move';}}
+    if(selEl){const h=getHandle(selEl,x,y);
+      if(h){const m={n:'n-resize',s:'s-resize',e:'e-resize',w:'w-resize',nw:'nw-resize',ne:'ne-resize',sw:'sw-resize',se:'se-resize'};cur=m[h]||'move';}
+      else if(getElAt(x,y))cur='move';}
     else if(getElAt(x,y))cur='pointer';
     canvas.style.cursor=cur;
   } else canvas.style.cursor='crosshair';
@@ -525,44 +593,43 @@ function redraw(){
   ctx.strokeStyle='rgba(255,255,255,0.04)';ctx.lineWidth=.5;
   const gs=cw/10;for(let x=gs;x<cw;x+=gs){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,ch);ctx.stroke();}
   const gsh=ch/10;for(let y=gsh;y<ch;y+=gsh){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(cw,y);ctx.stroke();}
-  ctx.strokeStyle='rgba(255,255,255,0.07)';ctx.setLineDash([4,4]);
+  ctx.strokeStyle='rgba(255,255,255,0.08)';ctx.setLineDash([4,4]);
   ctx.beginPath();ctx.moveTo(cw/2,0);ctx.lineTo(cw/2,ch);ctx.stroke();
   ctx.beginPath();ctx.moveTo(0,ch/2);ctx.lineTo(cw,ch/2);ctx.stroke();
   ctx.setLineDash([]);
-  ctx.font='9px IBM Plex Mono,monospace';ctx.fillStyle='rgba(255,255,255,0.1)';
-  ctx.fillText(S.res.w+'×'+S.res.h,5,12);
+  ctx.font='9px IBM Plex Mono,monospace';ctx.fillStyle='rgba(255,255,255,0.12)';
+  ctx.fillText(S.res.w+'×'+S.res.h,5,11);
 
   S.els.forEach((el,i)=>{
     const{x,y,w,h}=n2c(el.bbox);
     const isSel=selEl&&selEl.id===el.id;
     const c=el.type==='obj'?'#3b82f6':'#10b981';
-    ctx.fillStyle=c+(isSel?'38':'1e');ctx.fillRect(x,y,w,h);
+    ctx.fillStyle=c+(isSel?'35':'1a');ctx.fillRect(x,y,w,h);
     ctx.strokeStyle=isSel?'#fff':c;ctx.lineWidth=isSel?2:1.5;
     ctx.strokeRect(x+.5,y+.5,w-1,h-1);
     const lbl=el.type==='text'?(el.text||'TEXT'):(el.desc||'OBJ');
-    const sh=lbl.length>26?lbl.slice(0,26)+'…':lbl;
+    const sh=lbl.length>28?lbl.slice(0,28)+'…':lbl;
     ctx.font='bold 10px DM Sans,sans-serif';
     const tw=ctx.measureText(sh).width;
-    const lx=Math.max(x+3,Math.min(x+3,cw-tw-5));
+    const lx=Math.max(x+3,Math.min(x+3,cw-tw-4));
     const ly=y>16?y-4:y+13;
-    ctx.fillStyle='rgba(8,8,18,0.82)';ctx.fillRect(lx-2,ly-11,tw+6,14);
+    ctx.fillStyle='rgba(8,8,18,0.85)';ctx.fillRect(lx-2,ly-11,tw+6,14);
     ctx.fillStyle=isSel?'#fff':c;ctx.fillText(sh,lx+1,ly);
     ctx.font='bold 8px IBM Plex Mono,monospace';ctx.fillStyle=c;
     ctx.fillText('#'+(i+1)+' '+el.type.toUpperCase(),x+4,y+11);
     if(isSel){
       [[x,y],[x+w,y],[x,y+h],[x+w,y+h],[x+w/2,y],[x+w/2,y+h],[x,y+h/2],[x+w,y+h/2]].forEach(([hx,hy])=>{
         ctx.fillStyle='#fff';ctx.strokeStyle=c;ctx.lineWidth=1.5;
-        ctx.beginPath();ctx.arc(hx,hy,4.5,0,Math.PI*2);ctx.fill();ctx.stroke();
+        ctx.beginPath();ctx.arc(hx,hy,4,0,Math.PI*2);ctx.fill();ctx.stroke();
       });
     }
   });
 
-  const hint=document.getElementById('hint');
-  if(hint)hint.classList.toggle('h',S.els.length>0);
+  document.getElementById('hint').classList.toggle('h',S.els.length>0);
   if(S.pal.length>0){
-    const px=cw-S.pal.length*21-5;
+    const px=cw-S.pal.length*20-5;
     S.pal.forEach((c,i)=>{
-      ctx.beginPath();ctx.arc(px+i*21+10,ch-10,7,0,Math.PI*2);
+      ctx.beginPath();ctx.arc(px+i*20+9,ch-9,6,0,Math.PI*2);
       ctx.fillStyle=c;ctx.fill();
       ctx.strokeStyle='rgba(255,255,255,0.2)';ctx.lineWidth=1.5;ctx.stroke();
     });
@@ -573,10 +640,9 @@ function redraw(){
 function setTool(t){
   tool=t;
   ['select','obj','text'].forEach(n=>{
-    const b=document.getElementById('tool-'+n);
-    if(b){b.classList.remove('sel','obj','txt');
-      if(n===t){if(t==='select')b.classList.add('sel');else if(t==='obj')b.classList.add('obj');else b.classList.add('txt');}
-    }
+    const b=document.getElementById('tool-'+n);if(!b)return;
+    b.classList.remove('sel','obj','txt');
+    if(n===t){if(t==='select')b.classList.add('sel');else if(t==='obj')b.classList.add('obj');else b.classList.add('txt');}
   });
   if(t!=='select'){selEl=null;renderEll();document.getElementById('elprops').style.display='none';document.getElementById('btndel').style.display='none';redraw();}
 }
@@ -604,13 +670,12 @@ function moveEl(id,d){
   const t=S.els[i];S.els[i]=S.els[i+d];S.els[i+d]=t;
   renderEll();upJ();
 }
-
 function renderEll(){
   const list=document.getElementById('ell');list.innerHTML='';
   S.els.forEach((el,i)=>{
     const isSel=selEl&&selEl.id===el.id;
     const nm=el.type==='text'?(el.text||'Testo…'):(el.desc||'Oggetto…');
-    const sh=nm.length>24?nm.slice(0,24)+'…':nm;
+    const sh=nm.length>26?nm.slice(0,26)+'…':nm;
     const d=document.createElement('div');
     d.className='eli '+(el.type==='obj'?'to':'tt')+(isSel?' sel':'');
     d.innerHTML=`<div class="elh" onclick="selElById('${el.id}')">
@@ -625,7 +690,6 @@ function renderEll(){
     list.appendChild(d);
   });
 }
-
 function selElById(id){
   selEl=S.els.find(e=>e.id===id)||null;
   renderEll();
@@ -633,25 +697,24 @@ function selElById(id){
   else{document.getElementById('elprops').style.display='none';document.getElementById('btndel').style.display='none';}
   redraw();
 }
-
 function renderElProps(el){
   document.getElementById('elptit').textContent=el.type==='obj'?'OBJ — Proprietà':'TEXT — Proprietà';
   const f=document.getElementById('elpfields');
   if(el.type==='obj'){
     f.innerHTML=`
       <label>Descrizione (desc)</label>
-      <textarea rows="4" id="ep-desc" placeholder="Descrivi l'oggetto/soggetto in dettaglio: materiale, colore, pose, espressione, posizione...">${el.desc}</textarea>
-      <div class="binfo">[${el.bbox.join(', ')}] &nbsp; y_min, x_min, y_max, x_max</div>
-      <label>Palette elemento (max 5 colori)</label>
+      <textarea rows="4" id="ep-desc" placeholder="Oggetto, pose, materiale, colore, dettagli...">${el.desc}</textarea>
+      <div class="binfo">[${el.bbox.join(', ')}]  y_min, x_min, y_max, x_max</div>
+      <label>Palette elemento (max 5)</label>
       <div class="pal" id="elpal"></div>`;
   } else {
     f.innerHTML=`
-      <label>Testo esatto (text)</label>
-      <textarea rows="2" id="ep-text" placeholder="Testo da renderizzare nell'immagine">${el.text}</textarea>
-      <label>Stile testo (desc)</label>
-      <textarea rows="3" id="ep-sdesc" placeholder="Es: bold sans-serif, uppercase, bianco su sfondo scuro, grande, centrato...">${el.sdesc}</textarea>
-      <div class="binfo">[${el.bbox.join(', ')}] &nbsp; y_min, x_min, y_max, x_max</div>
-      <label>Palette elemento (max 5 colori)</label>
+      <label>Testo esatto</label>
+      <textarea rows="2" id="ep-text" placeholder="Testo da renderizzare">${el.text}</textarea>
+      <label>Stile testo</label>
+      <textarea rows="3" id="ep-sdesc" placeholder="Font, peso, colore, dimensione, effetti...">${el.sdesc}</textarea>
+      <div class="binfo">[${el.bbox.join(', ')}]  y_min, x_min, y_max, x_max</div>
+      <label>Palette elemento (max 5)</label>
       <div class="pal" id="elpal"></div>`;
   }
   renderElPal(el);
@@ -659,14 +722,12 @@ function renderElProps(el){
   const t=document.getElementById('ep-text');if(t)t.addEventListener('input',()=>{el.text=t.value;renderEll();upJ();redraw();});
   const s=document.getElementById('ep-sdesc');if(s)s.addEventListener('input',()=>{el.sdesc=s.value;upJ();});
 }
-
 function renderElPal(el){
   const w=document.getElementById('elpal');if(!w)return;
   w.innerHTML='';
   el.pal.forEach((c,i)=>{
     const s=document.createElement('div');s.className='sw';s.style.background=c;s.title=c;
-    s.innerHTML=`<div class="x" onclick="removeEC('${el.id}',${i})">✕</div>`;
-    w.appendChild(s);
+    s.innerHTML=`<div class="x" onclick="removeEC('${el.id}',${i})">✕</div>`;w.appendChild(s);
   });
   if(el.pal.length<5){const a=document.createElement('div');a.className='asw';a.textContent='+';a.onclick=()=>addC('e',el.id);w.appendChild(a);}
 }
@@ -704,40 +765,20 @@ function setMode(m){
   document.getElementById('mlab').textContent=m==='photo'?'Camera / Photo':'Medium / Art Style';
   upJ();
 }
-function setRes(w,h,btn){
-  S.res.w=w;S.res.h=h;
-  document.getElementById('rw').value=w;document.getElementById('rh').value=h;
-  document.querySelectorAll('.rp').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  resizeC();upJ();
-}
-function onRC(){
-  S.res.w=parseInt(document.getElementById('rw').value)||1344;
-  S.res.h=parseInt(document.getElementById('rh').value)||768;
-  document.querySelectorAll('.rp').forEach(b=>b.classList.remove('active'));
-  resizeC();upJ();
-}
 
 // ===== JSON =====
 function buildJSON(){
-  const hld=document.getElementById('hld').value;
-  const bg=document.getElementById('bg').value;
   S.style.aes=document.getElementById('sae').value;
   S.style.lig=document.getElementById('sli').value;
   S.style.med=document.getElementById('sme').value;
-
+  const hld=document.getElementById('hld').value;
+  const bg=document.getElementById('bg').value;
   const st={};
   if(S.style.aes)st.aesthetics=S.style.aes;
   if(S.style.lig)st.lighting=S.style.lig;
-  if(S.style.mode==='photo'){
-    if(S.style.med)st.photo=S.style.med;
-    st.medium='photograph';
-  } else {
-    st.medium=S.style.med||'digital illustration';
-    if(S.style.med)st.art_style=S.style.med;
-  }
+  if(S.style.mode==='photo'){if(S.style.med)st.photo=S.style.med;st.medium='photograph';}
+  else{st.medium=S.style.med||'digital illustration';if(S.style.med)st.art_style=S.style.med;}
   if(S.pal.length>0)st.color_palette=S.pal;
-
   const els=S.els.map(el=>{
     const o={type:el.type};
     if(el.bbox)o.bbox=el.bbox;
@@ -746,7 +787,6 @@ function buildJSON(){
     if(el.pal.length>0)o.color_palette=el.pal;
     return o;
   });
-
   const j={};
   if(hld)j.high_level_description=hld;
   if(Object.keys(st).length>0)j.style_description=st;
@@ -755,13 +795,11 @@ function buildJSON(){
   j.compositional_deconstruction.elements=els;
   return j;
 }
-
 function upJ(){
   const out=document.getElementById('jout');
-  if(out&&document.getElementById('pt-json')&&!document.getElementById('pt-json').classList.contains('h'))
+  if(out&&!document.getElementById('pt-json').classList.contains('h'))
     out.innerHTML=hl(JSON.stringify(buildJSON(),null,2));
 }
-
 function hl(s){
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
     .replace(/("(?:\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(?:true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,m=>{
@@ -771,10 +809,8 @@ function hl(s){
       return`<span class="jn">${m}</span>`;
     }).replace(/[{}\[\]]/g,m=>`<span class="jb">${m}</span>`);
 }
-
 function copyJSON(){
-  const j=buildJSON();
-  navigator.clipboard.writeText(JSON.stringify(j,null,2)).then(()=>{toast('JSON copiato!','ok');showPT('json');upJ();});
+  navigator.clipboard.writeText(JSON.stringify(buildJSON(),null,2)).then(()=>{toast('JSON copiato!','ok');showPT('json');upJ();});
 }
 function downloadJSON(){
   const j=buildJSON();
@@ -790,30 +826,35 @@ async function genAI(){
   if(!idea){toast('Inserisci una descrizione','err');return;}
   const btn=document.getElementById('aibtn');
   const stat=document.getElementById('aistat');
-  btn.disabled=true;btn.innerHTML='<span class="spin"></span> Generazione in corso…';
-  stat.style.display='block';stat.innerHTML='<span class="spin"></span> Chiamata AI…';
+  const err=document.getElementById('aierr');
+  btn.disabled=true;btn.innerHTML='<span class="spin"></span> Generazione…';
+  stat.style.display='block';stat.innerHTML='<span class="spin"></span> Chiamata AI in corso…';
+  err.style.display='none';
   genJSON=null;document.getElementById('airesSec').style.display='none';
-
   try {
     const resp=await fetch(PROXY_URL,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
+      method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({idea})
     });
-    const data=await resp.json();
-    if(!resp.ok||data.error) throw new Error(data.error||'Errore server');
+    const txt=await resp.text();
+    let data;
+    try{data=JSON.parse(txt);}catch(e){
+      throw new Error('Il server ha risposto con HTML invece di JSON.\n\nProblema più probabile: il file ideogram4-key.php non è ancora stato caricato su Aruba.\n\nCarica il file nella cartella /www.cad3d.expert/ai/ via FTP o File Manager Aruba.');
+    }
+    if(!resp.ok||data.error) throw new Error(data.error+(data.detail?'\n\nDettaglio: '+data.detail:'')+(data.looked_in?'\nCercato in: '+data.looked_in:''));
     genJSON=data.json;
     document.getElementById('airesjson').innerHTML=hl(JSON.stringify(genJSON,null,2));
     document.getElementById('airesSec').style.display='block';
     stat.textContent='JSON generato con successo!';
     toast('JSON generato!','ok');
-  } catch(err){
-    stat.textContent='Errore: '+err.message;
-    toast('Errore: '+err.message,'err');
+  } catch(e){
+    stat.style.display='none';
+    err.style.display='block';
+    err.textContent=e.message;
+    toast('Errore','err');
   }
   btn.disabled=false;btn.innerHTML='✦ Genera JSON';
 }
-
 function loadGenJSON(){
   if(!genJSON)return;
   const j=genJSON;
@@ -834,43 +875,38 @@ function loadGenJSON(){
   document.getElementById('elprops').style.display='none';
   document.getElementById('btndel').style.display='none';
   renderEll();redraw();upJ();
-  toast('Caricato nel builder!','ok');
-  showST(0);
+  toast('Caricato!','ok');showST(0);
 }
 function copyGen(){if(genJSON)navigator.clipboard.writeText(JSON.stringify(genJSON,null,2)).then(()=>toast('Copiato!','ok'));}
 
 // ===== TABS =====
 function showST(i){
-  [0,1,2].forEach(j=>{
-    const el=document.getElementById('st'+j);
-    if(el)el.style.display=j===i?'block':'none';
-  });
+  [0,1,2].forEach(j=>{const el=document.getElementById('st'+j);if(el)el.style.display=j===i?'block':'none';});
   document.querySelectorAll('.st').forEach((t,j)=>t.classList.toggle('active',j===i));
 }
 function showPT(tab){
-  ['el','json'].forEach(t=>{
-    const el=document.getElementById('pt-'+t);
-    if(el)el.classList.toggle('h',t!==tab);
-  });
+  ['el','json'].forEach(t=>{const el=document.getElementById('pt-'+t);if(el)el.classList.toggle('h',t!==tab);});
   document.querySelectorAll('.pt').forEach((t,i)=>t.classList.toggle('active',['el','json'][i]===tab));
   if(tab==='json'){const out=document.getElementById('jout');if(out)out.innerHTML=hl(JSON.stringify(buildJSON(),null,2));}
 }
 
-// ===== UTILS =====
+// ===== RESET =====
 function clearAll(){
   if(!confirm('Reset completo?'))return;
-  S={hld:'',bg:'',style:{mode:'photo',aes:'',lig:'',med:''},pal:[],els:[],res:{w:1344,h:768}};
+  S={hld:'',bg:'',style:{mode:'photo',aes:'',lig:'',med:''},pal:[],els:[],res:{w:1344,h:768},ratio:'16:9',lockAxis:'w'};
   EC=0;selEl=null;tool='select';genJSON=null;
   ['hld','bg','sae','sli','sme','aiidea'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
   document.getElementById('rw').value=1344;document.getElementById('rh').value=768;
   document.querySelectorAll('.rp').forEach(b=>b.classList.remove('active'));
   document.querySelectorAll('.rp')[0].classList.add('active');
+  document.getElementById('aierr').style.display='none';
+  document.getElementById('airesSec').style.display='none';
   renderGPal();renderEll();
   document.getElementById('elprops').style.display='none';
   document.getElementById('btndel').style.display='none';
-  document.getElementById('airesSec').style.display='none';
   setTool('select');resizeC();upJ();showST(0);
 }
+
 function toast(msg,type='ok'){
   const t=document.getElementById('toast');
   t.textContent=(type==='ok'?'✓ ':'✕ ')+msg;
@@ -878,16 +914,12 @@ function toast(msg,type='ok'){
   setTimeout(()=>t.classList.remove('show'),2500);
 }
 
-// ===== INIT =====
 document.addEventListener('DOMContentLoaded',()=>{
-  initCanvas();setTool('select');
-  showST(0);showPT('el');renderGPal();
+  initCanvas();setTool('select');showST(0);showPT('el');renderGPal();
   ['hld','bg','sae','sli','sme'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el)el.addEventListener('input',upJ);
+    const el=document.getElementById(id);if(el)el.addEventListener('input',upJ);
   });
-  const ro=new ResizeObserver(resizeC);
-  ro.observe(document.getElementById('cwrap'));
+  new ResizeObserver(resizeC).observe(document.getElementById('cwrap'));
 });
 </script>
 </body>
