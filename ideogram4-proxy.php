@@ -14,8 +14,8 @@ function getKey() {
     return null;
 }
 
-function getSP() {
-    return 'You are an expert Ideogram 4 JSON prompt assistant. Convert any image idea into a structured Ideogram 4 JSON prompt.
+$SYSTEM_PROMPT = <<<ENDSP
+You are an expert Ideogram 4 JSON prompt assistant. Convert any image idea into a structured Ideogram 4 JSON prompt.
 
 OUTPUT RULES:
 - Return valid JSON only. No markdown, no code fences, no commentary.
@@ -61,11 +61,15 @@ RULES:
 - elements: 4-7 elements ordered background to foreground
 - background: describe environment only, never main subjects
 - If idea is vague, make strong creative decisions
-- Produce detailed, precise, render-ready output every time';
-}
+- Produce detailed, precise, render-ready output every time
+ENDSP;
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    echo json_encode(['status'=>'ok','key'=>!empty(getKey()),'sp_len'=>strlen(getSP())], JSON_PRETTY_PRINT);
+    echo json_encode([
+        'status'  => 'ok',
+        'key'     => !empty(getKey()),
+        'sp_len'  => strlen($SYSTEM_PROMPT),
+    ], JSON_PRETTY_PRINT);
     exit;
 }
 
@@ -85,7 +89,7 @@ if (!$body || !isset($body['idea'])) {
 $payload = json_encode([
     'model'      => 'claude-haiku-4-5-20251001',
     'max_tokens' => 2048,
-    'system'     => getSP(),
+    'system'     => $SYSTEM_PROMPT,
     'messages'   => [['role'=>'user','content'=>trim($body['idea'])]]
 ]);
 
