@@ -181,43 +181,60 @@ select{cursor:pointer;}
       <div class="sec">
         <div class="sec-t">Formato &amp; Risoluzione</div>
 
-        <!-- RATIO BUTTONS -->
+        <!-- RATIO -->
+        <label style="margin-bottom:5px;">Aspect Ratio</label>
         <div class="ratio-grid" id="ratio-grid">
-          <div class="rp active" data-r="16:9" onclick="setRatio('16:9',this)">16:9<span class="rs">Wide</span></div>
-          <div class="rp" data-r="4:3" onclick="setRatio('4:3',this)">4:3<span class="rs">Standard</span></div>
-          <div class="rp" data-r="1:1" onclick="setRatio('1:1',this)">1:1<span class="rs">Square</span></div>
-          <div class="rp" data-r="9:16" onclick="setRatio('9:16',this)">9:16<span class="rs">Portrait</span></div>
-          <div class="rp" data-r="21:9" onclick="setRatio('21:9',this)">21:9<span class="rs">Ultrawide</span></div>
-          <div class="rp" data-r="32:9" onclick="setRatio('32:9',this)">32:9<span class="rs">Dual Mon.</span></div>
-          <div class="rp" data-r="3:2" onclick="setRatio('3:2',this)">3:2<span class="rs">Photo</span></div>
-          <div class="rp" data-r="2:3" onclick="setRatio('2:3',this)">2:3<span class="rs">A4 Port.</span></div>
-          <div class="rp" data-r="3:1" onclick="setRatio('3:1',this)">3:1<span class="rs">Banner</span></div>
-          <div class="rp" data-r="2:1" onclick="setRatio('2:1',this)">2:1<span class="rs">Panorama</span></div>
-          <div class="rp" data-r="4:1" onclick="setRatio('4:1',this)">4:1<span class="rs">Strip</span></div>
-          <div class="rp" data-r="free" onclick="setRatio('free',this)">Free<span class="rs">Manuale</span></div>
+          <div class="rp active" data-r="16:9"  onclick="setRatio('16:9',this)" title="Landscape HD">16:9</div>
+          <div class="rp"        data-r="4:3"   onclick="setRatio('4:3',this)"  title="Standard">4:3</div>
+          <div class="rp"        data-r="3:2"   onclick="setRatio('3:2',this)"  title="Foto / DSLR">3:2</div>
+          <div class="rp"        data-r="1:1"   onclick="setRatio('1:1',this)"  title="Square">1:1</div>
+          <div class="rp"        data-r="21:9"  onclick="setRatio('21:9',this)" title="Ultrawide">21:9</div>
+          <div class="rp"        data-r="32:9"  onclick="setRatio('32:9',this)" title="Dual Monitor">32:9</div>
+          <div class="rp"        data-r="2:1"   onclick="setRatio('2:1',this)"  title="Panorama">2:1</div>
+          <div class="rp"        data-r="3:1"   onclick="setRatio('3:1',this)"  title="Banner wide">3:1</div>
+          <div class="rp"        data-r="9:16"  onclick="setRatio('9:16',this)" title="Portrait mobile">9:16</div>
+          <div class="rp"        data-r="2:3"   onclick="setRatio('2:3',this)"  title="A4 Portrait">2:3</div>
+          <div class="rp"        data-r="1:3"   onclick="setRatio('1:3',this)"  title="Banner tall">1:3</div>
+          <div class="rp"        data-r="free"  onclick="setRatio('free',this)" title="Libero">✏ Free</div>
         </div>
 
-        <!-- AXIS LOCK -->
-        <div class="lock-row">
-          <div class="lk active" id="lk-w" onclick="setLock('w')">🔒 Blocca W →</div>
-          <div class="lk" id="lk-h" onclick="setLock('h')">🔒 Blocca H ↕</div>
-        </div>
-
-        <div class="axis-row">
-          <div>
-            <label>Width (px)</label>
-            <input type="number" id="rw" value="1344" min="256" max="2048" step="16" oninput="onAxisChange('w')">
+        <!-- ASSE BLOCCATO + INPUT -->
+        <div style="margin-bottom:8px;">
+          <label style="margin-bottom:5px;">Imposta un asse, l'altro si calcola</label>
+          <div style="display:grid;grid-template-columns:1fr 20px 1fr;gap:6px;align-items:end;">
+            <div>
+              <div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;">
+                <span style="font-size:10px;font-weight:600;color:var(--text2);">W (px)</span>
+                <span id="lk-w-icon" style="font-size:10px;cursor:pointer;padding:1px 5px;border-radius:3px;border:1px solid var(--border);color:var(--text3);" onclick="setLock('w')" title="Clicca per usare W come base">🔒</span>
+              </div>
+              <input type="number" id="rw" value="1344" min="64" step="16" oninput="onAxisChange('w')" style="margin-bottom:0;text-align:center;font-family:'IBM Plex Mono',monospace;">
+            </div>
+            <div style="text-align:center;font-size:13px;color:var(--text3);padding-bottom:6px;">×</div>
+            <div>
+              <div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;">
+                <span style="font-size:10px;font-weight:600;color:var(--text2);">H (px)</span>
+                <span id="lk-h-icon" style="font-size:10px;cursor:pointer;padding:1px 5px;border-radius:3px;border:1px solid var(--border);color:var(--text3);" onclick="setLock('h')" title="Clicca per usare H come base">🔓</span>
+              </div>
+              <input type="number" id="rh" value="768" min="64" step="16" oninput="onAxisChange('h')" style="margin-bottom:0;text-align:center;font-family:'IBM Plex Mono',monospace;">
+            </div>
           </div>
-          <div class="ax">×</div>
-          <div>
-            <label>Height (px)</label>
-            <input type="number" id="rh" value="768" min="256" max="2048" step="16" oninput="onAxisChange('h')">
-          </div>
         </div>
 
-        <div class="res-note">
-          Max nativo Ideogram 4: <strong>2048px</strong> per lato (multipli di 16).<br>
-          4K/8K → upscaling post-generazione.
+        <!-- PRESET RISOLUZIONI VELOCI -->
+        <label style="margin-bottom:4px;">Preset rapidi</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-bottom:8px;">
+          <div class="rp" onclick="setExact(1344,768)"  title="16:9">1344×768 <span class="rs">HD</span></div>
+          <div class="rp" onclick="setExact(1920,1080)" title="Full HD">1920×1080 <span class="rs">FHD</span></div>
+          <div class="rp" onclick="setExact(2048,1152)" title="2K">2048×1152 <span class="rs">2K</span></div>
+          <div class="rp" onclick="setExact(2048,2048)" title="Max square">2048×2048 <span class="rs">Max Sq.</span></div>
+          <div class="rp" onclick="setExact(3840,2160)" title="4K UHD">3840×2160 <span class="rs">4K UHD</span></div>
+          <div class="rp" onclick="setExact(7680,4320)" title="8K">7680×4320 <span class="rs">8K</span></div>
+          <div class="rp" onclick="setExact(15360,8640)" title="16K">15360×8640 <span class="rs">16K</span></div>
+          <div class="rp" onclick="setExact(5120,1440)" title="Dual Monitor">5120×1440 <span class="rs">Dual 5K</span></div>
+        </div>
+
+        <div class="res-note" id="res-note">
+          Nativo Ideogram 4: max <strong>2048px</strong> per lato. Valori superiori verranno inseriti nel JSON — usa upscaler (Topaz, Magnific) dopo la generazione.
         </div>
       </div>
     </div>
@@ -397,9 +414,9 @@ const PROXY_URL = 'https://www.cad3d.expert/ai/ideogram4-proxy.php';
 
 // RATIO MAP (w:h)
 const RATIOS = {
-  '16:9':[16,9],'4:3':[4,3],'1:1':[1,1],'9:16':[9,16],
-  '21:9':[21,9],'32:9':[32,9],'3:2':[3,2],'2:3':[2,3],
-  '3:1':[3,1],'2:1':[2,1],'4:1':[4,1],'free':null
+  '16:9':[16,9],'4:3':[4,3],'3:2':[3,2],'1:1':[1,1],
+  '21:9':[21,9],'32:9':[32,9],'2:1':[2,1],'3:1':[3,1],
+  '9:16':[9,16],'2:3':[2,3],'1:3':[1,3],'free':null
 };
 
 let S = {
@@ -414,6 +431,8 @@ let drag=null,genJSON=null;
 let canvas,ctx,cw,ch;
 
 // ===== RATIO & RESOLUTION =====
+function snapPx(v){ return Math.max(64, Math.round(v/16)*16); }
+
 function setRatio(r,btn){
   S.ratio=r;
   document.querySelectorAll('.rp').forEach(b=>b.classList.remove('active'));
@@ -424,32 +443,57 @@ function setRatio(r,btn){
 
 function setLock(axis){
   S.lockAxis=axis;
-  document.getElementById('lk-w').classList.toggle('active',axis==='w');
-  document.getElementById('lk-h').classList.toggle('active',axis==='h');
+  const iw=axis==='w';
+  const lw=document.getElementById('lk-w-icon');
+  const lh=document.getElementById('lk-h-icon');
+  if(lw) lw.textContent=iw?'🔒':'🔓';
+  if(lh) lh.textContent=iw?'🔓':'🔒';
+  // visual feedback sugli input
+  document.getElementById('rw').style.borderColor=iw?'var(--accent)':'var(--border)';
+  document.getElementById('rh').style.borderColor=iw?'var(--border)':'var(--accent)';
+}
+
+function setExact(w,h){
+  S.res.w=w; S.res.h=h;
+  document.getElementById('rw').value=w;
+  document.getElementById('rh').value=h;
+  document.querySelectorAll('.rp').forEach(b=>b.classList.remove('active'));
+  // aggiorna nota
+  const note=document.getElementById('res-note');
+  if(note&&(w>2048||h>2048)) note.style.color='var(--orange)';
+  else if(note) note.style.color='';
+  resizeC(); upJ();
 }
 
 function onAxisChange(changed){
   const rW=document.getElementById('rw');
   const rH=document.getElementById('rh');
-  const v=parseInt(changed==='w'?rW.value:rH.value)||256;
-  // snap to multiple of 16
-  const snapped=Math.round(Math.min(Math.max(v,256),2048)/16)*16;
+  const v=parseInt(changed==='w'?rW.value:rH.value)||64;
+  const snapped=snapPx(v);
   if(changed==='w'){rW.value=snapped;S.res.w=snapped;}
   else{rH.value=snapped;S.res.h=snapped;}
 
   if(S.ratio!=='free'){
     const[rw,rh]=RATIOS[S.ratio];
-    if(changed==='w'){
-      S.res.h=Math.round(Math.min(snapped*rh/rw,2048)/16)*16;
+    if(changed==='w'&&S.lockAxis==='w'){
+      S.res.h=snapPx(snapped*rh/rw);
       rH.value=S.res.h;
-    } else {
-      S.res.w=Math.round(Math.min(snapped*rw/rh,2048)/16)*16;
+    } else if(changed==='h'&&S.lockAxis==='h'){
+      S.res.w=snapPx(snapped*rw/rh);
       rW.value=S.res.w;
+    } else {
+      // Se cambi l'asse non bloccato, aggiorna anche il ratio
+      if(changed==='w') S.res.w=snapped;
+      else S.res.h=snapped;
     }
   } else {
     S.res.w=parseInt(rW.value)||1344;
     S.res.h=parseInt(rH.value)||768;
   }
+  // nota colore se oltre 2048
+  const note=document.getElementById('res-note');
+  if(note&&(S.res.w>2048||S.res.h>2048)) note.style.color='var(--orange)';
+  else if(note) note.style.color='';
   resizeC(); upJ();
 }
 
@@ -459,14 +503,12 @@ function calcOtherAxis(){
   const rW=document.getElementById('rw');
   const rH=document.getElementById('rh');
   if(S.lockAxis==='w'){
-    S.res.w=parseInt(rW.value)||1344;
-    S.res.w=Math.round(Math.min(S.res.w,2048)/16)*16;
-    S.res.h=Math.round(Math.min(S.res.w*rh/rw,2048)/16)*16;
+    S.res.w=snapPx(parseInt(rW.value)||1344);
+    S.res.h=snapPx(S.res.w*rh/rw);
     rW.value=S.res.w; rH.value=S.res.h;
   } else {
-    S.res.h=parseInt(rH.value)||768;
-    S.res.h=Math.round(Math.min(S.res.h,2048)/16)*16;
-    S.res.w=Math.round(Math.min(S.res.h*rw/rh,2048)/16)*16;
+    S.res.h=snapPx(parseInt(rH.value)||768);
+    S.res.w=snapPx(S.res.h*rw/rh);
     rW.value=S.res.w; rH.value=S.res.h;
   }
 }
