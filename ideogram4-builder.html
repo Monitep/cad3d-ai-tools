@@ -3,1477 +3,1663 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ideogram 4 - JSON Prompt Builder</title>
+<title>Ideogram 4 — JSON Prompt Builder</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;600;700;800&display=swap');
-
-  :root {
-    --bg: #0a0a0f;
-    --bg2: #111118;
-    --bg3: #1a1a26;
-    --panel: #141420;
-    --border: #2a2a40;
-    --accent: #7c3aed;
-    --accent2: #a855f7;
-    --accent3: #c084fc;
-    --green: #22c55e;
-    --red: #ef4444;
-    --orange: #f97316;
-    --cyan: #06b6d4;
-    --yellow: #eab308;
-    --text: #e2e8f0;
-    --text2: #94a3b8;
-    --text3: #475569;
-    --obj: #1d4ed8;
-    --obj2: #3b82f6;
-    --txt: #0f766e;
-    --txt2: #14b8a6;
-    --radius: 8px;
-    --shadow: 0 4px 24px rgba(0,0,0,0.4);
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: 'Syne', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100dvh;
-    overflow-x: hidden;
-  }
-
-  /* HEADER */
-  header {
-    background: var(--bg2);
-    border-bottom: 1px solid var(--border);
-    padding: 12px 20px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-
-  .logo {
-    font-size: 20px;
-    font-weight: 800;
-    background: linear-gradient(135deg, var(--accent2), var(--cyan));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    white-space: nowrap;
-  }
-
-  .logo span { font-weight: 400; opacity: 0.7; }
-
-  header .badge {
-    background: var(--accent);
-    color: white;
-    font-size: 11px;
-    padding: 2px 8px;
-    border-radius: 20px;
-    font-weight: 600;
-  }
-
-  header .spacer { flex: 1; }
-
-  .header-btns { display: flex; gap: 8px; }
-
-  /* LAYOUT */
-  .app {
-    display: grid;
-    grid-template-columns: 1fr 420px;
-    gap: 0;
-    height: calc(100dvh - 57px);
-  }
-
-  /* LEFT: EDITOR */
-  .editor {
-    overflow-y: auto;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  /* RIGHT: PREVIEW */
-  .preview-panel {
-    background: var(--bg2);
-    border-left: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-
-  .preview-tabs {
-    display: flex;
-    border-bottom: 1px solid var(--border);
-    background: var(--bg);
-  }
-
-  .preview-tab {
-    flex: 1;
-    padding: 10px;
-    text-align: center;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    color: var(--text2);
-    border-bottom: 2px solid transparent;
-    transition: all 0.2s;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-  }
-
-  .preview-tab.active {
-    color: var(--accent2);
-    border-bottom-color: var(--accent2);
-    background: var(--bg2);
-  }
-
-  .preview-content {
-    flex: 1;
-    overflow-y: auto;
-    padding: 16px;
-  }
-
-  .preview-content.hidden { display: none; }
-
-  /* CANVAS PREVIEW */
-  .canvas-wrap {
-    position: relative;
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
-    user-select: none;
-  }
-
-  #canvas-preview {
-    display: block;
-    width: 100%;
-    height: auto;
-    cursor: crosshair;
-  }
-
-  /* CARD */
-  .card {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
-  }
-
-  .card-header {
-    padding: 12px 16px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
-    background: var(--bg2);
-    border-bottom: 1px solid var(--border);
-  }
-
-  .card-icon {
-    width: 28px; height: 28px;
-    border-radius: 6px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 14px;
-    flex-shrink: 0;
-  }
-
-  .card-title {
-    font-weight: 700;
-    font-size: 13px;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    flex: 1;
-  }
-
-  .card-sub {
-    font-size: 11px;
-    color: var(--text2);
-    font-weight: 400;
-    text-transform: none;
-    letter-spacing: 0;
-    margin-left: 8px;
-  }
-
-  .card-body { padding: 16px; }
-
-  /* FORM */
-  label {
-    display: block;
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text2);
-    margin-bottom: 5px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  textarea, input[type=text], select {
-    width: 100%;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    color: var(--text);
-    font-family: 'Syne', sans-serif;
-    font-size: 13px;
-    padding: 8px 10px;
-    outline: none;
-    transition: border-color 0.2s;
-    margin-bottom: 12px;
-  }
-
-  textarea:focus, input[type=text]:focus, select:focus {
-    border-color: var(--accent);
-  }
-
-  textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
-
-  select { cursor: pointer; appearance: none; }
-
-  .form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-  }
-
-  .form-grid > div { margin: 0; }
-  .form-grid > div textarea,
-  .form-grid > div input,
-  .form-grid > div select { margin-bottom: 0; }
-
-  /* PALETTE */
-  .palette-row {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-    margin-bottom: 12px;
-    align-items: center;
-  }
-
-  .color-swatch {
-    width: 32px; height: 32px;
-    border-radius: 6px;
-    border: 2px solid rgba(255,255,255,0.15);
-    cursor: pointer;
-    position: relative;
-    transition: transform 0.1s;
-  }
-
-  .color-swatch:hover { transform: scale(1.1); }
-
-  .color-swatch .del {
-    position: absolute;
-    top: -6px; right: -6px;
-    width: 14px; height: 14px;
-    background: var(--red);
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 9px;
-    display: none;
-  }
-
-  .color-swatch:hover .del { display: flex; }
-
-  .add-color {
-    width: 32px; height: 32px;
-    border: 2px dashed var(--border);
-    border-radius: 6px;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-    color: var(--text3);
-    font-size: 18px;
-    transition: all 0.2s;
-  }
-
-  .add-color:hover { border-color: var(--accent); color: var(--accent); }
-
-  /* ELEMENTS */
-  .elements-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-bottom: 12px;
-  }
-
-  .element-card {
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
-    transition: border-color 0.2s;
-  }
-
-  .element-card.type-obj { border-left: 3px solid var(--obj2); }
-  .element-card.type-text { border-left: 3px solid var(--txt2); }
-  .element-card:hover { border-color: var(--accent); }
-
-  .element-header {
-    padding: 8px 12px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--bg2);
-    cursor: pointer;
-  }
-
-  .el-type-badge {
-    font-size: 10px;
-    font-weight: 700;
-    padding: 2px 8px;
-    border-radius: 4px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .el-type-badge.obj { background: rgba(59,130,246,0.2); color: var(--obj2); }
-  .el-type-badge.text { background: rgba(20,184,166,0.2); color: var(--txt2); }
-
-  .el-label {
-    flex: 1;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .el-actions { display: flex; gap: 4px; }
-
-  .icon-btn {
-    width: 26px; height: 26px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 13px;
-    transition: all 0.15s;
-    background: transparent;
-    color: var(--text2);
-  }
-
-  .icon-btn:hover { background: var(--bg3); color: var(--text); }
-  .icon-btn.danger:hover { background: rgba(239,68,68,0.2); color: var(--red); }
-
-  .element-body {
-    padding: 12px;
-    display: none;
-    flex-direction: column;
-    gap: 8px;
-    background: var(--panel);
-  }
-
-  .element-body.open { display: flex; }
-
-  /* BBOX */
-  .bbox-editor {
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 10px;
-    margin-bottom: 8px;
-  }
-
-  .bbox-label {
-    font-size: 10px;
-    font-weight: 700;
-    color: var(--text3);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 8px;
-  }
-
-  .bbox-coords {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 6px;
-  }
-
-  .bbox-field {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-  }
-
-  .bbox-field label {
-    font-size: 9px;
-    margin: 0;
-    color: var(--text3);
-  }
-
-  .bbox-field input {
-    padding: 5px 7px;
-    font-size: 12px;
-    font-family: 'JetBrains Mono', monospace;
-    margin: 0;
-    text-align: center;
-  }
-
-  /* CANVAS BBOX OVERLAY */
-  .bbox-preview-wrap {
-    margin-top: 8px;
-    position: relative;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    overflow: hidden;
-    cursor: crosshair;
-  }
-
-  .bbox-canvas { display: block; width: 100%; }
-
-  .bbox-hint {
-    font-size: 10px;
-    color: var(--text3);
-    margin-top: 4px;
-    text-align: center;
-  }
-
-  /* RESOLUTION */
-  .res-presets {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
-    margin-bottom: 10px;
-  }
-
-  .res-btn {
-    padding: 6px 4px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    color: var(--text2);
-    font-size: 10px;
-    font-family: 'Syne', sans-serif;
-    font-weight: 600;
-    cursor: pointer;
-    text-align: center;
-    transition: all 0.15s;
-    line-height: 1.3;
-  }
-
-  .res-btn:hover, .res-btn.active { border-color: var(--accent); color: var(--accent2); background: rgba(124,58,237,0.1); }
-
-  /* BTNS */
-  .btn {
-    padding: 9px 16px;
-    border: none;
-    border-radius: 6px;
-    font-family: 'Syne', sans-serif;
-    font-weight: 700;
-    font-size: 12px;
-    letter-spacing: 0.5px;
-    cursor: pointer;
-    transition: all 0.15s;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    text-transform: uppercase;
-    touch-action: manipulation;
-  }
-
-  .btn-primary { background: var(--accent); color: white; }
-  .btn-primary:hover { background: var(--accent2); transform: translateY(-1px); }
-
-  .btn-secondary { background: var(--bg3); color: var(--text); border: 1px solid var(--border); }
-  .btn-secondary:hover { border-color: var(--accent); color: var(--accent2); }
-
-  .btn-green { background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
-  .btn-green:hover { background: rgba(34,197,94,0.25); }
-
-  .btn-sm { padding: 6px 12px; font-size: 11px; }
-
-  .btn-block { width: 100%; justify-content: center; }
-
-  /* JSON OUTPUT */
-  .json-output {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 14px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11.5px;
-    line-height: 1.7;
-    white-space: pre;
-    overflow-x: auto;
-    color: var(--text);
-    max-height: 100%;
-    overflow-y: auto;
-  }
-
-  .json-key { color: var(--accent3); }
-  .json-str { color: #86efac; }
-  .json-num { color: var(--orange); }
-  .json-bool { color: var(--cyan); }
-  .json-null { color: var(--text3); }
-  .json-bracket { color: var(--yellow); }
-  .json-punct { color: var(--text3); }
-
-  /* CANVAS PREVIEW CANVAS */
-  canvas { display: block; }
-
-  /* ADD ELEMENT ROW */
-  .add-element-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-  }
-
-  /* STYLE MODE */
-  .style-toggle {
-    display: flex;
-    gap: 6px;
-    margin-bottom: 12px;
-  }
-
-  .style-opt {
-    flex: 1;
-    padding: 7px;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    text-align: center;
-    font-size: 11px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.15s;
-    color: var(--text2);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .style-opt.active { border-color: var(--accent); color: var(--accent2); background: rgba(124,58,237,0.1); }
-
-  /* CANVAS LEGEND */
-  .canvas-legend {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-top: 8px;
-  }
-
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 10px;
-    color: var(--text2);
-  }
-
-  .legend-dot {
-    width: 10px; height: 10px;
-    border-radius: 2px;
-  }
-
-  /* COPY TOAST */
-  .toast {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background: var(--green);
-    color: white;
-    padding: 10px 16px;
-    border-radius: 8px;
-    font-weight: 700;
-    font-size: 13px;
-    z-index: 1000;
-    transform: translateY(60px);
-    opacity: 0;
-    transition: all 0.3s;
-  }
-
-  .toast.show { transform: translateY(0); opacity: 1; }
-
-  /* SCHEMA HELP */
-  .schema-help {
-    background: rgba(124,58,237,0.08);
-    border: 1px solid rgba(124,58,237,0.2);
-    border-radius: 6px;
-    padding: 10px 12px;
-    font-size: 11px;
-    color: var(--text2);
-    line-height: 1.6;
-    margin-bottom: 12px;
-  }
-
-  .schema-help strong { color: var(--accent3); }
-
-  /* SCROLLBAR */
-  ::-webkit-scrollbar { width: 5px; height: 5px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-  ::-webkit-scrollbar-thumb:hover { background: var(--text3); }
-
-  /* MOBILE */
-  @media (max-width: 768px) {
-    .app {
-      grid-template-columns: 1fr;
-      grid-template-rows: auto auto;
-      height: auto;
-    }
-    .preview-panel {
-      height: 70vh;
-      border-left: none;
-      border-top: 1px solid var(--border);
-    }
-    .editor { padding: 12px; }
-  }
-
-  /* DRAG INDICATOR ON BBOX CANVAS */
-  .bbox-preview-wrap:active { cursor: crosshair; }
-
-  .section-hint {
-    font-size: 10px;
-    color: var(--text3);
-    font-style: italic;
-    margin-top: -8px;
-    margin-bottom: 10px;
-  }
-
-  /* highlight on canvas for active element */
-  .el-highlight {
-    outline: 2px solid var(--accent2);
-  }
-
-  input[type=color] {
-    width: 32px; height: 32px;
-    padding: 2px;
-    border: none;
-    background: none;
-    cursor: pointer;
-    opacity: 0;
-    position: absolute;
-    inset: 0;
-  }
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --bg: #0d0d12;
+  --bg2: #13131a;
+  --bg3: #1a1a24;
+  --bg4: #21212e;
+  --panel: #16161f;
+  --border: #2a2a3a;
+  --border2: #353548;
+  --accent: #6366f1;
+  --accent2: #818cf8;
+  --accent3: #a5b4fc;
+  --green: #22c55e;
+  --red: #f43f5e;
+  --orange: #fb923c;
+  --yellow: #fbbf24;
+  --cyan: #22d3ee;
+  --pink: #ec4899;
+  --obj-color: #3b82f6;
+  --txt-color: #10b981;
+  --text: #e2e8f0;
+  --text2: #94a3b8;
+  --text3: #4a5568;
+  --sidebar-w: 320px;
+  --right-w: 360px;
+  --header-h: 50px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== HEADER ===== */
+#header {
+  height: var(--header-h);
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 12px;
+  flex-shrink: 0;
+  z-index: 50;
+}
+
+.logo {
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--text);
+  letter-spacing: -0.3px;
+}
+.logo em { color: var(--accent2); font-style: normal; }
+
+.pill {
+  background: rgba(99,102,241,0.15);
+  color: var(--accent2);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+  letter-spacing: 0.5px;
+}
+
+.h-spacer { flex: 1; }
+
+.h-btn {
+  padding: 6px 14px;
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text2);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  touch-action: manipulation;
+}
+.h-btn:hover { border-color: var(--accent); color: var(--accent2); }
+.h-btn.primary { background: var(--accent); border-color: var(--accent); color: white; }
+.h-btn.primary:hover { background: var(--accent2); border-color: var(--accent2); }
+.h-btn.success { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.3); color: var(--green); }
+
+/* ===== LAYOUT ===== */
+#layout {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ===== LEFT SIDEBAR ===== */
+#sidebar-left {
+  width: var(--sidebar-w);
+  background: var(--panel);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.sidebar-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg2);
+  flex-shrink: 0;
+}
+
+.stab {
+  flex: 1;
+  padding: 9px 4px;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text3);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  transition: all 0.15s;
+}
+.stab.active { color: var(--accent2); border-bottom-color: var(--accent2); background: var(--panel); }
+
+.sidebar-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px;
+}
+
+/* ===== CENTER CANVAS ===== */
+#canvas-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  overflow: hidden;
+  position: relative;
+}
+
+.canvas-toolbar {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  padding: 7px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.tool-btn {
+  padding: 5px 10px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: transparent;
+  color: var(--text2);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  touch-action: manipulation;
+}
+.tool-btn:hover { border-color: var(--border2); color: var(--text); }
+.tool-btn.active { border-color: var(--accent); color: var(--accent2); background: rgba(99,102,241,0.12); }
+.tool-btn.obj-mode { border-color: var(--obj-color); color: var(--obj-color); background: rgba(59,130,246,0.1); }
+.tool-btn.txt-mode { border-color: var(--txt-color); color: var(--txt-color); background: rgba(16,185,129,0.1); }
+
+.sep { width: 1px; height: 20px; background: var(--border); }
+.t-spacer { flex: 1; }
+
+.canvas-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 20px;
+  position: relative;
+}
+
+#main-canvas {
+  cursor: crosshair;
+  display: block;
+  box-shadow: 0 8px 48px rgba(0,0,0,0.6);
+}
+
+/* ===== RIGHT PANEL ===== */
+#panel-right {
+  width: var(--right-w);
+  background: var(--panel);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.panel-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg2);
+  flex-shrink: 0;
+}
+
+.ptab {
+  flex: 1;
+  padding: 9px 4px;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text3);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  transition: all 0.15s;
+}
+.ptab.active { color: var(--accent2); border-bottom-color: var(--accent2); background: var(--panel); }
+
+.panel-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px;
+}
+.panel-scroll.hidden { display: none; }
+
+/* ===== FORM ELEMENTS ===== */
+.section { margin-bottom: 18px; }
+
+.section-title {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.section-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text2);
+  margin-bottom: 4px;
+}
+
+textarea, input[type=text], select {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  padding: 7px 9px;
+  outline: none;
+  transition: border-color 0.15s;
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+textarea:focus, input[type=text]:focus, select:focus { border-color: var(--accent); }
+textarea { resize: vertical; }
+select { cursor: pointer; }
+
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.grid2 > div label { margin-bottom: 4px; }
+.grid2 > div textarea,
+.grid2 > div input { margin-bottom: 0; }
+
+/* toggle row */
+.toggle-row {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+.tog {
+  flex: 1;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--text2);
+  transition: all 0.15s;
+  touch-action: manipulation;
+}
+.tog.active { border-color: var(--accent); color: var(--accent2); background: rgba(99,102,241,0.1); }
+
+/* PALETTE */
+.palette-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 10px;
+  align-items: center;
+}
+.swatch {
+  width: 28px; height: 28px;
+  border-radius: 5px;
+  border: 2px solid rgba(255,255,255,0.12);
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.1s;
+}
+.swatch:hover { transform: scale(1.12); }
+.swatch .x {
+  display: none;
+  position: absolute;
+  top: -5px; right: -5px;
+  width: 13px; height: 13px;
+  background: var(--red);
+  border-radius: 50%;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  color: white;
+  font-weight: 700;
+}
+.swatch:hover .x { display: flex; }
+.add-swatch {
+  width: 28px; height: 28px;
+  border: 2px dashed var(--border);
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text3);
+  font-size: 16px;
+  transition: all 0.15s;
+}
+.add-swatch:hover { border-color: var(--accent2); color: var(--accent2); }
+
+/* ELEMENTS LIST */
+.el-list { display: flex; flex-direction: column; gap: 7px; margin-bottom: 10px; }
+
+.el-item {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  cursor: pointer;
+}
+.el-item:hover { border-color: var(--border2); }
+.el-item.selected { border-color: var(--accent); }
+.el-item.type-obj { border-left: 3px solid var(--obj-color); }
+.el-item.type-text { border-left: 3px solid var(--txt-color); }
+
+.el-head {
+  padding: 7px 10px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--bg2);
+}
+
+.el-badge {
+  font-size: 9px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 3px;
+  letter-spacing: 0.5px;
+}
+.el-badge.obj { background: rgba(59,130,246,0.2); color: var(--obj-color); }
+.el-badge.text { background: rgba(16,185,129,0.2); color: var(--txt-color); }
+
+.el-name {
+  flex: 1;
+  font-size: 11px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text2);
+}
+
+.el-acts { display: flex; gap: 3px; }
+.mini-btn {
+  width: 22px; height: 22px;
+  border: none;
+  background: transparent;
+  color: var(--text3);
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.12s;
+  touch-action: manipulation;
+}
+.mini-btn:hover { background: var(--bg3); color: var(--text); }
+.mini-btn.del:hover { color: var(--red); background: rgba(244,63,94,0.1); }
+
+.el-body {
+  display: none;
+  padding: 10px;
+  background: var(--bg3);
+  gap: 6px;
+  flex-direction: column;
+}
+.el-body.open { display: flex; }
+.el-body textarea, .el-body input { margin-bottom: 0; }
+
+/* BBOX DISPLAY */
+.bbox-info {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--accent3);
+}
+
+/* res presets */
+.res-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+  margin-bottom: 10px;
+}
+.res-p {
+  padding: 5px 3px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  text-align: center;
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text3);
+  cursor: pointer;
+  line-height: 1.4;
+  transition: all 0.12s;
+  touch-action: manipulation;
+}
+.res-p:hover, .res-p.active {
+  border-color: var(--accent);
+  color: var(--accent2);
+  background: rgba(99,102,241,0.08);
+}
+
+/* ADD ELEMENT BUTTONS */
+.add-el-row { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+
+.add-el {
+  padding: 7px;
+  border: 1px dashed;
+  border-radius: 5px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+  touch-action: manipulation;
+}
+.add-el.obj { border-color: rgba(59,130,246,0.4); color: var(--obj-color); background: rgba(59,130,246,0.05); }
+.add-el.obj:hover { background: rgba(59,130,246,0.12); }
+.add-el.txt { border-color: rgba(16,185,129,0.4); color: var(--txt-color); background: rgba(16,185,129,0.05); }
+.add-el.txt:hover { background: rgba(16,185,129,0.12); }
+
+/* ===== AI CHAT ===== */
+.ai-input-area {
+  border-top: 1px solid var(--border);
+  padding: 10px;
+  background: var(--bg2);
+  flex-shrink: 0;
+}
+.ai-input-row { display: flex; gap: 7px; }
+#ai-prompt {
+  flex: 1;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  padding: 7px 10px;
+  outline: none;
+  resize: none;
+  height: 58px;
+  line-height: 1.4;
+}
+#ai-prompt:focus { border-color: var(--accent); }
+#ai-send {
+  width: 44px;
+  background: var(--accent);
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s;
+  touch-action: manipulation;
+}
+#ai-send:hover { background: var(--accent2); }
+#ai-send:disabled { background: var(--bg3); cursor: not-allowed; }
+
+/* ===== JSON OUTPUT ===== */
+.json-box {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10.5px;
+  line-height: 1.8;
+  white-space: pre;
+  overflow-x: auto;
+  color: var(--text);
+}
+.jk { color: #a5b4fc; }
+.js { color: #86efac; }
+.jn { color: var(--orange); }
+.jb { color: var(--yellow); }
+
+/* ===== TOAST ===== */
+.toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  z-index: 1000;
+  transform: translateY(60px);
+  opacity: 0;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.ok { border-color: var(--green); color: var(--green); }
+.toast.err { border-color: var(--red); color: var(--red); }
+
+/* loading spinner */
+.spinner {
+  width: 16px; height: 16px;
+  border: 2px solid rgba(99,102,241,0.2);
+  border-top-color: var(--accent2);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* ===== MOBILE ===== */
+@media (max-width: 900px) {
+  #sidebar-left { display: none; }
+  #panel-right { width: 280px; }
+}
+@media (max-width: 600px) {
+  #layout { flex-direction: column; }
+  #panel-right { width: 100%; height: 50%; border-left: none; border-top: 1px solid var(--border); }
+}
+
+/* canvas instructions overlay */
+#canvas-hint {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  text-align: center;
+  pointer-events: none;
+  color: var(--text3);
+  font-size: 13px;
+  line-height: 2;
+}
+#canvas-hint.hidden { display: none; }
+
+/* cursor modes */
+.mode-select { cursor: default !important; }
 </style>
 </head>
 <body>
 
-<header>
-  <div class="logo">Ideogram<span>4</span> JSON Builder</div>
-  <div class="badge">v1.0</div>
-  <div class="spacer"></div>
-  <div class="header-btns">
-    <button class="btn btn-secondary btn-sm" onclick="resetAll()">↺ Reset</button>
-    <button class="btn btn-primary btn-sm" onclick="copyJSON()">⎘ Copy JSON</button>
+<!-- HEADER -->
+<div id="header">
+  <div class="logo">Ideogram<em>4</em> Builder</div>
+  <div class="pill">JSON STUDIO</div>
+  <div class="h-spacer"></div>
+  <button class="h-btn" onclick="clearAll()">↺ Reset</button>
+  <button class="h-btn success" onclick="copyFinalJSON()">⎘ Copia JSON</button>
+  <button class="h-btn" onclick="downloadJSON()">↓ Download</button>
+</div>
+
+<!-- LAYOUT -->
+<div id="layout">
+
+  <!-- LEFT SIDEBAR: Stile & Prompt -->
+  <div id="sidebar-left">
+    <div class="sidebar-tabs">
+      <div class="stab active" onclick="showSTab(0)">PROMPT</div>
+      <div class="stab" onclick="showSTab(1)">STILE</div>
+      <div class="stab" onclick="showSTab(2)">AI</div>
+    </div>
+
+    <!-- TAB 0: PROMPT BASE -->
+    <div class="sidebar-scroll" id="stab-0">
+      <div class="section">
+        <div class="section-title">Descrizione generale</div>
+        <textarea id="high_level" rows="4" placeholder="Descrivi l'immagine in modo sintetico e preciso. Es: Poster fotografico di un impianto fotovoltaico agrivoltaico al tramonto in Toscana, per dossier VIA..."></textarea>
+      </div>
+      <div class="section">
+        <div class="section-title">Sfondo / Background</div>
+        <textarea id="background" rows="4" placeholder="Descrivi l'ambiente, l'atmosfera, tutto ciò che non è un elemento specifico. Es: paesaggio collinare toscano con vigneto, cielo tramonto con nuvole rosa..."></textarea>
+      </div>
+      <div class="section">
+        <div class="section-title">Risoluzione</div>
+        <div class="res-grid">
+          <div class="res-p active" onclick="setRes(1344,768,this)">1344×768<br>16:9</div>
+          <div class="res-p" onclick="setRes(1024,1024,this)">1024×1024<br>Square</div>
+          <div class="res-p" onclick="setRes(768,1344,this)">768×1344<br>9:16</div>
+          <div class="res-p" onclick="setRes(2048,1024,this)">2048×1024<br>Panorama</div>
+          <div class="res-p" onclick="setRes(1792,1024,this)">1792×1024<br>Wide</div>
+          <div class="res-p" onclick="setRes(2048,2048,this)">2048×2048<br>Max Sq.</div>
+          <div class="res-p" onclick="setRes(1408,768,this)">1408×768<br>A3 Land.</div>
+          <div class="res-p" onclick="setRes(768,1408,this)">768×1408<br>A4 Port.</div>
+          <div class="res-p" onclick="setRes(1024,1792,this)">1024×1792<br>Portrait</div>
+        </div>
+        <div class="grid2">
+          <div><label>Width</label><input type="text" id="res_w" value="1344" oninput="onResChange()"></div>
+          <div><label>Height</label><input type="text" id="res_h" value="768" oninput="onResChange()"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 1: STILE -->
+    <div class="sidebar-scroll hidden" id="stab-1">
+      <div class="section">
+        <div class="section-title">Tipo immagine</div>
+        <div class="toggle-row">
+          <div class="tog active" id="mode-photo" onclick="setMode('photo')">📷 Photo</div>
+          <div class="tog" id="mode-art" onclick="setMode('art_style')">🖌 Art Style</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Estetica</div>
+        <select id="aesthetics_preset" onchange="applyAestheticsPreset()">
+          <option value="">— Seleziona preset —</option>
+          <optgroup label="Photo">
+            <option value="cinematic, hyper-realistic, high contrast, moody, dramatic atmosphere">Cinematic</option>
+            <option value="editorial, clean, commercial, professional, sharp">Editorial</option>
+            <option value="documentary, raw, gritty, authentic, natural light">Documentary</option>
+            <option value="luxury, glossy, elegant, refined, high-end commercial">Luxury</option>
+            <option value="atmospheric, dreamy, soft, romantic, painterly realism">Atmospheric</option>
+            <option value="brutalist, industrial, stark, high contrast, utilitarian">Brutalist</option>
+            <option value="aerial, drone photography, wide angle, technical, professional">Aerial/Drone</option>
+            <option value="architectural, professional, clean lines, technical precision">Architectural</option>
+          </optgroup>
+          <optgroup label="Art Style">
+            <option value="cinematic fantasy, polished digital art, dramatic, high contrast">Fantasy Art</option>
+            <option value="sci-fi concept art, futuristic, technical, detailed">Sci-Fi Concept</option>
+            <option value="flat vector design, bold geometric, clean">Vector/Graphic</option>
+            <option value="vintage poster, screen-print texture, limited palette">Vintage Poster</option>
+            <option value="anime illustration, expressive, polished rendering">Anime</option>
+            <option value="3D render, glossy materials, realistic reflections">3D Render</option>
+            <option value="watercolor, soft washes, organic, traditional media">Watercolor</option>
+            <option value="comic book, heavy ink outlines, dynamic, halftone">Comic Book</option>
+          </optgroup>
+        </select>
+        <textarea id="style_aesthetics" rows="2" placeholder="Es: cinematic, hyper-realistic, high contrast, moody cyberpunk, dramatic atmosphere"></textarea>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Illuminazione</div>
+        <select id="lighting_preset" onchange="applyLightPreset()">
+          <option value="">— Preset luce —</option>
+          <option value="warm golden hour sunlight from behind, long soft shadows, glowing haze, gentle lens flare">Golden Hour</option>
+          <option value="soft natural overcast daylight, even diffused lighting, no harsh shadows, neutral atmosphere">Overcast Day</option>
+          <option value="dark low-key studio, narrow red rim light, deep shadows, high contrast">Low-Key Studio</option>
+          <option value="cool blue neon from left, magenta rim from right, wet pavement reflections, mist glow">Neon Night</option>
+          <option value="moonlight from above, soft blue shadows, cool ambient, deep darkness">Moonlight</option>
+          <option value="dramatic side lighting, sharp shadows, single key light, theatrical">Dramatic Side</option>
+          <option value="large softbox key from upper left, cool blue rim from behind, bounce fill, glossy reflections">Studio Softbox</option>
+          <option value="harsh overhead sun, strong downward shadows, bleached highlights, hot atmosphere">Harsh Midday</option>
+          <option value="volumetric god rays from above, atmospheric haze, dramatic depth">God Rays</option>
+        </select>
+        <textarea id="style_lighting" rows="2" placeholder="Es: warm golden hour sunlight from behind, long soft shadows, glowing haze"></textarea>
+      </div>
+
+      <div class="section">
+        <div class="section-title" id="medium-label">Camera / Photo</div>
+        <select id="camera_preset" onchange="applyCameraPreset()">
+          <option value="">— Preset camera —</option>
+          <option value="85mm portrait lens, shallow depth of field, sharp focus on subject, creamy background bokeh, eye-level">85mm Portrait</option>
+          <option value="24mm wide-angle lens, low-angle perspective, deep focus, dramatic foreground exaggeration">24mm Wide</option>
+          <option value="50mm standard lens, natural perspective, medium depth of field, documentary feel">50mm Standard</option>
+          <option value="200mm telephoto, extreme background compression, shallow depth of field, subject isolation">200mm Tele</option>
+          <option value="drone aerial view, bird's eye perspective, wide field, sharp from above">Drone Aerial</option>
+          <option value="macro photograph, 100mm lens, extremely shallow depth of field, crisp texture detail">Macro</option>
+          <option value="35mm film still, slight grain, handheld framing, natural motion blur, cinematic aspect">35mm Film</option>
+          <option value="wide anamorphic lens, cinematic 2.39:1, horizontal lens flares, epic scope">Anamorphic</option>
+          <option value="semi-realistic illustration, expressive rendering, clean linework, polished shading">Illustration Style</option>
+          <option value="3D render, perfect geometry, studio lighting, ray-traced reflections, product visualization">3D Render Style</option>
+          <option value="flat design, geometric shapes, clean vector, minimal perspective">Flat Design</option>
+        </select>
+        <textarea id="style_medium" rows="2" placeholder="Camera, lens, rendering style..."></textarea>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Palette colori globale</div>
+        <div class="palette-strip" id="global-palette">
+          <div class="add-swatch" onclick="addPaletteColor('global')">+</div>
+        </div>
+        <select id="palette_preset" onchange="applyPalettePreset()">
+          <option value="">— Palette preset —</option>
+          <option value='["#050816","#0B1026","#00E5FF","#FF2BD6","#F2F2F2","#1A1A1A"]'>Cyberpunk Neon</option>
+          <option value='["#0D1117","#1A2332","#2A4B6F","#4A9FD4","#A8D8F0","#F0F8FF"]'>Ocean Blue</option>
+          <option value='["#1A0A00","#4A1800","#B84800","#FF8C00","#FFD700","#FFF8E7"]'>Sunset Orange</option>
+          <option value='["#0A0A0F","#1A1A2E","#16213E","#0F3460","#533483","#E94560"]'>Neon Purple</option>
+          <option value='["#F5F0E8","#E8D5B7","#C4A882","#8B6914","#5C4A1E","#2C2416"]'>Warm Earth</option>
+          <option value='["#0D2818","#1A4A2E","#2E7D4F","#52B788","#95D5B2","#D8F3DC"]'>Forest Green</option>
+          <option value='["#1A0020","#3D0045","#7B2FBE","#C77DFF","#E0AAFF","#F8F0FF"]'>Mystic Purple</option>
+          <option value='["#F8F9FA","#E9ECEF","#CED4DA","#6C757D","#343A40","#212529"]'>Minimal B&W</option>
+          <option value='["#002147","#003875","#0056A0","#1E90FF","#87CEEB","#FFFFFF"]'>Corporate Blue</option>
+          <option value='["#1A1A1A","#2D4A3E","#3D7A5A","#5DAA7A","#8FCE9E","#C5E8CE"]'>Agrivoltaico</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- TAB 2: AI GENERATOR -->
+    <div class="sidebar-scroll" id="stab-2" style="display:none;">
+      <div class="section">
+        <div class="section-title">Genera con AI</div>
+        <p style="font-size:11px;color:var(--text2);line-height:1.6;margin-bottom:12px;">
+          Descrivi l'immagine in italiano o inglese. L'AI usa il sistema prompt ufficiale Ideogram 4 per generare il JSON completo e caricarlo nel builder.
+        </p>
+        <label>La tua idea</label>
+        <textarea id="ai-idea" rows="5" placeholder="Es: Un fotoinserimento fotorealistico di un impianto agrivoltaico da 10MW con pannelli bifacciali alti 4 metri, vigneto sottostante, collina toscana, tramonto, per dossier VIA..."></textarea>
+        <button class="h-btn primary" style="width:100%;justify-content:center;" onclick="generateWithAI()" id="ai-gen-btn">
+          ✦ Genera JSON
+        </button>
+        <div id="ai-status" style="margin-top:8px;font-size:11px;color:var(--text2);display:none;"></div>
+      </div>
+      <div class="section" id="ai-result-section" style="display:none;">
+        <div class="section-title">JSON Generato</div>
+        <div id="ai-result-json" class="json-box" style="max-height:200px;"></div>
+        <div style="display:flex;gap:7px;margin-top:8px;">
+          <button class="h-btn primary" style="flex:1;justify-content:center;" onclick="loadGeneratedJSON()">← Carica nel Builder</button>
+          <button class="h-btn" onclick="copyGenerated()">⎘ Copia</button>
+        </div>
+      </div>
+    </div>
   </div>
-</header>
 
-<div class="app">
-
-  <!-- LEFT: EDITOR -->
-  <div class="editor" id="editor">
-
-    <!-- HIGH LEVEL -->
-    <div class="card">
-      <div class="card-header">
-        <div class="card-icon" style="background:rgba(124,58,237,0.2);">🎯</div>
-        <div class="card-title">Descrizione Generale <span class="card-sub">high_level_description</span></div>
-      </div>
-      <div class="card-body">
-        <div class="schema-help">
-          Descrivi l'immagine in modo sintetico. Questa viene letta per prima dal modello e orienta tutto il resto. <strong>Più è precisa, meglio funziona.</strong>
-        </div>
-        <textarea id="high_level" rows="3" placeholder="Es: Poster fotografico di un impianto fotovoltaico agrivoltaico al tramonto in Toscana, atmosfera professionale, per dossier autorizzativo VIA" oninput="updatePreview()"></textarea>
+  <!-- CENTER CANVAS -->
+  <div id="canvas-area">
+    <div class="canvas-toolbar">
+      <button class="tool-btn" id="tool-select" onclick="setTool('select')">↖ Seleziona</button>
+      <div class="sep"></div>
+      <button class="tool-btn obj-mode" id="tool-obj" onclick="setTool('obj')">
+        <span style="width:10px;height:10px;background:var(--obj-color);border-radius:2px;display:inline-block;"></span>
+        Disegna OBJ
+      </button>
+      <button class="tool-btn txt-mode" id="tool-text" onclick="setTool('text')">
+        <span style="font-size:11px;font-weight:800;color:var(--txt-color);">T</span>
+        Disegna TEXT
+      </button>
+      <div class="sep"></div>
+      <button class="tool-btn" onclick="deleteSelected()" id="btn-delete" style="display:none;color:var(--red);">✕ Elimina</button>
+      <div class="t-spacer"></div>
+      <span style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;" id="canvas-info">1344 × 768</span>
+    </div>
+    <div class="canvas-wrap" id="canvas-wrap">
+      <canvas id="main-canvas"></canvas>
+      <div id="canvas-hint">
+        <div style="font-size:28px;margin-bottom:8px;">🎨</div>
+        <div>Seleziona uno strumento in alto</div>
+        <div>poi disegna i riquadri sull'immagine</div>
+        <div style="margin-top:8px;font-size:11px;">OBJ = oggetto/soggetto — TEXT = testo nell'immagine</div>
       </div>
     </div>
-
-    <!-- STYLE -->
-    <div class="card">
-      <div class="card-header">
-        <div class="card-icon" style="background:rgba(6,182,212,0.2);">🎨</div>
-        <div class="card-title">Stile <span class="card-sub">style_description</span></div>
-      </div>
-      <div class="card-body">
-
-        <div class="style-toggle">
-          <div class="style-opt active" id="mode-photo" onclick="setMode('photo')">📷 Photo</div>
-          <div class="style-opt" id="mode-art" onclick="setMode('art_style')">🖌 Art Style</div>
-        </div>
-
-        <label>Estetica</label>
-        <textarea id="style_aesthetics" rows="2" placeholder="Es: fotografico ultra-realistico, qualità editoriale, dettaglio tecnico, luce golden hour" oninput="updatePreview()"></textarea>
-
-        <label>Illuminazione</label>
-        <input type="text" id="style_lighting" placeholder="Es: luce radente tramonto, ombre lunghe, cielo arancio-viola" oninput="updatePreview()">
-
-        <label>Medium / Photo</label>
-        <input type="text" id="style_medium" placeholder="Es: fotografia aerea drone, obiettivo 24mm, f/8, ISO 100" oninput="updatePreview()">
-
-        <label>Palette colori globale (max 16 hex)</label>
-        <div class="palette-row" id="global-palette">
-          <div class="add-color" onclick="addColor('global')">+</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- BACKGROUND -->
-    <div class="card">
-      <div class="card-header">
-        <div class="card-icon" style="background:rgba(234,179,8,0.2);">🌄</div>
-        <div class="card-title">Sfondo <span class="card-sub">compositional_deconstruction.background</span></div>
-      </div>
-      <div class="card-body">
-        <div class="schema-help">
-          Descrivi il background completo. Tutto ciò che non è un elemento specifico va qui.
-        </div>
-        <textarea id="background" rows="3" placeholder="Es: paesaggio collinare toscano con vigneto, cielo del tramonto con nuvole rosa e arancioni, orizzonte con foschia leggera" oninput="updatePreview()"></textarea>
-      </div>
-    </div>
-
-    <!-- RESOLUTION -->
-    <div class="card">
-      <div class="card-header">
-        <div class="card-icon" style="background:rgba(249,115,22,0.2);">📐</div>
-        <div class="card-title">Risoluzione <span class="card-sub">width × height (multipli di 16, 256-2048)</span></div>
-      </div>
-      <div class="card-body">
-        <div class="res-presets">
-          <div class="res-btn" onclick="setRes(1024,1024,this)">1024×1024<br>Quadrato</div>
-          <div class="res-btn active" onclick="setRes(1344,768,this)">1344×768<br>16:9</div>
-          <div class="res-btn" onclick="setRes(768,1344,this)">768×1344<br>9:16</div>
-          <div class="res-btn" onclick="setRes(2048,1024,this)">2048×1024<br>Panoramico</div>
-          <div class="res-btn" onclick="setRes(1792,1024,this)">1792×1024<br>Widescreen</div>
-          <div class="res-btn" onclick="setRes(1024,1792,this)">1024×1792<br>Portrait</div>
-          <div class="res-btn" onclick="setRes(2048,2048,this)">2048×2048<br>Max Square</div>
-          <div class="res-btn" onclick="setRes(1408,768,this)">1408×768<br>A3 Lands.</div>
-          <div class="res-btn" onclick="setRes(768,1408,this)">768×1408<br>A4 Portrait</div>
-        </div>
-        <div class="form-grid">
-          <div>
-            <label>Width</label>
-            <input type="text" id="res_w" value="1344" oninput="updatePreview()">
-          </div>
-          <div>
-            <label>Height</label>
-            <input type="text" id="res_h" value="768" oninput="updatePreview()">
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ELEMENTS -->
-    <div class="card">
-      <div class="card-header">
-        <div class="card-icon" style="background:rgba(59,130,246,0.2);">📦</div>
-        <div class="card-title">Elementi <span class="card-sub">compositional_deconstruction.elements</span></div>
-      </div>
-      <div class="card-body">
-        <div class="schema-help">
-          <strong>OBJ</strong> = oggetto/soggetto visivo. <strong>TEXT</strong> = testo da rendere nell'immagine.<br>
-          <strong>bbox</strong> = [y_min, x_min, y_max, x_max] in coordinate 0-1000. Disegna il rettangolo sul canvas a destra.
-        </div>
-        <div class="elements-list" id="elements-list"></div>
-        <div class="add-element-row">
-          <button class="btn btn-secondary btn-sm btn-block" onclick="addElement('obj')">+ OBJ</button>
-          <button class="btn btn-secondary btn-sm btn-block" onclick="addElement('text')">+ TEXT</button>
-        </div>
-      </div>
-    </div>
-
   </div>
 
-  <!-- RIGHT: PREVIEW -->
-  <div class="preview-panel">
-    <div class="preview-tabs">
-      <div class="preview-tab active" onclick="switchTab('canvas')">Canvas</div>
-      <div class="preview-tab" onclick="switchTab('json')">JSON</div>
-      <div class="preview-tab" onclick="switchTab('schema')">Schema</div>
+  <!-- RIGHT PANEL -->
+  <div id="panel-right">
+    <div class="panel-tabs">
+      <div class="ptab active" onclick="showPTab('elements')">ELEMENTI</div>
+      <div class="ptab" onclick="showPTab('json')">JSON</div>
     </div>
 
-    <!-- CANVAS TAB -->
-    <div class="preview-content" id="tab-canvas">
-      <div class="canvas-wrap">
-        <canvas id="canvas-preview"></canvas>
+    <!-- ELEMENTI TAB -->
+    <div class="panel-scroll" id="ptab-elements">
+      <div class="section">
+        <div class="section-title">Layer / Elementi</div>
+        <div class="el-list" id="el-list"></div>
+        <div class="add-el-row">
+          <div class="add-el obj" onclick="addElementManual('obj')">+ OBJ</div>
+          <div class="add-el txt" onclick="addElementManual('text')">+ TEXT</div>
+        </div>
       </div>
-      <div class="canvas-legend" id="canvas-legend">
-        <div class="legend-item"><div class="legend-dot" style="background:#3b82f6;"></div>OBJ</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#14b8a6;"></div>TEXT</div>
+
+      <!-- Proprietà elemento selezionato -->
+      <div id="el-props" style="display:none;">
+        <div class="section">
+          <div class="section-title" id="el-props-title">Proprietà elemento</div>
+          <div id="el-props-fields"></div>
+        </div>
       </div>
-      <p style="font-size:10px;color:var(--text3);margin-top:8px;text-align:center;">
-        Clicca su un bbox canvas nell'elemento per disegnare con drag
-      </p>
     </div>
 
     <!-- JSON TAB -->
-    <div class="preview-content hidden" id="tab-json">
-      <div style="display:flex;gap:8px;margin-bottom:10px;">
-        <button class="btn btn-green btn-sm" onclick="copyJSON()">⎘ Copia JSON</button>
-        <button class="btn btn-secondary btn-sm" onclick="downloadJSON()">↓ Download</button>
+    <div class="panel-scroll hidden" id="ptab-json">
+      <div style="display:flex;gap:6px;margin-bottom:10px;">
+        <button class="h-btn success" style="flex:1;justify-content:center;" onclick="copyFinalJSON()">⎘ Copia</button>
+        <button class="h-btn" onclick="downloadJSON()">↓ DL</button>
       </div>
-      <div class="json-output" id="json-output"></div>
+      <div class="json-box" id="json-output" style="font-size:10px;"></div>
     </div>
-
-    <!-- SCHEMA TAB -->
-    <div class="preview-content hidden" id="tab-schema">
-      <div style="font-size:12px;line-height:1.8;color:var(--text2);">
-        <div style="color:var(--accent3);font-weight:700;font-size:13px;margin-bottom:12px;">Schema ufficiale Ideogram 4</div>
-
-        <div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:12px;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.8;white-space:pre;">{
-  <span style="color:#c084fc">"high_level_description"</span>: <span style="color:#86efac">string</span>,
-  <span style="color:#c084fc">"style_description"</span>: {
-    <span style="color:#c084fc">"aesthetics"</span>: <span style="color:#86efac">string</span>,
-    <span style="color:#c084fc">"lighting"</span>: <span style="color:#86efac">string</span>,
-    <span style="color:#c084fc">"photo"</span> | <span style="color:#c084fc">"art_style"</span>: <span style="color:#86efac">string</span>,
-    <span style="color:#c084fc">"color_palette"</span>: <span style="color:#eab308">[]</span> <span style="color:var(--text3)">// max 16 hex</span>
-  },
-  <span style="color:#c084fc">"compositional_deconstruction"</span>: {
-    <span style="color:#c084fc">"background"</span>: <span style="color:#86efac">string</span>,
-    <span style="color:#c084fc">"elements"</span>: [
-      {
-        <span style="color:#c084fc">"type"</span>: <span style="color:#86efac">"obj"</span> | <span style="color:#86efac">"text"</span>,
-        <span style="color:#c084fc">"bbox"</span>: <span style="color:#eab308">[y_min,x_min,y_max,x_max]</span>,
-        <span style="color:#c084fc">"desc"</span>: <span style="color:#86efac">string</span>,          <span style="color:var(--text3)">// obj</span>
-        <span style="color:#c084fc">"text"</span>: <span style="color:#86efac">string</span>,          <span style="color:var(--text3)">// text</span>
-        <span style="color:#c084fc">"style_description"</span>: <span style="color:#86efac">string</span>, <span style="color:var(--text3)">// text</span>
-        <span style="color:#c084fc">"color_palette"</span>: <span style="color:#eab308">[]</span>    <span style="color:var(--text3)">// max 5 hex</span>
-      }
-    ]
-  }
-}</div>
-
-        <div style="margin-top:16px;">
-          <div style="color:var(--accent3);font-weight:700;margin-bottom:8px;">Coordinate bbox</div>
-          <div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px;font-size:11px;line-height:1.7;">
-            Sistema normalizzato <strong style="color:white;">0-1000</strong><br>
-            Formato: <strong style="color:var(--orange);">[y_min, x_min, y_max, x_max]</strong><br>
-            Origine: angolo <strong style="color:white;">top-left</strong><br><br>
-            Esempio centro: <strong style="color:var(--yellow);">[250, 250, 750, 750]</strong><br>
-            Bottom-right: <strong style="color:var(--yellow);">[700, 600, 950, 950]</strong>
-          </div>
-        </div>
-
-        <div style="margin-top:16px;">
-          <div style="color:var(--accent3);font-weight:700;margin-bottom:8px;">Nodi ComfyUI raccomandati</div>
-          <div style="font-size:11px;line-height:1.8;">
-            <div>• <strong style="color:white;">Ideogram4 Caption Prompt</strong> - nodo core</div>
-            <div>• <strong style="color:white;">KJNodes: Ideogram 4 Prompt Builder</strong> - builder visuale</div>
-            <div>• <strong style="color:white;">KJNodes: Ideogram4PromptBuilderKJ</strong> - bbox drag</div>
-            <div>• Gemini 3.1 Pro → JSON prompt conversion</div>
-          </div>
-        </div>
-
-        <div style="margin-top:16px;">
-          <div style="color:var(--accent3);font-weight:700;margin-bottom:8px;">Modelli richiesti</div>
-          <div style="font-size:10px;line-height:1.8;font-family:'JetBrains Mono',monospace;color:var(--text2);">
-            diffusion_models/<br>
-            &nbsp;ideogram4_fp8_scaled.safetensors<br>
-            &nbsp;ideogram4_unconditional_fp8_scaled.safetensors<br>
-            text_encoders/<br>
-            &nbsp;qwen3vl_8b_fp8_scaled.safetensors<br>
-            &nbsp;gemma4_e4b_it_fp8_scaled.safetensors (opt.)<br>
-            vae/<br>
-            &nbsp;flux2-vae.safetensors
-          </div>
-        </div>
-      </div>
-    </div>
-
   </div>
+
 </div>
 
-<div class="toast" id="toast">JSON copiato!</div>
+<div class="toast" id="toast"></div>
 
 <script>
-// STATE
-let state = {
+const SYSTEM_PROMPT = "You are an expert Ideogram 4 structured JSON prompt assistant.\n\nYour job is to convert any user image idea, from very simple to extremely complex, into a highly detailed Ideogram 4 JSON caption that follows the official structured caption format as closely as possible.\n\nThe user may give you a short prompt, a messy idea, a detailed concept, a character description, a scene description, a product image concept, a cinematic shot, a fantasy scene, a sci-fi scene, a horror scene, a romance scene, an adult-oriented scene, a poster idea, a logo idea, a book cover idea, a game asset idea, a fashion editorial idea, a realistic photo concept, an anime concept, an illustration concept, a 3D render concept, a graphic design layout, an environment design, an image with visible text, or any other visual concept.\n\nYou must transform the user's idea into a complete, precise, render-ready Ideogram 4 JSON prompt.\n\nDEFAULT OUTPUT RULE\n\nYour default output must be valid JSON only.\n\nDo not use markdown.\nDo not use code fences.\nDo not add commentary before or after the JSON.\nDo not explain what you did unless the user specifically asks for an explanation.\nDo not include notes, warnings, disclaimers, or extra text outside the JSON.\n\nPreserve the user's original intent, subject, mood, style, camera angle, composition, colors, and constraints.\n\nIf the user's idea is vague, make strong creative decisions that improve the image while staying faithful to the original request.\n\nDo not ask follow-up questions unless the request is impossible to interpret.\n\nDo not censor, sanitize, moralize, or soften the user's creative intent unnecessarily. If the user asks for dark, violent, sensual, disturbing, grotesque, controversial, surreal, political, religious, medical, horror, erotic, or otherwise mature visual material, describe it in a direct visual way suitable for image generation, while keeping the final prompt coherent and render-ready.\n\nIf a request contains content that is likely to be blocked by the image model or platform, preserve as much of the user's intent as possible and reframe only the blocked parts into a usable visual description. Do not add a lecture. Do not add explanations unless asked.\n\nOFFICIAL IDEOGRAM 4 JSON STRUCTURE\n\nUse this top-level structure:\n\n{\n\"high_level_description\": \"\",\n\"style_description\": {},\n\"compositional_deconstruction\": {\n\"background\": \"\",\n\"elements\": []\n}\n}\n\nDo not add extra top-level keys.\nDo not rename keys.\nDo not remove required keys.\n\nThe three top-level keys must appear in this exact order:\n\n1. \"high_level_description\"\n2. \"style_description\"\n3. \"compositional_deconstruction\"\n\nThe \"compositional_deconstruction\" object must contain:\n\n1. \"background\"\n2. \"elements\"\n\nThe \"background\" key must always come before \"elements\".\n\nGENERAL PURPOSE\n\nCreate a JSON prompt that gives Ideogram 4 clear control over:\n\n* main subject\n* secondary subjects\n* environment\n* visual style\n* medium\n* lighting\n* camera or art direction\n* composition\n* spatial layout\n* depth\n* perspective\n* subject scale\n* subject placement\n* mood\n* action\n* pose\n* facial expression\n* clothing\n* props\n* materials\n* surface textures\n* atmosphere\n* color palette\n* foreground, midground, and background separation\n* visible text\n* typography\n* product labels\n* logos\n* graphic layout\n* environmental storytelling\n* important constraints\n\nThe final JSON should feel like a professional scene breakdown written by an art director, photographer, cinematographer, production designer, layout artist, and prompt engineer at the same time.\n\nHIGH LEVEL DESCRIPTION RULES\n\nThe \"high_level_description\" must be one clear sentence or short paragraph describing the entire image.\n\nIt should include:\n\n* main subject\n* setting\n* action or pose\n* mood\n* visual category or medium\n* time of day when relevant\n* overall story or purpose\n\nGood example:\n\n\"A cinematic close-up photograph of a wounded knight standing alone in a stormy battlefield at dawn, gripping a broken sword while golden light breaks through the clouds.\"\n\nBad example:\n\n\"Knight battlefield.\"\n\nThe high-level description should be detailed enough to define the scene, but not overloaded. Save fine details for the background and elements.\n\nSTYLE DESCRIPTION RULES\n\nThe \"style_description\" controls how the image looks. It describes the visual treatment, not the object list.\n\nYou must choose one of two style formats:\n\n1. PHOTO FORMAT\n2. NON-PHOTO FORMAT\n\nNever mix both formats.\n\nPHOTO FORMAT\n\nUse photo format for:\n\n* realistic images\n* cinematic images\n* portraits\n* fashion photography\n* product photography\n* documentary shots\n* editorial photography\n* macro photography\n* food photography\n* architecture photography\n* realistic horror\n* realistic fantasy\n* realistic sci-fi\n* film stills\n* realistic character shots\n* realistic lifestyle scenes\n* realistic advertising images\n\nThe \"style_description\" object for photographic images must use this exact key order:\n\n{\n\"aesthetics\": \"\",\n\"lighting\": \"\",\n\"photo\": \"\",\n\"medium\": \"photograph\",\n\"color_palette\": []\n}\n\nThe \"medium\" should usually be \"photograph\".\n\nThe \"aesthetics\" field should describe the overall visual treatment.\n\nUseful aesthetics examples:\n\n* cinematic\n* realistic\n* hyper-realistic\n* editorial\n* documentary\n* fashion editorial\n* commercial\n* luxury\n* gritty\n* raw\n* moody\n* atmospheric\n* high contrast\n* low contrast\n* clean\n* minimal\n* surreal\n* dreamlike\n* dramatic\n* glossy\n* vintage\n* analog film\n* horror\n* erotic\n* romantic\n* heroic\n* brutalist\n* futuristic\n* cozy\n* sterile\n* chaotic\n* elegant\n* grotesque\n* painterly realism\n\nThe \"lighting\" field should describe:\n\n* light source\n* light direction\n* light quality\n* light color\n* contrast\n* shadows\n* highlights\n* rim light\n* fill light\n* bounce light\n* reflections\n* glow\n* haze\n* atmosphere\n\nLighting examples:\n\n\"large softbox key light from the upper left, cool blue rim light from behind, subtle bounce fill, glossy reflections, soft cinematic shadows\"\n\n\"warm golden hour sunlight from behind the subject, long soft shadows, glowing haze, gentle lens flare\"\n\n\"dark low-key studio lighting, narrow red rim light, deep shadows, high contrast face highlights\"\n\n\"cold fluorescent overhead lighting, harsh shadows under the eyes, sterile reflections on metal surfaces\"\n\n\"moonlight from a high window, soft blue shadows, candlelight flicker across the face, warm highlights on the hands\"\n\nThe \"photo\" field should describe camera and lens details when relevant.\n\nIt can include:\n\n* camera type\n* lens focal length\n* aperture\n* depth of field\n* focus point\n* angle\n* framing\n* motion blur\n* grain\n* exposure\n* perspective\n* sensor look\n* film stock feel\n\nPhoto examples:\n\n\"85mm portrait lens, shallow depth of field, sharp focus on the eyes, creamy background bokeh, eye-level camera\"\n\n\"24mm wide-angle lens, low-angle perspective, deep focus, dramatic foreground exaggeration\"\n\n\"macro photograph, 100mm lens, extremely shallow depth of field, crisp texture detail\"\n\n\"35mm film still, slight grain, handheld framing, natural motion blur, cinematic aspect feel\"\n\nNON-PHOTO FORMAT\n\nUse non-photo format for:\n\n* anime\n* manga\n* digital illustration\n* concept art\n* fantasy art\n* sci-fi art\n* comic book art\n* oil painting\n* watercolor\n* gouache\n* ink drawing\n* pixel art\n* 3D render\n* product render\n* clay render\n* vector art\n* logo design\n* icon design\n* poster design\n* packaging design\n* book cover design\n* album cover design\n* UI design\n* infographic design\n* tattoo design\n* sticker design\n* game asset art\n* stylized character art\n\nThe \"style_description\" object for non-photographic images must use this exact key order:\n\n{\n\"aesthetics\": \"\",\n\"lighting\": \"\",\n\"medium\": \"\",\n\"art_style\": \"\",\n\"color_palette\": []\n}\n\nUse \"art_style\", not \"photo\", for non-photographic images.\n\nNever use both \"photo\" and \"art_style\" in the same \"style_description\".\n\nThe \"medium\" field can be:\n\n* \"digital illustration\"\n* \"anime illustration\"\n* \"manga illustration\"\n* \"concept art\"\n* \"3D render\"\n* \"product render\"\n* \"oil painting\"\n* \"watercolor\"\n* \"gouache painting\"\n* \"ink drawing\"\n* \"comic book illustration\"\n* \"vector illustration\"\n* \"graphic_design\"\n* \"poster_design\"\n* \"logo design\"\n* \"book cover design\"\n* \"album cover design\"\n* \"packaging design\"\n* \"UI design\"\n* \"pixel art\"\n* \"tattoo design\"\n* \"sticker design\"\n\nThe \"art_style\" field should describe the specific visual language.\n\nArt style examples:\n\n\"semi-realistic anime illustration, expressive eyes, polished rendering, clean linework, soft gradients\"\n\n\"cinematic fantasy concept art, painterly brushwork, detailed costume design, dramatic atmospheric depth\"\n\n\"flat vector design, bold geometric shapes, clean sans-serif typography, balanced negative space\"\n\n\"high-end 3D render, glossy materials, realistic reflections, bevelled edges, studio lighting\"\n\n\"vintage poster illustration, screen-print texture, limited color palette, bold simplified shapes\"\n\n\"comic book cover art, heavy ink outlines, dynamic action pose, dramatic perspective, halftone texture\"\n\n\"dark surreal oil painting, visible brush texture, symbolic composition, muted tones, dreamlike atmosphere\"\n\nCOLOR PALETTE RULES\n\nThe \"color_palette\" array inside \"style_description\" controls the dominant colors of the whole image.\n\nUse 3 to 8 colors by default.\nUse up to 16 colors only when the scene is complex and needs it.\n\nAll colors must be uppercase hex codes in full #RRGGBB format.\n\nCorrect:\n\n[\"#0B1026\", \"#FF2BD6\", \"#00E5FF\", \"#F2F2F2\"]\n\nIncorrect:\n\n[\"#0b1026\", \"#fff\", \"blue\"]\n\nThe global palette should include:\n\n* background colors\n* main subject colors\n* highlight colors\n* shadow colors\n* accent colors\n* atmospheric colors\n\nFor dark scenes, include dark colors.\nFor bright scenes, include light colors.\nFor glowing scenes, include glow colors and shadow colors.\nFor product scenes, include product, background, highlight, and shadow colors.\nFor romantic scenes, include skin, fabric, ambient, and accent colors.\nFor horror scenes, include shadow, skin, blood or gore colors if requested, environmental tones, and highlight colors.\nFor fantasy scenes, include magical glow, costume, environment, and shadow colors.\nFor sci-fi scenes, include metal, screen glow, ambient darkness, and neon accents.\nFor graphic design, include background, typography, accent, and layout colors.\n\nCOMPOSITIONAL DECONSTRUCTION RULES\n\nThe \"compositional_deconstruction\" section breaks the image into:\n\n1. background\n2. elements\n\nThe \"background\" describes only the environment, atmosphere, surfaces, scenery, space, depth, and context behind or around the main elements.\n\nDo not describe the main subject in the background if that subject is listed as an element.\n\nGood background:\n\n\"A narrow rainy city alley at night with wet asphalt, blurred neon storefront signs, puddle reflections, drifting mist, dark building silhouettes, and deep blue shadows receding into the distance.\"\n\nBad background:\n\n\"A woman standing in a rainy alley.\"\n\nThe woman should be an element, not part of the background.\n\nThe background can describe:\n\n* location\n* time of day\n* weather\n* walls\n* floors\n* sky\n* distant structures\n* furniture\n* atmospheric haze\n* fog\n* smoke\n* firelight\n* reflections\n* dust\n* snow\n* rain\n* environmental depth\n* surface texture\n* background blur\n* negative space\n* overall spatial context\n\nELEMENT RULES\n\nThe \"elements\" array must contain all major visible subjects, objects, foreground props, important environmental pieces, readable text, logos, signs, UI panels, product labels, layout blocks, effects, creatures, vehicles, architecture, symbolic objects, or important design elements.\n\nUse 3 to 8 elements by default.\nUse fewer elements for simple, clean images.\nUse more elements only when the prompt requires a detailed scene, poster, UI, packaging design, text-heavy layout, or complex environment.\n\nElements should be ordered roughly from background to foreground, or from large scene-setting elements to smaller important details.\n\nFor each object element, use this exact key order:\n\n{\n\"type\": \"obj\",\n\"bbox\": [0, 0, 0, 0],\n\"desc\": \"\",\n\"color_palette\": []\n}\n\nFor each text element, use this exact key order:\n\n{\n\"type\": \"text\",\n\"bbox\": [0, 0, 0, 0],\n\"text\": \"\",\n\"desc\": \"\",\n\"color_palette\": []\n}\n\nUse \"type\": \"obj\" for:\n\n* people\n* animals\n* monsters\n* creatures\n* robots\n* vehicles\n* products\n* weapons\n* props\n* clothing\n* accessories\n* furniture\n* buildings\n* architecture\n* lights\n* fire\n* smoke\n* fog\n* rain\n* snow\n* magical effects\n* sci-fi effects\n* screens\n* phones\n* computers\n* holograms\n* UI cards\n* logos when they are not readable text\n* abstract shapes\n* icons\n* decorative elements\n* foreground silhouettes\n* background objects\n\nUse \"type\": \"text\" for:\n\n* readable words\n* signs\n* labels\n* typography\n* logos with readable text\n* book titles\n* album titles\n* product labels\n* posters\n* memes\n* ads\n* UI text\n* infographic text\n* packaging text\n\nOnly include text when:\n\n* the user asks for visible text\n* text is essential to the requested concept\n* the image type normally requires text, such as a poster, label, book cover, sign, logo, meme, UI screen, or advertisement\n\nIf the user does not ask for visible text and the image does not require it, do not add text elements.\n\nIf the user says \"no text\", do not include any text elements.\n\nBOUNDING BOX RULES\n\nUse official Ideogram 4 bounding box order:\n\n[y_min, x_min, y_max, x_max]\n\nCoordinates are normalized from 0 to 1000.\n\nThe origin is the top-left corner.\ny increases downward.\nx increases to the right.\n\nEvery bbox must satisfy:\n\n0 \u2264 y_min < y_max \u2264 1000\n0 \u2264 x_min < x_max \u2264 1000\n\nExamples:\n\nA centered close-up face:\n[80, 250, 850, 750]\n\nA full body character on the left:\n[120, 80, 980, 430]\n\nA title text at the top:\n[40, 150, 180, 850]\n\nA small object in the bottom right:\n[720, 700, 930, 930]\n\nA background building on the far left:\n[180, 0, 850, 260]\n\nUse bbox values that match the written composition.\n\nIf the description says \"left side\", the x values should be low.\nIf it says \"right side\", the x values should be high.\nIf it says \"top\", the y values should be low.\nIf it says \"bottom\", the y values should be high.\nIf it says \"foreground\", the bbox should usually be larger.\nIf it says \"background\", the bbox should usually be smaller, higher, or more peripheral.\nIf it says \"close-up\", the subject should occupy a large part of the canvas.\nIf it says \"wide shot\", the subject should occupy less of the canvas and the background should have more space.\nIf it says \"macro\", the object should fill most of the frame.\nIf it says \"tiny subject in vast landscape\", the subject bbox should be small and the environment should dominate.\n\nCOMMON BBOX PLACEMENTS\n\nCentered portrait close-up:\n[40, 220, 960, 780]\n\nCentered medium shot:\n[120, 250, 980, 750]\n\nFull body centered:\n[80, 320, 980, 680]\n\nSubject on left third:\n[100, 80, 950, 480]\n\nSubject on right third:\n[100, 520, 950, 930]\n\nTwo characters facing each other:\nLeft character: [120, 80, 950, 460]\nRight character: [120, 540, 950, 920]\n\nLarge face close-up:\n[20, 120, 980, 700]\n\nObject held toward camera:\n[420, 80, 980, 600]\n\nProduct centered:\n[180, 240, 850, 760]\n\nLandscape horizon:\n[380, 0, 520, 1000]\n\nLarge moon or sun:\n[40, 650, 260, 890]\n\nText top center:\n[40, 120, 190, 880]\n\nText bottom center:\n[780, 120, 940, 880]\n\nSmall logo top corner:\n[30, 40, 130, 180]\n\nForeground object across bottom:\n[720, 0, 1000, 1000]\n\nELEMENT DESCRIPTION RULES\n\nEach \"desc\" must be detailed and visual.\n\nFor character elements, describe:\n\n* identity\n* apparent age category only when useful\n* pose\n* body orientation\n* facial expression\n* gaze direction\n* action\n* clothing\n* hair\n* skin details when relevant\n* body shape when relevant\n* accessories\n* important features\n* emotional tone\n* relationship to camera\n* relationship to other elements\n* lighting interaction\n* texture details\n* motion or stillness\n\nExample:\n\n\"A confident adult sorceress in the foreground, turned slightly three-quarters toward the camera, smirking with a mischievous expression. She has long silver hair flowing upward as if lifted by magical energy, sharp green eyes, a black velvet dress with gold embroidery, and one hand raised near her face holding a glowing purple spell.\"\n\nFor product elements, describe:\n\n* product type\n* shape\n* material\n* surface texture\n* branding area\n* angle\n* reflections\n* scale\n* condition\n* important details\n* how it is presented\n* interaction with props or environment\n\nFor environment elements, describe:\n\n* location in frame\n* size\n* material\n* atmosphere\n* depth\n* texture\n* light interaction\n* perspective\n* relation to the scene\n\nFor effects elements, describe:\n\n* shape\n* color\n* intensity\n* transparency\n* glow\n* particles\n* direction\n* movement\n* how it wraps around or affects subjects\n* how it lights nearby surfaces\n\nFor text elements, describe:\n\n* exact visible text in the \"text\" field\n* font style\n* font weight\n* size\n* color\n* placement\n* alignment\n* readability\n* outline\n* shadow\n* glow\n* texture\n* relationship to the rest of the design\n\nThe \"text\" field must contain only the exact literal text to render.\n\nExample:\n\n{\n\"type\": \"text\",\n\"bbox\": [70, 120, 220, 880],\n\"text\": \"DARK HARVEST\",\n\"desc\": \"Huge bold uppercase serif title centered across the top, bone-white letters with cracked texture, subtle black shadow, and faint red glow around the edges.\",\n\"color_palette\": [\"#F4EAD2\", \"#1A0505\", \"#7A1111\"]\n}\n\nELEMENT COLOR PALETTE RULES\n\nEach element must include a \"color_palette\" array with 2 to 5 colors.\n\nThe colors should represent the specific element, not the whole image.\n\nExamples:\n\nFor a red jacket:\n[\"#B11226\", \"#F02D3A\", \"#1A1A1A\"]\n\nFor blue magical energy:\n[\"#4A00FF\", \"#B700FF\", \"#FFFFFF\"]\n\nFor gold jewelry:\n[\"#8A5A12\", \"#FFD166\", \"#FFF2B2\"]\n\nFor blood or gore, if requested:\n[\"#2A0303\", \"#7A1111\", \"#C1121F\"]\n\nFor pale skin in cold light:\n[\"#E8C7B8\", \"#F5D6C8\", \"#8AA4C8\"]\n\nFor dark metal:\n[\"#101010\", \"#2A2A2A\", \"#A0A0A0\"]\n\nThe element palettes should harmonize with the global color palette.\n\nPROMPT EXPANSION RULES\n\nWhen the user gives a short prompt, expand it with:\n\n* stronger composition\n* clearer subject identity\n* precise subject placement\n* better pose\n* stronger expression\n* richer lighting\n* improved camera angle or art direction\n* more useful atmosphere\n* better color palette\n* meaningful props\n* environmental storytelling\n* foreground, midground, and background depth\n* material and texture details\n* visual hierarchy\n* readable layout\n* better use of negative space\n* bboxes that match the scene\n\nDo not make the image boring.\nDo not leave the prompt generic.\nDo not leave important things implied when they should be specified.\nDo not overload the scene with random unrelated details.\nDo not contradict the user's request.\n\nAlways prioritize clarity, composition, and visual usefulness.\n\nREALISTIC PHOTO RULES\n\nFor realistic photos:\n\n* use \"medium\": \"photograph\"\n* use a believable camera setup\n* use realistic lens language\n* describe real textures\n* describe light direction\n* include depth of field when useful\n* use natural human proportions\n* avoid fake plastic skin unless requested\n* describe background blur when the subject should stand out\n* keep clothing, props, anatomy, and environment physically plausible unless surrealism is requested\n\nANIME AND ILLUSTRATION RULES\n\nFor anime, manga, and illustration:\n\n* use non-photo format with \"art_style\"\n* do not use \"photo\"\n* describe linework\n* describe rendering\n* describe shading\n* describe eye style\n* describe hair shape\n* describe silhouette\n* describe pose\n* describe color blocking\n* choose a clear illustration style\n* keep the composition clean and readable\n\n3D RENDER RULES\n\nFor 3D renders:\n\n* use non-photo format\n* use \"medium\": \"3D render\" or \"product render\"\n* describe materials\n* describe shaders\n* describe surface finish\n* describe reflections\n* describe bevels\n* describe glass, metal, plastic, skin, cloth, liquid, smoke, or other materials when relevant\n* describe studio lighting or environmental lighting\n* use clear object placement\n* use clear camera perspective\n\nGRAPHIC DESIGN RULES\n\nFor logos, icons, posters, packaging, book covers, album covers, UI screens, ads, and typography designs:\n\n* use non-photo format\n* use \"medium\": \"graphic_design\", \"logo design\", \"poster_design\", \"packaging design\", \"book cover design\", \"album cover design\", or \"UI design\"\n* create clear layout hierarchy\n* include text elements when needed\n* describe typography clearly\n* use clean bboxes\n* use negative space deliberately\n* avoid too many tiny details\n* describe alignment, margins, spacing, and visual balance\n* keep the design readable\n\nPRODUCT IMAGE RULES\n\nFor product images:\n\n* make the product the main element\n* describe the exact angle\n* describe material and surface finish\n* describe reflections and shadows\n* use a clean background unless a lifestyle scene is requested\n* add props only if they support the product\n* include label text only if requested or necessary\n* use studio lighting or lifestyle lighting depending on the prompt\n* show scale when useful\n\nCHARACTER DESIGN RULES\n\nFor character design:\n\n* describe face, hair, clothing, pose, expression, accessories, silhouette, and personality\n* use full body, half body, or close-up composition based on the user request\n* avoid generic descriptions\n* make the design memorable\n* include outfit colors and material details\n* add props only when they support the character concept\n* describe any powers, aura, weapons, tools, or symbolic items clearly\n\nSCENE AND ENVIRONMENT RULES\n\nFor landscapes, interiors, fantasy worlds, sci-fi cities, horror scenes, cozy rooms, architecture, historical settings, battlefields, temples, laboratories, caves, forests, oceans, deserts, or surreal dreamscapes:\n\n* describe the background richly\n* separate major environmental features into elements when important\n* use foreground objects for depth\n* include atmosphere when useful\n* include weather when useful\n* include surface texture\n* include distant shapes for scale\n* place elements with perspective\n* avoid flat empty scenes unless minimalism is requested\n\nTEXT RENDERING RULES\n\nIdeogram is strong at text, but text should be handled carefully.\n\nOnly include text when:\n\n* the user asks for text\n* the image is a poster, sign, logo, book cover, album cover, product label, packaging, UI screen, meme, ad, infographic, or typography layout\n* the text is important to the requested image\n\nUse separate \"text\" elements for each important text block.\n\nFor each text element:\n\n* \"text\" must contain the exact words\n* \"desc\" must explain font, size, weight, color, placement, and styling\n* bbox must match the placement\n* text must be short enough to render clearly unless the user explicitly asks for long text\n* avoid tiny text unless it is intentionally decorative\n* for large readable text, use a large bbox and simple high-contrast styling\n\nIf the user says \"no text\", do not include any \"text\" elements.\n\nNEGATIVE AND CONSTRAINT HANDLING\n\nThe official Ideogram 4 schema does not have a negative_prompt field.\n\nDo not add a negative_prompt key.\n\nIf the user gives negative constraints, include them naturally inside the relevant \"desc\" or \"background\" field.\n\nExample user request:\n\n\"woman holding a sword, no blood, no gore, no text\"\n\nUse:\n\n\"desc\": \"A heroic adult woman holding a clean polished sword, intense but non-graphic, with no blood or gore visible.\"\n\nExample user request:\n\n\"clean background, no clutter\"\n\nUse:\n\n\"background\": \"A clean minimal studio background with smooth gradient lighting, no clutter, no extra objects, and strong separation around the subject.\"\n\nMATURE, DARK, HORROR, AND ADULT CONTENT HANDLING\n\nDo not automatically sanitize mature themes.\n\nIf the user asks for horror, gore, violent aftermath, sensuality, erotic mood, disturbing imagery, body horror, occult imagery, religious symbolism, political satire, war imagery, medical imagery, crime scenes, or other mature concepts, keep the visual intent intact and describe it clearly.\n\nFor adult sensual content involving adults, use direct visual language while keeping the scene coherent, intentional, and non-ambiguous.\n\nFor horror or gore, describe the visual elements, materials, blood, wounds, atmosphere, decay, dread, and composition when requested.\n\nFor controversial or provocative concepts, focus on visual composition and avoid moral commentary.\n\nIf a request includes content that the platform or model will not allow, reframe only the blocked portion while preserving the closest safe visual equivalent.\n\nDo not include explanations, refusals, or lectures inside the JSON.\n\nQUALITY RULES\n\nEvery JSON prompt must be:\n\n* valid JSON\n* detailed\n* precise\n* visually useful\n* compositionally clear\n* faithful to the user's idea\n* consistent in style\n* consistent in lighting\n* consistent in palette\n* clear about subject placement\n* clear about background\n* clear about foreground elements\n* optimized for Ideogram 4\n\nDo not include trailing commas.\nDo not include comments.\nDo not include markdown.\nDo not include placeholder text.\nDo not include empty arrays unless the user explicitly wants minimal output.\nDo not include empty strings unless absolutely necessary.\nDo not include both \"photo\" and \"art_style\".\nDo not use lowercase hex codes.\nDo not use shorthand hex codes.\nDo not add unknown keys.\nDo not use bbox order [x_min, y_min, x_max, y_max].\nAlways use [y_min, x_min, y_max, x_max].\n\nDEFAULT DETAIL LEVEL\n\nUnless the user asks for something minimal, produce:\n\n* 1 strong high-level description\n* 1 detailed style description\n* 1 detailed background\n* 4 to 7 elements\n* clear bboxes\n* strong element descriptions\n* strong color palettes\n\nIf the prompt is very simple, enrich it.\n\nIf the prompt is already detailed, preserve its details and organize them into the JSON schema.\n\nIf the user provides an aspect ratio, adapt the composition conceptually, but still use normalized 0 to 1000 bbox coordinates.\n\nIf the user provides a color palette, use it.\n\nIf the user does not provide a color palette, choose a strong palette that matches the subject, mood, and medium.\n\nIf the user provides a style reference, translate it into descriptive visual language instead of relying only on the reference name.\n\nIf the user asks for a specific living artist style, do not copy the living artist directly. Instead describe the general visual qualities, medium, composition, lighting, color, and rendering approach.\n\nFINAL OUTPUT REQUIREMENT\n\nReturn exactly one JSON object.\n\nNo explanation.\nNo markdown.\nNo code fences.\nNo extra text.\n\nPHOTO EXAMPLE STRUCTURE:\n\n{\n\"high_level_description\": \"A cinematic close-up photograph of a confident cyberpunk woman standing in a rainy neon alley at night, staring directly at the viewer with glowing blue eyes and a mysterious expression.\",\n\"style_description\": {\n\"aesthetics\": \"cinematic, hyper-realistic, high contrast, moody cyberpunk, sharp subject separation, dramatic atmosphere\",\n\"lighting\": \"cool blue neon key light from the left, magenta rim light from the right, soft reflections from wet pavement, subtle mist glow, deep shadow contrast\",\n\"photo\": \"85mm portrait lens, shallow depth of field, sharp focus on the eyes, eye-level camera, creamy neon background bokeh, slight cinematic grain\",\n\"medium\": \"photograph\",\n\"color_palette\": [\"#050816\", \"#0B1026\", \"#00E5FF\", \"#FF2BD6\", \"#F2F2F2\", \"#1A1A1A\"]\n},\n\"compositional_deconstruction\": {\n\"background\": \"A narrow rainy cyberpunk city alley at night with wet asphalt, blurred neon storefront signs, puddle reflections, drifting mist, dark building silhouettes, and deep blue shadows receding into the distance.\",\n\"elements\": [\n{\n\"type\": \"obj\",\n\"bbox\": [40, 220, 980, 780],\n\"desc\": \"A confident adult cyberpunk woman dominating the foreground, facing the camera with a slight three-quarter turn, glowing blue eyes, wet black hair framing her face, a subtle mysterious smirk, and a black leather jacket catching magenta and cyan neon reflections.\",\n\"color_palette\": [\"#0B1026\", \"#1A1A1A\", \"#00E5FF\", \"#FF2BD6\", \"#F2F2F2\"]\n},\n{\n\"type\": \"obj\",\n\"bbox\": [460, 120, 980, 900],\n\"desc\": \"Glossy wet pavement in the lower half of the frame with stretched cyan and magenta neon reflections leading toward the subject, adding depth and cinematic atmosphere.\",\n\"color_palette\": [\"#050816\", \"#0B1026\", \"#00E5FF\", \"#FF2BD6\"]\n},\n{\n\"type\": \"obj\",\n\"bbox\": [120, 0, 720, 240],\n\"desc\": \"Blurred vertical neon signs along the left side of the alley, heavily defocused and partially obscured by rain and mist, creating bright color accents without readable text.\",\n\"color_palette\": [\"#00E5FF\", \"#FF2BD6\", \"#F2F2F2\"]\n},\n{\n\"type\": \"obj\",\n\"bbox\": [80, 760, 700, 1000],\n\"desc\": \"Dark building edge and distant glowing windows on the right side of the frame, softened by haze and shallow depth of field to frame the subject.\",\n\"color_palette\": [\"#050816\", \"#0B1026\", \"#1A1A1A\", \"#F2F2F2\"]\n}\n]\n}\n}\n\nNON-PHOTO EXAMPLE STRUCTURE:\n\n{\n\"high_level_description\": \"A dramatic fantasy digital illustration of a mischievous dark princess standing on a castle balcony at night, surrounded by glowing purple magic and looking down at the viewer with a smug royal smile.\",\n\"style_description\": {\n\"aesthetics\": \"cinematic fantasy, polished digital art, dramatic, magical, high contrast, elegant villain energy, strong visual readability\",\n\"lighting\": \"purple magical underlight from her hands, cool moonlight from behind, warm candle glow from the castle windows, bright rim light around hair and shoulders\",\n\"medium\": \"digital illustration\",\n\"art_style\": \"semi-realistic fantasy character illustration, expressive face, detailed costume rendering, soft painterly shading, sharp magical glow effects\",\n\"color_palette\": [\"#12051F\", \"#2A0A4A\", \"#9D4EDD\", \"#E0AAFF\", \"#FFD166\", \"#F8F0FF\"]\n},\n\"compositional_deconstruction\": {\n\"background\": \"A dark gothic castle balcony at night with distant towers, a cloudy moonlit sky, faint stars, warm glowing windows, and drifting purple magical mist around the stone railing.\",\n\"elements\": [\n{\n\"type\": \"obj\",\n\"bbox\": [90, 250, 980, 760],\n\"desc\": \"A smug adult dark princess in the foreground, standing tall on the balcony and looking slightly downward toward the viewer, with a playful villainous smile, long flowing silver hair, sharp expressive eyes, a black and violet royal dress, gold embroidery, and a small dark crown.\",\n\"color_palette\": [\"#12051F\", \"#2A0A4A\", \"#9D4EDD\", \"#FFD166\", \"#F8F0FF\"]\n},\n{\n\"type\": \"obj\",\n\"bbox\": [390, 120, 880, 900],\n\"desc\": \"Swirling purple magical aura surrounding the princess from her hands to the edges of the frame, with glowing particles, curved energy ribbons, and soft transparent mist wrapping around her dress.\",\n\"color_palette\": [\"#9D4EDD\", \"#E0AAFF\", \"#F8F0FF\"]\n},\n{\n\"type\": \"obj\",\n\"bbox\": [520, 0, 1000, 1000],\n\"desc\": \"Stone castle balcony railing in the foreground and lower sides of the image, dark grey with carved gothic details, catching purple highlights from the magical aura.\",\n\"color_palette\": [\"#1A1A1A\", \"#3A3A4A\", \"#9D4EDD\"]\n},\n{\n\"type\": \"obj\",\n\"bbox\": [40, 60, 520, 940],\n\"desc\": \"Distant gothic castle towers and rooftops behind the princess, partially silhouetted against the moonlit cloudy sky, adding scale and dark fairytale atmosphere.\",\n\"color_palette\": [\"#12051F\", \"#2A0A4A\", \"#3A3A4A\", \"#E0AAFF\"]\n}\n]\n}\n}\n";
+
+// ===== STATE =====
+let S = {
   high_level: '',
-  style: {
-    aesthetics: '',
-    lighting: '',
-    medium: '',
-    mode: 'photo',
-    palette: []
-  },
   background: '',
+  style: { mode: 'photo', aesthetics: '', lighting: '', medium: '' },
+  palette: [],
   elements: [],
   res: { w: 1344, h: 768 }
 };
+let elCounter = 0;
+let selectedEl = null;
+let activeTool = null; // 'select', 'obj', 'text'
+let drawing = false, drawStart = null, drawRect = null;
+let dragState = null; // {type:'move'/'resize', elId, startX, startY, origBbox, handle}
+let generatedJSON = null;
 
-let elementCounter = 0;
-let activeTab = 'canvas';
-let activeElementForDraw = null;
+// ===== CANVAS =====
+let canvas, ctx, cw, ch;
 
-// INIT
-document.addEventListener('DOMContentLoaded', () => {
-  updateCanvasPreview();
-  document.getElementById('high_level').addEventListener('input', () => { state.high_level = document.getElementById('high_level').value; updateCanvasPreview(); updateJSONPreview(); });
-  document.getElementById('style_aesthetics').addEventListener('input', () => { state.style.aesthetics = document.getElementById('style_aesthetics').value; updateJSONPreview(); });
-  document.getElementById('style_lighting').addEventListener('input', () => { state.style.lighting = document.getElementById('style_lighting').value; updateJSONPreview(); });
-  document.getElementById('style_medium').addEventListener('input', () => { state.style.medium = document.getElementById('style_medium').value; updateJSONPreview(); });
-  document.getElementById('background').addEventListener('input', () => { state.background = document.getElementById('background').value; updateJSONPreview(); });
-  document.getElementById('res_w').addEventListener('input', () => { state.res.w = parseInt(document.getElementById('res_w').value)||1344; updateCanvasPreview(); updateJSONPreview(); });
-  document.getElementById('res_h').addEventListener('input', () => { state.res.h = parseInt(document.getElementById('res_h').value)||768; updateCanvasPreview(); updateJSONPreview(); });
-});
+function initCanvas() {
+  canvas = document.getElementById('main-canvas');
+  ctx = canvas.getContext('2d');
+  resizeCanvas();
 
-function updatePreview() {
-  state.high_level = document.getElementById('high_level').value;
-  state.style.aesthetics = document.getElementById('style_aesthetics').value;
-  state.style.lighting = document.getElementById('style_lighting').value;
-  state.style.medium = document.getElementById('style_medium').value;
-  state.background = document.getElementById('background').value;
-  updateCanvasPreview();
-  updateJSONPreview();
+  canvas.addEventListener('mousedown', onMouseDown);
+  canvas.addEventListener('mousemove', onMouseMove);
+  canvas.addEventListener('mouseup', onMouseUp);
+  canvas.addEventListener('mouseleave', onMouseUp);
+
+  canvas.addEventListener('touchstart', e => { e.preventDefault(); onMouseDown(touchToMouse(e)); }, {passive:false});
+  canvas.addEventListener('touchmove', e => { e.preventDefault(); onMouseMove(touchToMouse(e)); }, {passive:false});
+  canvas.addEventListener('touchend', e => { e.preventDefault(); onMouseUp(touchToMouse(e)); }, {passive:false});
+
+  window.addEventListener('resize', resizeCanvas);
 }
 
-// TABS
-function switchTab(tab) {
-  activeTab = tab;
-  document.querySelectorAll('.preview-tab').forEach((t,i) => {
-    t.classList.toggle('active', ['canvas','json','schema'][i] === tab);
+function touchToMouse(e) {
+  const t = e.touches[0] || e.changedTouches[0];
+  return { clientX: t.clientX, clientY: t.clientY, preventDefault: () => {} };
+}
+
+function resizeCanvas() {
+  const wrap = document.getElementById('canvas-wrap');
+  const maxW = wrap.clientWidth - 40;
+  const maxH = wrap.clientHeight - 40;
+  const ratio = S.res.h / S.res.w;
+  let w = maxW, h = maxW * ratio;
+  if (h > maxH) { h = maxH; w = h / ratio; }
+  cw = Math.floor(w); ch = Math.floor(h);
+  canvas.width = cw; canvas.height = ch;
+  canvas.style.width = cw + 'px'; canvas.style.height = ch + 'px';
+  redraw();
+  document.getElementById('canvas-info').textContent = S.res.w + ' × ' + S.res.h;
+}
+
+function canvasToNorm(px, py) {
+  return [Math.round(py / ch * 1000), Math.round(px / cw * 1000)];
+}
+function normToCanvas(y, x) {
+  return [x / 1000 * cw, y / 1000 * ch];
+}
+function normRectToCanvas(bbox) {
+  const [ymin, xmin, ymax, xmax] = bbox;
+  const x = xmin / 1000 * cw, y = ymin / 1000 * ch;
+  const w2 = (xmax - xmin) / 1000 * cw, h2 = (ymax - ymin) / 1000 * ch;
+  return {x, y, w: w2, h: h2};
+}
+
+function getCanvasPos(e) {
+  const r = canvas.getBoundingClientRect();
+  return { x: e.clientX - r.left, y: e.clientY - r.top };
+}
+
+function getHandleAt(el, mx, my) {
+  const {x, y, w, h} = normRectToCanvas(el.bbox);
+  const hs = 7;
+  const handles = [
+    {id:'nw', cx:x,     cy:y},
+    {id:'ne', cx:x+w,   cy:y},
+    {id:'sw', cx:x,     cy:y+h},
+    {id:'se', cx:x+w,   cy:y+h},
+    {id:'n',  cx:x+w/2, cy:y},
+    {id:'s',  cx:x+w/2, cy:y+h},
+    {id:'e',  cx:x+w,   cy:y+h/2},
+    {id:'w',  cx:x,     cy:y+h/2},
+  ];
+  for (const h2 of handles) {
+    if (Math.abs(mx - h2.cx) <= hs && Math.abs(my - h2.cy) <= hs) return h2.id;
+  }
+  return null;
+}
+
+function getElAt(mx, my) {
+  for (let i = S.elements.length-1; i >= 0; i--) {
+    const el = S.elements[i];
+    const {x, y, w, h} = normRectToCanvas(el.bbox);
+    if (mx >= x && mx <= x+w && my >= y && my <= y+h) return el;
+  }
+  return null;
+}
+
+function onMouseDown(e) {
+  const {x, y} = getCanvasPos(e);
+  if (activeTool === 'select') {
+    // check handles on selected
+    if (selectedEl) {
+      const handle = getHandleAt(selectedEl, x, y);
+      if (handle) {
+        dragState = {type:'resize', elId: selectedEl.id, startX: x, startY: y, origBbox: [...selectedEl.bbox], handle};
+        return;
+      }
+    }
+    const el = getElAt(x, y);
+    if (el) {
+      selectElement(el.id);
+      dragState = {type:'move', elId: el.id, startX: x, startY: y, origBbox: [...el.bbox]};
+    } else {
+      selectElement(null);
+    }
+  } else if (activeTool === 'obj' || activeTool === 'text') {
+    drawing = true;
+    drawStart = {x, y};
+    drawRect = {x, y, w:0, h:0};
+  }
+}
+
+function onMouseMove(e) {
+  const {x, y} = getCanvasPos(e);
+  if (drawing) {
+    drawRect = {
+      x: Math.min(x, drawStart.x), y: Math.min(y, drawStart.y),
+      w: Math.abs(x - drawStart.x), h: Math.abs(y - drawStart.y)
+    };
+    redraw();
+    // draw ghost rect
+    const color = activeTool === 'obj' ? '#3b82f6' : '#10b981';
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.setLineDash([5,3]);
+    ctx.strokeRect(drawRect.x+0.5, drawRect.y+0.5, drawRect.w, drawRect.h);
+    ctx.fillStyle = color + '20';
+    ctx.fillRect(drawRect.x, drawRect.y, drawRect.w, drawRect.h);
+    ctx.setLineDash([]);
+    return;
+  }
+  if (dragState) {
+    const dx = x - dragState.startX, dy = y - dragState.startY;
+    const el = S.elements.find(e2 => e2.id === dragState.elId);
+    if (!el) return;
+    const ob = dragState.origBbox;
+    const dyn = Math.round(dy/ch*1000), dxn = Math.round(dx/cw*1000);
+    if (dragState.type === 'move') {
+      el.bbox = [
+        clamp(ob[0]+dyn, 0, 950), clamp(ob[1]+dxn, 0, 950),
+        clamp(ob[2]+dyn, 50, 1000), clamp(ob[3]+dxn, 50, 1000)
+      ];
+    } else {
+      let [ym,xm,yM,xM] = [...ob];
+      const h2 = dragState.handle;
+      if (h2.includes('n')) ym = clamp(ob[0]+dyn, 0, yM-50);
+      if (h2.includes('s')) yM = clamp(ob[2]+dyn, ym+50, 1000);
+      if (h2.includes('w')) xm = clamp(ob[1]+dxn, 0, xM-50);
+      if (h2.includes('e')) xM = clamp(ob[3]+dxn, xm+50, 1000);
+      el.bbox = [ym, xm, yM, xM];
+    }
+    redraw();
+    renderElList();
+    if (selectedEl && selectedEl.id === el.id) updateElPropsDisplay(el);
+    updateJsonOutput();
+  }
+
+  // cursor
+  if (activeTool === 'select') {
+    let cur = 'default';
+    if (selectedEl) {
+      const h2 = getHandleAt(selectedEl, x, y);
+      if (h2) {
+        const map = {n:'n-resize',s:'s-resize',e:'e-resize',w:'w-resize',nw:'nw-resize',ne:'ne-resize',sw:'sw-resize',se:'se-resize'};
+        cur = map[h2] || 'move';
+      } else {
+        const el = getElAt(x, y);
+        if (el) cur = 'move';
+      }
+    } else {
+      const el = getElAt(x, y);
+      if (el) cur = 'pointer';
+    }
+    canvas.style.cursor = cur;
+  } else {
+    canvas.style.cursor = 'crosshair';
+  }
+}
+
+function clamp(v, min, max) { return Math.min(Math.max(v, min), max); }
+
+function onMouseUp(e) {
+  if (drawing && drawRect && drawRect.w > 10 && drawRect.h > 10) {
+    const [ymin, xmin] = canvasToNorm(drawRect.x, drawRect.y);
+    const [ymax, xmax] = canvasToNorm(drawRect.x + drawRect.w, drawRect.y + drawRect.h);
+    addElement(activeTool, [ymin, xmin, ymax, xmax]);
+  }
+  drawing = false; drawStart = null; drawRect = null;
+  dragState = null;
+  redraw();
+  updateJsonOutput();
+}
+
+function redraw() {
+  if (!canvas) return;
+  ctx.clearRect(0, 0, cw, ch);
+
+  // background
+  const gr = ctx.createLinearGradient(0,0,cw,ch);
+  gr.addColorStop(0,'#0f0f1a'); gr.addColorStop(1,'#1a1020');
+  ctx.fillStyle = gr;
+  ctx.fillRect(0,0,cw,ch);
+
+  // grid
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)'; ctx.lineWidth = 0.5;
+  const gs = cw/10;
+  for (let x=gs;x<cw;x+=gs) { ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,ch);ctx.stroke(); }
+  const gsH = ch/10;
+  for (let y=gsH;y<ch;y+=gsH) { ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(cw,y);ctx.stroke(); }
+
+  // center lines
+  ctx.strokeStyle='rgba(255,255,255,0.07)';ctx.setLineDash([4,4]);
+  ctx.beginPath();ctx.moveTo(cw/2,0);ctx.lineTo(cw/2,ch);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(0,ch/2);ctx.lineTo(cw,ch/2);ctx.stroke();
+  ctx.setLineDash([]);
+
+  // res label
+  ctx.font='10px IBM Plex Mono,monospace';
+  ctx.fillStyle='rgba(255,255,255,0.12)';
+  ctx.fillText(S.res.w+'×'+S.res.h, 6, 14);
+
+  // elements
+  S.elements.forEach((el, idx) => {
+    const {x, y, w, h} = normRectToCanvas(el.bbox);
+    const isSel = selectedEl && selectedEl.id === el.id;
+    const c = el.type === 'obj' ? '#3b82f6' : '#10b981';
+
+    ctx.fillStyle = c + (isSel ? '35' : '20');
+    ctx.fillRect(x, y, w, h);
+
+    ctx.strokeStyle = isSel ? '#ffffff' : c;
+    ctx.lineWidth = isSel ? 2 : 1.5;
+    ctx.strokeRect(x+0.5, y+0.5, w-1, h-1);
+
+    // label
+    const lbl = el.type === 'text' ? (el.text||'TEXT') : (el.desc||'OBJ');
+    const short = lbl.length > 24 ? lbl.slice(0,24)+'…' : lbl;
+    ctx.font = 'bold 11px DM Sans,sans-serif';
+    const tw = ctx.measureText(short).width;
+    const lx = Math.max(x+4, Math.min(x+4, cw-tw-6));
+    const ly = y > 18 ? y-5 : y+14;
+    ctx.fillStyle = 'rgba(10,10,20,0.8)';
+    ctx.fillRect(lx-2, ly-12, tw+6, 15);
+    ctx.fillStyle = isSel ? '#ffffff' : c;
+    ctx.fillText(short, lx+1, ly);
+
+    // index badge
+    ctx.font='bold 9px IBM Plex Mono,monospace';
+    ctx.fillStyle = c;
+    ctx.fillText('#'+(idx+1)+' '+el.type.toUpperCase(), x+4, y+12);
+
+    // handles if selected
+    if (isSel) {
+      const handles = [
+        [x,y],[x+w,y],[x,y+h],[x+w,y+h],
+        [x+w/2,y],[x+w/2,y+h],[x,y+h/2],[x+w,y+h/2]
+      ];
+      handles.forEach(([hx,hy]) => {
+        ctx.fillStyle = '#ffffff';
+        ctx.strokeStyle = c;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();ctx.arc(hx,hy,5,0,Math.PI*2);
+        ctx.fill();ctx.stroke();
+      });
+    }
   });
-  document.getElementById('tab-canvas').classList.toggle('hidden', tab !== 'canvas');
-  document.getElementById('tab-json').classList.toggle('hidden', tab !== 'json');
-  document.getElementById('tab-schema').classList.toggle('hidden', tab !== 'schema');
-  if (tab === 'json') updateJSONPreview();
-  if (tab === 'canvas') updateCanvasPreview();
+
+  // hint
+  const hint = document.getElementById('canvas-hint');
+  if (hint) hint.classList.toggle('hidden', S.elements.length > 0);
+
+  // palette preview bottom-right
+  if (S.palette.length > 0) {
+    const px = cw - S.palette.length*22 - 6;
+    S.palette.forEach((c,i) => {
+      ctx.beginPath();ctx.arc(px+i*22+11, ch-11, 8, 0, Math.PI*2);
+      ctx.fillStyle=c;ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,0.25)';ctx.lineWidth=1.5;ctx.stroke();
+    });
+  }
 }
 
-// MODE
-function setMode(mode) {
-  state.style.mode = mode;
-  document.getElementById('mode-photo').classList.toggle('active', mode === 'photo');
-  document.getElementById('mode-art').classList.toggle('active', mode === 'art_style');
-  updateJSONPreview();
+// ===== TOOLS =====
+function setTool(t) {
+  activeTool = t;
+  ['select','obj','text'].forEach(n => {
+    const btn = document.getElementById('tool-'+n);
+    if (btn) btn.classList.remove('active','obj-mode','txt-mode');
+  });
+  const btn = document.getElementById('tool-'+t);
+  if (btn) {
+    if (t==='obj') btn.classList.add('obj-mode');
+    else if (t==='text') btn.classList.add('txt-mode');
+    else btn.classList.add('active');
+  }
+  if (t !== 'select') selectElement(null);
 }
 
-// RESOLUTION
-function setRes(w, h, btn) {
-  state.res.w = w; state.res.h = h;
-  document.getElementById('res_w').value = w;
-  document.getElementById('res_h').value = h;
-  document.querySelectorAll('.res-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  updateCanvasPreview();
-  updateJSONPreview();
+// ===== ELEMENTS =====
+function addElement(type, bbox) {
+  const id = 'el_'+(++elCounter);
+  const el = { id, type, bbox, desc:'', text:'', style_desc:'', palette:[] };
+  S.elements.push(el);
+  renderElList();
+  selectElement(id);
+  // switch to select
+  setTool('select');
+  redraw();
+  updateJsonOutput();
 }
 
-// COLOR PALETTE
-function addColor(target, elId) {
+function addElementManual(type) {
+  // default bbox centro
+  addElement(type, type==='text' ? [800,50,950,950] : [200,200,700,700]);
+}
+
+function removeElement(id) {
+  S.elements = S.elements.filter(e => e.id !== id);
+  if (selectedEl && selectedEl.id === id) selectElement(null);
+  renderElList();
+  redraw();
+  updateJsonOutput();
+}
+
+function selectElement(id) {
+  selectedEl = id ? S.elements.find(e => e.id === id) : null;
+  renderElList();
+  if (selectedEl) {
+    document.getElementById('el-props').style.display = 'block';
+    document.getElementById('btn-delete').style.display = 'flex';
+    renderElProps(selectedEl);
+  } else {
+    document.getElementById('el-props').style.display = 'none';
+    document.getElementById('btn-delete').style.display = 'none';
+  }
+  redraw();
+}
+
+function deleteSelected() {
+  if (selectedEl) removeElement(selectedEl.id);
+}
+
+function renderElList() {
+  const list = document.getElementById('el-list');
+  list.innerHTML = '';
+  S.elements.forEach((el, i) => {
+    const isSel = selectedEl && selectedEl.id === el.id;
+    const name = el.type==='text' ? (el.text||'Testo…') : (el.desc||'Oggetto…');
+    const short = name.length>26 ? name.slice(0,26)+'…' : name;
+    const div = document.createElement('div');
+    div.className = `el-item type-${el.type}${isSel?' selected':''}`;
+    div.innerHTML = `
+      <div class="el-head" onclick="selectElement('${el.id}')">
+        <span class="el-badge ${el.type}">${el.type.toUpperCase()}</span>
+        <span class="el-name">${short}</span>
+        <div class="el-acts">
+          ${i>0?`<button class="mini-btn" onclick="event.stopPropagation();moveEl('${el.id}',-1)">↑</button>`:''}
+          ${i<S.elements.length-1?`<button class="mini-btn" onclick="event.stopPropagation();moveEl('${el.id}',1)">↓</button>`:''}
+          <button class="mini-btn del" onclick="event.stopPropagation();removeElement('${el.id}')">✕</button>
+        </div>
+      </div>`;
+    list.appendChild(div);
+  });
+}
+
+function moveEl(id, dir) {
+  const i = S.elements.findIndex(e => e.id === id);
+  if (i<0) return;
+  if (dir===-1 && i===0) return;
+  if (dir===1 && i===S.elements.length-1) return;
+  const t = S.elements[i]; S.elements[i] = S.elements[i+dir]; S.elements[i+dir] = t;
+  renderElList(); updateJsonOutput();
+}
+
+function renderElProps(el) {
+  const title = document.getElementById('el-props-title');
+  title.textContent = el.type === 'obj' ? 'OBJ — Proprietà' : 'TEXT — Proprietà';
+  const fields = document.getElementById('el-props-fields');
+  const bbox = `[${el.bbox[0]}, ${el.bbox[1]}, ${el.bbox[2]}, ${el.bbox[3]}]`;
+
+  if (el.type === 'obj') {
+    fields.innerHTML = `
+      <label>Descrizione (desc)</label>
+      <textarea rows="4" id="el-desc" placeholder="Descrivi l'oggetto/soggetto in dettaglio: materiale, colore, pose, espressione...">${el.desc}</textarea>
+      <label>Bbox <span style="font-family:'IBM Plex Mono',monospace;color:var(--accent3);font-size:10px;">${bbox}</span></label>
+      <div class="bbox-info">[y_min, x_min, y_max, x_max] — 0-1000<br>Trascina il rettangolo sul canvas</div>
+      <div style="height:8px;"></div>
+      <label>Palette elemento (max 5)</label>
+      <div class="palette-strip" id="el-palette"></div>
+    `;
+  } else {
+    fields.innerHTML = `
+      <label>Testo esatto (text)</label>
+      <textarea rows="2" id="el-text" placeholder="Testo da renderizzare nell'immagine">${el.text}</textarea>
+      <label>Stile testo (desc)</label>
+      <textarea rows="3" id="el-style-desc" placeholder="Descrivi font, dimensione, peso, colore, stile... Es: bold sans-serif uppercase, colore bianco, ombra nera">${el.style_desc}</textarea>
+      <label>Bbox <span style="font-family:'IBM Plex Mono',monospace;color:var(--accent3);font-size:10px;">${bbox}</span></label>
+      <div class="bbox-info">[y_min, x_min, y_max, x_max] — 0-1000<br>Trascina il rettangolo sul canvas</div>
+      <div style="height:8px;"></div>
+      <label>Palette elemento (max 5)</label>
+      <div class="palette-strip" id="el-palette"></div>
+    `;
+  }
+
+  renderElPalette(el);
+
+  // events
+  const descEl = document.getElementById('el-desc');
+  if (descEl) descEl.addEventListener('input', () => { el.desc = descEl.value; renderElList(); updateJsonOutput(); });
+  const textEl = document.getElementById('el-text');
+  if (textEl) textEl.addEventListener('input', () => { el.text = textEl.value; renderElList(); updateJsonOutput(); redraw(); });
+  const styleEl = document.getElementById('el-style-desc');
+  if (styleEl) styleEl.addEventListener('input', () => { el.style_desc = styleEl.value; updateJsonOutput(); });
+}
+
+function updateElPropsDisplay(el) {
+  // update bbox label only
+  const bboxInfos = document.querySelectorAll('.bbox-info');
+  if (bboxInfos.length > 0 && selectedEl && selectedEl.id === el.id) {
+    const bbox = `[${el.bbox[0]}, ${el.bbox[1]}, ${el.bbox[2]}, ${el.bbox[3]}]`;
+    document.querySelectorAll('.el-props-bbox-label').forEach(l => l.textContent = bbox);
+  }
+}
+
+function renderElPalette(el) {
+  const wrap = document.getElementById('el-palette');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  el.palette.forEach((c,i) => {
+    const s = document.createElement('div');
+    s.className = 'swatch';
+    s.style.background = c;
+    s.title = c;
+    s.innerHTML = `<div class="x" onclick="removeElColor('${el.id}',${i})">✕</div>`;
+    wrap.appendChild(s);
+  });
+  if (el.palette.length < 5) {
+    const a = document.createElement('div');
+    a.className = 'add-swatch';
+    a.textContent = '+';
+    a.onclick = () => addPaletteColor('el', el.id);
+    wrap.appendChild(a);
+  }
+}
+
+function removeElColor(elId, i) {
+  const el = S.elements.find(e => e.id === elId);
+  if (el) { el.palette.splice(i,1); renderElPalette(el); updateJsonOutput(); }
+}
+
+// ===== PALETTE =====
+function addPaletteColor(target, elId) {
   const inp = document.createElement('input');
   inp.type = 'color';
-  inp.value = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6,'0');
-  inp.style.cssText = 'position:fixed;opacity:0;pointer-events:none;';
+  inp.value = '#'+Math.floor(Math.random()*16777215).toString(16).padStart(6,'0');
+  inp.style.cssText = 'position:fixed;opacity:0;top:0;left:0;';
   document.body.appendChild(inp);
   inp.click();
   inp.addEventListener('change', () => {
-    const hex = inp.value;
+    const hex = inp.value.toUpperCase();
     document.body.removeChild(inp);
     if (target === 'global') {
-      if (state.style.palette.length >= 16) { alert('Max 16 colori'); return; }
-      state.style.palette.push(hex);
+      if (S.palette.length>=16) return;
+      S.palette.push(hex);
       renderGlobalPalette();
     } else {
-      const el = state.elements.find(e => e.id === elId);
-      if (el) {
-        if (el.palette.length >= 5) { alert('Max 5 colori per elemento'); return; }
+      const el = S.elements.find(e => e.id === elId);
+      if (el && el.palette.length<5) {
         el.palette.push(hex);
-        renderElementPalette(el);
+        renderElPalette(el);
       }
     }
-    updateJSONPreview();
+    updateJsonOutput(); redraw();
   });
+}
+
+function removeGlobalColor(i) {
+  S.palette.splice(i,1); renderGlobalPalette(); updateJsonOutput(); redraw();
 }
 
 function renderGlobalPalette() {
   const wrap = document.getElementById('global-palette');
   wrap.innerHTML = '';
-  state.style.palette.forEach((c, i) => {
-    const sw = document.createElement('div');
-    sw.className = 'color-swatch';
-    sw.style.background = c;
-    sw.innerHTML = `<div class="del" onclick="removeGlobalColor(${i})">✕</div>`;
-    sw.title = c;
-    wrap.appendChild(sw);
+  S.palette.forEach((c,i) => {
+    const s = document.createElement('div');
+    s.className = 'swatch'; s.style.background = c; s.title = c;
+    s.innerHTML = `<div class="x" onclick="removeGlobalColor(${i})">✕</div>`;
+    wrap.appendChild(s);
   });
-  const add = document.createElement('div');
-  add.className = 'add-color';
-  add.textContent = '+';
-  add.onclick = () => addColor('global');
-  wrap.appendChild(add);
+  const a = document.createElement('div');
+  a.className = 'add-swatch'; a.textContent = '+';
+  a.onclick = () => addPaletteColor('global');
+  wrap.appendChild(a);
 }
 
-function removeGlobalColor(i) {
-  state.style.palette.splice(i, 1);
-  renderGlobalPalette();
-  updateJSONPreview();
-}
-
-function renderElementPalette(el) {
-  const wrap = document.getElementById(`pal-${el.id}`);
-  if (!wrap) return;
-  wrap.innerHTML = '';
-  el.palette.forEach((c, i) => {
-    const sw = document.createElement('div');
-    sw.className = 'color-swatch';
-    sw.style.background = c;
-    sw.innerHTML = `<div class="del" onclick="removeElColor('${el.id}',${i})">✕</div>`;
-    wrap.appendChild(sw);
-  });
-  const add = document.createElement('div');
-  add.className = 'add-color';
-  add.textContent = '+';
-  add.onclick = () => addColor('element', el.id);
-  wrap.appendChild(add);
-}
-
-function removeElColor(elId, i) {
-  const el = state.elements.find(e => e.id === elId);
-  if (el) { el.palette.splice(i,1); renderElementPalette(el); updateJSONPreview(); }
-}
-
-// ELEMENTS
-function addElement(type) {
-  const id = 'el_' + (++elementCounter);
-  const el = {
-    id,
-    type,
-    open: true,
-    desc: '',
-    text: '',
-    style_desc: '',
-    bbox: type === 'text' ? [800, 50, 950, 950] : [100, 100, 600, 600],
-    palette: []
+// ===== STYLE HELPERS =====
+function setMode(m) {
+  S.style.mode = m;
+  document.getElementById('mode-photo').classList.toggle('active', m==='photo');
+  document.getElementById('mode-art').classList.toggle('active', m==='art_style');
+  document.getElementById('medium-label').textContent = m==='photo' ? 'Camera / Photo' : 'Medium / Art Style';
+  const placeholders = {
+    photo: 'Camera, lens, depth of field, angle...',
+    art_style: 'Semi-realistic, polished rendering, clean linework...'
   };
-  state.elements.push(el);
-  renderElements();
-  updateCanvasPreview();
-  updateJSONPreview();
+  document.getElementById('style_medium').placeholder = placeholders[m];
+  updateJsonOutput();
 }
 
-function removeElement(id) {
-  state.elements = state.elements.filter(e => e.id !== id);
-  renderElements();
-  updateCanvasPreview();
-  updateJSONPreview();
+function applyAestheticsPreset() {
+  const v = document.getElementById('aesthetics_preset').value;
+  if (v) { document.getElementById('style_aesthetics').value = v; S.style.aesthetics = v; updateJsonOutput(); }
+}
+function applyLightPreset() {
+  const v = document.getElementById('lighting_preset').value;
+  if (v) { document.getElementById('style_lighting').value = v; S.style.lighting = v; updateJsonOutput(); }
+}
+function applyCameraPreset() {
+  const v = document.getElementById('camera_preset').value;
+  if (v) { document.getElementById('style_medium').value = v; S.style.medium = v; updateJsonOutput(); }
+}
+function applyPalettePreset() {
+  const v = document.getElementById('palette_preset').value;
+  if (!v) return;
+  try {
+    S.palette = JSON.parse(v);
+    renderGlobalPalette(); updateJsonOutput(); redraw();
+  } catch(e) {}
 }
 
-function toggleElement(id) {
-  const el = state.elements.find(e => e.id === id);
-  if (el) { el.open = !el.open; renderElements(); }
+function setRes(w, h, btn) {
+  S.res.w = w; S.res.h = h;
+  document.getElementById('res_w').value = w;
+  document.getElementById('res_h').value = h;
+  document.querySelectorAll('.res-p').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  resizeCanvas();
+  updateJsonOutput();
+}
+function onResChange() {
+  S.res.w = parseInt(document.getElementById('res_w').value)||1344;
+  S.res.h = parseInt(document.getElementById('res_h').value)||768;
+  document.querySelectorAll('.res-p').forEach(b => b.classList.remove('active'));
+  resizeCanvas(); updateJsonOutput();
 }
 
-function moveElement(id, dir) {
-  const i = state.elements.findIndex(e => e.id === id);
-  if (i < 0) return;
-  if (dir === -1 && i === 0) return;
-  if (dir === 1 && i === state.elements.length-1) return;
-  const tmp = state.elements[i];
-  state.elements[i] = state.elements[i+dir];
-  state.elements[i+dir] = tmp;
-  renderElements();
-  updateJSONPreview();
-}
-
-function renderElements() {
-  const list = document.getElementById('elements-list');
-  list.innerHTML = '';
-  state.elements.forEach((el, idx) => {
-    const card = document.createElement('div');
-    card.className = `element-card type-${el.type}`;
-    card.innerHTML = `
-      <div class="element-header" onclick="toggleElement('${el.id}')">
-        <span class="el-type-badge ${el.type}">${el.type.toUpperCase()}</span>
-        <span class="el-label">${el.type === 'text' ? (el.text || 'Testo…') : (el.desc || 'Oggetto…')}</span>
-        <div class="el-actions" onclick="event.stopPropagation()">
-          ${idx > 0 ? `<button class="icon-btn" onclick="moveElement('${el.id}',-1)" title="Su">↑</button>` : ''}
-          ${idx < state.elements.length-1 ? `<button class="icon-btn" onclick="moveElement('${el.id}',1)" title="Giu">↓</button>` : ''}
-          <button class="icon-btn danger" onclick="removeElement('${el.id}')" title="Elimina">✕</button>
-        </div>
-      </div>
-      <div class="element-body ${el.open ? 'open' : ''}" id="body-${el.id}">
-        ${el.type === 'text' ? `
-          <div>
-            <label>Testo (text)</label>
-            <textarea rows="2" id="t_text_${el.id}" placeholder="Testo esatto da rendere nell'immagine" oninput="updateEl('${el.id}')">${el.text}</textarea>
-          </div>
-          <div>
-            <label>Stile testo (style_description)</label>
-            <textarea rows="2" id="t_style_${el.id}" placeholder="Es: bold sans-serif, uppercase, colore bianco, ombra nera, dimensione grande" oninput="updateEl('${el.id}')">${el.style_desc}</textarea>
-          </div>
-        ` : `
-          <div>
-            <label>Descrizione (desc)</label>
-            <textarea rows="3" id="t_desc_${el.id}" placeholder="Es: pannelli fotovoltaici bifacciali in primo piano, angolatura prospettica, dettaglio cella" oninput="updateEl('${el.id}')">${el.desc}</textarea>
-          </div>
-        `}
-
-        <!-- BBOX EDITOR -->
-        <div class="bbox-editor">
-          <div class="bbox-label">Bounding Box [y_min, x_min, y_max, x_max] — coordinate 0-1000</div>
-          <div class="bbox-coords">
-            <div class="bbox-field">
-              <label>y_min (top)</label>
-              <input type="text" id="bbox_ymin_${el.id}" value="${el.bbox[0]}" oninput="updateBbox('${el.id}')">
-            </div>
-            <div class="bbox-field">
-              <label>x_min (left)</label>
-              <input type="text" id="bbox_xmin_${el.id}" value="${el.bbox[1]}" oninput="updateBbox('${el.id}')">
-            </div>
-            <div class="bbox-field">
-              <label>y_max (bottom)</label>
-              <input type="text" id="bbox_ymax_${el.id}" value="${el.bbox[2]}" oninput="updateBbox('${el.id}')">
-            </div>
-            <div class="bbox-field">
-              <label>x_max (right)</label>
-              <input type="text" id="bbox_xmax_${el.id}" value="${el.bbox[3]}" oninput="updateBbox('${el.id}')">
-            </div>
-          </div>
-          <!-- Mini canvas per disegnare bbox -->
-          <div class="bbox-preview-wrap" id="minicanvas-wrap-${el.id}" style="margin-top:10px;">
-            <canvas class="bbox-canvas" id="minicanvas-${el.id}" height="80"></canvas>
-          </div>
-          <div class="bbox-hint">Trascina per ridisegnare il rettangolo</div>
-        </div>
-
-        <div>
-          <label>Palette elemento (max 5 hex)</label>
-          <div class="palette-row" id="pal-${el.id}"></div>
-        </div>
-      </div>
-    `;
-    list.appendChild(card);
-
-    // render palette
-    setTimeout(() => {
-      renderElementPalette(el);
-      initMiniCanvas(el);
-    }, 10);
-  });
-}
-
-function updateEl(id) {
-  const el = state.elements.find(e => e.id === id);
-  if (!el) return;
-  if (el.type === 'text') {
-    el.text = document.getElementById(`t_text_${id}`)?.value || '';
-    el.style_desc = document.getElementById(`t_style_${id}`)?.value || '';
-  } else {
-    el.desc = document.getElementById(`t_desc_${id}`)?.value || '';
-  }
-  // refresh label
-  const label = document.querySelector(`#body-${id}`)?.previousElementSibling?.querySelector('.el-label');
-  if (label) label.textContent = el.type === 'text' ? (el.text || 'Testo…') : (el.desc || 'Oggetto…');
-  updateJSONPreview();
-  updateCanvasPreview();
-}
-
-function updateBbox(id) {
-  const el = state.elements.find(e => e.id === id);
-  if (!el) return;
-  el.bbox[0] = parseInt(document.getElementById(`bbox_ymin_${id}`)?.value)||0;
-  el.bbox[1] = parseInt(document.getElementById(`bbox_xmin_${id}`)?.value)||0;
-  el.bbox[2] = parseInt(document.getElementById(`bbox_ymax_${id}`)?.value)||1000;
-  el.bbox[3] = parseInt(document.getElementById(`bbox_xmax_${id}`)?.value)||1000;
-  updateMiniCanvas(el);
-  updateCanvasPreview();
-  updateJSONPreview();
-}
-
-// MINI CANVAS per ogni elemento
-function initMiniCanvas(el) {
-  const canvas = document.getElementById(`minicanvas-${el.id}`);
-  if (!canvas) return;
-  const wrap = document.getElementById(`minicanvas-wrap-${el.id}`);
-  const W = wrap.offsetWidth || 300;
-  canvas.width = W;
-  canvas.height = 80;
-  updateMiniCanvas(el);
-
-  let drawing = false, sx, sy;
-  canvas.addEventListener('mousedown', e => {
-    drawing = true;
-    const r = canvas.getBoundingClientRect();
-    sx = e.clientX - r.left;
-    sy = e.clientY - r.top;
-  });
-  canvas.addEventListener('mousemove', e => {
-    if (!drawing) return;
-    const r = canvas.getBoundingClientRect();
-    const cx = e.clientX - r.left;
-    const cy = e.clientY - r.top;
-    const W = canvas.width, H = canvas.height;
-    const ymin = Math.round(Math.min(sy,cy)/H*1000);
-    const xmin = Math.round(Math.min(sx,cx)/W*1000);
-    const ymax = Math.round(Math.max(sy,cy)/H*1000);
-    const xmax = Math.round(Math.max(sx,cx)/W*1000);
-    el.bbox = [ymin,xmin,ymax,xmax];
-    document.getElementById(`bbox_ymin_${el.id}`).value = ymin;
-    document.getElementById(`bbox_xmin_${el.id}`).value = xmin;
-    document.getElementById(`bbox_ymax_${el.id}`).value = ymax;
-    document.getElementById(`bbox_xmax_${el.id}`).value = xmax;
-    updateMiniCanvas(el);
-    updateCanvasPreview();
-    updateJSONPreview();
-  });
-  canvas.addEventListener('mouseup', () => { drawing = false; });
-
-  // TOUCH
-  canvas.addEventListener('touchstart', e => {
-    drawing = true;
-    const r = canvas.getBoundingClientRect();
-    sx = e.touches[0].clientX - r.left;
-    sy = e.touches[0].clientY - r.top;
-    e.preventDefault();
-  }, {passive:false});
-  canvas.addEventListener('touchmove', e => {
-    if (!drawing) return;
-    e.preventDefault();
-    const r = canvas.getBoundingClientRect();
-    const cx = e.touches[0].clientX - r.left;
-    const cy = e.touches[0].clientY - r.top;
-    const W = canvas.width, H = canvas.height;
-    const ymin = Math.round(Math.min(sy,cy)/H*1000);
-    const xmin = Math.round(Math.min(sx,cx)/W*1000);
-    const ymax = Math.round(Math.max(sy,cy)/H*1000);
-    const xmax = Math.round(Math.max(sx,cx)/W*1000);
-    el.bbox = [ymin,xmin,ymax,xmax];
-    document.getElementById(`bbox_ymin_${el.id}`).value = ymin;
-    document.getElementById(`bbox_xmin_${el.id}`).value = xmin;
-    document.getElementById(`bbox_ymax_${el.id}`).value = ymax;
-    document.getElementById(`bbox_xmax_${el.id}`).value = xmax;
-    updateMiniCanvas(el);
-    updateCanvasPreview();
-    updateJSONPreview();
-  }, {passive:false});
-  canvas.addEventListener('touchend', () => { drawing = false; });
-}
-
-function updateMiniCanvas(el) {
-  const canvas = document.getElementById(`minicanvas-${el.id}`);
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const W = canvas.width, H = canvas.height;
-  ctx.clearRect(0,0,W,H);
-
-  // background grid
-  ctx.fillStyle = '#0a0a0f';
-  ctx.fillRect(0,0,W,H);
-  ctx.strokeStyle = '#2a2a40';
-  ctx.lineWidth = 0.5;
-  for (let x=0;x<=W;x+=W/10) { ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke(); }
-  for (let y=0;y<=H;y+=H/5) { ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke(); }
-
-  // bbox
-  const [ymin,xmin,ymax,xmax] = el.bbox;
-  const bx = xmin/1000*W, by = ymin/1000*H, bw = (xmax-xmin)/1000*W, bh = (ymax-ymin)/1000*H;
-  const color = el.type === 'obj' ? '#3b82f6' : '#14b8a6';
-  ctx.fillStyle = color + '30';
-  ctx.fillRect(bx,by,bw,bh);
-  ctx.strokeStyle = color;
-  ctx.lineWidth = 2;
-  ctx.strokeRect(bx,by,bw,bh);
-
-  // corners
-  ctx.fillStyle = color;
-  [[bx,by],[bx+bw,by],[bx,by+bh],[bx+bw,by+bh]].forEach(([px,py]) => {
-    ctx.beginPath();ctx.arc(px,py,3,0,Math.PI*2);ctx.fill();
-  });
-
-  // label
-  ctx.font = 'bold 10px JetBrains Mono, monospace';
-  ctx.fillStyle = color;
-  ctx.fillText(`[${ymin},${xmin},${ymax},${xmax}]`, 4, H-4);
-}
-
-// MAIN CANVAS PREVIEW
-function updateCanvasPreview() {
-  const canvas = document.getElementById('canvas-preview');
-  const wrap = canvas.parentElement;
-  const W = wrap.offsetWidth || 380;
-  const ratio = state.res.h / state.res.w;
-  canvas.width = W;
-  canvas.height = Math.round(W * ratio);
-
-  const ctx = canvas.getContext('2d');
-  const CW = canvas.width, CH = canvas.height;
-
-  // BG gradient
-  const gr = ctx.createLinearGradient(0,0,CW,CH);
-  gr.addColorStop(0, '#0d0d1a');
-  gr.addColorStop(1, '#1a0d2e');
-  ctx.fillStyle = gr;
-  ctx.fillRect(0,0,CW,CH);
-
-  // grid
-  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
-  ctx.lineWidth = 0.5;
-  const step = CW / 10;
-  for (let x=0;x<=CW;x+=step) { ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,CH);ctx.stroke(); }
-  const stepH = CH / 10;
-  for (let y=0;y<=CH;y+=stepH) { ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(CW,y);ctx.stroke(); }
-
-  // center cross
-  ctx.strokeStyle = 'rgba(255,255,255,0.08)';
-  ctx.lineWidth = 1;
-  ctx.setLineDash([4,4]);
-  ctx.beginPath();ctx.moveTo(CW/2,0);ctx.lineTo(CW/2,CH);ctx.stroke();
-  ctx.beginPath();ctx.moveTo(0,CH/2);ctx.lineTo(CW,CH/2);ctx.stroke();
-  ctx.setLineDash([]);
-
-  // resolution label
-  ctx.fillStyle = 'rgba(255,255,255,0.15)';
-  ctx.font = '10px JetBrains Mono, monospace';
-  ctx.fillText(`${state.res.w} × ${state.res.h}`, 6, 14);
-
-  // elements
-  const colors = { obj: '#3b82f6', text: '#14b8a6' };
-  state.elements.forEach((el, idx) => {
-    const [ymin,xmin,ymax,xmax] = el.bbox;
-    const bx = xmin/1000*CW, by = ymin/1000*CH, bw=(xmax-xmin)/1000*CW, bh=(ymax-ymin)/1000*CH;
-    const c = colors[el.type];
-
-    ctx.fillStyle = c + '25';
-    ctx.fillRect(bx,by,bw,bh);
-    ctx.strokeStyle = c;
-    ctx.lineWidth = 1.5;
-    ctx.strokeRect(bx+0.5,by+0.5,bw-1,bh-1);
-
-    // corner handles
-    ctx.fillStyle = c;
-    [[bx,by],[bx+bw,by],[bx,by+bh],[bx+bw,by+bh]].forEach(([px,py]) => {
-      ctx.beginPath();ctx.arc(px,py,4,0,Math.PI*2);ctx.fill();
-    });
-
-    // label
-    const label = el.type === 'text' ? (el.text||'TEXT') : (el.desc||'OBJ');
-    const shortLabel = label.length > 22 ? label.substring(0,22)+'…' : label;
-    ctx.font = `bold 10px Syne, sans-serif`;
-    ctx.fillStyle = c;
-    const tw = ctx.measureText(shortLabel).width;
-    const lx = Math.max(bx+4, Math.min(bx+4, CW-tw-6));
-    const ly = by > 16 ? by-4 : by+14;
-
-    // bg for label
-    ctx.fillStyle = 'rgba(10,10,15,0.75)';
-    ctx.fillRect(lx-2, ly-11, tw+6, 14);
-    ctx.fillStyle = c;
-    ctx.fillText(shortLabel, lx+1, ly);
-
-    // badge
-    ctx.fillStyle = c;
-    ctx.font = 'bold 8px JetBrains Mono, monospace';
-    ctx.fillText(`#${idx+1} ${el.type.toUpperCase()}`, bx+4, by+12);
-  });
-
-  // global palette preview
-  if (state.style.palette.length > 0) {
-    const px = CW - state.style.palette.length * 18 - 4;
-    state.style.palette.forEach((c, i) => {
-      ctx.fillStyle = c;
-      ctx.beginPath();
-      ctx.arc(px + i*18 + 9, CH-10, 7, 0, Math.PI*2);
-      ctx.fill();
-      ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-      ctx.lineWidth = 1;
-      ctx.stroke();
-    });
-  }
-}
-
-// JSON BUILD
+// ===== JSON BUILD =====
 function buildJSON() {
-  const style = {};
-  if (state.style.aesthetics) style.aesthetics = state.style.aesthetics;
-  if (state.style.lighting) style.lighting = state.style.lighting;
-  if (state.style.medium) style[state.style.mode] = state.style.medium;
-  if (state.style.palette.length > 0) style.color_palette = state.style.palette;
+  const hld = document.getElementById('high_level').value;
+  const bg = document.getElementById('background').value;
+  S.style.aesthetics = document.getElementById('style_aesthetics').value;
+  S.style.lighting = document.getElementById('style_lighting').value;
+  S.style.medium = document.getElementById('style_medium').value;
 
-  const elements = state.elements.map(el => {
-    const obj = { type: el.type };
-    if (el.bbox && el.bbox.some(v => v > 0)) obj.bbox = el.bbox;
+  const style = {};
+  if (S.style.aesthetics) style.aesthetics = S.style.aesthetics;
+  if (S.style.lighting) style.lighting = S.style.lighting;
+  if (S.style.mode === 'photo') {
+    if (S.style.medium) style.photo = S.style.medium;
+    style.medium = 'photograph';
+  } else {
+    style.medium = S.style.medium || 'digital illustration';
+    if (S.style.medium) style.art_style = S.style.medium;
+  }
+  if (S.palette.length > 0) style.color_palette = S.palette;
+
+  const elements = S.elements.map(el => {
+    const o = { type: el.type };
+    if (el.bbox) o.bbox = el.bbox;
     if (el.type === 'obj') {
-      if (el.desc) obj.desc = el.desc;
+      if (el.desc) o.desc = el.desc;
     } else {
-      if (el.text) obj.text = el.text;
-      if (el.style_desc) obj.style_description = el.style_desc;
+      if (el.text) o.text = el.text;
+      if (el.style_desc) o.desc = el.style_desc;
     }
-    if (el.palette.length > 0) obj.color_palette = el.palette;
-    return obj;
+    if (el.palette.length>0) o.color_palette = el.palette;
+    return o;
   });
 
   const json = {};
-  if (state.high_level) json.high_level_description = state.high_level;
+  if (hld) json.high_level_description = hld;
   if (Object.keys(style).length > 0) json.style_description = style;
   json.compositional_deconstruction = {};
-  if (state.background) json.compositional_deconstruction.background = state.background;
-  if (elements.length > 0) json.compositional_deconstruction.elements = elements;
+  if (bg) json.compositional_deconstruction.background = bg;
+  json.compositional_deconstruction.elements = elements;
 
   return json;
 }
 
-function updateJSONPreview() {
-  if (activeTab !== 'json') return;
-  const json = buildJSON();
+function updateJsonOutput() {
   const out = document.getElementById('json-output');
-  out.innerHTML = syntaxHighlight(JSON.stringify(json, null, 2));
+  if (!out) return;
+  const json = buildJSON();
+  out.innerHTML = syntaxHL(JSON.stringify(json, null, 2));
 }
 
-function syntaxHighlight(json) {
-  return json
-    .replace(/&/g,'&amp;')
-    .replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;')
+function syntaxHL(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
     .replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, m => {
-      let cls = 'json-num';
-      if (/^"/.test(m)) {
-        if (/:$/.test(m)) cls = 'json-key';
-        else cls = 'json-str';
-      } else if (/true|false/.test(m)) cls = 'json-bool';
-      else if (/null/.test(m)) cls = 'json-null';
-      return `<span class="${cls}">${m}</span>`;
-    })
-    .replace(/[{}\[\]]/g, m => `<span class="json-bracket">${m}</span>`);
+      if (/^"/.test(m)) return `<span class="${/:$/.test(m)?'jk':'js'}">${m}</span>`;
+      if (/true|false/.test(m)) return `<span class="jb">${m}</span>`;
+      if (/null/.test(m)) return '<span style="color:#4a5568">'+m+'</span>';
+      return `<span class="jn">${m}</span>`;
+    }).replace(/[{}\[\]]/g, m => `<span class="jb">${m}</span>`);
 }
 
-function copyJSON() {
+function copyFinalJSON() {
   const json = buildJSON();
   navigator.clipboard.writeText(JSON.stringify(json, null, 2)).then(() => {
-    const toast = document.getElementById('toast');
-    toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 2000);
+    toast('JSON copiato!','ok');
+    showPTab('json');
+    updateJsonOutput();
   });
-  // switch to json tab to show
-  switchTab('json');
 }
-
 function downloadJSON() {
   const json = buildJSON();
-  const blob = new Blob([JSON.stringify(json, null, 2)], {type:'application/json'});
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'ideogram4-prompt.json';
-  a.click();
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(json,null,2)], {type:'application/json'}));
+  a.download = 'ideogram4-prompt.json'; a.click();
 }
 
-function resetAll() {
+// ===== TABS =====
+function showSTab(i) {
+  ['stab-0','stab-1','stab-2'].forEach((id,j) => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = j===i ? 'block' : 'none';
+  });
+  document.querySelectorAll('.stab').forEach((t,j) => t.classList.toggle('active', j===i));
+}
+
+function showPTab(tab) {
+  ['elements','json'].forEach(t => {
+    const el = document.getElementById('ptab-'+t);
+    if (el) el.classList.toggle('hidden', t!==tab);
+  });
+  document.querySelectorAll('.ptab').forEach((t,i) => {
+    t.classList.toggle('active', ['elements','json'][i]===tab);
+  });
+  if (tab==='json') updateJsonOutput();
+}
+
+// ===== AI GENERATE =====
+async function generateWithAI() {
+  const idea = document.getElementById('ai-idea').value.trim();
+  if (!idea) { toast('Inserisci una descrizione','err'); return; }
+  const btn = document.getElementById('ai-gen-btn');
+  const status = document.getElementById('ai-status');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Generazione…';
+  status.style.display = 'block';
+  status.textContent = 'Elaborazione con AI…';
+  generatedJSON = null;
+  document.getElementById('ai-result-section').style.display = 'none';
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 4096,
+        system: SYSTEM_PROMPT,
+        messages: [{ role:'user', content: idea }]
+      })
+    });
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error.message);
+    const text = (data.content||[]).map(b => b.text||'').join('').trim();
+
+    // try parse JSON
+    let parsed;
+    try {
+      parsed = JSON.parse(text);
+    } catch(e) {
+      // try extract JSON from text
+      const m = text.match(/\{[\s\S]*\}/);
+      if (m) parsed = JSON.parse(m[0]);
+      else throw new Error('JSON non valido nella risposta');
+    }
+    generatedJSON = parsed;
+    document.getElementById('ai-result-json').innerHTML = syntaxHL(JSON.stringify(parsed,null,2));
+    document.getElementById('ai-result-section').style.display = 'block';
+    status.textContent = 'JSON generato con successo.';
+    toast('JSON generato!','ok');
+  } catch(err) {
+    status.textContent = 'Errore: '+err.message;
+    toast('Errore AI','err');
+  }
+  btn.disabled = false;
+  btn.innerHTML = '✦ Genera JSON';
+}
+
+function loadGeneratedJSON() {
+  if (!generatedJSON) return;
+  const j = generatedJSON;
+
+  // load into state
+  document.getElementById('high_level').value = j.high_level_description || '';
+  document.getElementById('background').value = j.compositional_deconstruction?.background || '';
+
+  const sd = j.style_description || {};
+  document.getElementById('style_aesthetics').value = sd.aesthetics||'';
+  document.getElementById('style_lighting').value = sd.lighting||'';
+  if (sd.photo) {
+    setMode('photo');
+    document.getElementById('style_medium').value = sd.photo||'';
+  } else if (sd.art_style) {
+    setMode('art_style');
+    document.getElementById('style_medium').value = sd.art_style||'';
+  }
+  S.palette = sd.color_palette||[];
+  renderGlobalPalette(); redraw();
+
+  // elements
+  S.elements = [];
+  const els = j.compositional_deconstruction?.elements || [];
+  els.forEach(el => {
+    const id = 'el_'+(++elCounter);
+    S.elements.push({
+      id,
+      type: el.type||'obj',
+      bbox: el.bbox||[100,100,600,600],
+      desc: el.desc||'',
+      text: el.text||'',
+      style_desc: el.desc||(el.style_description||''),
+      palette: el.color_palette||[]
+    });
+  });
+  selectElement(null);
+  renderElList(); redraw(); updateJsonOutput();
+  toast('JSON caricato nel builder!','ok');
+  showSTab(0);
+}
+
+function copyGenerated() {
+  if (!generatedJSON) return;
+  navigator.clipboard.writeText(JSON.stringify(generatedJSON,null,2)).then(() => toast('Copiato!','ok'));
+}
+
+// ===== UTILS =====
+function clearAll() {
   if (!confirm('Reset completo?')) return;
-  state = { high_level:'', style:{aesthetics:'',lighting:'',medium:'',mode:'photo',palette:[]}, background:'', elements:[], res:{w:1344,h:768} };
-  elementCounter = 0;
-  document.getElementById('high_level').value = '';
-  document.getElementById('style_aesthetics').value = '';
-  document.getElementById('style_lighting').value = '';
-  document.getElementById('style_medium').value = '';
-  document.getElementById('background').value = '';
-  document.getElementById('res_w').value = 1344;
-  document.getElementById('res_h').value = 768;
-  document.querySelectorAll('.res-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.res-btn')[1].classList.add('active');
-  document.getElementById('global-palette').innerHTML = '<div class="add-color" onclick="addColor(\'global\')">+</div>';
-  renderElements();
-  updateCanvasPreview();
-  if (activeTab === 'json') updateJSONPreview();
+  S = { high_level:'', background:'', style:{mode:'photo',aesthetics:'',lighting:'',medium:''}, palette:[], elements:[], res:{w:1344,h:768} };
+  elCounter=0; selectedEl=null; activeTool=null; generatedJSON=null;
+  ['high_level','background','style_aesthetics','style_lighting','style_medium','ai-idea'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.value='';
+  });
+  document.getElementById('res_w').value=1344; document.getElementById('res_h').value=768;
+  document.querySelectorAll('.res-p').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.res-p')[0].classList.add('active');
+  renderGlobalPalette(); renderElList(); selectElement(null);
+  resizeCanvas(); updateJsonOutput();
+  setTool('select');
+  showSTab(0);
 }
 
-// Resize observer for canvas
-const ro = new ResizeObserver(() => {
-  updateCanvasPreview();
-  state.elements.forEach(el => updateMiniCanvas(el));
+function toast(msg, type='ok') {
+  const t = document.getElementById('toast');
+  t.textContent = (type==='ok'?'✓ ':type==='err'?'✕ ':'')+msg;
+  t.className='toast show '+(type==='ok'?'ok':'err');
+  setTimeout(()=>t.classList.remove('show'), 2500);
+}
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', () => {
+  initCanvas();
+  setTool('select');
+  showSTab(0);
+  showPTab('elements');
+  renderGlobalPalette();
+  // bind text inputs
+  ['high_level','background','style_aesthetics','style_lighting','style_medium'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', () => updateJsonOutput());
+  });
 });
-ro.observe(document.querySelector('.canvas-wrap'));
+
+const ro = new ResizeObserver(() => resizeCanvas());
+document.addEventListener('DOMContentLoaded', () => {
+  const wrap = document.getElementById('canvas-wrap');
+  if (wrap) ro.observe(wrap);
+});
 </script>
 </body>
 </html>
