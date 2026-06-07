@@ -839,7 +839,7 @@ async function genAI(){
     const txt=await resp.text();
     let data;
     try{data=JSON.parse(txt);}catch(e){
-      throw new Error('Il server ha risposto con HTML invece di JSON.\n\nProblema più probabile: il file ideogram4-key.php non è ancora stato caricato su Aruba.\n\nCarica il file nella cartella /www.cad3d.expert/ai/ via FTP o File Manager Aruba.');
+      throw new Error('Risposta non-JSON dal server (HTTP '+resp.status+'). Raw: '+txt.slice(0,300));
     }
     if(!resp.ok||data.error) throw new Error(data.error+(data.detail?'\n\nDettaglio: '+data.detail:'')+(data.looked_in?'\nCercato in: '+data.looked_in:''));
     genJSON=data.json;
