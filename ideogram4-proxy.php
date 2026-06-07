@@ -9,8 +9,13 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405); echo json_encode(['error'=>'Method not allowed']); exit;
 }
 
-// ⚠️ INSERISCI LA TUA ANTHROPIC API KEY QUI:
-$ANTHROPIC_API_KEY = 'INSERISCI_QUI_LA_TUA_API_KEY';
+// Legge la API key dal file ideogram4-key.php (non in git)
+$key_file = __DIR__ . '/ideogram4-key.php';
+if (!file_exists($key_file)) {
+    http_response_code(500); echo json_encode(['error'=>'Key file not found']); exit;
+}
+require $key_file;
+// $ANTHROPIC_API_KEY deve essere definita in ideogram4-key.php
 
 $raw = file_get_contents('php://input');
 $body = json_decode($raw, true);
@@ -19,14 +24,10 @@ if (!$body || !isset($body['idea'])) {
 }
 
 $idea = trim($body['idea']);
-
-// Carica il system prompt dallo stesso percorso del proxy
 $sp_path = __DIR__ . '/ideogram4-system-prompt.txt';
 $system_prompt = @file_get_contents($sp_path);
 if (!$system_prompt) {
-    http_response_code(500);
-    echo json_encode(['error'=>'System prompt file not found at: '.$sp_path]);
-    exit;
+    http_response_code(500); echo json_encode(['error'=>'System prompt not found']); exit;
 }
 
 $payload = json_encode([
@@ -55,14 +56,11 @@ $curl_err = curl_error($ch);
 curl_close($ch);
 
 if ($curl_err) {
-    http_response_code(502);
-    echo json_encode(['error'=>'cURL error: '.$curl_err]);
-    exit;
+    http_response_code(502); echo json_encode(['error'=>'cURL: '.$curl_err]); exit;
 }
 if ($code !== 200) {
     http_response_code(502);
-    echo json_encode(['error'=>'Anthropic API returned '.$code, 'detail'=>substr($resp,0,400)]);
-    exit;
+    echo json_encode(['error'=>'Anthropic API '.$code, 'detail'=>substr($resp,0,400)]); exit;
 }
 
 $data = json_decode($resp, true);
@@ -72,19 +70,13 @@ foreach (($data['content'] ?? []) as $block) {
 }
 $text = trim($text);
 
-// Prova parse diretto
 $json_obj = json_decode($text, true);
 if (!$json_obj) {
-    // Estrai il primo blocco JSON
-    if (preg_match('/\{[\s\S]*\}/s', $text, $m)) {
-        $json_obj = json_decode($m[0], true);
-    }
+    if (preg_match('/\{[\s\S]*\}/s', $text, $m)) $json_obj = json_decode($m[0], true);
 }
-
 if (!$json_obj) {
     http_response_code(500);
-    echo json_encode(['error'=>'Could not parse JSON from AI response', 'raw'=>substr($text,0,500)]);
-    exit;
+    echo json_encode(['error'=>'Cannot parse JSON from AI response', 'raw'=>substr($text,0,400)]); exit;
 }
 
 echo json_encode(['success'=>true, 'json'=>$json_obj]);
