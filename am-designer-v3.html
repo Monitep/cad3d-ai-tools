@@ -438,13 +438,13 @@ body.lang-en span.it{display:none}body.lang-en span.en{display:inline}
   <div class="int-gal">
     <div class="int-r1 fu">
       <div class="int-c"><img id="img-int1" class="gallery-img" src="" alt="Luxury dressing room" loading="lazy" decoding="async">
-        <div class="int-lbl"><span class="int-cat"><span class="it">Progetto</span><span class="en">Project</span></span><span class="int-name"><span class="it">Dressing Room di lusso</span><span class="en">Luxury Dressing Room</span></span></div>
+        <div class="int-lbl"><span class="int-cat"><span class="it" id="txt-cap-int1-cat-it">Progetto</span><span class="en" id="txt-cap-int1-cat-en">Project</span></span><span class="int-name"><span class="it" id="txt-cap-int1-name-it">Dressing Room di lusso</span><span class="en" id="txt-cap-int1-name-en">Luxury Dressing Room</span></span></div>
       </div>
       <div class="int-c"><img id="img-int2" class="gallery-img" src="" alt="Kitchen setup" loading="lazy" decoding="async">
-        <div class="int-lbl"><span class="int-cat">Setup</span><span class="int-name"><span class="it">Cucina</span><span class="en">Kitchen</span></span></div>
+        <div class="int-lbl"><span class="int-cat" id="txt-cap-int2-cat">Setup</span><span class="int-name"><span class="it" id="txt-cap-int2-name-it">Cucina</span><span class="en" id="txt-cap-int2-name-en">Kitchen</span></span></div>
       </div>
       <div class="int-c"><img id="img-int3" class="gallery-img" src="" alt="Decorative interior detail" loading="lazy" decoding="async">
-        <div class="int-lbl"><span class="int-cat"><span class="it">Dettaglio</span><span class="en">Detail</span></span><span class="int-name"><span class="it">Stile &amp; Personalità</span><span class="en">Style &amp; Personality</span></span></div>
+        <div class="int-lbl"><span class="int-cat"><span class="it" id="txt-cap-int3-cat-it">Dettaglio</span><span class="en" id="txt-cap-int3-cat-en">Detail</span></span><span class="int-name"><span class="it" id="txt-cap-int3-name-it">Stile &amp; Personalità</span><span class="en" id="txt-cap-int3-name-en">Style &amp; Personality</span></span></div>
       </div>
     </div>
     <div class="int-r2 fu">
@@ -542,6 +542,8 @@ Object.assign(IMG,{
   int1:IMG.closet_luxury,
   int2:IMG.kitchen,
   int3:IMG.adriana_client,
+  int1b:IMG.closet_luxury,
+  int2b:IMG.kitchen,
   about:IMG.adriana_outdoor
 });
 // ============ SLOT CONFIG ============
@@ -553,6 +555,8 @@ const SLOTS = {
   int1:'Interior Design - foto 1',
   int2:'Interior Design - foto 2',
   int3:'Interior Design - foto 3',
+  int1b:'Interior Design - dettaglio arredo',
+  int2b:'Interior Design - dettaglio cucina',
   about:'Chi Siamo - ritratto Adriana'
 };
 
@@ -562,7 +566,7 @@ const SLOT_IDS = [
   ['closet_luxury','img-closet_luxury'],
   ['client','img-client'],
   ['int1','img-int1'],['int2','img-int2'],['int3','img-int3'],
-  ['int1','img-int1b'],['int2','img-int2b'],
+  ['int1b','img-int1b'],['int2b','img-int2b'],
   ['about','img-about']
 ];
 
@@ -592,12 +596,36 @@ const TXT_SLOTS = [
   {id:'txt-ww-en', label:'Worldwide: Text (EN)', multi:true},
   {id:'txt-cta-it', label:'Contatti: CTA (IT)', multi:false},
   {id:'txt-cta-en', label:'Contact: CTA (EN)', multi:false},
+  {id:'txt-cap-int1-cat-it', label:'Foto: Dressing room categoria (IT)', multi:false},
+  {id:'txt-cap-int1-cat-en', label:'Photo: Dressing room category (EN)', multi:false},
+  {id:'txt-cap-int1-name-it', label:'Foto: Dressing room titolo (IT)', multi:false},
+  {id:'txt-cap-int1-name-en', label:'Photo: Dressing room title (EN)', multi:false},
+  {id:'txt-cap-int2-cat', label:'Foto: Cucina categoria', multi:false},
+  {id:'txt-cap-int2-name-it', label:'Foto: Cucina titolo (IT)', multi:false},
+  {id:'txt-cap-int2-name-en', label:'Photo: Kitchen title (EN)', multi:false},
+  {id:'txt-cap-int3-cat-it', label:'Foto: Dettaglio categoria (IT)', multi:false},
+  {id:'txt-cap-int3-cat-en', label:'Photo: Detail category (EN)', multi:false},
+  {id:'txt-cap-int3-name-it', label:'Foto: Dettaglio titolo (IT)', multi:false},
+  {id:'txt-cap-int3-name-en', label:'Photo: Detail title (EN)', multi:false},
+];
+
+const CAPTION_SLOTS = [
+  {img:'img-hero', label:'Descrizione foto: Hero', text:'Adriana Meneses'},
+  {img:'img-closet_big', label:'Descrizione foto: Closet organizzato', text:'Closet organizzato'},
+  {img:'img-closet_luxury', label:'Descrizione foto: Closet di lusso', text:'Closet di lusso'},
+  {img:'img-client', label:'Descrizione foto: Adriana con cliente', text:'Adriana con cliente'},
+  {img:'img-int1', label:'Descrizione foto: Luxury Dressing Room', text:'Luxury dressing room'},
+  {img:'img-int2', label:'Descrizione foto: Kitchen setup', text:'Kitchen setup'},
+  {img:'img-int3', label:'Descrizione foto: Decorative detail', text:'Decorative interior detail'},
+  {img:'img-int1b', label:'Descrizione foto: Interior furnishing detail', text:'Interior furnishing detail'},
+  {img:'img-int2b', label:'Descrizione foto: Organized kitchen detail', text:'Organized kitchen detail'},
+  {img:'img-about', label:'Descrizione foto: Adriana Meneses', text:'Adriana Meneses'},
 ];
 
 // ============ KEYS ============
 const K = {
   PW:'am_pw', FS:'am_fs', THEME:'am_th', LANG:'am_lang',
-  PFX:'am_photo_', TPX:'am_txt_'
+  PFX:'am_photo_', TPX:'am_txt_', CPX:'am_caption_'
 };
 const DEF_PW='adriana2024';
 
@@ -621,6 +649,12 @@ function applyTexts(){
   TXT_SLOTS.forEach(({id})=>{
     const saved=localStorage.getItem(K.TPX+id);
     if(saved){const el=document.getElementById(id);if(el)el.innerHTML=saved;}
+  });
+}
+function applyCaptions(){
+  CAPTION_SLOTS.forEach(({img,text})=>{
+    const el=document.getElementById(img);
+    if(el)el.alt=localStorage.getItem(K.CPX+img)||text;
   });
 }
 
@@ -688,6 +722,13 @@ function buildTxtGrid(){
     div.appendChild(slot);
     setTimeout(()=>{const ta=document.getElementById('ta-'+id);if(ta)ta.value=curr;},0);
   });
+  CAPTION_SLOTS.forEach(({img,label,text})=>{
+    const slot=document.createElement('div');slot.className='txt-slot';
+    const curr=localStorage.getItem(K.CPX+img)||text;
+    slot.innerHTML=`<label>${label}</label><textarea id="ta-cap-${img}" rows="2"></textarea>`;
+    div.appendChild(slot);
+    setTimeout(()=>{const ta=document.getElementById('ta-cap-'+img);if(ta)ta.value=curr;},0);
+  });
   g.appendChild(div);
 }
 function saveTesti(){
@@ -698,11 +739,19 @@ function saveTesti(){
       const el=document.getElementById(id);if(el)el.innerHTML=ta.value;
     }
   });
+  CAPTION_SLOTS.forEach(({img})=>{
+    const ta=document.getElementById('ta-cap-'+img);
+    if(ta){
+      localStorage.setItem(K.CPX+img,ta.value);
+      const el=document.getElementById(img);if(el)el.alt=ta.value;
+    }
+  });
   const m=document.getElementById('txt-msg');m.textContent='Testi salvati!';setTimeout(()=>m.textContent='',3000);
 }
 function resetTesti(){
   if(!confirm('Ripristinare i testi originali?'))return;
   TXT_SLOTS.forEach(({id})=>{localStorage.removeItem(K.TPX+id);});
+  CAPTION_SLOTS.forEach(({img})=>{localStorage.removeItem(K.CPX+img);});
   location.reload();
 }
 function changePw(){
@@ -812,6 +861,7 @@ document.querySelectorAll('.fu').forEach(el=>obs.observe(el));
   applyLogo();
   applyPhotos();
   applyTexts();
+  applyCaptions();
   applyPortableMeta();
   bindLightbox();
 })();
