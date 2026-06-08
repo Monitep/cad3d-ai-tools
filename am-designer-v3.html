@@ -4,7 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>A.M. Designer & Decor | Il tuo spazio, la tua storia.</title>
-<meta name="description" content="A.M. Designer & Decor - Home Organization, Interior Design. Milano e tutto il mondo.">
+<meta name="description" content="A.M. Designer & Decor - Home organization, move-in setup and interior design from Milan to worldwide.">
+<meta name="robots" content="index,follow">
+<meta name="theme-color" content="#B5A99A">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="A.M. Designer & Decor">
+<meta property="og:title" content="A.M. Designer & Decor | Home Organization & Interior Design">
+<meta property="og:description" content="Home organization, moving setup and interior design services from Milan to worldwide.">
+<meta property="og:locale" content="it_IT">
+<meta property="og:locale:alternate" content="en_US">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="A.M. Designer & Decor">
+<meta name="twitter:description" content="Home organization, moving setup and interior design services from Milan to worldwide.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -59,6 +70,14 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;heigh
 .wa:hover{transform:scale(1.1);box-shadow:0 6px 28px rgba(37,211,102,.5)}
 .wa-tip{position:absolute;right:66px;top:50%;transform:translateY(-50%);background:var(--dark);color:#fff;padding:6px 12px;border-radius:4px;font-size:.7rem;white-space:nowrap;opacity:0;transition:opacity .3s;pointer-events:none}
 .wa:hover .wa-tip{opacity:1}
+
+/* LIGHTBOX */
+.gallery-img{cursor:zoom-in}
+.lb{position:fixed;inset:0;z-index:10000;background:rgba(10,10,10,.9);display:none;align-items:center;justify-content:center;padding:2rem}
+.lb.open{display:flex}
+.lb img{max-width:min(1100px,92vw);max-height:86vh;object-fit:contain;box-shadow:0 20px 60px rgba(0,0,0,.45)}
+.lb-close{position:absolute;top:1.2rem;right:1.4rem;width:42px;height:42px;border:1px solid rgba(255,255,255,.35);border-radius:50%;background:rgba(255,255,255,.08);color:#fff;font-size:1.4rem;line-height:1;cursor:pointer}
+.lb-cap{position:absolute;left:2rem;right:2rem;bottom:1.4rem;text-align:center;color:rgba(255,255,255,.72);font-size:.75rem;letter-spacing:.12em;text-transform:uppercase}
 
 /* HERO */
 #home{min-height:100vh;padding-top:72px;display:grid;grid-template-columns:1fr 1fr}
@@ -238,15 +257,28 @@ body.lang-en span.it{display:none}body.lang-en span.en{display:inline}
   footer{flex-direction:column;text-align:center}
   .adm-g{grid-template-columns:1fr}
   .txt-ed{grid-template-columns:1fr}
+  .wa{width:48px;height:48px;right:1rem;bottom:1rem;font-size:1.25rem}
+  .wa svg{width:21px;height:21px}
+  .wa-tip{display:none}
+  #contatti{padding-bottom:7rem}
+  .lb{padding:1rem}
+  .lb-close{top:.9rem;right:.9rem}
+  .lb-cap{bottom:.9rem;font-size:.62rem}
 }
 </style>
 </head>
 <body>
 
-<a href="https://wa.me/393200563075" target="_blank" class="wa">
+<a href="https://wa.me/393200563075" target="_blank" class="wa" aria-label="WhatsApp A.M. Designer & Decor">
   <span class="wa-tip"><span class="it">Scrivici</span><span class="en">Chat with us</span></span>
   <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
 </a>
+
+<div class="lb" id="lightbox" aria-hidden="true" onclick="closeLightbox(event)">
+  <button class="lb-close" type="button" onclick="closeLightbox(event)" aria-label="Chiudi">&times;</button>
+  <img id="lb-img" src="" alt="">
+  <div class="lb-cap" id="lb-cap"></div>
+</div>
 
 <nav id="nav">
   <a href="#home" class="nav-logo" style="text-decoration:none">
@@ -270,7 +302,7 @@ body.lang-en span.it{display:none}body.lang-en span.en{display:inline}
       <button class="lbtn" id="be" onclick="setL('en')">EN</button>
     </div>
     <button class="ibtn" id="tbtn" onclick="toggleTheme()" title="Tema">🌙</button>
-    <button class="hamburger" onclick="toggleMob()"><span></span><span></span><span></span></button>
+    <button class="hamburger" onclick="toggleMob()" aria-label="Menu"><span></span><span></span><span></span></button>
   </div>
 </nav>
 
@@ -349,14 +381,14 @@ body.lang-en span.it{display:none}body.lang-en span.en{display:inline}
     <p class="h-sub">Home Organization · Interior Design · Worldwide</p>
     <p class="h-desc">
       <span class="it" id="txt-desc-it">Ogni spazio racconta una storia. Noi ci prendiamo cura che la tua sia organizzata con armonia, eleganza e rispetto per ogni dettaglio.</span>
-      <span class="en" id="txt-desc-en">Every space tells a story. We take care that yours is organised with harmony, elegance, and respect for every detail.</span>
+      <span class="en" id="txt-desc-en">Every space tells a story. We shape yours with harmony, elegance, and meticulous attention to every detail.</span>
     </p>
     <span class="vip">
       <span class="it" id="txt-vip-it">Clienti nel mondo dello sport e dello spettacolo</span>
-      <span class="en" id="txt-vip-en">Clients from sports and entertainment</span>
+      <span class="en" id="txt-vip-en">Trusted by clients in sport and entertainment</span>
     </span>
-    <a href="#organizer" class="cta">
-      <span class="it">Scopri i servizi</span><span class="en">Discover our services</span>
+    <a href="#contatti" class="cta">
+      <span class="it">Prenota una consulenza</span><span class="en">Book a consultation</span>
     </a>
     <div class="h-vals">
       <div><div class="hv-n">✦</div><div class="hv-l"><span class="it">Armonia</span><span class="en">Harmony</span></div></div>
@@ -370,22 +402,22 @@ body.lang-en span.it{display:none}body.lang-en span.en{display:inline}
 <section id="organizer">
   <div class="org-g">
     <div class="org-photos">
-      <div class="org-p main"><img id="img-closet_big" src="" alt="Closet organizzato"></div>
-      <div class="org-p"><img id="img-closet_luxury" src="" alt="Closet di lusso"></div>
-      <div class="org-p"><img id="img-client" src="" alt="Adriana con cliente"></div>
+      <div class="org-p main"><img id="img-closet_big" class="gallery-img" src="" alt="Closet organizzato" loading="lazy" decoding="async"></div>
+      <div class="org-p"><img id="img-closet_luxury" class="gallery-img" src="" alt="Closet di lusso" loading="lazy" decoding="async"></div>
+      <div class="org-p"><img id="img-client" class="gallery-img" src="" alt="Adriana con cliente" loading="lazy" decoding="async"></div>
     </div>
     <div class="org-c fu">
       <span class="svc-tag">01 — Home Organizer</span>
       <h2 class="svc-tit">
         <span class="it" id="txt-org-tit-it">Organizzazione &amp;<br>Trasloco Completo</span>
-        <span class="en" id="txt-org-tit-en">Full Packing,<br>Moving &amp; Setup</span>
+        <span class="en" id="txt-org-tit-en">Complete Move-In<br>&amp; Home Setup</span>
       </h2>
       <span class="svc-sub">
         <span class="it">Full Packing, Moving &amp; Setup</span>
         <span class="en">Organizzazione &amp; Trasloco</span>
       </span>
       <p class="svc-txt it" id="txt-org-it">Ci occupiamo di tutto: dall'imballaggio di ogni oggetto nella vostra casa attuale, alla gestione del trasloco, fino al posizionamento preciso di ogni cosa nella nuova abitazione. Voi entrate. Trovate tutto al suo posto.</p>
-      <p class="svc-txt en" id="txt-org-en">We handle everything: packing, moving coordination, and placing every item in your new home exactly where it belongs. You arrive. Everything is already in its place.</p>
+      <p class="svc-txt en" id="txt-org-en">From careful packing to move coordination and final placement, every detail is handled so you can arrive to a home that already feels complete.</p>
       <p class="svc-en it">We handle everything: packing, moving coordination, and placing every item in your new home exactly where it belongs.</p>
       <p class="svc-en en" style="font-style:normal;color:var(--tb)">Ci occupiamo di tutto: dall'imballaggio alla gestione del trasloco.</p>
     </div>
@@ -401,37 +433,37 @@ body.lang-en span.it{display:none}body.lang-en span.en{display:inline}
       <span class="en">Full Home Design<br><em>&amp; Furnishing</em></span>
     </h2>
     <p class="sec-lead it" id="txt-int-lead-it">Dall'arredamento agli accessori, dai quadri alla biancheria da letto: creiamo ambienti che rispecchiano la vostra personalità con stile, sicurezza ed eccellenza.</p>
-    <p class="sec-lead en" id="txt-int-lead-en">From furniture and decor to artwork and bed linen: we design spaces that truly reflect who you are, with style, confidence, and excellence.</p>
+    <p class="sec-lead en" id="txt-int-lead-en">From furniture and decor to artwork, linens, and finishing details: we create refined interiors that reflect your personality with confidence and care.</p>
   </div>
   <div class="int-gal">
     <div class="int-r1 fu">
-      <div class="int-c"><img id="img-int1" src="" alt="">
+      <div class="int-c"><img id="img-int1" class="gallery-img" src="" alt="Luxury dressing room" loading="lazy" decoding="async">
         <div class="int-lbl"><span class="int-cat"><span class="it">Progetto</span><span class="en">Project</span></span><span class="int-name"><span class="it">Dressing Room di lusso</span><span class="en">Luxury Dressing Room</span></span></div>
       </div>
-      <div class="int-c"><img id="img-int2" src="" alt="">
+      <div class="int-c"><img id="img-int2" class="gallery-img" src="" alt="Kitchen setup" loading="lazy" decoding="async">
         <div class="int-lbl"><span class="int-cat">Setup</span><span class="int-name"><span class="it">Cucina</span><span class="en">Kitchen</span></span></div>
       </div>
-      <div class="int-c"><img id="img-int3" src="" alt="">
+      <div class="int-c"><img id="img-int3" class="gallery-img" src="" alt="Decorative interior detail" loading="lazy" decoding="async">
         <div class="int-lbl"><span class="int-cat"><span class="it">Dettaglio</span><span class="en">Detail</span></span><span class="int-name"><span class="it">Stile &amp; Personalità</span><span class="en">Style &amp; Personality</span></span></div>
       </div>
     </div>
     <div class="int-r2 fu">
-      <div class="int-c" style="height:260px"><img id="img-int1b" src="" alt="" style="width:100%;height:100%;object-fit:cover"></div>
-      <div class="int-c" style="height:260px"><img id="img-int2b" src="" alt="" style="width:100%;height:100%;object-fit:cover"></div>
+      <div class="int-c" style="height:260px"><img id="img-int1b" class="gallery-img" src="" alt="Interior furnishing detail" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover"></div>
+      <div class="int-c" style="height:260px"><img id="img-int2b" class="gallery-img" src="" alt="Organized kitchen detail" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover"></div>
     </div>
   </div>
   <div class="int-desc fu">
     <p class="int-tx it" id="txt-int-body-it">Dall'arredamento agli accessori, dai quadri alla biancheria da letto, dagli utensili da cucina ai dettagli decorativi: creiamo ambienti che rispecchiano la vostra personalità con stile, sicurezza ed eccellenza.</p>
-    <p class="int-tx en" style="display:none" id="txt-int-body-en">From furniture and decor to artwork, bed linen, and kitchen essentials: we design spaces that truly reflect who you are, with style, confidence, and excellence in every detail.</p>
+    <p class="int-tx en" id="txt-int-body-en">From furniture and decor to artwork, bed linen, and kitchen essentials: we design spaces that truly reflect who you are, with style, confidence, and excellence in every detail.</p>
     <p class="int-en it">From furniture and decor to artwork, bed linen, and kitchen essentials: we design spaces that truly reflect who you are.</p>
-    <p class="int-en en" style="display:none;font-style:normal;color:rgba(240,237,232,.5)">Dall'arredamento agli accessori: creiamo ambienti che rispecchiano la vostra personalità.</p>
+    <p class="int-en en" style="font-style:normal;color:rgba(240,237,232,.5)">Dall'arredamento agli accessori: creiamo ambienti che rispecchiano la vostra personalità.</p>
   </div>
 </section>
 
 <!-- CHI SIAMO -->
 <section id="adriana">
   <div class="ab-in">
-    <div class="ab-ph fu"><img id="img-about" src="" alt="Adriana Meneses"></div>
+    <div class="ab-ph fu"><img id="img-about" class="gallery-img" src="" alt="Adriana Meneses" loading="lazy" decoding="async"></div>
     <div class="ab-tx fu">
       <p class="sec-num" style="justify-content:flex-start"><span>Adriana Meneses</span></p>
       <h2 class="sec-tit" style="text-align:left">
@@ -440,11 +472,11 @@ body.lang-en span.it{display:none}body.lang-en span.en{display:inline}
       </h2>
       <blockquote class="ab-q">
         <span class="it" id="txt-ab-q-it">"Il mio lavoro? Creare armonia negli spazi per far sentire bene le persone."</span>
-        <span class="en" id="txt-ab-q-en">"My work? Creating harmony in spaces to make people feel truly at home."</span>
+        <span class="en" id="txt-ab-q-en">"My work is to create harmony: spaces that make people feel genuinely at home."</span>
       </blockquote>
       <p class="ab-body it" id="txt-ab-body-it">Ogni spazio racconta una storia. Noi ci prendiamo cura che la tua sia organizzata con armonia, eleganza e rispetto per ogni dettaglio. Dalla prima consulenza all'ultimo accessorio sistemato, siamo al vostro fianco.</p>
-      <p class="ab-body en" id="txt-ab-body-en">Every space tells a story. We take care that yours is organised with harmony, elegance, and respect for every detail. From the first consultation to the very last accessory in place, we are by your side.</p>
-      <a href="#contatti" class="cta"><span class="it">Iniziamo insieme</span><span class="en">Let's start together</span></a>
+      <p class="ab-body en" id="txt-ab-body-en">Every space has a story. We bring order, elegance, and intention to yours, guiding each decision from the first consultation to the final detail.</p>
+      <a href="#contatti" class="cta"><span class="it">Prenota una consulenza</span><span class="en">Book a consultation</span></a>
     </div>
   </div>
 </section>
@@ -459,7 +491,7 @@ body.lang-en span.it{display:none}body.lang-en span.en{display:inline}
       <span class="en">Everywhere<br><em>in the World</em></span>
     </h2>
     <p class="sec-lead it" id="txt-ww-it">Offriamo i nostri servizi con la massima professionalità, sicurezza ed eccellenza: in qualsiasi parte del mondo.</p>
-    <p class="sec-lead en" id="txt-ww-en">We bring our expertise wherever you need it: with trust, care, and excellence worldwide.</p>
+    <p class="sec-lead en" id="txt-ww-en">Wherever you are, we bring the same standard of trust, discretion, care, and excellence.</p>
     <div class="vals">
       <div class="val"><span class="val-sym">✦</span><span class="val-it"><span class="it">Armonia</span><span class="en">Harmony</span></span><span class="val-en"><span class="it">Harmony</span><span class="en">Armonia</span></span></div>
       <div class="val"><span class="val-sym">◈</span><span class="val-it"><span class="it">Eleganza</span><span class="en">Elegance</span></span><span class="val-en"><span class="it">Elegance</span><span class="en">Eleganza</span></span></div>
@@ -474,7 +506,7 @@ body.lang-en span.it{display:none}body.lang-en span.en{display:inline}
     <p class="sec-num"><span class="it">Contatti</span><span class="en">Contact</span></p>
     <p class="cc">
       <span class="it" id="txt-cta-it">Pronti a trasformare<br>il vostro spazio?</span>
-      <span class="en" id="txt-cta-en">Ready to transform<br>your home?</span>
+      <span class="en" id="txt-cta-en">Ready to elevate<br>your space?</span>
     </p>
     <div class="divider"></div>
     <p class="cn">Adriana Meneses</p>
@@ -540,14 +572,26 @@ const TXT_SLOTS = [
   {id:'txt-hero-em-it', label:'Hero: Titolo corsivo (IT)', multi:false},
   {id:'txt-desc-it', label:'Hero: Descrizione (IT)', multi:true},
   {id:'txt-vip-it', label:'Hero: Badge VIP (IT)', multi:false},
+  {id:'txt-hero-en', label:'Hero: Title (EN)', multi:false},
+  {id:'txt-hero-em-en', label:'Hero: Italic title (EN)', multi:false},
+  {id:'txt-desc-en', label:'Hero: Description (EN)', multi:true},
+  {id:'txt-vip-en', label:'Hero: VIP badge (EN)', multi:false},
   {id:'txt-org-tit-it', label:'Organizer: Titolo (IT)', multi:false},
   {id:'txt-org-it', label:'Organizer: Testo (IT)', multi:true},
+  {id:'txt-org-tit-en', label:'Organizer: Title (EN)', multi:false},
+  {id:'txt-org-en', label:'Organizer: Text (EN)', multi:true},
   {id:'txt-int-lead-it', label:'Interior: Lead (IT)', multi:true},
   {id:'txt-int-body-it', label:'Interior: Corpo (IT)', multi:true},
+  {id:'txt-int-lead-en', label:'Interior: Lead (EN)', multi:true},
+  {id:'txt-int-body-en', label:'Interior: Body (EN)', multi:true},
   {id:'txt-ab-q-it', label:'About: Citazione (IT)', multi:true},
   {id:'txt-ab-body-it', label:'About: Corpo (IT)', multi:true},
+  {id:'txt-ab-q-en', label:'About: Quote (EN)', multi:true},
+  {id:'txt-ab-body-en', label:'About: Body (EN)', multi:true},
   {id:'txt-ww-it', label:'Worldwide: Testo (IT)', multi:true},
+  {id:'txt-ww-en', label:'Worldwide: Text (EN)', multi:true},
   {id:'txt-cta-it', label:'Contatti: CTA (IT)', multi:false},
+  {id:'txt-cta-en', label:'Contact: CTA (EN)', multi:false},
 ];
 
 // ============ KEYS ============
@@ -668,6 +712,59 @@ function changePw(){
   localStorage.setItem(K.PW,n);alert('Password cambiata!');
 }
 
+// Keep share metadata portable when the file moves to a new domain.
+function applyPortableMeta(){
+  const href=location.href.split('#')[0];
+  let canonical=document.querySelector('link[rel="canonical"]');
+  if(!canonical){
+    canonical=document.createElement('link');
+    canonical.rel='canonical';
+    document.head.appendChild(canonical);
+  }
+  canonical.href=href;
+  let ogUrl=document.querySelector('meta[property="og:url"]');
+  if(!ogUrl){
+    ogUrl=document.createElement('meta');
+    ogUrl.setAttribute('property','og:url');
+    document.head.appendChild(ogUrl);
+  }
+  ogUrl.content=href;
+}
+
+function openLightbox(img){
+  const lb=document.getElementById('lightbox');
+  const lbImg=document.getElementById('lb-img');
+  const cap=document.getElementById('lb-cap');
+  if(!lb||!lbImg||!img)return;
+  lbImg.src=img.currentSrc||img.src;
+  lbImg.alt=img.alt||'A.M. Designer & Decor';
+  if(cap)cap.textContent=img.alt||'A.M. Designer & Decor';
+  lb.classList.add('open');
+  lb.setAttribute('aria-hidden','false');
+  document.body.style.overflow='hidden';
+}
+
+function closeLightbox(ev){
+  if(ev && ev.currentTarget && ev.target!==ev.currentTarget && !(ev.target.classList&&ev.target.classList.contains('lb-close')))return;
+  const lb=document.getElementById('lightbox');
+  if(!lb)return;
+  lb.classList.remove('open');
+  lb.setAttribute('aria-hidden','true');
+  document.body.style.overflow='';
+}
+
+function bindLightbox(){
+  document.querySelectorAll('.gallery-img').forEach(img=>{
+    img.setAttribute('tabindex','0');
+    img.setAttribute('role','button');
+    img.addEventListener('click',()=>openLightbox(img));
+    img.addEventListener('keydown',e=>{
+      if(e.key==='Enter'||e.key===' '){e.preventDefault();openLightbox(img);}
+    });
+  });
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeLightbox();});
+}
+
 // Triple-click on logo to open admin
 let lc=0;
 document.getElementById('nav-logo').addEventListener('click',()=>{
@@ -715,6 +812,8 @@ document.querySelectorAll('.fu').forEach(el=>obs.observe(el));
   applyLogo();
   applyPhotos();
   applyTexts();
+  applyPortableMeta();
+  bindLightbox();
 })();
 </script>
 </body>
