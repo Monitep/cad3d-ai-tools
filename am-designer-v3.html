@@ -77,7 +77,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;heigh
 .lb.open{display:flex}
 .lb img{max-width:min(1100px,92vw);max-height:86vh;object-fit:contain;box-shadow:0 20px 60px rgba(0,0,0,.45)}
 .lb-close{position:absolute;top:1.2rem;right:1.4rem;width:42px;height:42px;border:1px solid rgba(255,255,255,.35);border-radius:50%;background:rgba(255,255,255,.08);color:#fff;font-size:1.4rem;line-height:1;cursor:pointer}
-.lb-cap{position:absolute;left:2rem;right:2rem;bottom:1.4rem;text-align:center;color:rgba(255,255,255,.72);font-size:.75rem;letter-spacing:.12em;text-transform:uppercase}
+.lb-cap{position:absolute;left:2rem;right:2rem;bottom:1.4rem;text-align:center;color:rgba(255,255,255,.72);font-size:.78rem;letter-spacing:.04em;line-height:1.55}
+.lb-cap strong{display:block;color:#fff;font-size:.72rem;letter-spacing:.13em;text-transform:uppercase;margin-bottom:.2rem}
 
 /* HERO */
 #home{min-height:100vh;padding-top:72px;display:grid;grid-template-columns:1fr 1fr}
@@ -193,12 +194,18 @@ footer{background:var(--bgD);border-top:1px solid rgba(255,255,255,.06);padding:
 .adm-tit{font-family:"Cormorant Garamond",serif;font-size:1.8rem;color:var(--th);margin-bottom:.3rem}
 .adm-sub{font-size:.78rem;color:var(--tm);margin-bottom:2rem}
 .adm-g{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-bottom:2rem}
-.pslot{border:1px solid var(--border);border-radius:3px;overflow:hidden;cursor:pointer;transition:var(--T);position:relative}
+.pslot{border:1px solid var(--border);border-radius:3px;overflow:hidden;transition:var(--T);position:relative;background:var(--bg)}
 .pslot:hover{border-color:var(--gold)}
 .pslot img{width:100%;height:120px;object-fit:cover;display:block}
 .pslot-l{padding:.6rem .8rem;font-size:.7rem;color:var(--tm);background:var(--bg);display:flex;justify-content:space-between;align-items:center}
 .pslot-l strong{color:var(--th);font-weight:500}
-.sup{font-size:.8rem;color:var(--gold)}
+.sup{font-size:.8rem;color:var(--gold);background:none;border:none;cursor:pointer;font-family:"DM Sans",sans-serif}
+.photo-meta{padding:.8rem;border-top:1px solid var(--border);display:grid;gap:.65rem}
+.meta-row{display:grid;grid-template-columns:1fr 1fr;gap:.55rem}
+.photo-meta label{font-size:.58rem;letter-spacing:.09em;text-transform:uppercase;color:var(--tm);display:block;margin-bottom:.25rem}
+.photo-meta input,.photo-meta textarea{width:100%;border:1px solid var(--border);border-radius:2px;background:var(--bg2);color:var(--th);font-family:"DM Sans",sans-serif;font-size:.76rem;padding:.45rem;outline:none;transition:var(--T)}
+.photo-meta textarea{min-height:58px;resize:vertical}
+.photo-meta input:focus,.photo-meta textarea:focus{border-color:var(--gold)}
 .adm-inp{width:100%;padding:.8rem 1rem;border:1px solid var(--border);border-radius:3px;background:var(--bg);color:var(--th);font-family:"DM Sans",sans-serif;font-size:.9rem;outline:none;transition:var(--T)}
 .adm-inp:focus{border-color:var(--gold)}
 .adm-btn{background:var(--gold);color:#fff;border:none;padding:.8rem 2rem;font-family:"DM Sans",sans-serif;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:var(--T);border-radius:2px}
@@ -345,7 +352,9 @@ body.lang-en span.it{display:none}body.lang-en span.en{display:inline}
         <p style="font-size:.78rem;color:var(--tm);margin-bottom:1.5rem">Clicca su una foto per sostituirla (JPG/PNG, max 500 KB).<br>Le foto vengono salvate nel browser — rimangono anche chiudendo la pagina.</p>
         <div class="adm-g" id="photo-grid"></div>
         <div class="adm-sep"></div>
+        <button class="adm-btn" onclick="savePhotoMeta()">Salva testi foto</button>
         <button class="adm-btn" onclick="resetFotos()">Ripristina foto originali</button>
+        <button class="adm-btn sec" onclick="resetPhotoMeta()">Ripristina testi foto</button>
         <button class="adm-btn sec" onclick="closeAdm()">Chiudi</button>
         <div class="adm-msg" id="adm-msg"></div>
       </div>
@@ -441,15 +450,19 @@ body.lang-en span.it{display:none}body.lang-en span.en{display:inline}
         <div class="int-lbl"><span class="int-cat"><span class="it" id="txt-cap-int1-cat-it">Progetto</span><span class="en" id="txt-cap-int1-cat-en">Project</span></span><span class="int-name"><span class="it" id="txt-cap-int1-name-it">Dressing Room di lusso</span><span class="en" id="txt-cap-int1-name-en">Luxury Dressing Room</span></span></div>
       </div>
       <div class="int-c"><img id="img-int2" class="gallery-img" src="" alt="Kitchen setup" loading="lazy" decoding="async">
-        <div class="int-lbl"><span class="int-cat" id="txt-cap-int2-cat">Setup</span><span class="int-name"><span class="it" id="txt-cap-int2-name-it">Cucina</span><span class="en" id="txt-cap-int2-name-en">Kitchen</span></span></div>
+        <div class="int-lbl"><span class="int-cat"><span class="it" id="txt-cap-int2-cat-it">Setup</span><span class="en" id="txt-cap-int2-cat-en">Setup</span></span><span class="int-name"><span class="it" id="txt-cap-int2-name-it">Cucina</span><span class="en" id="txt-cap-int2-name-en">Kitchen</span></span></div>
       </div>
       <div class="int-c"><img id="img-int3" class="gallery-img" src="" alt="Decorative interior detail" loading="lazy" decoding="async">
         <div class="int-lbl"><span class="int-cat"><span class="it" id="txt-cap-int3-cat-it">Dettaglio</span><span class="en" id="txt-cap-int3-cat-en">Detail</span></span><span class="int-name"><span class="it" id="txt-cap-int3-name-it">Stile &amp; Personalità</span><span class="en" id="txt-cap-int3-name-en">Style &amp; Personality</span></span></div>
       </div>
     </div>
     <div class="int-r2 fu">
-      <div class="int-c" style="height:260px"><img id="img-int1b" class="gallery-img" src="" alt="Interior furnishing detail" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover"></div>
-      <div class="int-c" style="height:260px"><img id="img-int2b" class="gallery-img" src="" alt="Organized kitchen detail" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover"></div>
+      <div class="int-c" style="height:260px"><img id="img-int1b" class="gallery-img" src="" alt="Interior furnishing detail" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover">
+        <div class="int-lbl"><span class="int-cat"><span class="it" id="txt-cap-int1b-cat-it">Arredo</span><span class="en" id="txt-cap-int1b-cat-en">Furnishing</span></span><span class="int-name"><span class="it" id="txt-cap-int1b-name-it">Dettaglio arredo</span><span class="en" id="txt-cap-int1b-name-en">Interior Furnishing Detail</span></span></div>
+      </div>
+      <div class="int-c" style="height:260px"><img id="img-int2b" class="gallery-img" src="" alt="Organized kitchen detail" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover">
+        <div class="int-lbl"><span class="int-cat"><span class="it" id="txt-cap-int2b-cat-it">Cucina</span><span class="en" id="txt-cap-int2b-cat-en">Kitchen</span></span><span class="int-name"><span class="it" id="txt-cap-int2b-name-it">Dettaglio organizzato</span><span class="en" id="txt-cap-int2b-name-en">Organized Kitchen Detail</span></span></div>
+      </div>
     </div>
   </div>
   <div class="int-desc fu">
@@ -596,36 +609,25 @@ const TXT_SLOTS = [
   {id:'txt-ww-en', label:'Worldwide: Text (EN)', multi:true},
   {id:'txt-cta-it', label:'Contatti: CTA (IT)', multi:false},
   {id:'txt-cta-en', label:'Contact: CTA (EN)', multi:false},
-  {id:'txt-cap-int1-cat-it', label:'Foto: Dressing room categoria (IT)', multi:false},
-  {id:'txt-cap-int1-cat-en', label:'Photo: Dressing room category (EN)', multi:false},
-  {id:'txt-cap-int1-name-it', label:'Foto: Dressing room titolo (IT)', multi:false},
-  {id:'txt-cap-int1-name-en', label:'Photo: Dressing room title (EN)', multi:false},
-  {id:'txt-cap-int2-cat', label:'Foto: Cucina categoria', multi:false},
-  {id:'txt-cap-int2-name-it', label:'Foto: Cucina titolo (IT)', multi:false},
-  {id:'txt-cap-int2-name-en', label:'Photo: Kitchen title (EN)', multi:false},
-  {id:'txt-cap-int3-cat-it', label:'Foto: Dettaglio categoria (IT)', multi:false},
-  {id:'txt-cap-int3-cat-en', label:'Photo: Detail category (EN)', multi:false},
-  {id:'txt-cap-int3-name-it', label:'Foto: Dettaglio titolo (IT)', multi:false},
-  {id:'txt-cap-int3-name-en', label:'Photo: Detail title (EN)', multi:false},
 ];
 
-const CAPTION_SLOTS = [
-  {img:'img-hero', label:'Descrizione foto: Hero', text:'Adriana Meneses'},
-  {img:'img-closet_big', label:'Descrizione foto: Closet organizzato', text:'Closet organizzato'},
-  {img:'img-closet_luxury', label:'Descrizione foto: Closet di lusso', text:'Closet di lusso'},
-  {img:'img-client', label:'Descrizione foto: Adriana con cliente', text:'Adriana con cliente'},
-  {img:'img-int1', label:'Descrizione foto: Luxury Dressing Room', text:'Luxury dressing room'},
-  {img:'img-int2', label:'Descrizione foto: Kitchen setup', text:'Kitchen setup'},
-  {img:'img-int3', label:'Descrizione foto: Decorative detail', text:'Decorative interior detail'},
-  {img:'img-int1b', label:'Descrizione foto: Interior furnishing detail', text:'Interior furnishing detail'},
-  {img:'img-int2b', label:'Descrizione foto: Organized kitchen detail', text:'Organized kitchen detail'},
-  {img:'img-about', label:'Descrizione foto: Adriana Meneses', text:'Adriana Meneses'},
+const PHOTO_META = [
+  {slot:'hero', img:'img-hero', label:'Hero', titleIt:'Adriana Meneses', titleEn:'Adriana Meneses', descIt:'Ritratto di Adriana Meneses', descEn:'Portrait of Adriana Meneses'},
+  {slot:'closet_big', img:'img-closet_big', label:'Home Organizer - foto grande', titleIt:'Closet organizzato', titleEn:'Organized closet', descIt:'Organizzazione completa di guardaroba e accessori.', descEn:'Complete organization of wardrobe and accessories.'},
+  {slot:'closet_luxury', img:'img-closet_luxury', label:'Home Organizer - foto 2', titleIt:'Closet di lusso', titleEn:'Luxury closet', descIt:'Guardaroba curato con ordine, armonia e attenzione ai dettagli.', descEn:'A refined closet arranged with order, harmony, and attention to detail.'},
+  {slot:'client', img:'img-client', label:'Home Organizer - foto 3', titleIt:'Adriana con cliente', titleEn:'Adriana with client', descIt:'Esperienza personalizzata per clienti privati e internazionali.', descEn:'A personalized experience for private and international clients.'},
+  {slot:'int1', img:'img-int1', label:'Interior Design - foto 1', catItId:'txt-cap-int1-cat-it', catEnId:'txt-cap-int1-cat-en', titleItId:'txt-cap-int1-name-it', titleEnId:'txt-cap-int1-name-en', catIt:'Progetto', catEn:'Project', titleIt:'Dressing Room di lusso', titleEn:'Luxury Dressing Room', descIt:'Progetto di dressing room con atmosfera elegante e dettagli su misura.', descEn:'Luxury dressing room project with an elegant atmosphere and tailored details.'},
+  {slot:'int2', img:'img-int2', label:'Interior Design - foto 2', catItId:'txt-cap-int2-cat-it', catEnId:'txt-cap-int2-cat-en', titleItId:'txt-cap-int2-name-it', titleEnId:'txt-cap-int2-name-en', catIt:'Setup', catEn:'Setup', titleIt:'Cucina', titleEn:'Kitchen', descIt:"Setup cucina con accessori organizzati e pronti all'uso.", descEn:'Kitchen setup with organized accessories ready for daily use.'},
+  {slot:'int3', img:'img-int3', label:'Interior Design - foto 3', catItId:'txt-cap-int3-cat-it', catEnId:'txt-cap-int3-cat-en', titleItId:'txt-cap-int3-name-it', titleEnId:'txt-cap-int3-name-en', catIt:'Dettaglio', catEn:'Detail', titleIt:'Stile &amp; Personalita', titleEn:'Style &amp; Personality', descIt:'Dettagli decorativi pensati per raccontare la personalita della casa.', descEn:"Decorative details designed to express the home's personality."},
+  {slot:'int1b', img:'img-int1b', label:'Interior Design - dettaglio arredo', catItId:'txt-cap-int1b-cat-it', catEnId:'txt-cap-int1b-cat-en', titleItId:'txt-cap-int1b-name-it', titleEnId:'txt-cap-int1b-name-en', catIt:'Arredo', catEn:'Furnishing', titleIt:'Dettaglio arredo', titleEn:'Interior Furnishing Detail', descIt:'Scelta di arredi, materiali e proporzioni per un ambiente armonioso.', descEn:'Furniture, materials, and proportions selected for a harmonious interior.'},
+  {slot:'int2b', img:'img-int2b', label:'Interior Design - dettaglio cucina', catItId:'txt-cap-int2b-cat-it', catEnId:'txt-cap-int2b-cat-en', titleItId:'txt-cap-int2b-name-it', titleEnId:'txt-cap-int2b-name-en', catIt:'Cucina', catEn:'Kitchen', titleIt:'Dettaglio organizzato', titleEn:'Organized Kitchen Detail', descIt:'Dettaglio cucina organizzato per un uso pratico, ordinato ed elegante.', descEn:'Organized kitchen detail for practical, orderly, and elegant use.'},
+  {slot:'about', img:'img-about', label:'Chi Siamo - ritratto Adriana', titleIt:'Adriana Meneses', titleEn:'Adriana Meneses', descIt:'Adriana Meneses, fondatrice di A.M. Designer & Decor.', descEn:'Adriana Meneses, founder of A.M. Designer & Decor.'},
 ];
 
 // ============ KEYS ============
 const K = {
   PW:'am_pw', FS:'am_fs', THEME:'am_th', LANG:'am_lang',
-  PFX:'am_photo_', TPX:'am_txt_', CPX:'am_caption_'
+  PFX:'am_photo_', TPX:'am_txt_', MPX:'am_photo_meta_'
 };
 const DEF_PW='adriana2024';
 
@@ -651,10 +653,31 @@ function applyTexts(){
     if(saved){const el=document.getElementById(id);if(el)el.innerHTML=saved;}
   });
 }
-function applyCaptions(){
-  CAPTION_SLOTS.forEach(({img,text})=>{
-    const el=document.getElementById(img);
-    if(el)el.alt=localStorage.getItem(K.CPX+img)||text;
+function metaKey(slot,field){return K.MPX+slot+'_'+field;}
+function getPhotoMeta(slot,field,def){return localStorage.getItem(metaKey(slot,field))||def||'';}
+function escHtml(s){return String(s||'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
+function escAttr(s){return escHtml(s);}
+function setElHtml(id,value){const el=document.getElementById(id);if(el)el.innerHTML=value;}
+function applyPhotoMeta(){
+  PHOTO_META.forEach(meta=>{
+    const titleIt=getPhotoMeta(meta.slot,'title_it',meta.titleIt);
+    const titleEn=getPhotoMeta(meta.slot,'title_en',meta.titleEn);
+    const descIt=getPhotoMeta(meta.slot,'desc_it',meta.descIt);
+    const descEn=getPhotoMeta(meta.slot,'desc_en',meta.descEn);
+    const catIt=getPhotoMeta(meta.slot,'cat_it',meta.catIt);
+    const catEn=getPhotoMeta(meta.slot,'cat_en',meta.catEn);
+    setElHtml(meta.titleItId,titleIt);
+    setElHtml(meta.titleEnId,titleEn);
+    setElHtml(meta.catItId,catIt);
+    setElHtml(meta.catEnId,catEn);
+    const img=document.getElementById(meta.img);
+    if(img){
+      img.dataset.titleIt=titleIt;
+      img.dataset.titleEn=titleEn;
+      img.dataset.descIt=descIt;
+      img.dataset.descEn=descEn;
+      img.alt=(document.body.classList.contains('lang-en')?titleEn:titleIt)||meta.label;
+    }
   });
 }
 
@@ -683,10 +706,12 @@ function showTab(t){
 }
 function buildPhotoGrid(){
   const g=document.getElementById('photo-grid');g.innerHTML='';
-  Object.keys(SLOTS).forEach(slot=>{
-    const d=document.createElement('div');d.className='pslot';d.title='Clicca per sostituire';
-    d.innerHTML=`<img src="${getPhoto(slot)}" alt="${SLOTS[slot]}"><div class="pslot-l"><strong>${SLOTS[slot]}</strong><span class="sup">↑ sostituisci</span></div>`;
-    d.onclick=()=>triggerUpload(slot,d.querySelector('img'));
+  PHOTO_META.forEach(meta=>{
+    const slot=meta.slot;
+    const d=document.createElement('div');d.className='pslot';d.title='Modifica foto e testi';
+    const hasOverlay=!!meta.titleItId;
+    d.innerHTML=`<img src="${getPhoto(slot)}" alt="${meta.label}"><div class="pslot-l"><strong>${meta.label}</strong><button class="sup" type="button">↑ sostituisci</button></div><div class="photo-meta">${hasOverlay?`<div class="meta-row"><div><label>Etichetta IT</label><input id="pm-${slot}-cat_it" value="${escAttr(getPhotoMeta(slot,'cat_it',meta.catIt))}"></div><div><label>Etichetta EN</label><input id="pm-${slot}-cat_en" value="${escAttr(getPhotoMeta(slot,'cat_en',meta.catEn))}"></div></div>`:''}<div class="meta-row"><div><label>Titolo IT</label><input id="pm-${slot}-title_it" value="${escAttr(getPhotoMeta(slot,'title_it',meta.titleIt))}"></div><div><label>Titolo EN</label><input id="pm-${slot}-title_en" value="${escAttr(getPhotoMeta(slot,'title_en',meta.titleEn))}"></div></div><div class="meta-row"><div><label>Descrizione IT</label><textarea id="pm-${slot}-desc_it">${escHtml(getPhotoMeta(slot,'desc_it',meta.descIt))}</textarea></div><div><label>Descrizione EN</label><textarea id="pm-${slot}-desc_en">${escHtml(getPhotoMeta(slot,'desc_en',meta.descEn))}</textarea></div></div></div>`;
+    d.querySelector('.sup').onclick=()=>triggerUpload(slot,d.querySelector('img'));
     g.appendChild(d);
   });
 }
@@ -711,6 +736,25 @@ function resetFotos(){
   applyPhotos();buildPhotoGrid();
   const m=document.getElementById('adm-msg');m.textContent='Foto originali ripristinate.';setTimeout(()=>m.textContent='',3000);
 }
+function savePhotoMeta(){
+  PHOTO_META.forEach(meta=>{
+    ['cat_it','cat_en','title_it','title_en','desc_it','desc_en'].forEach(field=>{
+      const el=document.getElementById('pm-'+meta.slot+'-'+field);
+      if(el)localStorage.setItem(metaKey(meta.slot,field),el.value);
+    });
+  });
+  applyPhotoMeta();
+  const m=document.getElementById('adm-msg');m.textContent='Titoli e descrizioni foto salvati!';setTimeout(()=>m.textContent='',3000);
+}
+function resetPhotoMeta(){
+  if(!confirm('Ripristinare titoli e descrizioni originali delle foto?'))return;
+  PHOTO_META.forEach(meta=>{
+    ['cat_it','cat_en','title_it','title_en','desc_it','desc_en'].forEach(field=>localStorage.removeItem(metaKey(meta.slot,field)));
+    localStorage.removeItem('am_caption_'+meta.img);
+  });
+  applyPhotoMeta();buildPhotoGrid();
+  const m=document.getElementById('adm-msg');m.textContent='Titoli e descrizioni foto ripristinati.';setTimeout(()=>m.textContent='',3000);
+}
 
 function buildTxtGrid(){
   const g=document.getElementById('txt-grid');g.innerHTML='';
@@ -722,13 +766,6 @@ function buildTxtGrid(){
     div.appendChild(slot);
     setTimeout(()=>{const ta=document.getElementById('ta-'+id);if(ta)ta.value=curr;},0);
   });
-  CAPTION_SLOTS.forEach(({img,label,text})=>{
-    const slot=document.createElement('div');slot.className='txt-slot';
-    const curr=localStorage.getItem(K.CPX+img)||text;
-    slot.innerHTML=`<label>${label}</label><textarea id="ta-cap-${img}" rows="2"></textarea>`;
-    div.appendChild(slot);
-    setTimeout(()=>{const ta=document.getElementById('ta-cap-'+img);if(ta)ta.value=curr;},0);
-  });
   g.appendChild(div);
 }
 function saveTesti(){
@@ -739,19 +776,11 @@ function saveTesti(){
       const el=document.getElementById(id);if(el)el.innerHTML=ta.value;
     }
   });
-  CAPTION_SLOTS.forEach(({img})=>{
-    const ta=document.getElementById('ta-cap-'+img);
-    if(ta){
-      localStorage.setItem(K.CPX+img,ta.value);
-      const el=document.getElementById(img);if(el)el.alt=ta.value;
-    }
-  });
   const m=document.getElementById('txt-msg');m.textContent='Testi salvati!';setTimeout(()=>m.textContent='',3000);
 }
 function resetTesti(){
   if(!confirm('Ripristinare i testi originali?'))return;
   TXT_SLOTS.forEach(({id})=>{localStorage.removeItem(K.TPX+id);});
-  CAPTION_SLOTS.forEach(({img})=>{localStorage.removeItem(K.CPX+img);});
   location.reload();
 }
 function changePw(){
@@ -785,9 +814,12 @@ function openLightbox(img){
   const lbImg=document.getElementById('lb-img');
   const cap=document.getElementById('lb-cap');
   if(!lb||!lbImg||!img)return;
+  const isEn=document.body.classList.contains('lang-en');
+  const title=(isEn?img.dataset.titleEn:img.dataset.titleIt)||img.alt||'A.M. Designer & Decor';
+  const desc=(isEn?img.dataset.descEn:img.dataset.descIt)||'';
   lbImg.src=img.currentSrc||img.src;
-  lbImg.alt=img.alt||'A.M. Designer & Decor';
-  if(cap)cap.textContent=img.alt||'A.M. Designer & Decor';
+  lbImg.alt=title;
+  if(cap)cap.innerHTML='<strong>'+escHtml(title)+'</strong>'+(desc?'<span>'+escHtml(desc)+'</span>':'');
   lb.classList.add('open');
   lb.setAttribute('aria-hidden','false');
   document.body.style.overflow='hidden';
@@ -841,6 +873,7 @@ function setL(l){
   ['bi','mbi'].forEach(id=>{const el=document.getElementById(id);if(el)el.className=l==='it'?'lbtn on':'lbtn';});
   ['be','mbe'].forEach(id=>{const el=document.getElementById(id);if(el)el.className=l==='en'?'lbtn on':'lbtn';});
   localStorage.setItem(K.LANG,l);
+  applyPhotoMeta();
 }
 
 // ============ NAV/MOBILE ============
@@ -861,7 +894,7 @@ document.querySelectorAll('.fu').forEach(el=>obs.observe(el));
   applyLogo();
   applyPhotos();
   applyTexts();
-  applyCaptions();
+  applyPhotoMeta();
   applyPortableMeta();
   bindLightbox();
 })();
