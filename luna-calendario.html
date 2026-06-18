@@ -334,7 +334,7 @@
     <div class="strip-scroll" id="stripScroll"></div>
   </div>
 
-  <footer>Calcolo astronomico basato su ciclo sinodico medio · possibile scostamento di alcune ore rispetto a effemeridi ufficiali · nessun dato inviato a server esterni</footer>
+  <footer>Orari in fuso Italia (Europe/Rome) · calcolo su ciclo sinodico medio, possibile scostamento di alcune ore rispetto a effemeridi ufficiali · nessun dato inviato a server esterni</footer>
 </div>
 
 <script>
@@ -482,8 +482,11 @@
   }
 
   // ---------- SVG LUNA ----------
+  // Metodo robusto: la regione illuminata è sempre l'intersezione/unione di un
+  // semicerchio fisso (lato verso il sole) con un'ellisse il cui rx varia con la fase.
+  // Costruiamo il contorno illuminato direttamente come UN SOLO path (non mask+sottrazione),
+  // cosa che evita i bordi duri visti nella versione precedente.
   function renderMoonSVG(svgEl, frac, size){
-    // frac 0..1 (0=nuova,0.5=piena). Calcoliamo l'illuminazione come terminatore.
     const r = 92;
     const cx = 100, cy = 100;
     svgEl.innerHTML = '';
@@ -491,14 +494,14 @@
 
     const defs = document.createElementNS(ns,'defs');
     defs.innerHTML = `
-      <radialGradient id="moonBase" cx="35%" cy="32%" r="75%">
-        <stop offset="0%" stop-color="#f4efe0"/>
-        <stop offset="55%" stop-color="#dcd3ba"/>
-        <stop offset="100%" stop-color="#9c9580"/>
+      <radialGradient id="moonBase" cx="32%" cy="30%" r="80%">
+        <stop offset="0%" stop-color="#fbf6e6"/>
+        <stop offset="60%" stop-color="#e3d9bd"/>
+        <stop offset="100%" stop-color="#a89f84"/>
       </radialGradient>
-      <radialGradient id="darkSide" cx="50%" cy="50%" r="60%">
-        <stop offset="0%" stop-color="#1b2040"/>
-        <stop offset="100%" stop-color="#0b0e1a"/>
+      <radialGradient id="darkSide" cx="50%" cy="50%" r="65%">
+        <stop offset="0%" stop-color="#1c2140"/>
+        <stop offset="100%" stop-color="#0a0c16"/>
       </radialGradient>
       <clipPath id="moonClip"><circle cx="${cx}" cy="${cy}" r="${r}"/></clipPath>
     `;
@@ -507,88 +510,69 @@
     const g = document.createElementNS(ns,'g');
     g.setAttribute('clip-path','url(#moonClip)');
 
-    // base: disco scuro pieno
+    // base: disco scuro pieno (lato notte)
     const dark = document.createElementNS(ns,'circle');
     dark.setAttribute('cx',cx); dark.setAttribute('cy',cy); dark.setAttribute('r',r);
     dark.setAttribute('fill','url(#darkSide)');
     g.appendChild(dark);
 
-    // calcolo terminatore: usiamo un ellisse che si muove orizzontalmente per simulare la fase
-    // frac 0 = nuova (tutto buio), 0.5 = piena (tutto chiaro), 1 = nuova
-    // angolo: x offset del terminatore da -r (nuova) a 0 (quarti) a +r (piena) ... gestito tramite cos
-    const k = Math.cos(2*Math.PI*frac); // 1 a frac=0(nuova)->buio totale se usiamo logica inversa; ricalibriamo sotto
-    // Vogliamo: frac=0 -> illum 0 (tutto buio), frac=0.5 -> illum 1 (tutto chiaro)
-    // usiamo illuminazione frazione già calcolata altrove; qui ricostruiamo geometria a partire da frac diretto:
-    const wax = frac <= 0.5; // crescente se prima della piena
-    const illum = (1 - Math.cos(2*Math.PI*frac))/2; // 0..1
+    const wax = frac <= 0.5; // crescente: illuminato cresce da destra; calante: da sinistra
+    const illum = (1 - Math.cos(2*Math.PI*frac))/2; // 0..1, frazione di disco illuminato
 
-    // Disegniamo la parte illuminata come un "lune" (lens) usando due archi
-    // Metodo: rettangolo illuminato pieno, poi sovrapponiamo un'ellisse scura che "mangia" la parte non illuminata
-    const lit = document.createElementNS(ns,'circle');
-    lit.setAttribute('cx',cx); lit.setAttribute('cy',cy); lit.setAttribute('r',r);
-    lit.setAttribute('fill','url(#moonBase)');
+    // k va da -1 (nuova) a 0 (quarti) a +1 (piena), seguendo il segno della parte illuminata
+    // Usiamo cos(2π·frac) diretto: a frac=0 -> 1 ; a frac=0.25 -> 0 ; a frac=0.5 -> -1
+    // Per costruire il path: il terminatore è un arco di ellisse con semiasse orizzontale
+    // rx = r * |cos(2π·frac)|, curvo verso il lato buio se illum<0.5, verso il lato chiaro se illum>0.5
+    const cosVal = Math.cos(2*Math.PI*frac);
+    const rx = Math.abs(cosVal) * r;
+    const bulgeRight = wax ? (cosVal < 0) : (cosVal >= 0);
+    // bulgeRight=true significa che la parte centrale curva (sweep) verso destra rispetto al diametro verticale
 
-    // maschera: usiamo path con ellisse il cui asse x rappresenta il terminatore
-    const maskId = 'litMask';
-    const mask = document.createElementNS(ns,'mask');
-    mask.setAttribute('id',maskId);
-    const maskBg = document.createElementNS(ns,'rect');
-    maskBg.setAttribute('x','0'); maskBg.setAttribute('y','0');
-    maskBg.setAttribute('width','200'); maskBg.setAttribute('height','200');
-    maskBg.setAttribute('fill','black');
-    mask.appendChild(maskBg);
+    // Costruiamo il path della regione illuminata come unione di:
+    //  - mezzo disco fisso (quello rivolto verso il "sole": destra se crescente, sinistra se calante)
+    //  - più/meno una lente ellittica centrale che modula la fase
+    // Path unico, sempre chiuso e con curve continue (niente sottrazioni mask):
+    const sunSide = wax ? 1 : -1; // 1 = destra, -1 = sinistra
+    const top = `${cx} ${cy-r}`;
+    const bottom = `${cx} ${cy+r}`;
 
-    // semicerchio sempre illuminato sul lato (destro se crescente, sinistro se calante)
-    const halfLit = document.createElementNS(ns,'path');
-    const side = wax ? 'right' : 'left';
-    let halfPath;
-    if(side==='right'){
-      halfPath = `M ${cx} ${cy-r} A ${r} ${r} 0 0 1 ${cx} ${cy+r} Z`;
-    } else {
-      halfPath = `M ${cx} ${cy-r} A ${r} ${r} 0 0 0 ${cx} ${cy+r} Z`;
-    }
-    halfLit.setAttribute('d', halfPath);
-    halfLit.setAttribute('fill','white');
-    mask.appendChild(halfLit);
+    // arco esterno (il bordo del disco lunare) dal top al bottom, dal lato "sole"
+    const outerSweep = sunSide === 1 ? 1 : 0;
+    const outerArc = `A ${r} ${r} 0 0 ${outerSweep} ${bottom}`;
 
-    // ellisse del terminatore che aggiunge o sottrae l'altra metà in base alla fase
-    // larghezza dell'ellisse (rx) varia da r (quarti) a 0 (nuova/piena)
-    const distFromQuarter = Math.abs(illum - 0.5); // 0 ai quarti, 0.5 a nuova/piena
-    const rx = r * (1 - distFromQuarter*2); // a quarti rx=r (cerchio pieno), a nuova/piena rx=0
-    const ellipse = document.createElementNS(ns,'ellipse');
-    ellipse.setAttribute('cx',cx); ellipse.setAttribute('cy',cy);
-    ellipse.setAttribute('rx', Math.max(rx,0)); ellipse.setAttribute('ry', r);
-
-    // logica: se illum<0.5 (meno della metà illuminata) l'ellisse è scura e sta dal lato illuminato (sottrae)
-    // se illum>0.5 (più della metà) l'ellisse è chiara e sta dal lato buio (aggiunge)
+    // arco del terminatore (ellisse rx,r) dal bottom al top
+    // se illum < 0.5: il terminatore curva verso il lato sole (rientra, falce sottile)
+    // se illum >= 0.5: il terminatore curva verso il lato buio (sporge, gibbosa)
+    let termSweep;
     if(illum < 0.5){
-      ellipse.setAttribute('fill','black');
-      ellipse.setAttribute('cx', wax ? cx + (r-rx) : cx - (r-rx));
+      termSweep = sunSide === 1 ? 0 : 1; // rientra
     } else {
-      ellipse.setAttribute('fill','white');
-      ellipse.setAttribute('cx', wax ? cx - (r-rx) : cx + (r-rx));
+      termSweep = sunSide === 1 ? 1 : 0; // sporge
     }
-    mask.appendChild(ellipse);
-    defs.appendChild(mask);
+    const termArc = `A ${rx} ${r} 0 0 ${termSweep} ${top}`;
 
-    lit.setAttribute('mask',`url(#${maskId})`);
+    const pathD = `M ${top} ${outerArc} ${termArc} Z`;
+
+    const lit = document.createElementNS(ns,'path');
+    lit.setAttribute('d', pathD);
+    lit.setAttribute('fill','url(#moonBase)');
     g.appendChild(lit);
 
-    // craterini sottili per texture (statici, decorativi, sopra la parte chiara con opacità bassa)
+    // craterini sottili per texture, visibili solo se cadono nella zona chiara (clip sul disco generale,
+    // leggera opacità così sono discreti anche se cadono nel buio)
     const craters = [
       [70,60,9],[120,50,6],[140,95,11],[80,120,7],[110,140,5],[60,90,4],[150,130,6]
     ];
     craters.forEach(([cxp,cyp,rp])=>{
       const c = document.createElementNS(ns,'circle');
       c.setAttribute('cx',cxp); c.setAttribute('cy',cyp); c.setAttribute('r',rp);
-      c.setAttribute('fill','#00000022');
-      c.setAttribute('mask',`url(#${maskId})`);
+      c.setAttribute('fill','#00000020');
       g.appendChild(c);
     });
 
     svgEl.appendChild(g);
 
-    // contorno sottile
+    // contorno sottile dorato
     const ring = document.createElementNS(ns,'circle');
     ring.setAttribute('cx',cx); ring.setAttribute('cy',cy); ring.setAttribute('r',r);
     ring.setAttribute('fill','none');
@@ -603,10 +587,21 @@
   const MONTHS = ["gennaio","febbraio","marzo","aprile","maggio","giugno","luglio","agosto","settembre","ottobre","novembre","dicembre"];
 
   function fmtFullDate(d){
-    return `${DOW_FULL[d.getDay()]} <b>${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}</b>`;
+    const parts = new Intl.DateTimeFormat('it-IT',{timeZone:'Europe/Rome', weekday:'long', day:'numeric', month:'long', year:'numeric'}).formatToParts(d);
+    const map = {}; parts.forEach(p=>map[p.type]=p.value);
+    return `${map.weekday} <b>${map.day} ${map.month} ${map.year}</b>`;
   }
   function fmtShortDate(d){
-    return `${String(d.getDate()).padStart(2,'0')} ${MONTHS[d.getMonth()].slice(0,3)} · ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    const day = new Intl.DateTimeFormat('it-IT',{timeZone:'Europe/Rome', day:'2-digit'}).format(d);
+    const month = new Intl.DateTimeFormat('it-IT',{timeZone:'Europe/Rome', month:'short'}).format(d);
+    const time = new Intl.DateTimeFormat('it-IT',{timeZone:'Europe/Rome', hour:'2-digit', minute:'2-digit'}).format(d);
+    return `${day} ${month} · ${time}`;
+  }
+  function romeDateParts(d){
+    // restituisce {year,month,day,weekday} secondo il fuso Europe/Rome, per la striscia dei 14 giorni
+    const parts = new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Rome', year:'numeric',month:'2-digit',day:'2-digit',weekday:'short'}).formatToParts(d);
+    const map = {}; parts.forEach(p=>map[p.type]=p.value);
+    return map;
   }
   function fmtDaysUntil(target, from){
     const ms = target.getTime() - from.getTime();
@@ -678,17 +673,19 @@
   function renderStrip(fromDate){
     const strip = document.getElementById('stripScroll');
     strip.innerHTML = '';
+    const DOW_IT = {Sun:'dom',Mon:'lun',Tue:'mar',Wed:'mer',Thu:'gio',Fri:'ven',Sat:'sab'};
     for(let i=0;i<14;i++){
       const d = new Date(fromDate.getTime() + i*86400000);
       d.setHours(12,0,0,0);
       const frac = phaseFraction(d);
+      const rp = romeDateParts(d);
       const cell = document.createElement('div');
       cell.className = 'strip-day' + (i===0 ? ' is-today' : '');
       const mini = document.createElementNS("http://www.w3.org/2000/svg","svg");
       mini.setAttribute('viewBox','0 0 200 200');
       mini.setAttribute('class','strip-moon');
       renderMoonSVG(mini, frac, 26);
-      cell.innerHTML = `<div class="dow">${DOW[d.getDay()]}</div><div class="dnum">${d.getDate()}</div>`;
+      cell.innerHTML = `<div class="dow">${DOW_IT[rp.weekday]}</div><div class="dnum">${rp.day}</div>`;
       cell.appendChild(mini);
       strip.appendChild(cell);
     }
