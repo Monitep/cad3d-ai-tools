@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Fase Lunare · CAD3D</title>
+<style>
+  :root{
+    --bg-deep:#0b0e1a;
+    --bg-mid:#141a2e;
+    --ink:#eef0f8;
+    --ink-dim:#9aa3c4;
+    --gold:#d9b96a;
+    --gold-soft:#8d7a4a;
+    --silver:#c9d2e8;
+    --line:rgba(201,210,232,0.14);
+    --crater:#2a3050;
+    font-size:16px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; padding:0;}
+  body{
+    min-height:100dvh;
+    background:
+      radial-gradient(ellipse 120% 60% at 50% -10%, #1b2240 0%, transparent 60%),
+      linear-gradient(180deg, var(--bg-deep) 0%, #07080f 100%);
+    color:var(--ink);
+    font-family:'Iowan Old Style','Palatino Linotype',Georgia,serif;
+    touch-action:manipulation;
+    overflow-x:hidden;
+    position:relative;
+  }
+  .stars{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:
+      radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,.5) 50%, transparent 51%),
+      radial-gradient(1px 1px at 80% 10%, rgba(255,255,255,.4) 50%, transparent 51%),
+      radial-gradient(1.5px 1.5px at 60% 70%, rgba(255,255,255,.6) 50%, transparent 51%),
+      radial-gradient(1px 1px at 30% 80%, rgba(255,255,255,.35) 50%, transparent 51%),
+      radial-gradient(1px 1px at 90% 60%, rgba(255,255,255,.45) 50%, transparent 51%),
+      radial-gradient(1.5px 1.5px at 45% 35%, rgba(255,255,255,.5) 50%, transparent 51%),
+      radial-gradient(1px 1px at 15% 55%, rgba(255,255,255,.3) 50%, transparent 51%),
+      radial-gradient(1px 1px at 70% 90%, rgba(255,255,255,.4) 50%, transparent 51%);
+    background-size:100% 100%;
+    opacity:.8;
+  }
+  .wrap{
+    position:relative; z-index:1;
+    max-width:560px; margin:0 auto;
+    padding:28px 20px 60px;
+  }
+  header{
+    text-align:center;
+    margin-bottom:6px;
+  }
+  .eyebrow{
+    font-family:'Helvetica Neue',Arial,sans-serif;
+    font-size:.68rem;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--gold-soft);
+    margin:0 0 8px;
+  }
+  h1{
+    font-size:1.5rem;
+    font-weight:400;
+    letter-spacing:.02em;
+    margin:0;
+    color:var(--ink);
+  }
+  .date-row{
+    display:flex; align-items:center; justify-content:center;
+    gap:10px;
+    margin-top:14px;
+  }
+  .date-btn{
+    background:rgba(201,210,232,0.06);
+    border:1px solid var(--line);
+    color:var(--silver);
+    width:34px; height:34px;
+    border-radius:50%;
+    font-size:1.1rem;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Helvetica Neue',Arial,sans-serif;
+  }
+  .date-label{
+    font-family:'Helvetica Neue',Arial,sans-serif;
+    font-size:.82rem;
+    color:var(--ink-dim);
+    min-width:180px;
+    text-align:center;
+    letter-spacing:.01em;
+  }
+  .date-label b{color:var(--silver); font-weight:600;}
+  .today-link{
+    display:block; text-align:center;
+    font-family:'Helvetica Neue',Arial,sans-serif;
+    font-size:.72rem;
+    color:var(--gold-soft);
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    margin-top:10px;
+    text-decoration:none;
+  }
+
+  /* MOON STAGE */
+  .moon-stage{
+    position:relative;
+    margin:34px auto 8px;
+    width:236px; height:236px;
+  }
+  .moon-halo{
+    position:absolute; inset:-30px;
+    border-radius:50%;
+    background:radial-gradient(circle, rgba(217,185,106,0.10) 0%, transparent 70%);
+  }
+  .moon-svg{
+    width:100%; height:100%;
+    display:block;
+    filter:drop-shadow(0 8px 40px rgba(217,185,106,0.18));
+  }
+  .phase-name{
+    text-align:center;
+    font-size:1.32rem;
+    margin:18px 0 2px;
+    color:var(--ink);
+    letter-spacing:.01em;
+  }
+  .phase-pct{
+    text-align:center;
+    font-family:'Helvetica Neue',Arial,sans-serif;
+    font-size:.78rem;
+    color:var(--gold);
+    letter-spacing:.05em;
+    margin-bottom:4px;
+  }
+  .phase-sub{
+    text-align:center;
+    font-family:'Helvetica Neue',Arial,sans-serif;
+    font-size:.74rem;
+    color:var(--ink-dim);
+    letter-spacing:.03em;
+  }
+
+  /* DATA GRID */
+  .data-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:1px;
+    margin-top:34px;
+    background:var(--line);
+    border:1px solid var(--line);
+    border-radius:2px;
+    overflow:hidden;
+  }
+  .data-cell{
+    background:rgba(20,26,46,0.55);
+    padding:16px 14px;
+  }
+  .data-cell .k{
+    font-family:'Helvetica Neue',Arial,sans-serif;
+    font-size:.62rem;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--gold-soft);
+    margin:0 0 6px;
+  }
+  .data-cell .v{
+    font-size:1.05rem;
+    color:var(--ink);
+    margin:0;
+  }
+  .data-cell .v small{
+    font-family:'Helvetica Neue',Arial,sans-serif;
+    font-size:.7rem;
+    color:var(--ink-dim);
+    display:block;
+    margin-top:3px;
+  }
+
+  /* UPCOMING */
+  .section-title{
+    font-family:'Helvetica Neue',Arial,sans-serif;
+    font-size:.66rem;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--gold-soft);
+    margin:38px 0 14px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .section-title::after{
+    content:'';
+    flex:1; height:1px;
+    background:var(--line);
+  }
+  .upcoming{
+    display:flex;
+    flex-direction:column;
+    border-top:1px solid var(--line);
+  }
+  .upcoming-row{
+    display:flex; align-items:center;
+    gap:14px;
+    padding:14px 4px;
+    border-bottom:1px solid var(--line);
+  }
+  .mini-moon{
+    width:38px; height:38px; flex:none;
+  }
+  .upcoming-info{flex:1; min-width:0;}
+  .upcoming-info .name{
+    font-size:.98rem; color:var(--ink); margin:0 0 2px;
+  }
+  .upcoming-info .date{
+    font-family:'Helvetica Neue',Arial,sans-serif;
+    font-size:.72rem; color:var(--ink-dim); margin:0;
+  }
+  .upcoming-days{
+    font-family:'Helvetica Neue',Arial,sans-serif;
+    text-align:right;
+    flex:none;
+  }
+  .upcoming-days .n{
+    font-size:1.2rem; color:var(--gold); display:block; line-height:1;
+  }
+  .upcoming-days .u{
+    font-size:.62rem; color:var(--ink-dim); letter-spacing:.05em; text-transform:uppercase;
+  }
+
+  /* MONTH STRIP */
+  .month-strip{
+    margin-top:38px;
+  }
+  .strip-scroll{
+    display:flex;
+    overflow-x:auto;
+    gap:6px;
+    padding-bottom:8px;
+    scrollbar-width:none;
+  }
+  .strip-scroll::-webkit-scrollbar{display:none;}
+  .strip-day{
+    flex:none;
+    width:46px;
+    text-align:center;
+    padding:10px 0 8px;
+    border-radius:10px;
+    background:rgba(201,210,232,0.04);
+  }
+  .strip-day.is-today{
+    background:rgba(217,185,106,0.14);
+    border:1px solid rgba(217,185,106,0.45);
+  }
+  .strip-day .dow{
+    font-family:'Helvetica Neue',Arial,sans-serif;
+    font-size:.58rem; color:var(--ink-dim); text-transform:uppercase; letter-spacing:.04em;
+  }
+  .strip-day .dnum{
+    font-family:'Helvetica Neue',Arial,sans-serif;
+    font-size:.74rem; color:var(--ink-dim); margin:2px 0 6px;
+  }
+  .strip-day.is-today .dnum{color:var(--gold);}
+  .strip-moon{width:26px; height:26px; margin:0 auto;}
+
+  footer{
+    text-align:center;
+    margin-top:46px;
+    font-family:'Helvetica Neue',Arial,sans-serif;
+    font-size:.62rem;
+    color:rgba(154,163,196,0.4);
+    letter-spacing:.04em;
+  }
+
+  @media (prefers-reduced-motion: no-preference){
+    .moon-svg{ transition: filter .3s ease; }
+  }
+</style>
+</head>
+<body>
+<div class="stars"></div>
+<div class="wrap">
+
+  <header>
+    <p class="eyebrow">Osservatorio Lunare</p>
+    <h1>Fase della Luna</h1>
+    <div class="date-row">
+      <button class="date-btn" id="prevDay" aria-label="Giorno precedente">‹</button>
+      <div class="date-label" id="dateLabel"></div>
+      <button class="date-btn" id="nextDay" aria-label="Giorno successivo">›</button>
+    </div>
+    <a href="#" class="today-link" id="todayLink">Torna a oggi</a>
+  </header>
+
+  <div class="moon-stage">
+    <div class="moon-halo"></div>
+    <svg class="moon-svg" id="moonSvg" viewBox="0 0 200 200"></svg>
+  </div>
+  <p class="phase-name" id="phaseName">—</p>
+  <p class="phase-pct" id="phasePct">—</p>
+  <p class="phase-sub" id="phaseSub">—</p>
+
+  <div class="data-grid">
+    <div class="data-cell">
+      <p class="k">Età lunare</p>
+      <p class="v" id="dAge">—</p>
+    </div>
+    <div class="data-cell">
+      <p class="k">Illuminazione</p>
+      <p class="v" id="dIllum">—</p>
+    </div>
+    <div class="data-cell">
+      <p class="k">Distanza Terra</p>
+      <p class="v" id="dDist">—</p>
+    </div>
+    <div class="data-cell">
+      <p class="k">Diametro apparente</p>
+      <p class="v" id="dDiam">—</p>
+    </div>
+    <div class="data-cell">
+      <p class="k">Segno zodiacale</p>
+      <p class="v" id="dZodiac">—</p>
+    </div>
+    <div class="data-cell">
+      <p class="k">Ciclo sinodico</p>
+      <p class="v" id="dCycle">—</p>
+    </div>
+  </div>
+
+  <p class="section-title">Prossime fasi</p>
+  <div class="upcoming" id="upcomingList"></div>
+
+  <div class="month-strip">
+    <p class="section-title">Prossimi 14 giorni</p>
+    <div class="strip-scroll" id="stripScroll"></div>
+  </div>
+
+  <footer>Calcolo astronomico basato su ciclo sinodico medio · possibile scostamento di alcune ore rispetto a effemeridi ufficiali · nessun dato inviato a server esterni</footer>
+</div>
+
+<script>
+(function(){
+
+  // ---------- ASTRONOMIA LUNARE ----------
+  // Riferimento: luna nuova nota (1 gennaio 2000, 18:14 UTC) — algoritmo Conway/Meeus semplificato
+  const SYNODIC_MONTH = 29.530588853; // giorni
+  const KNOWN_NEW_MOON = Date.UTC(2026, 5, 15, 2, 54, 0); // luna nuova di riferimento verificata: 15 giugno 2026
+
+  function daysSinceRef(date){
+    return (date.getTime() - KNOWN_NEW_MOON) / 86400000;
+  }
+
+  function moonAge(date){
+    const days = daysSinceRef(date);
+    let age = days % SYNODIC_MONTH;
+    if(age < 0) age += SYNODIC_MONTH;
+    return age;
+  }
+
+  function phaseFraction(date){
+    return moonAge(date) / SYNODIC_MONTH; // 0..1
+  }
+
+  // illuminazione percentuale (approssimazione cosinusoidale standard)
+  function illumination(frac){
+    return (1 - Math.cos(2*Math.PI*frac)) / 2;
+  }
+
+  function phaseInfo(frac){
+    // frac: 0 = nuova, 0.25 = primo quarto, 0.5 = piena, 0.75 = ultimo quarto
+    const p = frac*360;
+    if(p < 11.25 || p >= 348.75) return {name:"Luna Nuova", sub:"Il disco è in ombra, invisibile dalla Terra", key:"new"};
+    if(p < 78.75)  return {name:"Luna Crescente", sub:"Falce crescente, illuminazione in aumento", key:"waxcres"};
+    if(p < 101.25) return {name:"Primo Quarto", sub:"Metà disco illuminata, luce in aumento", key:"firstq"};
+    if(p < 168.75) return {name:"Gibbosa Crescente", sub:"Quasi piena, illuminazione in aumento", key:"waxgib"};
+    if(p < 191.25) return {name:"Luna Piena", sub:"Disco completamente illuminato", key:"full"};
+    if(p < 258.75) return {name:"Gibbosa Calante", sub:"Oltre la piena, illuminazione in calo", key:"wangib"};
+    if(p < 281.25) return {name:"Ultimo Quarto", sub:"Metà disco illuminata, luce in calo", key:"lastq"};
+    return {name:"Luna Calante", sub:"Falce calante, illuminazione in calo", key:"wancres"};
+  }
+
+  // ---------- DISTANZA E DIAMETRO (approssimazione ellittica) ----------
+  // Periodo anomalistico medio: 27.554550 giorni. Perigeo medio noto: 2000-01-01 ~ approssimazione
+  const ANOMALISTIC_MONTH = 27.554550;
+  const KNOWN_PERIGEE = Date.UTC(2000, 0, 1, 0, 0, 0);
+  const MOON_MEAN_DIST = 385000.6; // km
+  const MOON_ECC = 0.0549;
+  const MOON_PERIGEE_DIST = MOON_MEAN_DIST * (1 - MOON_ECC); // ~363300
+  const MOON_APOGEE_DIST = MOON_MEAN_DIST * (1 + MOON_ECC);  // ~405700
+
+  function distanceKm(date){
+    const days = (date.getTime() - KNOWN_PERIGEE) / 86400000;
+    let anomFrac = (days % ANOMALISTIC_MONTH) / ANOMALISTIC_MONTH;
+    if(anomFrac < 0) anomFrac += 1;
+    // approssimazione: distanza varia sinusoidalmente tra perigeo e apogeo
+    const dist = MOON_MEAN_DIST - (MOON_MEAN_DIST - MOON_PERIGEE_DIST) * Math.cos(2*Math.PI*anomFrac);
+    return dist;
+  }
+
+  function apparentDiameterArcmin(distKm){
+    // diametro lunare reale: 3474.8 km
+    const realDiamKm = 3474.8;
+    const radians = 2 * Math.atan(realDiamKm / (2*distKm));
+    return radians * (180/Math.PI) * 60; // arcominuti
+  }
+
+  // ---------- ZODIACO (approssimazione tropicale, posizione media lunare) ----------
+  const ZODIAC = ["Ariete","Toro","Gemelli","Cancro","Leone","Vergine","Bilancia","Scorpione","Sagittario","Capricorno","Acquario","Pesci"];
+  function zodiacSign(date){
+    // longitudine media lunare approssimata: orbita ~13.176° al giorno rispetto a J2000
+    const epoch = Date.UTC(2000,0,6,18,14,0);
+    const days = (date.getTime() - epoch)/86400000;
+    let lon = (218.316 + 13.176396 * days) % 360;
+    if(lon<0) lon+=360;
+    const idx = Math.floor(lon/30) % 12;
+    return ZODIAC[idx];
+  }
+
+  // ---------- RICERCA FASI PRINCIPALI ----------
+  // Trova la prossima data (>= fromDate) in cui frac attraversa uno dei target (0, .25, .5, .75)
+  function findNextPhases(fromDate, count){
+    const results = [];
+    const targets = [
+      {frac:0,   name:"Luna Nuova"},
+      {frac:0.25,name:"Primo Quarto"},
+      {frac:0.5, name:"Luna Piena"},
+      {frac:0.75,name:"Ultimo Quarto"}
+    ];
+    // step grezzo in ore, poi raffina con bisection
+    let t = fromDate.getTime();
+    const stepMs = 3*3600*1000; // 3 ore
+    const maxIter = 2000;
+    let lastFrac = phaseFraction(new Date(t));
+    let iter = 0;
+    while(results.length < count && iter < maxIter){
+      iter++;
+      const nt = t + stepMs;
+      const nFrac = phaseFraction(new Date(nt));
+      // controlla se uno dei target è stato superato tra t e nt (gestendo wrap 1->0)
+      for(const target of targets){
+        let crossed = false;
+        let lo = lastFrac, hi = nFrac;
+        // caso wrap (es. 0.98 -> 0.02): trattiamo target 0 come 1.0 se necessario
+        if(hi < lo){ // wrap avvenuto
+          if(target.frac === 0){
+            if(lo <= 1 && hi >= 0){ crossed = true; }
+          } else {
+            // nessun wrap rilevante per target diversi da 0 in questo step raro
+          }
+        } else {
+          if(target.frac >= lo && target.frac <= hi) crossed = true;
+        }
+        if(crossed){
+          // bisection per raffinare il momento esatto
+          let a = t, b = nt;
+          for(let i=0;i<40;i++){
+            const mid = (a+b)/2;
+            const fMid = phaseFraction(new Date(mid));
+            let fa = phaseFraction(new Date(a));
+            // gestisci target come val assoluto considerando wrap
+            let targetVal = target.frac;
+            let testLo = fa, testMid = fMid;
+            if(target.frac===0 && testLo>0.9){ testLo -=1; }
+            if(target.frac===0 && testMid>0.9){ testMid -=1; }
+            if((testLo<=targetVal && testMid>=targetVal) || (testLo>=targetVal && testMid<=targetVal)){
+              b = mid;
+            } else {
+              a = mid;
+            }
+          }
+          const exact = new Date((a+b)/2);
+          // evita duplicati troppo vicini
+          if(!results.find(r => Math.abs(r.date.getTime()-exact.getTime()) < 6*3600*1000)){
+            results.push({date: exact, name: target.name});
+          }
+        }
+      }
+      lastFrac = nFrac;
+      t = nt;
+      results.sort((x,y)=>x.date-y.date);
+    }
+    return results.slice(0, count);
+  }
+
+  // ---------- SVG LUNA ----------
+  function renderMoonSVG(svgEl, frac, size){
+    // frac 0..1 (0=nuova,0.5=piena). Calcoliamo l'illuminazione come terminatore.
+    const r = 92;
+    const cx = 100, cy = 100;
+    svgEl.innerHTML = '';
+    const ns = "http://www.w3.org/2000/svg";
+
+    const defs = document.createElementNS(ns,'defs');
+    defs.innerHTML = `
+      <radialGradient id="moonBase" cx="35%" cy="32%" r="75%">
+        <stop offset="0%" stop-color="#f4efe0"/>
+        <stop offset="55%" stop-color="#dcd3ba"/>
+        <stop offset="100%" stop-color="#9c9580"/>
+      </radialGradient>
+      <radialGradient id="darkSide" cx="50%" cy="50%" r="60%">
+        <stop offset="0%" stop-color="#1b2040"/>
+        <stop offset="100%" stop-color="#0b0e1a"/>
+      </radialGradient>
+      <clipPath id="moonClip"><circle cx="${cx}" cy="${cy}" r="${r}"/></clipPath>
+    `;
+    svgEl.appendChild(defs);
+
+    const g = document.createElementNS(ns,'g');
+    g.setAttribute('clip-path','url(#moonClip)');
+
+    // base: disco scuro pieno
+    const dark = document.createElementNS(ns,'circle');
+    dark.setAttribute('cx',cx); dark.setAttribute('cy',cy); dark.setAttribute('r',r);
+    dark.setAttribute('fill','url(#darkSide)');
+    g.appendChild(dark);
+
+    // calcolo terminatore: usiamo un ellisse che si muove orizzontalmente per simulare la fase
+    // frac 0 = nuova (tutto buio), 0.5 = piena (tutto chiaro), 1 = nuova
+    // angolo: x offset del terminatore da -r (nuova) a 0 (quarti) a +r (piena) ... gestito tramite cos
+    const k = Math.cos(2*Math.PI*frac); // 1 a frac=0(nuova)->buio totale se usiamo logica inversa; ricalibriamo sotto
+    // Vogliamo: frac=0 -> illum 0 (tutto buio), frac=0.5 -> illum 1 (tutto chiaro)
+    // usiamo illuminazione frazione già calcolata altrove; qui ricostruiamo geometria a partire da frac diretto:
+    const wax = frac <= 0.5; // crescente se prima della piena
+    const illum = (1 - Math.cos(2*Math.PI*frac))/2; // 0..1
+
+    // Disegniamo la parte illuminata come un "lune" (lens) usando due archi
+    // Metodo: rettangolo illuminato pieno, poi sovrapponiamo un'ellisse scura che "mangia" la parte non illuminata
+    const lit = document.createElementNS(ns,'circle');
+    lit.setAttribute('cx',cx); lit.setAttribute('cy',cy); lit.setAttribute('r',r);
+    lit.setAttribute('fill','url(#moonBase)');
+
+    // maschera: usiamo path con ellisse il cui asse x rappresenta il terminatore
+    const maskId = 'litMask';
+    const mask = document.createElementNS(ns,'mask');
+    mask.setAttribute('id',maskId);
+    const maskBg = document.createElementNS(ns,'rect');
+    maskBg.setAttribute('x','0'); maskBg.setAttribute('y','0');
+    maskBg.setAttribute('width','200'); maskBg.setAttribute('height','200');
+    maskBg.setAttribute('fill','black');
+    mask.appendChild(maskBg);
+
+    // semicerchio sempre illuminato sul lato (destro se crescente, sinistro se calante)
+    const halfLit = document.createElementNS(ns,'path');
+    const side = wax ? 'right' : 'left';
+    let halfPath;
+    if(side==='right'){
+      halfPath = `M ${cx} ${cy-r} A ${r} ${r} 0 0 1 ${cx} ${cy+r} Z`;
+    } else {
+      halfPath = `M ${cx} ${cy-r} A ${r} ${r} 0 0 0 ${cx} ${cy+r} Z`;
+    }
+    halfLit.setAttribute('d', halfPath);
+    halfLit.setAttribute('fill','white');
+    mask.appendChild(halfLit);
+
+    // ellisse del terminatore che aggiunge o sottrae l'altra metà in base alla fase
+    // larghezza dell'ellisse (rx) varia da r (quarti) a 0 (nuova/piena)
+    const distFromQuarter = Math.abs(illum - 0.5); // 0 ai quarti, 0.5 a nuova/piena
+    const rx = r * (1 - distFromQuarter*2); // a quarti rx=r (cerchio pieno), a nuova/piena rx=0
+    const ellipse = document.createElementNS(ns,'ellipse');
+    ellipse.setAttribute('cx',cx); ellipse.setAttribute('cy',cy);
+    ellipse.setAttribute('rx', Math.max(rx,0)); ellipse.setAttribute('ry', r);
+
+    // logica: se illum<0.5 (meno della metà illuminata) l'ellisse è scura e sta dal lato illuminato (sottrae)
+    // se illum>0.5 (più della metà) l'ellisse è chiara e sta dal lato buio (aggiunge)
+    if(illum < 0.5){
+      ellipse.setAttribute('fill','black');
+      ellipse.setAttribute('cx', wax ? cx + (r-rx) : cx - (r-rx));
+    } else {
+      ellipse.setAttribute('fill','white');
+      ellipse.setAttribute('cx', wax ? cx - (r-rx) : cx + (r-rx));
+    }
+    mask.appendChild(ellipse);
+    defs.appendChild(mask);
+
+    lit.setAttribute('mask',`url(#${maskId})`);
+    g.appendChild(lit);
+
+    // craterini sottili per texture (statici, decorativi, sopra la parte chiara con opacità bassa)
+    const craters = [
+      [70,60,9],[120,50,6],[140,95,11],[80,120,7],[110,140,5],[60,90,4],[150,130,6]
+    ];
+    craters.forEach(([cxp,cyp,rp])=>{
+      const c = document.createElementNS(ns,'circle');
+      c.setAttribute('cx',cxp); c.setAttribute('cy',cyp); c.setAttribute('r',rp);
+      c.setAttribute('fill','#00000022');
+      c.setAttribute('mask',`url(#${maskId})`);
+      g.appendChild(c);
+    });
+
+    svgEl.appendChild(g);
+
+    // contorno sottile
+    const ring = document.createElementNS(ns,'circle');
+    ring.setAttribute('cx',cx); ring.setAttribute('cy',cy); ring.setAttribute('r',r);
+    ring.setAttribute('fill','none');
+    ring.setAttribute('stroke','rgba(217,185,106,0.25)');
+    ring.setAttribute('stroke-width','1');
+    svgEl.appendChild(ring);
+  }
+
+  // ---------- FORMATTAZIONE ----------
+  const DOW = ["dom","lun","mar","mer","gio","ven","sab"];
+  const DOW_FULL = ["domenica","lunedì","martedì","mercoledì","giovedì","venerdì","sabato"];
+  const MONTHS = ["gennaio","febbraio","marzo","aprile","maggio","giugno","luglio","agosto","settembre","ottobre","novembre","dicembre"];
+
+  function fmtFullDate(d){
+    return `${DOW_FULL[d.getDay()]} <b>${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}</b>`;
+  }
+  function fmtShortDate(d){
+    return `${String(d.getDate()).padStart(2,'0')} ${MONTHS[d.getMonth()].slice(0,3)} · ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  }
+  function fmtDaysUntil(target, from){
+    const ms = target.getTime() - from.getTime();
+    const days = ms / 86400000;
+    if(days < 0) return {n:0,u:'oggi'};
+    if(days < 1) return {n: Math.round(days*24), u: 'ore'};
+    return {n: Math.round(days), u: days>=2? 'giorni':'giorno'};
+  }
+
+  // ---------- STATO & RENDER PRINCIPALE ----------
+  let currentDate = new Date();
+
+  function render(){
+    const d = currentDate;
+    const frac = phaseFraction(d);
+    const age = moonAge(d);
+    const illum = illumination(frac);
+    const info = phaseInfo(frac);
+    const dist = distanceKm(d);
+    const diamArcmin = apparentDiameterArcmin(dist);
+    const zodiac = zodiacSign(d);
+
+    document.getElementById('dateLabel').innerHTML = fmtFullDate(d);
+    renderMoonSVG(document.getElementById('moonSvg'), frac, 200);
+    document.getElementById('phaseName').textContent = info.name;
+    document.getElementById('phasePct').textContent = `${Math.round(illum*100)}% illuminata`;
+    document.getElementById('phaseSub').textContent = info.sub;
+
+    document.getElementById('dAge').innerHTML = `${age.toFixed(1)} giorni <small>su ciclo di ${SYNODIC_MONTH.toFixed(2)}</small>`;
+    document.getElementById('dIllum').innerHTML = `${(illum*100).toFixed(1)}% <small>della superficie visibile</small>`;
+    document.getElementById('dDist').innerHTML = `${Math.round(dist).toLocaleString('it-IT')} km <small>${dist < 380000 ? 'più vicina della media' : 'più lontana della media'}</small>`;
+    document.getElementById('dDiam').innerHTML = `${diamArcmin.toFixed(1)}′ <small>diametro angolare</small>`;
+    document.getElementById('dZodiac').innerHTML = `${zodiac} <small>posizione media approssimata</small>`;
+    document.getElementById('dCycle').innerHTML = `${(frac*100).toFixed(1)}% <small>del ciclo sinodico completato</small>`;
+
+    renderUpcoming(d);
+    renderStrip(d);
+  }
+
+  function renderUpcoming(fromDate){
+    const phases = findNextPhases(fromDate, 4);
+    const container = document.getElementById('upcomingList');
+    container.innerHTML = '';
+    const fracMap = {"Luna Nuova":0, "Primo Quarto":0.25, "Luna Piena":0.5, "Ultimo Quarto":0.75};
+    phases.forEach(p=>{
+      const row = document.createElement('div');
+      row.className = 'upcoming-row';
+      const mini = document.createElementNS("http://www.w3.org/2000/svg","svg");
+      mini.setAttribute('viewBox','0 0 200 200');
+      mini.setAttribute('class','mini-moon');
+      renderMoonSVG(mini, fracMap[p.name], 38);
+      row.appendChild(mini);
+
+      const info = document.createElement('div');
+      info.className = 'upcoming-info';
+      info.innerHTML = `<p class="name">${p.name}</p><p class="date">${fmtShortDate(p.date)}</p>`;
+      row.appendChild(info);
+
+      const until = fmtDaysUntil(p.date, fromDate);
+      const daysEl = document.createElement('div');
+      daysEl.className = 'upcoming-days';
+      daysEl.innerHTML = `<span class="n">${until.n}</span><span class="u">${until.u}</span>`;
+      row.appendChild(daysEl);
+
+      container.appendChild(row);
+    });
+  }
+
+  function renderStrip(fromDate){
+    const strip = document.getElementById('stripScroll');
+    strip.innerHTML = '';
+    for(let i=0;i<14;i++){
+      const d = new Date(fromDate.getTime() + i*86400000);
+      d.setHours(12,0,0,0);
+      const frac = phaseFraction(d);
+      const cell = document.createElement('div');
+      cell.className = 'strip-day' + (i===0 ? ' is-today' : '');
+      const mini = document.createElementNS("http://www.w3.org/2000/svg","svg");
+      mini.setAttribute('viewBox','0 0 200 200');
+      mini.setAttribute('class','strip-moon');
+      renderMoonSVG(mini, frac, 26);
+      cell.innerHTML = `<div class="dow">${DOW[d.getDay()]}</div><div class="dnum">${d.getDate()}</div>`;
+      cell.appendChild(mini);
+      strip.appendChild(cell);
+    }
+  }
+
+  // ---------- NAVIGAZIONE ----------
+  document.getElementById('prevDay').addEventListener('pointerdown', (e)=>{
+    e.preventDefault();
+    currentDate = new Date(currentDate.getTime() - 86400000);
+    render();
+  });
+  document.getElementById('nextDay').addEventListener('pointerdown', (e)=>{
+    e.preventDefault();
+    currentDate = new Date(currentDate.getTime() + 86400000);
+    render();
+  });
+  document.getElementById('todayLink').addEventListener('pointerdown', (e)=>{
+    e.preventDefault();
+    currentDate = new Date();
+    render();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
