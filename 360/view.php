@@ -1,5 +1,7 @@
 <?php
 require_once __DIR__ . '/lib.php';
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
 $cfg = load_config();
 
 $slug = $_GET['g'] ?? '';
@@ -310,18 +312,46 @@ async function parseGPano(blob) {
 // il trascinamento lentissimo anche su telefoni top di gamma.
 // ============================================================
 const MAX_TEX = 8192;
+const APP_VERSION = 'v3.1';
+const DEBUG = new URLSearchParams(location.search).has('debug');
+const dbgLines = [];
+function dbg(line) {
+    dbgLines.push(line);
+    if (!DEBUG) return;
+    let el = document.getElementById('dbgOverlay');
+    if (!el) {
+        el = document.createElement('pre');
+        el.id = 'dbgOverlay';
+        el.style.cssText = 'position:fixed;top:70px;left:8px;z-index:999;background:rgba(0,0,0,0.8);color:#3fb950;font-size:11px;padding:8px 10px;border-radius:8px;max-width:85vw;white-space:pre-wrap;pointer-events:none;font-family:monospace;';
+        document.body.appendChild(el);
+    }
+    el.textContent = dbgLines.join('\n');
+}
+dbg('CAD3D 360 ' + APP_VERSION);
+
+async function getImageSize(blob) {
+    return new Promise((resolve, reject) => {
+        const url = URL.createObjectURL(blob);
+        const img = new Image();
+        img.onload = () => { const s = { w: img.naturalWidth, h: img.naturalHeight }; URL.revokeObjectURL(url); resolve(s); };
+        img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('decode dimensioni fallito')); };
+        img.src = url;
+    });
+}
 
 async function preparePanorama(blob) {
     let panoData = await parseGPano(blob);
+    dbg('XMP GPano: ' + (panoData ? 'presente ' + JSON.stringify(panoData) : 'assente'));
 
     loadingLabel.textContent = 'Elaborazione immagine...';
-    let bmp = await createImageBitmap(blob);
-    const w = bmp.width, h = bmp.height;
+    const { w, h } = await getImageSize(blob);
+    dbg('Immagine: ' + w + 'x' + h + ' (' + (w*h/1e6).toFixed(1) + 'MP, aspect ' + (w/h).toFixed(3) + ')');
 
-    // Fallback: nessun XMP e proporzioni non 2:1.
-    // Ipotesi: copre 360 in orizzontale, crop verticale centrato.
-    // Se il risultato non è perfetto, il file va ri-esportato
-    // con i metadati GPano intatti.
+    try {
+        const gl = document.createElement('canvas').getContext('webgl2') || document.createElement('canvas').getContext('webgl');
+        if (gl) dbg('GPU max texture: ' + gl.getParameter(gl.MAX_TEXTURE_SIZE));
+    } catch(e) {}
+
     if (!panoData && Math.abs(w / h - 2) > 0.02) {
         const fullH = Math.round(w / 2);
         panoData = {
@@ -329,27 +359,63 @@ async function preparePanorama(blob) {
             croppedWidth: w, croppedHeight: h,
             croppedX: 0, croppedY: Math.round((fullH - h) / 2),
         };
+        dbg('panoData fallback applicato (aspect non 2:1)');
     }
 
     let outBlob = blob;
     if (w > MAX_TEX) {
         const scale = MAX_TEX / w;
         const nw = MAX_TEX, nh = Math.round(h * scale);
-        bmp.close();
-        bmp = await createImageBitmap(blob, { resizeWidth: nw, resizeHeight: nh, resizeQuality: 'high' });
+        dbg('Downscale a ' + nw + 'x' + nh);
+        const bmp = await createImageBitmap(blob, { resizeWidth: nw, resizeHeight: nh, resizeQuality: 'high' });
         const canvas = document.createElement('canvas');
         canvas.width = nw; canvas.height = nh;
-        canvas.getContext('2d').drawImage(bmp, 0, 0);
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(bmp, 0, 0);
+        bmp.close();
+
+        if (DEBUG) analyzeBlack(ctx, nw, nh);
+
         outBlob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.9));
-        // Scala anche i panoData alla nuova risoluzione
         if (panoData) {
-            for (const k of Object.keys(panoData)) {
-                panoData[k] = Math.round(panoData[k] * scale);
-            }
+            for (const k of Object.keys(panoData)) panoData[k] = Math.round(panoData[k] * scale);
         }
+    } else if (DEBUG) {
+        const bmp = await createImageBitmap(blob);
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(bmp, 0, 0);
+        bmp.close();
+        analyzeBlack(ctx, w, h);
     }
-    bmp.close();
+    dbg('panoData finale: ' + (panoData ? JSON.stringify(panoData) : 'nessuno (sfera piena)'));
     return { url: URL.createObjectURL(outBlob), panoData };
+}
+
+// Rileva se il nero è DENTRO il file: campiona ultima riga,
+// prima riga e 24 colonne verticali
+function analyzeBlack(ctx, w, h) {
+    const isBlackRow = (y) => {
+        const d = ctx.getImageData(0, y, w, 1).data;
+        let dark = 0;
+        for (let i = 0; i < d.length; i += 40) {
+            if (d[i] < 12 && d[i+1] < 12 && d[i+2] < 12) dark++;
+        }
+        return dark / (d.length / 40);
+    };
+    dbg('Nero riga TOP: ' + Math.round(isBlackRow(1) * 100) + '% | BOTTOM: ' + Math.round(isBlackRow(h - 2) * 100) + '%');
+    let blackCols = [];
+    for (let c = 0; c < 24; c++) {
+        const x = Math.floor(w * c / 24);
+        const d = ctx.getImageData(x, 0, 1, h).data;
+        let dark = 0;
+        for (let i = 0; i < d.length; i += 40) {
+            if (d[i] < 12 && d[i+1] < 12 && d[i+2] < 12) dark++;
+        }
+        if (dark / (d.length / 40) > 0.9) blackCols.push(c);
+    }
+    dbg('Colonne verticali nere (su 24): ' + (blackCols.length ? blackCols.join(',') : 'nessuna'));
 }
 
 let viewer;
