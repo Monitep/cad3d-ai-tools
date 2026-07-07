@@ -1,0 +1,590 @@
+/* ============================================================
+   CAD3D Panorami 360 - Stile globale
+   ============================================================ */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html, body {
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: #0d1117;
+    color: #e6edf3;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+}
+
+a {
+    color: #58a6ff;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Header */
+.site-header {
+    background: linear-gradient(180deg, #161b22 0%, #0d1117 100%);
+    border-bottom: 1px solid #30363d;
+    padding: 24px 20px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(8px);
+}
+
+.site-header .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.site-title {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+.site-title a {
+    color: #e6edf3;
+}
+
+.site-title a:hover {
+    text-decoration: none;
+    color: #58a6ff;
+}
+
+.site-subtitle {
+    font-size: 13px;
+    color: #8b949e;
+    margin-top: 2px;
+}
+
+.header-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+/* Main container */
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 32px 20px;
+}
+
+/* Breadcrumb */
+.breadcrumb {
+    margin-bottom: 24px;
+    font-size: 14px;
+    color: #8b949e;
+}
+
+.breadcrumb a {
+    color: #8b949e;
+}
+
+.breadcrumb a:hover {
+    color: #58a6ff;
+}
+
+/* Page titles */
+h1.page-title {
+    font-size: 28px;
+    font-weight: 600;
+    margin-bottom: 24px;
+    letter-spacing: -0.02em;
+}
+
+h2.section-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: #e6edf3;
+}
+
+/* Grid galleries */
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.gallery-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    display: block;
+}
+
+.gallery-card:hover {
+    border-color: #58a6ff;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(88, 166, 255, 0.15);
+    text-decoration: none;
+}
+
+.gallery-card-cover {
+    width: 100%;
+    aspect-ratio: 2 / 1;
+    background: #0d1117 center / cover no-repeat;
+    background-image: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+    position: relative;
+}
+
+.gallery-card-cover.has-image {
+    background-image: none;
+}
+
+.gallery-card-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.gallery-card-info {
+    padding: 16px;
+}
+
+.gallery-card-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #e6edf3;
+    margin-bottom: 4px;
+}
+
+.gallery-card-meta {
+    font-size: 13px;
+    color: #8b949e;
+}
+
+/* Empty state */
+.empty-state {
+    text-align: center;
+    padding: 80px 20px;
+    color: #8b949e;
+}
+
+.empty-state h2 {
+    font-size: 18px;
+    margin-bottom: 8px;
+    color: #c9d1d9;
+}
+
+/* Buttons */
+.btn {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid #30363d;
+    background: #21262d;
+    color: #e6edf3;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-decoration: none;
+    line-height: 1.4;
+    font-family: inherit;
+}
+
+.btn:hover {
+    background: #30363d;
+    border-color: #6e7681;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: #238636;
+    border-color: #2ea043;
+}
+
+.btn-primary:hover {
+    background: #2ea043;
+    border-color: #3fb950;
+}
+
+.btn-danger {
+    background: #21262d;
+    color: #f85149;
+    border-color: #30363d;
+}
+
+.btn-danger:hover {
+    background: #8b1820;
+    color: white;
+    border-color: #f85149;
+}
+
+.btn-sm {
+    padding: 4px 10px;
+    font-size: 12px;
+}
+
+/* Forms */
+input[type="text"],
+input[type="password"],
+textarea,
+select {
+    width: 100%;
+    padding: 10px 14px;
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    color: #e6edf3;
+    font-size: 14px;
+    font-family: inherit;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+    border-color: #58a6ff;
+    box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+}
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 6px;
+    color: #c9d1d9;
+}
+
+/* Images grid (inside gallery) */
+.images-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+}
+
+.image-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    overflow: hidden;
+    transition: all 0.15s ease;
+}
+
+.image-card:hover {
+    border-color: #58a6ff;
+}
+
+.image-card-thumb {
+    width: 100%;
+    aspect-ratio: 2 / 1;
+    background: #0d1117;
+    display: block;
+}
+
+.image-card-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.image-card-info {
+    padding: 10px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+}
+
+.image-card-title {
+    font-size: 13px;
+    color: #e6edf3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+}
+
+/* Login form */
+.login-box {
+    max-width: 360px;
+    margin: 80px auto;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    padding: 32px;
+}
+
+.login-box h1 {
+    font-size: 20px;
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+/* Alert */
+.alert {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    font-size: 14px;
+}
+
+.alert-error {
+    background: rgba(248, 81, 73, 0.1);
+    border: 1px solid rgba(248, 81, 73, 0.3);
+    color: #f85149;
+}
+
+.alert-success {
+    background: rgba(63, 185, 80, 0.1);
+    border: 1px solid rgba(63, 185, 80, 0.3);
+    color: #3fb950;
+}
+
+.alert-info {
+    background: rgba(88, 166, 255, 0.1);
+    border: 1px solid rgba(88, 166, 255, 0.3);
+    color: #58a6ff;
+}
+
+/* Drop zone */
+.drop-zone {
+    border: 2px dashed #30363d;
+    border-radius: 12px;
+    padding: 48px 24px;
+    text-align: center;
+    transition: all 0.2s ease;
+    background: #0d1117;
+    cursor: pointer;
+}
+
+.drop-zone:hover,
+.drop-zone.dragover {
+    border-color: #58a6ff;
+    background: rgba(88, 166, 255, 0.05);
+}
+
+.drop-zone-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+    color: #58a6ff;
+}
+
+.drop-zone-text {
+    font-size: 16px;
+    color: #c9d1d9;
+    margin-bottom: 6px;
+}
+
+.drop-zone-hint {
+    font-size: 13px;
+    color: #8b949e;
+}
+
+/* Upload queue */
+.upload-queue {
+    margin-top: 24px;
+}
+
+.upload-item {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.upload-item-name {
+    flex: 1;
+    font-size: 13px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.upload-item-status {
+    font-size: 12px;
+    color: #8b949e;
+    min-width: 100px;
+    text-align: right;
+}
+
+.upload-item-progress {
+    width: 120px;
+    height: 6px;
+    background: #30363d;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.upload-item-progress-bar {
+    height: 100%;
+    background: #58a6ff;
+    transition: width 0.2s ease;
+    width: 0%;
+}
+
+.upload-item.success .upload-item-progress-bar {
+    background: #3fb950;
+}
+
+.upload-item.error .upload-item-progress-bar {
+    background: #f85149;
+}
+
+/* Action bar */
+.action-bar {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.action-bar-spacer {
+    flex: 1;
+}
+
+/* Modal */
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.modal {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    padding: 24px;
+    max-width: 420px;
+    width: 100%;
+}
+
+.modal h2 {
+    font-size: 18px;
+    margin-bottom: 16px;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+/* Mobile adjustments */
+@media (max-width: 600px) {
+    .site-header {
+        padding: 16px 14px;
+    }
+
+    .site-title {
+        font-size: 18px;
+    }
+
+    .site-subtitle {
+        font-size: 12px;
+    }
+
+    .container {
+        padding: 20px 14px;
+    }
+
+    h1.page-title {
+        font-size: 22px;
+    }
+
+    .gallery-grid {
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 14px;
+    }
+
+    .images-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 12px;
+    }
+
+    .upload-item-progress {
+        width: 80px;
+    }
+}
+
+/* ============================================================
+   v2 - Rifiniture
+   ============================================================ */
+
+/* Firma visiva: linea orizzonte sotto l'header, richiama
+   l'equatore dell'immagine equirettangolare */
+.site-header {
+    border-bottom: none;
+    box-shadow: 0 1px 0 #30363d, 0 2px 12px rgba(88, 166, 255, 0.06);
+}
+.site-header::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, #58a6ff55 50%, transparent 100%);
+}
+
+/* Focus visibile per accessibilità tastiera */
+a:focus-visible, button:focus-visible, .btn:focus-visible {
+    outline: 2px solid #58a6ff;
+    outline-offset: 2px;
+}
+
+/* Badge 360 sulle card galleria */
+.gallery-card-cover::before {
+    content: '360°';
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #58a6ff;
+    z-index: 2;
+    letter-spacing: 0.05em;
+}
+
+/* Hover coerente su image-card */
+.image-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(88, 166, 255, 0.1);
+}
+
+/* Riduzione movimento */
+@media (prefers-reduced-motion: reduce) {
+    .gallery-card, .image-card, .btn {
+        transition: none;
+    }
+    .gallery-card:hover, .image-card:hover {
+        transform: none;
+    }
+}

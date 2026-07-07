@@ -1,0 +1,12 @@
+# Blocca esecuzione PHP nella cartella data (sicurezza)
+<FilesMatch "\.(php|phtml|phar)$">
+    Require all denied
+</FilesMatch>
+
+# Blocca listing directory
+Options -Indexes
+
+# Blocca accesso JSON
+<FilesMatch "\.json$">
+    Require all denied
+</FilesMatch>

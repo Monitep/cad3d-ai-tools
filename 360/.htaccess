@@ -1,0 +1,31 @@
+# CAD3D Panorami 360 - .htaccess root
+# ============================================================
+
+# NOTA LIMITI UPLOAD: le direttive php_value NON sono usate qui
+# perché con PHP-FPM (usato da Aruba) causano errore 500.
+# I limiti sono nel file php.ini incluso: copialo anche in admin/
+# se l'upload di file grandi fallisce.
+
+# Pagina di default
+DirectoryIndex index.php
+
+# Blocca accesso diretto ai file sensibili
+<FilesMatch "^(config\.php|lib\.php)$">
+    Require all denied
+</FilesMatch>
+
+# Blocca accesso ai file JSON ovunque sotto questa cartella
+<FilesMatch "\.json$">
+    Require all denied
+</FilesMatch>
+
+# Nasconde listing directory
+Options -Indexes
+
+# Cache immagini 30 giorni
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/jpeg "access plus 30 days"
+    ExpiresByType image/png  "access plus 30 days"
+    ExpiresByType text/css   "access plus 7 days"
+</IfModule>
