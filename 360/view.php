@@ -199,6 +199,11 @@ $total = count($meta['images']);
 
 <div id="viewer"></div>
 
+<div id="stitchWarn" style="display:none;position:fixed;top:76px;left:50%;transform:translateX(-50%);z-index:60;background:rgba(80,50,0,0.85);backdrop-filter:blur(8px);border:1px solid #f0883e;color:#ffd8a8;padding:10px 14px;border-radius:10px;font-size:13px;max-width:min(560px,92vw);align-items:flex-start;gap:10px;">
+    <span style="flex:1;"></span>
+    <button onclick="this.parentElement.style.display='none'" style="background:none;border:none;color:#ffd8a8;font-size:16px;cursor:pointer;padding:0;line-height:1;">✕</button>
+</div>
+
 <div class="top-bar">
     <a href="gallery.php?g=<?= h(urlencode($slug)) ?>" class="ui-btn">‹ Galleria</a>
     <div>
@@ -216,13 +221,13 @@ $total = count($meta['images']);
 
 <div class="bottom-bar">
     <?php if ($prev): ?>
-        <a href="view.php?g=<?= h(urlencode($slug)) ?>&i=<?= h(urlencode($prev['file'])) ?>" class="ui-btn">‹ Precedente</a>
+        <a href="view.php?g=<?= h(urlencode($slug)) ?>&i=<?= h(urlencode($prev['file'])) ?>&v=4" class="ui-btn">‹ Precedente</a>
     <?php else: ?>
         <span class="ui-btn disabled">‹ Precedente</span>
     <?php endif; ?>
     <button class="ui-btn" id="gyroBtn" style="display:none;">Giroscopio</button>
     <?php if ($next): ?>
-        <a href="view.php?g=<?= h(urlencode($slug)) ?>&i=<?= h(urlencode($next['file'])) ?>" class="ui-btn">Successivo ›</a>
+        <a href="view.php?g=<?= h(urlencode($slug)) ?>&i=<?= h(urlencode($next['file'])) ?>&v=4" class="ui-btn">Successivo ›</a>
     <?php else: ?>
         <span class="ui-btn disabled">Successivo ›</span>
     <?php endif; ?>
@@ -312,17 +317,18 @@ async function parseGPano(blob) {
 // il trascinamento lentissimo anche su telefoni top di gamma.
 // ============================================================
 const MAX_TEX = 8192;
-const APP_VERSION = 'v3.1';
+const APP_VERSION = 'v4';
 const DEBUG = new URLSearchParams(location.search).has('debug');
 const dbgLines = [];
 function dbg(line) {
     dbgLines.push(line);
+    console.log('[360]', line);
     if (!DEBUG) return;
     let el = document.getElementById('dbgOverlay');
     if (!el) {
         el = document.createElement('pre');
         el.id = 'dbgOverlay';
-        el.style.cssText = 'position:fixed;top:70px;left:8px;z-index:999;background:rgba(0,0,0,0.8);color:#3fb950;font-size:11px;padding:8px 10px;border-radius:8px;max-width:85vw;white-space:pre-wrap;pointer-events:none;font-family:monospace;';
+        el.style.cssText = 'position:fixed;top:70px;left:8px;z-index:999;background:rgba(0,0,0,0.85);color:#3fb950;font-size:11px;padding:8px 10px;border-radius:8px;max-width:85vw;white-space:pre-wrap;pointer-events:none;font-family:monospace;';
         document.body.appendChild(el);
     }
     el.textContent = dbgLines.join('\n');
@@ -334,88 +340,148 @@ async function getImageSize(blob) {
         const url = URL.createObjectURL(blob);
         const img = new Image();
         img.onload = () => { const s = { w: img.naturalWidth, h: img.naturalHeight }; URL.revokeObjectURL(url); resolve(s); };
-        img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('decode dimensioni fallito')); };
+        img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('decodifica immagine fallita')); };
         img.src = url;
     });
 }
 
+// ============================================================
+// Scansione zone nere: rileva se il nero è DENTRO il file
+// (stitching incompleto) distinguendo bande ai poli e spicchi.
+// Lavora su un canvas di analisi 1024px: costo trascurabile.
+// ============================================================
+function scanBlack(ctx, w, h) {
+    const T = 14;        // soglia luminosità "nero"
+    const FRAC = 0.92;   // frazione minima per riga/colonna nera
+
+    const rowFrac = (y) => {
+        const d = ctx.getImageData(0, y, w, 1).data;
+        let dark = 0, tot = 0;
+        for (let i = 0; i < d.length; i += 16) {
+            tot++;
+            if (d[i] < T && d[i+1] < T && d[i+2] < T) dark++;
+        }
+        return dark / tot;
+    };
+
+    // Bande nere consecutive dall'alto e dal basso (max 40% altezza)
+    let topBand = 0;
+    for (let y = 0; y < h * 0.4; y += 2) {
+        if (rowFrac(y) >= FRAC) topBand = y + 2; else break;
+    }
+    let bottomBand = 0;
+    for (let y = h - 1; y > h * 0.6; y -= 2) {
+        if (rowFrac(y) >= FRAC) bottomBand = h - y + 1; else break;
+    }
+
+    // Colonne nere nella fascia centrale (esclude le bande ai poli):
+    // uno spicchio nel viewer = una striscia verticale nera nel file
+    const y0 = topBand + 2;
+    const y1 = h - bottomBand - 2;
+    const colFrac = (x) => {
+        const d = ctx.getImageData(x, y0, 1, Math.max(1, y1 - y0)).data;
+        let dark = 0, tot = 0;
+        for (let i = 0; i < d.length; i += 16) {
+            tot++;
+            if (d[i] < T && d[i+1] < T && d[i+2] < T) dark++;
+        }
+        return dark / tot;
+    };
+    let blackCols = 0, maxRun = 0, run = 0;
+    const step = 4;
+    for (let x = 0; x < w; x += step) {
+        if (colFrac(x) >= FRAC) {
+            blackCols++;
+            run++;
+            if (run > maxRun) maxRun = run;
+        } else {
+            run = 0;
+        }
+    }
+    const wedgeDeg = Math.round(maxRun * step / w * 360);
+
+    return {
+        topBandPct: Math.round(topBand / h * 100),
+        bottomBandPct: Math.round(bottomBand / h * 100),
+        wedgeDeg: wedgeDeg,
+        baked: wedgeDeg >= 4 || topBand / h > 0.03 || bottomBand / h > 0.03,
+    };
+}
+
+function showStitchWarning(scan) {
+    const parts = [];
+    if (scan.wedgeDeg >= 4) parts.push('spicchio verticale di ~' + scan.wedgeDeg + '\u00b0');
+    if (scan.bottomBandPct > 3) parts.push('banda inferiore (' + scan.bottomBandPct + '% altezza)');
+    if (scan.topBandPct > 3) parts.push('banda superiore (' + scan.topBandPct + '% altezza)');
+    const el = document.getElementById('stitchWarn');
+    el.querySelector('span').textContent =
+        'Zone nere presenti nel file stesso: ' + parts.join(', ') +
+        '. Non \u00e8 un problema del viewer: lo stitching \u00e8 incompleto, riesporta il panorama.';
+    el.style.display = 'flex';
+}
+
 async function preparePanorama(blob) {
     let panoData = await parseGPano(blob);
-    dbg('XMP GPano: ' + (panoData ? 'presente ' + JSON.stringify(panoData) : 'assente'));
+    dbg('XMP GPano: ' + (panoData ? JSON.stringify(panoData) : 'assente'));
 
     loadingLabel.textContent = 'Elaborazione immagine...';
     const { w, h } = await getImageSize(blob);
-    dbg('Immagine: ' + w + 'x' + h + ' (' + (w*h/1e6).toFixed(1) + 'MP, aspect ' + (w/h).toFixed(3) + ')');
+    dbg('File: ' + w + 'x' + h + ' (' + (w*h/1e6).toFixed(1) + 'MP, aspect ' + (w/h).toFixed(3) + ')');
 
-    try {
-        const gl = document.createElement('canvas').getContext('webgl2') || document.createElement('canvas').getContext('webgl');
-        if (gl) dbg('GPU max texture: ' + gl.getParameter(gl.MAX_TEXTURE_SIZE));
-    } catch(e) {}
-
-    if (!panoData && Math.abs(w / h - 2) > 0.02) {
-        const fullH = Math.round(w / 2);
-        panoData = {
-            fullWidth: w, fullHeight: fullH,
-            croppedWidth: w, croppedHeight: h,
-            croppedX: 0, croppedY: Math.round((fullH - h) / 2),
-        };
-        dbg('panoData fallback applicato (aspect non 2:1)');
-    }
-
+    // ---- Downscale per la GPU (una texture 120MP arriva a ~500MB VRAM)
     let outBlob = blob;
+    let bigCanvas = null;
     if (w > MAX_TEX) {
         const scale = MAX_TEX / w;
         const nw = MAX_TEX, nh = Math.round(h * scale);
-        dbg('Downscale a ' + nw + 'x' + nh);
+        dbg('Downscale texture: ' + nw + 'x' + nh);
         const bmp = await createImageBitmap(blob, { resizeWidth: nw, resizeHeight: nh, resizeQuality: 'high' });
-        const canvas = document.createElement('canvas');
-        canvas.width = nw; canvas.height = nh;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(bmp, 0, 0);
+        bigCanvas = document.createElement('canvas');
+        bigCanvas.width = nw; bigCanvas.height = nh;
+        bigCanvas.getContext('2d').drawImage(bmp, 0, 0);
         bmp.close();
-
-        if (DEBUG) analyzeBlack(ctx, nw, nh);
-
-        outBlob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.9));
+        outBlob = await new Promise(r => bigCanvas.toBlob(r, 'image/jpeg', 0.9));
         if (panoData) {
             for (const k of Object.keys(panoData)) panoData[k] = Math.round(panoData[k] * scale);
         }
-    } else if (DEBUG) {
-        const bmp = await createImageBitmap(blob);
-        const canvas = document.createElement('canvas');
-        canvas.width = w; canvas.height = h;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(bmp, 0, 0);
-        bmp.close();
-        analyzeBlack(ctx, w, h);
     }
-    dbg('panoData finale: ' + (panoData ? JSON.stringify(panoData) : 'nessuno (sfera piena)'));
-    return { url: URL.createObjectURL(outBlob), panoData };
-}
 
-// Rileva se il nero è DENTRO il file: campiona ultima riga,
-// prima riga e 24 colonne verticali
-function analyzeBlack(ctx, w, h) {
-    const isBlackRow = (y) => {
-        const d = ctx.getImageData(0, y, w, 1).data;
-        let dark = 0;
-        for (let i = 0; i < d.length; i += 40) {
-            if (d[i] < 12 && d[i+1] < 12 && d[i+2] < 12) dark++;
+    // ---- Analisi pixel su canvas piccolo (sempre attiva)
+    try {
+        const aw = 1024, ah = Math.max(8, Math.round(h / w * 1024));
+        const ac = document.createElement('canvas');
+        ac.width = aw; ac.height = ah;
+        const actx = ac.getContext('2d', { willReadFrequently: true });
+        if (bigCanvas) {
+            actx.drawImage(bigCanvas, 0, 0, aw, ah);
+        } else {
+            const abmp = await createImageBitmap(blob, { resizeWidth: aw, resizeHeight: ah });
+            actx.drawImage(abmp, 0, 0);
+            abmp.close();
         }
-        return dark / (d.length / 40);
-    };
-    dbg('Nero riga TOP: ' + Math.round(isBlackRow(1) * 100) + '% | BOTTOM: ' + Math.round(isBlackRow(h - 2) * 100) + '%');
-    let blackCols = [];
-    for (let c = 0; c < 24; c++) {
-        const x = Math.floor(w * c / 24);
-        const d = ctx.getImageData(x, 0, 1, h).data;
-        let dark = 0;
-        for (let i = 0; i < d.length; i += 40) {
-            if (d[i] < 12 && d[i+1] < 12 && d[i+2] < 12) dark++;
-        }
-        if (dark / (d.length / 40) > 0.9) blackCols.push(c);
+        const scan = scanBlack(actx, aw, ah);
+        dbg('Scan nero: top ' + scan.topBandPct + '%, bottom ' + scan.bottomBandPct + '%, spicchio ' + scan.wedgeDeg + '\u00b0');
+        if (scan.baked) showStitchWarning(scan);
+    } catch (e) {
+        dbg('Scan non riuscito: ' + e.message);
     }
-    dbg('Colonne verticali nere (su 24): ' + (blackCols.length ? blackCols.join(',') : 'nessuna'));
+
+    // ---- panoData geometrico solo se il file NON copre la sfera intera
+    if (!panoData && Math.abs(w / h - 2) > 0.02) {
+        const fullH = Math.round(w / 2);
+        const eff = bigCanvas ? MAX_TEX / w : 1;
+        panoData = {
+            fullWidth: Math.round(w * eff),
+            fullHeight: Math.round(fullH * eff),
+            croppedWidth: Math.round(w * eff),
+            croppedHeight: Math.round(h * eff),
+            croppedX: 0,
+            croppedY: Math.round((fullH - h) / 2 * eff),
+        };
+        dbg('panoData fallback (aspect non 2:1)');
+    }
+    dbg('panoData finale: ' + (panoData ? JSON.stringify(panoData) : 'sfera piena'));
+    return { url: URL.createObjectURL(outBlob), panoData };
 }
 
 let viewer;
@@ -545,8 +611,8 @@ if (isMobile() && window.DeviceOrientationEvent) {
 // ============================================================
 // Tastiera: frecce prev/next, ESC torna alla galleria
 // ============================================================
-const PREV_URL = <?= $prev ? json_encode('view.php?g=' . rawurlencode($slug) . '&i=' . rawurlencode($prev['file'])) : 'null' ?>;
-const NEXT_URL = <?= $next ? json_encode('view.php?g=' . rawurlencode($slug) . '&i=' . rawurlencode($next['file'])) : 'null' ?>;
+const PREV_URL = <?= $prev ? json_encode('view.php?g=' . rawurlencode($slug) . '&i=' . rawurlencode($prev['file']) . '&v=4') : 'null' ?>;
+const NEXT_URL = <?= $next ? json_encode('view.php?g=' . rawurlencode($slug) . '&i=' . rawurlencode($next['file']) . '&v=4') : 'null' ?>;
 const BACK_URL = <?= json_encode('gallery.php?g=' . rawurlencode($slug)) ?>;
 
 document.addEventListener('keydown', (e) => {

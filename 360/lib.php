@@ -3,6 +3,13 @@
 // Funzioni helper condivise
 // ============================================================
 
+// Mai cache sulle pagine PHP: evita che i browser servano
+// versioni vecchie del viewer dopo un aggiornamento.
+if (!headers_sent()) {
+    header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+    header('Pragma: no-cache');
+}
+
 function load_config() {
     static $cfg = null;
     if ($cfg === null) {
