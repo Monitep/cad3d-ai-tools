@@ -262,8 +262,7 @@ async function downloadWithProgress(url) {
         // Niente Content-Length: fallback indeterminato
         loadingLabel.textContent = 'Download in corso...';
         ringPct.textContent = '...';
-        const blob = await res.blob();
-        return URL.createObjectURL(blob);
+        return await res.blob();
     }
 
     const reader = res.body.getReader();
@@ -278,7 +277,79 @@ async function downloadWithProgress(url) {
     }
     loadingLabel.textContent = 'Elaborazione immagine...';
     setProgress(95);
-    return URL.createObjectURL(new Blob(chunks));
+    return new Blob(chunks);
+}
+
+// ============================================================
+// Legge i metadati XMP GPano (li scrivono DJI e molti stitcher).
+// Servono per posizionare correttamente sulla sfera i panorami
+// parziali (es. drone senza zenit). Senza questi, PSV stira
+// l'immagine su tutta la sfera e si vedono spicchi neri.
+// ============================================================
+async function parseGPano(blob) {
+    const head = await blob.slice(0, 262144).text();
+    const grab = (name) => {
+        const m = head.match(new RegExp('GPano:' + name + "[=\"'>]+([0-9]+)"));
+        return m ? parseInt(m[1], 10) : null;
+    };
+    const fw = grab('FullPanoWidthPixels');
+    const fh = grab('FullPanoHeightPixels');
+    const cw = grab('CroppedAreaImageWidthPixels');
+    const ch = grab('CroppedAreaImageHeightPixels');
+    const cx = grab('CroppedAreaLeftPixels');
+    const cy = grab('CroppedAreaTopPixels');
+    if (fw && fh && cw && ch && cx !== null && cy !== null) {
+        return { fullWidth: fw, fullHeight: fh, croppedWidth: cw, croppedHeight: ch, croppedX: cx, croppedY: cy };
+    }
+    return null;
+}
+
+// ============================================================
+// Ridimensiona a max 8192px di larghezza prima di darla alla
+// GPU: una texture 120MP occupa fino a 500MB di VRAM e rende
+// il trascinamento lentissimo anche su telefoni top di gamma.
+// ============================================================
+const MAX_TEX = 8192;
+
+async function preparePanorama(blob) {
+    let panoData = await parseGPano(blob);
+
+    loadingLabel.textContent = 'Elaborazione immagine...';
+    let bmp = await createImageBitmap(blob);
+    const w = bmp.width, h = bmp.height;
+
+    // Fallback: nessun XMP e proporzioni non 2:1.
+    // Ipotesi: copre 360 in orizzontale, crop verticale centrato.
+    // Se il risultato non è perfetto, il file va ri-esportato
+    // con i metadati GPano intatti.
+    if (!panoData && Math.abs(w / h - 2) > 0.02) {
+        const fullH = Math.round(w / 2);
+        panoData = {
+            fullWidth: w, fullHeight: fullH,
+            croppedWidth: w, croppedHeight: h,
+            croppedX: 0, croppedY: Math.round((fullH - h) / 2),
+        };
+    }
+
+    let outBlob = blob;
+    if (w > MAX_TEX) {
+        const scale = MAX_TEX / w;
+        const nw = MAX_TEX, nh = Math.round(h * scale);
+        bmp.close();
+        bmp = await createImageBitmap(blob, { resizeWidth: nw, resizeHeight: nh, resizeQuality: 'high' });
+        const canvas = document.createElement('canvas');
+        canvas.width = nw; canvas.height = nh;
+        canvas.getContext('2d').drawImage(bmp, 0, 0);
+        outBlob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.9));
+        // Scala anche i panoData alla nuova risoluzione
+        if (panoData) {
+            for (const k of Object.keys(panoData)) {
+                panoData[k] = Math.round(panoData[k] * scale);
+            }
+        }
+    }
+    bmp.close();
+    return { url: URL.createObjectURL(outBlob), panoData };
 }
 
 let viewer;
@@ -286,11 +357,13 @@ let autoRotateOn = false;
 let rafId = null;
 
 try {
-    const blobUrl = await downloadWithProgress(IMG_URL);
+    const rawBlob = await downloadWithProgress(IMG_URL);
+    const { url: panoUrl, panoData } = await preparePanorama(rawBlob);
 
     viewer = new Viewer({
         container: document.getElementById('viewer'),
-        panorama: blobUrl,
+        panorama: panoUrl,
+        panoData: panoData || undefined,
         navbar: false,
         defaultZoomLvl: 30,
         mousewheel: true,
