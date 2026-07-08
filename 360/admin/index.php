@@ -1,4 +1,10 @@
 <?php
+// Diagnostica pubblica (dati non sensibili) raggiungibile senza login
+if (isset($_GET['diag'])) {
+    require_once __DIR__ . '/../lib.php';
+    require __DIR__ . '/../diag.php';
+    exit;
+}
 require_once __DIR__ . '/_auth.php';
 $cfg = load_config();
 $data = load_galleries();
