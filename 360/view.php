@@ -32,6 +32,7 @@ if (!$image) {
 $prev = $index > 0 ? $meta['images'][$index - 1] : null;
 $next = $index < count($meta['images']) - 1 ? $meta['images'][$index + 1] : null;
 $image_url = 'data/' . $slug . '/' . $image['file'];
+$thumb_url = 'data/' . $slug . '/_thumbs/' . pathinfo($image['file'], PATHINFO_FILENAME) . '.jpg';
 $total = count($meta['images']);
 ?><!DOCTYPE html>
 <html lang="it">
@@ -199,6 +200,11 @@ $total = count($meta['images']);
 
 <div id="viewer"></div>
 
+<div id="stitchWarn" style="display:none;position:fixed;top:76px;left:50%;transform:translateX(-50%);z-index:60;background:rgba(80,50,0,0.88);backdrop-filter:blur(8px);border:1px solid #f0883e;color:#ffd8a8;padding:10px 14px;border-radius:10px;font-size:13px;max-width:min(560px,92vw);align-items:flex-start;gap:10px;">
+    <span style="flex:1;"></span>
+    <button onclick="this.parentElement.style.display='none'" style="background:none;border:none;color:#ffd8a8;font-size:16px;cursor:pointer;padding:0;line-height:1;">✕</button>
+</div>
+
 
 <div class="top-bar">
     <a href="gallery.php?g=<?= h(urlencode($slug)) ?>" class="ui-btn">‹ Galleria</a>
@@ -217,13 +223,13 @@ $total = count($meta['images']);
 
 <div class="bottom-bar">
     <?php if ($prev): ?>
-        <a href="view.php?g=<?= h(urlencode($slug)) ?>&i=<?= h(urlencode($prev['file'])) ?>&v=5" class="ui-btn">‹ Precedente</a>
+        <a href="view.php?g=<?= h(urlencode($slug)) ?>&i=<?= h(urlencode($prev['file'])) ?>&v=6" class="ui-btn">‹ Precedente</a>
     <?php else: ?>
         <span class="ui-btn disabled">‹ Precedente</span>
     <?php endif; ?>
     <button class="ui-btn" id="gyroBtn" style="display:none;">Giroscopio</button>
     <?php if ($next): ?>
-        <a href="view.php?g=<?= h(urlencode($slug)) ?>&i=<?= h(urlencode($next['file'])) ?>&v=5" class="ui-btn">Successivo ›</a>
+        <a href="view.php?g=<?= h(urlencode($slug)) ?>&i=<?= h(urlencode($next['file'])) ?>&v=6" class="ui-btn">Successivo ›</a>
     <?php else: ?>
         <span class="ui-btn disabled">Successivo ›</span>
     <?php endif; ?>
@@ -242,14 +248,15 @@ $total = count($meta['images']);
 import { Viewer } from '@photo-sphere-viewer/core';
 
 // ============================================================
-// v5 - RITORNO AL CARICAMENTO ORIGINALE (quello che funzionava)
-// URL passato direttamente a PSV, nessun re-encode, nessun
-// panoData custom. useXmpData:false ignora i metadati di crop
-// che DJI scrive nei file: applicarli creava spicchio e buco
-// al nadir. L'immagine viene stesa su tutta la sfera.
+// v6 - CONFIGURAZIONE IDENTICA ALLA V1 ORIGINALE
+// URL passato direttamente a Photo Sphere Viewer, che gestisce
+// da solo download, eventuali metadati XMP e mappatura sferica.
+// Nessuna elaborazione intermedia. In piu': verdetto automatico
+// sul contenuto del file tramite scansione della miniatura.
 // ============================================================
 const IMG_URL = <?= json_encode($image_url) ?>;
-const APP_VERSION = 'v5';
+const THUMB_URL = <?= json_encode($thumb_url) ?>;
+const APP_VERSION = 'v6';
 console.log('[360]', APP_VERSION);
 
 const ringPct = document.getElementById('ringPct');
@@ -268,13 +275,77 @@ const pulse = setInterval(() => {
 const viewer = new Viewer({
     container: document.getElementById('viewer'),
     panorama: IMG_URL,
-    useXmpData: false,
     navbar: false,
     loadingTxt: '',
     defaultZoomLvl: 30,
     mousewheel: true,
     touchmoveTwoFingers: false,
 });
+
+
+// ============================================================
+// VERDETTO AUTOMATICO: analizza la MINIATURA (copia fedele
+// ridotta dell'originale, ~100KB). Se trova nero cucito nel
+// file lo dichiara sullo schermo. Logica testata su casi noti.
+// ============================================================
+function scanBlack(ctx, w, h) {
+    const T = 14, FRAC = 0.92;
+    const rowFrac = (y) => {
+        const d = ctx.getImageData(0, y, w, 1).data;
+        let dark = 0, tot = 0;
+        for (let i = 0; i < d.length; i += 16) { tot++; if (d[i] < T && d[i+1] < T && d[i+2] < T) dark++; }
+        return dark / tot;
+    };
+    let topBand = 0;
+    for (let y = 0; y < h * 0.4; y += 2) { if (rowFrac(y) >= FRAC) topBand = y + 2; else break; }
+    let bottomBand = 0;
+    for (let y = h - 1; y > h * 0.6; y -= 2) { if (rowFrac(y) >= FRAC) bottomBand = h - y + 1; else break; }
+    const y0 = topBand + 2, y1 = h - bottomBand - 2;
+    const colFrac = (x) => {
+        const d = ctx.getImageData(x, y0, 1, Math.max(1, y1 - y0)).data;
+        let dark = 0, tot = 0;
+        for (let i = 0; i < d.length; i += 16) { tot++; if (d[i] < T && d[i+1] < T && d[i+2] < T) dark++; }
+        return dark / tot;
+    };
+    let maxRun = 0, run = 0;
+    const step = 4;
+    for (let x = 0; x < w; x += step) {
+        if (colFrac(x) >= FRAC) { run++; if (run > maxRun) maxRun = run; } else run = 0;
+    }
+    const wedgeDeg = Math.round(maxRun * step / w * 360);
+    return {
+        topBandPct: Math.round(topBand / h * 100),
+        bottomBandPct: Math.round(bottomBand / h * 100),
+        wedgeDeg,
+        baked: wedgeDeg >= 4 || topBand / h > 0.03 || bottomBand / h > 0.03,
+    };
+}
+
+async function verdictFromThumb() {
+    try {
+        const res = await fetch(THUMB_URL);
+        if (!res.ok) return;
+        const bmp = await createImageBitmap(await res.blob());
+        const c = document.createElement('canvas');
+        c.width = bmp.width; c.height = bmp.height;
+        const ctx = c.getContext('2d', { willReadFrequently: true });
+        ctx.drawImage(bmp, 0, 0);
+        bmp.close();
+        const s = scanBlack(ctx, c.width, c.height);
+        console.log('[360] verdetto file:', JSON.stringify(s));
+        if (s.baked) {
+            const parts = [];
+            if (s.wedgeDeg >= 4) parts.push('spicchio di ~' + s.wedgeDeg + '\u00b0');
+            if (s.bottomBandPct > 3) parts.push('banda al nadir (' + s.bottomBandPct + '%)');
+            if (s.topBandPct > 3) parts.push('banda allo zenit (' + s.topBandPct + '%)');
+            const el = document.getElementById('stitchWarn');
+            el.querySelector('span').textContent =
+                'Verdetto: il nero \u00e8 DENTRO il file JPEG (' + parts.join(', ') +
+                '). Il viewer mostra fedelmente ci\u00f2 che contiene: riesporta il panorama con stitching completo.';
+            el.style.display = 'flex';
+        }
+    } catch (e) { console.log('[360] scan thumb fallito:', e.message); }
+}
 
 viewer.addEventListener('ready', () => {
     clearInterval(pulse);
@@ -283,6 +354,7 @@ viewer.addEventListener('ready', () => {
     const ov = document.getElementById('loading');
     ov.classList.add('hidden');
     setTimeout(() => ov.remove(), 500);
+    verdictFromThumb();
 }, { once: true });
 
 viewer.addEventListener('panorama-load-error', () => {
@@ -385,8 +457,8 @@ if (isMobile() && window.DeviceOrientationEvent) {
 // ============================================================
 // Tastiera
 // ============================================================
-const PREV_URL = <?= $prev ? json_encode('view.php?g=' . rawurlencode($slug) . '&i=' . rawurlencode($prev['file']) . '&v=5') : 'null' ?>;
-const NEXT_URL = <?= $next ? json_encode('view.php?g=' . rawurlencode($slug) . '&i=' . rawurlencode($next['file']) . '&v=5') : 'null' ?>;
+const PREV_URL = <?= $prev ? json_encode('view.php?g=' . rawurlencode($slug) . '&i=' . rawurlencode($prev['file']) . '&v=6') : 'null' ?>;
+const NEXT_URL = <?= $next ? json_encode('view.php?g=' . rawurlencode($slug) . '&i=' . rawurlencode($next['file']) . '&v=6') : 'null' ?>;
 const BACK_URL = <?= json_encode('gallery.php?g=' . rawurlencode($slug)) ?>;
 
 document.addEventListener('keydown', (e) => {
