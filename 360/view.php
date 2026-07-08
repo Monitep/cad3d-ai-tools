@@ -1,6 +1,5 @@
 <?php
 require_once __DIR__ . '/lib.php';
-if (isset($_GET['diag'])) { require __DIR__ . '/diag.php'; exit; }
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Pragma: no-cache');
 $cfg = load_config();
@@ -196,7 +195,7 @@ $total = count($meta['images']);
         <div class="ring-pct" id="ringPct">0%</div>
     </div>
     <div class="loading-title"><?= h($image['title']) ?></div>
-    <div class="loading-label" id="loadingLabel">Download panorama...</div>
+    <div class="loading-label" id="loadingLabel">Download panorama... (v7)</div>
 </div>
 
 <div id="viewer"></div>
@@ -220,17 +219,18 @@ $total = count($meta['images']);
     <button class="ui-btn" id="zoomOut" title="Zoom indietro">−</button>
     <button class="ui-btn" id="autoRotate" title="Rotazione automatica">↻</button>
     <button class="ui-btn" id="fullscreen" title="Schermo intero">⛶</button>
+    <button class="ui-btn" id="hdBtn" title="Piena risoluzione 120MP (consigliato su PC)" style="display:none;font-size:12px;font-weight:700;">HD</button>
 </div>
 
 <div class="bottom-bar">
     <?php if ($prev): ?>
-        <a href="view.php?g=<?= h(urlencode($slug)) ?>&i=<?= h(urlencode($prev['file'])) ?>&v=6" class="ui-btn">‹ Precedente</a>
+        <a href="view.php?g=<?= h(urlencode($slug)) ?>&i=<?= h(urlencode($prev['file'])) ?>&v=7" class="ui-btn">‹ Precedente</a>
     <?php else: ?>
         <span class="ui-btn disabled">‹ Precedente</span>
     <?php endif; ?>
     <button class="ui-btn" id="gyroBtn" style="display:none;">Giroscopio</button>
     <?php if ($next): ?>
-        <a href="view.php?g=<?= h(urlencode($slug)) ?>&i=<?= h(urlencode($next['file'])) ?>&v=6" class="ui-btn">Successivo ›</a>
+        <a href="view.php?g=<?= h(urlencode($slug)) ?>&i=<?= h(urlencode($next['file'])) ?>&v=7" class="ui-btn">Successivo ›</a>
     <?php else: ?>
         <span class="ui-btn disabled">Successivo ›</span>
     <?php endif; ?>
@@ -257,7 +257,7 @@ import { Viewer } from '@photo-sphere-viewer/core';
 // ============================================================
 const IMG_URL = <?= json_encode($image_url) ?>;
 const THUMB_URL = <?= json_encode($thumb_url) ?>;
-const APP_VERSION = 'v6';
+const APP_VERSION = 'v7';
 console.log('[360]', APP_VERSION);
 
 const ringPct = document.getElementById('ringPct');
@@ -265,29 +265,86 @@ const ringFg = document.getElementById('ringFg');
 const loadingLabel = document.getElementById('loadingLabel');
 const CIRC = 251.3;
 
-// Anello indeterminato animato durante il caricamento
-let fakePct = 0;
-const pulse = setInterval(() => {
-    fakePct = Math.min(92, fakePct + (92 - fakePct) * 0.06);
-    ringFg.style.strokeDashoffset = CIRC - (CIRC * fakePct / 100);
-    ringPct.textContent = Math.round(fakePct) + '%';
-}, 200);
+function setProgress(pct) {
+    ringFg.style.strokeDashoffset = CIRC - (CIRC * Math.min(100, pct) / 100);
+    ringPct.textContent = Math.round(Math.min(100, pct)) + '%';
+}
 
-const viewer = new Viewer({
-    container: document.getElementById('viewer'),
-    panorama: IMG_URL,
-    navbar: false,
-    loadingTxt: '',
-    defaultZoomLvl: 30,
-    mousewheel: true,
-    touchmoveTwoFingers: false,
-});
+// ============================================================
+// v7 - LA CAUSA VERA (verificata sui file reali del server):
+// i pano sono 15520x7760 = 481MB di texture GPU. Sotto il
+// limite dimensionale (16384) quindi three.js NON ridimensiona,
+// ma oltre la memoria pratica dei telefoni: il driver lascia
+// regioni non caricate = strisce/zone nere. Su PC (RTX) tutto
+// ok, ed ecco perche' "prima funzionava" su desktop.
+// FIX: ridimensionamento client-side a max 8192px prima della
+// GPU (134MB), con doppio fallback di decodifica per Android.
+// ============================================================
+const MAX_TEX = 8192;
+
+async function downloadWithProgress(url) {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const total = parseInt(res.headers.get('Content-Length') || '0', 10);
+    if (!total || !res.body) {
+        loadingLabel.textContent = 'Download in corso...';
+        return await res.blob();
+    }
+    const reader = res.body.getReader();
+    const chunks = [];
+    let received = 0;
+    while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+        received += value.length;
+        setProgress(received / total * 80);
+    }
+    return new Blob(chunks);
+}
+
+async function decodeScaled(blob) {
+    // Percorso 1: createImageBitmap con resize integrato
+    try {
+        const probe = await new Promise((res, rej) => {
+            const u = URL.createObjectURL(blob);
+            const im = new Image();
+            im.onload = () => { const s = {w: im.naturalWidth, h: im.naturalHeight, img: im, url: u}; res(s); };
+            im.onerror = () => { URL.revokeObjectURL(u); rej(new Error('decode fallito')); };
+            im.src = u;
+        });
+        const { w, h, img, url } = probe;
+        console.log('[360] originale', w + 'x' + h);
+        if (w <= MAX_TEX) { URL.revokeObjectURL(url); return null; } // piccolo: URL diretto ok
+        const nw = MAX_TEX, nh = Math.round(h * MAX_TEX / w);
+        let canvas = document.createElement('canvas');
+        canvas.width = nw; canvas.height = nh;
+        const ctx = canvas.getContext('2d');
+        try {
+            const bmp = await createImageBitmap(blob, { resizeWidth: nw, resizeHeight: nh, resizeQuality: 'high' });
+            ctx.drawImage(bmp, 0, 0);
+            bmp.close();
+        } catch (e1) {
+            // Percorso 2 (fallback Android): decodifica via <img>
+            console.log('[360] fallback img decode:', e1.message);
+            ctx.drawImage(img, 0, 0, nw, nh);
+        }
+        URL.revokeObjectURL(url);
+        const out = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.9));
+        if (!out) throw new Error('toBlob nullo');
+        console.log('[360] texture ridotta a', nw + 'x' + nh);
+        return URL.createObjectURL(out);
+    } catch (e) {
+        console.log('[360] downscale impossibile, uso URL diretto:', e.message);
+        return null;
+    }
+}
 
 
 // ============================================================
-// VERDETTO AUTOMATICO: analizza la MINIATURA (copia fedele
-// ridotta dell'originale, ~100KB). Se trova nero cucito nel
-// file lo dichiara sullo schermo. Logica testata su casi noti.
+// Verdetto file: analizza la miniatura (copia fedele ridotta
+// dell'originale). Se trovasse nero cucito nel file lo dichiara.
+// Sui file attuali (verificati puliti) non scatta mai.
 // ============================================================
 function scanBlack(ctx, w, h) {
     const T = 14, FRAC = 0.92;
@@ -302,18 +359,14 @@ function scanBlack(ctx, w, h) {
     let bottomBand = 0;
     for (let y = h - 1; y > h * 0.6; y -= 2) { if (rowFrac(y) >= FRAC) bottomBand = h - y + 1; else break; }
     const y0 = topBand + 2, y1 = h - bottomBand - 2;
-    const colFrac = (x) => {
+    let maxRun = 0, run = 0;
+    for (let x = 0; x < w; x += 4) {
         const d = ctx.getImageData(x, y0, 1, Math.max(1, y1 - y0)).data;
         let dark = 0, tot = 0;
         for (let i = 0; i < d.length; i += 16) { tot++; if (d[i] < T && d[i+1] < T && d[i+2] < T) dark++; }
-        return dark / tot;
-    };
-    let maxRun = 0, run = 0;
-    const step = 4;
-    for (let x = 0; x < w; x += step) {
-        if (colFrac(x) >= FRAC) { run++; if (run > maxRun) maxRun = run; } else run = 0;
+        if (tot && dark / tot >= FRAC) { run++; if (run > maxRun) maxRun = run; } else run = 0;
     }
-    const wedgeDeg = Math.round(maxRun * step / w * 360);
+    const wedgeDeg = Math.round(maxRun * 4 / w * 360);
     return {
         topBandPct: Math.round(topBand / h * 100),
         bottomBandPct: Math.round(bottomBand / h * 100),
@@ -340,30 +393,72 @@ async function verdictFromThumb() {
             if (s.bottomBandPct > 3) parts.push('banda al nadir (' + s.bottomBandPct + '%)');
             if (s.topBandPct > 3) parts.push('banda allo zenit (' + s.topBandPct + '%)');
             const el = document.getElementById('stitchWarn');
-            el.querySelector('span').textContent =
-                'Verdetto: il nero \u00e8 DENTRO il file JPEG (' + parts.join(', ') +
-                '). Il viewer mostra fedelmente ci\u00f2 che contiene: riesporta il panorama con stitching completo.';
-            el.style.display = 'flex';
+            if (el) {
+                el.querySelector('span').textContent =
+                    'Il nero \u00e8 dentro il file JPEG (' + parts.join(', ') + '): riesporta il panorama con stitching completo.';
+                el.style.display = 'flex';
+            }
         }
-    } catch (e) { console.log('[360] scan thumb fallito:', e.message); }
+    } catch (e) { console.log('[360] scan thumb saltato:', e.message); }
 }
 
-viewer.addEventListener('ready', () => {
-    clearInterval(pulse);
-    ringFg.style.strokeDashoffset = 0;
-    ringPct.textContent = '100%';
-    const ov = document.getElementById('loading');
-    ov.classList.add('hidden');
-    setTimeout(() => ov.remove(), 500);
-    verdictFromThumb();
-}, { once: true });
+let viewer;
+let hdLoaded = false;
 
-viewer.addEventListener('panorama-load-error', () => {
-    clearInterval(pulse);
-    loadingLabel.textContent = 'Errore caricamento panorama';
-    loadingLabel.style.color = '#f85149';
-    ringPct.textContent = '\u2715';
-});
+async function boot() {
+    let panoSrc = IMG_URL;
+    try {
+        const blob = await downloadWithProgress(IMG_URL);
+        loadingLabel.textContent = 'Elaborazione immagine...';
+        setProgress(85);
+        const scaled = await decodeScaled(blob);
+        if (scaled) panoSrc = scaled;
+    } catch (e) {
+        console.log('[360] download custom fallito, PSV carica da URL:', e.message);
+    }
+    setProgress(92);
+    loadingLabel.textContent = 'Preparazione sfera...';
+
+    viewer = new Viewer({
+        container: document.getElementById('viewer'),
+        panorama: panoSrc,
+        navbar: false,
+        defaultZoomLvl: 30,
+        mousewheel: true,
+        touchmoveTwoFingers: false,
+    });
+
+    viewer.addEventListener('ready', () => {
+        setProgress(100);
+        const ov = document.getElementById('loading');
+        if (ov) { ov.classList.add('hidden'); setTimeout(() => ov.remove(), 500); }
+        verdictFromThumb();
+    }, { once: true });
+
+    viewer.addEventListener('panorama-load-error', () => {
+        loadingLabel.textContent = 'Errore caricamento panorama';
+        loadingLabel.style.color = '#f85149';
+        ringPct.textContent = '\u2715';
+    });
+
+    // Bottone HD: piena risoluzione on-demand (consigliato solo su PC)
+    const hdBtn = document.getElementById('hdBtn');
+    hdBtn.style.display = '';
+    hdBtn.addEventListener('click', () => {
+        if (hdLoaded) return;
+        hdLoaded = true;
+        hdBtn.classList.add('active');
+        hdBtn.textContent = '...';
+        viewer.setPanorama(IMG_URL, { transition: false }).then(() => {
+            hdBtn.textContent = 'HD';
+            console.log('[360] piena risoluzione caricata');
+        }).catch(() => {
+            hdBtn.textContent = 'HD';
+            hdBtn.classList.remove('active');
+            hdLoaded = false;
+        });
+    });
+}
 
 // ============================================================
 // Controlli laterali
@@ -371,16 +466,18 @@ viewer.addEventListener('panorama-load-error', () => {
 let autoRotateOn = false;
 let rafId = null;
 
+boot();
+
 document.getElementById('zoomIn').addEventListener('click', () => {
-    viewer.zoom(Math.min(100, viewer.getZoomLevel() + 12));
+    if (viewer) viewer.zoom(Math.min(100, viewer.getZoomLevel() + 12));
 });
 document.getElementById('zoomOut').addEventListener('click', () => {
-    viewer.zoom(Math.max(0, viewer.getZoomLevel() - 12));
+    if (viewer) viewer.zoom(Math.max(0, viewer.getZoomLevel() - 12));
 });
 
 const arBtn = document.getElementById('autoRotate');
 function autoRotateTick() {
-    if (!autoRotateOn) return;
+    if (!autoRotateOn || !viewer) return;
     const pos = viewer.getPosition();
     viewer.rotate({ yaw: pos.yaw + 0.0018, pitch: pos.pitch });
     rafId = requestAnimationFrame(autoRotateTick);
@@ -417,7 +514,7 @@ function isMobile() {
     return /android|iphone|ipad|ipod/i.test(navigator.userAgent);
 }
 function startGyro() {
-    if (gyroEnabled) return;
+    if (gyroEnabled || !viewer) return;
     gyroEnabled = true;
     let lastAlpha = null, lastBeta = null;
     window.addEventListener('deviceorientation', (e) => {
@@ -458,8 +555,8 @@ if (isMobile() && window.DeviceOrientationEvent) {
 // ============================================================
 // Tastiera
 // ============================================================
-const PREV_URL = <?= $prev ? json_encode('view.php?g=' . rawurlencode($slug) . '&i=' . rawurlencode($prev['file']) . '&v=6') : 'null' ?>;
-const NEXT_URL = <?= $next ? json_encode('view.php?g=' . rawurlencode($slug) . '&i=' . rawurlencode($next['file']) . '&v=6') : 'null' ?>;
+const PREV_URL = <?= $prev ? json_encode('view.php?g=' . rawurlencode($slug) . '&i=' . rawurlencode($prev['file']) . '&v=7') : 'null' ?>;
+const NEXT_URL = <?= $next ? json_encode('view.php?g=' . rawurlencode($slug) . '&i=' . rawurlencode($next['file']) . '&v=7') : 'null' ?>;
 const BACK_URL = <?= json_encode('gallery.php?g=' . rawurlencode($slug)) ?>;
 
 document.addEventListener('keydown', (e) => {

@@ -1,6 +1,5 @@
 <?php
 require_once __DIR__ . '/lib.php';
-if (isset($_GET['diag'])) { require __DIR__ . '/diag.php'; exit; }
 $cfg = load_config();
 
 $slug = $_GET['g'] ?? '';
@@ -35,7 +34,6 @@ $images = $meta['images'];
 </header>
 
 <main class="container">
-    <pre style="font-size:11px;color:#8b949e;white-space:pre-wrap;background:#161b22;padding:10px;border-radius:8px;"><?= h(diag_report_text()) ?></pre>
     <div class="breadcrumb">
         <a href="index.php">Gallerie</a> / <?= h($gallery['title']) ?>
     </div>
@@ -48,7 +46,7 @@ $images = $meta['images'];
     <?php else: ?>
         <div class="images-grid">
             <?php foreach ($images as $img): ?>
-                <a href="view.php?g=<?= h(urlencode($slug)) ?>&i=<?= h(urlencode($img['file'])) ?>&v=6" class="image-card">
+                <a href="view.php?g=<?= h(urlencode($slug)) ?>&i=<?= h(urlencode($img['file'])) ?>&v=7" class="image-card">
                     <div class="image-card-thumb">
                         <img src="data/<?= h($slug) ?>/_thumbs/<?= h($img['file']) ?>" alt="<?= h($img['title']) ?>" loading="lazy">
                     </div>
