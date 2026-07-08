@@ -57,7 +57,7 @@ unset($g);
     <?php else: ?>
         <div class="gallery-grid">
             <?php foreach ($galleries as $g): ?>
-                <a href="gallery.php?g=<?= h(urlencode($g['slug'])) ?>&v=7" class="gallery-card">
+                <a href="gallery.php?g=<?= h(urlencode($g['slug'])) ?>&v=8" class="gallery-card">
                     <div class="gallery-card-cover<?= $g['cover'] ? ' has-image' : '' ?>">
                         <?php if ($g['cover']): ?>
                             <img src="<?= h($g['cover']) ?>" alt="" loading="lazy">

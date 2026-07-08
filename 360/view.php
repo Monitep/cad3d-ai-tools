@@ -224,13 +224,13 @@ $total = count($meta['images']);
 
 <div class="bottom-bar">
     <?php if ($prev): ?>
-        <a href="view.php?g=<?= h(urlencode($slug)) ?>&i=<?= h(urlencode($prev['file'])) ?>&v=7" class="ui-btn">‹ Precedente</a>
+        <a href="view.php?g=<?= h(urlencode($slug)) ?>&i=<?= h(urlencode($prev['file'])) ?>&v=8" class="ui-btn">‹ Precedente</a>
     <?php else: ?>
         <span class="ui-btn disabled">‹ Precedente</span>
     <?php endif; ?>
     <button class="ui-btn" id="gyroBtn" style="display:none;">Giroscopio</button>
     <?php if ($next): ?>
-        <a href="view.php?g=<?= h(urlencode($slug)) ?>&i=<?= h(urlencode($next['file'])) ?>&v=7" class="ui-btn">Successivo ›</a>
+        <a href="view.php?g=<?= h(urlencode($slug)) ?>&i=<?= h(urlencode($next['file'])) ?>&v=8" class="ui-btn">Successivo ›</a>
     <?php else: ?>
         <span class="ui-btn disabled">Successivo ›</span>
     <?php endif; ?>
@@ -555,8 +555,8 @@ if (isMobile() && window.DeviceOrientationEvent) {
 // ============================================================
 // Tastiera
 // ============================================================
-const PREV_URL = <?= $prev ? json_encode('view.php?g=' . rawurlencode($slug) . '&i=' . rawurlencode($prev['file']) . '&v=7') : 'null' ?>;
-const NEXT_URL = <?= $next ? json_encode('view.php?g=' . rawurlencode($slug) . '&i=' . rawurlencode($next['file']) . '&v=7') : 'null' ?>;
+const PREV_URL = <?= $prev ? json_encode('view.php?g=' . rawurlencode($slug) . '&i=' . rawurlencode($prev['file']) . '&v=8') : 'null' ?>;
+const NEXT_URL = <?= $next ? json_encode('view.php?g=' . rawurlencode($slug) . '&i=' . rawurlencode($next['file']) . '&v=8') : 'null' ?>;
 const BACK_URL = <?= json_encode('gallery.php?g=' . rawurlencode($slug)) ?>;
 
 document.addEventListener('keydown', (e) => {

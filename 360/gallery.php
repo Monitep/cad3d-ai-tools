@@ -46,7 +46,7 @@ $images = $meta['images'];
     <?php else: ?>
         <div class="images-grid">
             <?php foreach ($images as $img): ?>
-                <a href="view.php?g=<?= h(urlencode($slug)) ?>&i=<?= h(urlencode($img['file'])) ?>&v=7" class="image-card">
+                <a href="view.php?g=<?= h(urlencode($slug)) ?>&i=<?= h(urlencode($img['file'])) ?>&v=8" class="image-card">
                     <div class="image-card-thumb">
                         <img src="data/<?= h($slug) ?>/_thumbs/<?= h($img['file']) ?>" alt="<?= h($img['title']) ?>" loading="lazy">
                     </div>
