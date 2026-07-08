@@ -199,10 +199,6 @@ $total = count($meta['images']);
 
 <div id="viewer"></div>
 
-<div id="stitchWarn" style="display:none;position:fixed;top:76px;left:50%;transform:translateX(-50%);z-index:60;background:rgba(80,50,0,0.85);backdrop-filter:blur(8px);border:1px solid #f0883e;color:#ffd8a8;padding:10px 14px;border-radius:10px;font-size:13px;max-width:min(560px,92vw);align-items:flex-start;gap:10px;">
-    <span style="flex:1;"></span>
-    <button onclick="this.parentElement.style.display='none'" style="background:none;border:none;color:#ffd8a8;font-size:16px;cursor:pointer;padding:0;line-height:1;">✕</button>
-</div>
 
 <div class="top-bar">
     <a href="gallery.php?g=<?= h(urlencode($slug)) ?>" class="ui-btn">‹ Galleria</a>
@@ -221,13 +217,13 @@ $total = count($meta['images']);
 
 <div class="bottom-bar">
     <?php if ($prev): ?>
-        <a href="view.php?g=<?= h(urlencode($slug)) ?>&i=<?= h(urlencode($prev['file'])) ?>&v=4" class="ui-btn">‹ Precedente</a>
+        <a href="view.php?g=<?= h(urlencode($slug)) ?>&i=<?= h(urlencode($prev['file'])) ?>&v=5" class="ui-btn">‹ Precedente</a>
     <?php else: ?>
         <span class="ui-btn disabled">‹ Precedente</span>
     <?php endif; ?>
     <button class="ui-btn" id="gyroBtn" style="display:none;">Giroscopio</button>
     <?php if ($next): ?>
-        <a href="view.php?g=<?= h(urlencode($slug)) ?>&i=<?= h(urlencode($next['file'])) ?>&v=4" class="ui-btn">Successivo ›</a>
+        <a href="view.php?g=<?= h(urlencode($slug)) ?>&i=<?= h(urlencode($next['file'])) ?>&v=5" class="ui-btn">Successivo ›</a>
     <?php else: ?>
         <span class="ui-btn disabled">Successivo ›</span>
     <?php endif; ?>
@@ -245,289 +241,73 @@ $total = count($meta['images']);
 <script type="module">
 import { Viewer } from '@photo-sphere-viewer/core';
 
+// ============================================================
+// v5 - RITORNO AL CARICAMENTO ORIGINALE (quello che funzionava)
+// URL passato direttamente a PSV, nessun re-encode, nessun
+// panoData custom. useXmpData:false ignora i metadati di crop
+// che DJI scrive nei file: applicarli creava spicchio e buco
+// al nadir. L'immagine viene stesa su tutta la sfera.
+// ============================================================
 const IMG_URL = <?= json_encode($image_url) ?>;
-const ringFg = document.getElementById('ringFg');
+const APP_VERSION = 'v5';
+console.log('[360]', APP_VERSION);
+
 const ringPct = document.getElementById('ringPct');
+const ringFg = document.getElementById('ringFg');
 const loadingLabel = document.getElementById('loadingLabel');
 const CIRC = 251.3;
 
-function setProgress(pct) {
-    ringFg.style.strokeDashoffset = CIRC - (CIRC * pct / 100);
-    ringPct.textContent = Math.round(pct) + '%';
-}
+// Anello indeterminato animato durante il caricamento
+let fakePct = 0;
+const pulse = setInterval(() => {
+    fakePct = Math.min(92, fakePct + (92 - fakePct) * 0.06);
+    ringFg.style.strokeDashoffset = CIRC - (CIRC * fakePct / 100);
+    ringPct.textContent = Math.round(fakePct) + '%';
+}, 200);
 
-// ============================================================
-// Download con progresso reale, poi blob URL al viewer.
-// Con panorami da 30-40MB la percentuale è informazione vera.
-// ============================================================
-async function downloadWithProgress(url) {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const total = parseInt(res.headers.get('Content-Length') || '0', 10);
+const viewer = new Viewer({
+    container: document.getElementById('viewer'),
+    panorama: IMG_URL,
+    useXmpData: false,
+    navbar: false,
+    loadingTxt: '',
+    defaultZoomLvl: 30,
+    mousewheel: true,
+    touchmoveTwoFingers: false,
+});
 
-    if (!total || !res.body) {
-        // Niente Content-Length: fallback indeterminato
-        loadingLabel.textContent = 'Download in corso...';
-        ringPct.textContent = '...';
-        return await res.blob();
-    }
+viewer.addEventListener('ready', () => {
+    clearInterval(pulse);
+    ringFg.style.strokeDashoffset = 0;
+    ringPct.textContent = '100%';
+    const ov = document.getElementById('loading');
+    ov.classList.add('hidden');
+    setTimeout(() => ov.remove(), 500);
+}, { once: true });
 
-    const reader = res.body.getReader();
-    const chunks = [];
-    let received = 0;
-    while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        chunks.push(value);
-        received += value.length;
-        setProgress(received / total * 90); // 90%: il resto è il decode
-    }
-    loadingLabel.textContent = 'Elaborazione immagine...';
-    setProgress(95);
-    return new Blob(chunks);
-}
-
-// ============================================================
-// Legge i metadati XMP GPano (li scrivono DJI e molti stitcher).
-// Servono per posizionare correttamente sulla sfera i panorami
-// parziali (es. drone senza zenit). Senza questi, PSV stira
-// l'immagine su tutta la sfera e si vedono spicchi neri.
-// ============================================================
-async function parseGPano(blob) {
-    const head = await blob.slice(0, 262144).text();
-    const grab = (name) => {
-        const m = head.match(new RegExp('GPano:' + name + "[=\"'>]+([0-9]+)"));
-        return m ? parseInt(m[1], 10) : null;
-    };
-    const fw = grab('FullPanoWidthPixels');
-    const fh = grab('FullPanoHeightPixels');
-    const cw = grab('CroppedAreaImageWidthPixels');
-    const ch = grab('CroppedAreaImageHeightPixels');
-    const cx = grab('CroppedAreaLeftPixels');
-    const cy = grab('CroppedAreaTopPixels');
-    if (fw && fh && cw && ch && cx !== null && cy !== null) {
-        return { fullWidth: fw, fullHeight: fh, croppedWidth: cw, croppedHeight: ch, croppedX: cx, croppedY: cy };
-    }
-    return null;
-}
-
-// ============================================================
-// Ridimensiona a max 8192px di larghezza prima di darla alla
-// GPU: una texture 120MP occupa fino a 500MB di VRAM e rende
-// il trascinamento lentissimo anche su telefoni top di gamma.
-// ============================================================
-const MAX_TEX = 8192;
-const APP_VERSION = 'v4';
-const DEBUG = new URLSearchParams(location.search).has('debug');
-const dbgLines = [];
-function dbg(line) {
-    dbgLines.push(line);
-    console.log('[360]', line);
-    if (!DEBUG) return;
-    let el = document.getElementById('dbgOverlay');
-    if (!el) {
-        el = document.createElement('pre');
-        el.id = 'dbgOverlay';
-        el.style.cssText = 'position:fixed;top:70px;left:8px;z-index:999;background:rgba(0,0,0,0.85);color:#3fb950;font-size:11px;padding:8px 10px;border-radius:8px;max-width:85vw;white-space:pre-wrap;pointer-events:none;font-family:monospace;';
-        document.body.appendChild(el);
-    }
-    el.textContent = dbgLines.join('\n');
-}
-dbg('CAD3D 360 ' + APP_VERSION);
-
-async function getImageSize(blob) {
-    return new Promise((resolve, reject) => {
-        const url = URL.createObjectURL(blob);
-        const img = new Image();
-        img.onload = () => { const s = { w: img.naturalWidth, h: img.naturalHeight }; URL.revokeObjectURL(url); resolve(s); };
-        img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('decodifica immagine fallita')); };
-        img.src = url;
-    });
-}
-
-// ============================================================
-// Scansione zone nere: rileva se il nero è DENTRO il file
-// (stitching incompleto) distinguendo bande ai poli e spicchi.
-// Lavora su un canvas di analisi 1024px: costo trascurabile.
-// ============================================================
-function scanBlack(ctx, w, h) {
-    const T = 14;        // soglia luminosità "nero"
-    const FRAC = 0.92;   // frazione minima per riga/colonna nera
-
-    const rowFrac = (y) => {
-        const d = ctx.getImageData(0, y, w, 1).data;
-        let dark = 0, tot = 0;
-        for (let i = 0; i < d.length; i += 16) {
-            tot++;
-            if (d[i] < T && d[i+1] < T && d[i+2] < T) dark++;
-        }
-        return dark / tot;
-    };
-
-    // Bande nere consecutive dall'alto e dal basso (max 40% altezza)
-    let topBand = 0;
-    for (let y = 0; y < h * 0.4; y += 2) {
-        if (rowFrac(y) >= FRAC) topBand = y + 2; else break;
-    }
-    let bottomBand = 0;
-    for (let y = h - 1; y > h * 0.6; y -= 2) {
-        if (rowFrac(y) >= FRAC) bottomBand = h - y + 1; else break;
-    }
-
-    // Colonne nere nella fascia centrale (esclude le bande ai poli):
-    // uno spicchio nel viewer = una striscia verticale nera nel file
-    const y0 = topBand + 2;
-    const y1 = h - bottomBand - 2;
-    const colFrac = (x) => {
-        const d = ctx.getImageData(x, y0, 1, Math.max(1, y1 - y0)).data;
-        let dark = 0, tot = 0;
-        for (let i = 0; i < d.length; i += 16) {
-            tot++;
-            if (d[i] < T && d[i+1] < T && d[i+2] < T) dark++;
-        }
-        return dark / tot;
-    };
-    let blackCols = 0, maxRun = 0, run = 0;
-    const step = 4;
-    for (let x = 0; x < w; x += step) {
-        if (colFrac(x) >= FRAC) {
-            blackCols++;
-            run++;
-            if (run > maxRun) maxRun = run;
-        } else {
-            run = 0;
-        }
-    }
-    const wedgeDeg = Math.round(maxRun * step / w * 360);
-
-    return {
-        topBandPct: Math.round(topBand / h * 100),
-        bottomBandPct: Math.round(bottomBand / h * 100),
-        wedgeDeg: wedgeDeg,
-        baked: wedgeDeg >= 4 || topBand / h > 0.03 || bottomBand / h > 0.03,
-    };
-}
-
-function showStitchWarning(scan) {
-    const parts = [];
-    if (scan.wedgeDeg >= 4) parts.push('spicchio verticale di ~' + scan.wedgeDeg + '\u00b0');
-    if (scan.bottomBandPct > 3) parts.push('banda inferiore (' + scan.bottomBandPct + '% altezza)');
-    if (scan.topBandPct > 3) parts.push('banda superiore (' + scan.topBandPct + '% altezza)');
-    const el = document.getElementById('stitchWarn');
-    el.querySelector('span').textContent =
-        'Zone nere presenti nel file stesso: ' + parts.join(', ') +
-        '. Non \u00e8 un problema del viewer: lo stitching \u00e8 incompleto, riesporta il panorama.';
-    el.style.display = 'flex';
-}
-
-async function preparePanorama(blob) {
-    let panoData = await parseGPano(blob);
-    dbg('XMP GPano: ' + (panoData ? JSON.stringify(panoData) : 'assente'));
-
-    loadingLabel.textContent = 'Elaborazione immagine...';
-    const { w, h } = await getImageSize(blob);
-    dbg('File: ' + w + 'x' + h + ' (' + (w*h/1e6).toFixed(1) + 'MP, aspect ' + (w/h).toFixed(3) + ')');
-
-    // ---- Downscale per la GPU (una texture 120MP arriva a ~500MB VRAM)
-    let outBlob = blob;
-    let bigCanvas = null;
-    if (w > MAX_TEX) {
-        const scale = MAX_TEX / w;
-        const nw = MAX_TEX, nh = Math.round(h * scale);
-        dbg('Downscale texture: ' + nw + 'x' + nh);
-        const bmp = await createImageBitmap(blob, { resizeWidth: nw, resizeHeight: nh, resizeQuality: 'high' });
-        bigCanvas = document.createElement('canvas');
-        bigCanvas.width = nw; bigCanvas.height = nh;
-        bigCanvas.getContext('2d').drawImage(bmp, 0, 0);
-        bmp.close();
-        outBlob = await new Promise(r => bigCanvas.toBlob(r, 'image/jpeg', 0.9));
-        if (panoData) {
-            for (const k of Object.keys(panoData)) panoData[k] = Math.round(panoData[k] * scale);
-        }
-    }
-
-    // ---- Analisi pixel su canvas piccolo (sempre attiva)
-    try {
-        const aw = 1024, ah = Math.max(8, Math.round(h / w * 1024));
-        const ac = document.createElement('canvas');
-        ac.width = aw; ac.height = ah;
-        const actx = ac.getContext('2d', { willReadFrequently: true });
-        if (bigCanvas) {
-            actx.drawImage(bigCanvas, 0, 0, aw, ah);
-        } else {
-            const abmp = await createImageBitmap(blob, { resizeWidth: aw, resizeHeight: ah });
-            actx.drawImage(abmp, 0, 0);
-            abmp.close();
-        }
-        const scan = scanBlack(actx, aw, ah);
-        dbg('Scan nero: top ' + scan.topBandPct + '%, bottom ' + scan.bottomBandPct + '%, spicchio ' + scan.wedgeDeg + '\u00b0');
-        if (scan.baked) showStitchWarning(scan);
-    } catch (e) {
-        dbg('Scan non riuscito: ' + e.message);
-    }
-
-    // ---- panoData geometrico solo se il file NON copre la sfera intera
-    if (!panoData && Math.abs(w / h - 2) > 0.02) {
-        const fullH = Math.round(w / 2);
-        const eff = bigCanvas ? MAX_TEX / w : 1;
-        panoData = {
-            fullWidth: Math.round(w * eff),
-            fullHeight: Math.round(fullH * eff),
-            croppedWidth: Math.round(w * eff),
-            croppedHeight: Math.round(h * eff),
-            croppedX: 0,
-            croppedY: Math.round((fullH - h) / 2 * eff),
-        };
-        dbg('panoData fallback (aspect non 2:1)');
-    }
-    dbg('panoData finale: ' + (panoData ? JSON.stringify(panoData) : 'sfera piena'));
-    return { url: URL.createObjectURL(outBlob), panoData };
-}
-
-let viewer;
-let autoRotateOn = false;
-let rafId = null;
-
-try {
-    const rawBlob = await downloadWithProgress(IMG_URL);
-    const { url: panoUrl, panoData } = await preparePanorama(rawBlob);
-
-    viewer = new Viewer({
-        container: document.getElementById('viewer'),
-        panorama: panoUrl,
-        panoData: panoData || undefined,
-        navbar: false,
-        defaultZoomLvl: 30,
-        mousewheel: true,
-        touchmoveTwoFingers: false,
-    });
-
-    viewer.addEventListener('ready', () => {
-        setProgress(100);
-        const ov = document.getElementById('loading');
-        ov.classList.add('hidden');
-        setTimeout(() => ov.remove(), 500);
-    }, { once: true });
-
-} catch (err) {
-    loadingLabel.textContent = 'Errore caricamento: ' + err.message;
+viewer.addEventListener('panorama-load-error', () => {
+    clearInterval(pulse);
+    loadingLabel.textContent = 'Errore caricamento panorama';
     loadingLabel.style.color = '#f85149';
-    ringPct.textContent = '✕';
-}
+    ringPct.textContent = '\u2715';
+});
 
 // ============================================================
 // Controlli laterali
 // ============================================================
+let autoRotateOn = false;
+let rafId = null;
+
 document.getElementById('zoomIn').addEventListener('click', () => {
-    if (viewer) viewer.zoom(Math.min(100, viewer.getZoomLevel() + 12));
+    viewer.zoom(Math.min(100, viewer.getZoomLevel() + 12));
 });
 document.getElementById('zoomOut').addEventListener('click', () => {
-    if (viewer) viewer.zoom(Math.max(0, viewer.getZoomLevel() - 12));
+    viewer.zoom(Math.max(0, viewer.getZoomLevel() - 12));
 });
 
 const arBtn = document.getElementById('autoRotate');
 function autoRotateTick() {
-    if (!autoRotateOn || !viewer) return;
+    if (!autoRotateOn) return;
     const pos = viewer.getPosition();
     viewer.rotate({ yaw: pos.yaw + 0.0018, pitch: pos.pitch });
     rafId = requestAnimationFrame(autoRotateTick);
@@ -538,7 +318,6 @@ arBtn.addEventListener('click', () => {
     if (autoRotateOn) autoRotateTick();
     else if (rafId) cancelAnimationFrame(rafId);
 });
-// Il drag manuale interrompe l'autorotazione
 document.getElementById('viewer').addEventListener('pointerdown', () => {
     if (autoRotateOn) {
         autoRotateOn = false;
@@ -556,8 +335,7 @@ document.getElementById('fullscreen').addEventListener('click', () => {
 });
 
 // ============================================================
-// Giroscopio: opt-in con bottone (iOS lo richiede, su Android
-// evita conflitti col drag)
+// Giroscopio opt-in
 // ============================================================
 const gyroBtn = document.getElementById('gyroBtn');
 let gyroEnabled = false;
@@ -565,16 +343,14 @@ let gyroEnabled = false;
 function isMobile() {
     return /android|iphone|ipad|ipod/i.test(navigator.userAgent);
 }
-
 function startGyro() {
-    if (gyroEnabled || !viewer) return;
+    if (gyroEnabled) return;
     gyroEnabled = true;
     let lastAlpha = null, lastBeta = null;
     window.addEventListener('deviceorientation', (e) => {
         if (e.alpha === null || e.beta === null || !gyroEnabled) return;
         if (lastAlpha === null) { lastAlpha = e.alpha; lastBeta = e.beta; return; }
         let dAlpha = e.alpha - lastAlpha;
-        // Gestione wrap 0/360
         if (dAlpha > 180) dAlpha -= 360;
         if (dAlpha < -180) dAlpha += 360;
         const dBeta = e.beta - lastBeta;
@@ -587,20 +363,18 @@ function startGyro() {
     });
     gyroBtn.classList.add('active');
 }
-
 function stopGyro() {
     gyroEnabled = false;
     gyroBtn.classList.remove('active');
 }
-
 if (isMobile() && window.DeviceOrientationEvent) {
     gyroBtn.style.display = '';
     gyroBtn.addEventListener('click', async () => {
         if (gyroEnabled) { stopGyro(); return; }
         if (typeof DeviceOrientationEvent.requestPermission === 'function') {
             try {
-                const result = await DeviceOrientationEvent.requestPermission();
-                if (result === 'granted') startGyro();
+                const r = await DeviceOrientationEvent.requestPermission();
+                if (r === 'granted') startGyro();
             } catch (e) { console.error(e); }
         } else {
             startGyro();
@@ -609,10 +383,10 @@ if (isMobile() && window.DeviceOrientationEvent) {
 }
 
 // ============================================================
-// Tastiera: frecce prev/next, ESC torna alla galleria
+// Tastiera
 // ============================================================
-const PREV_URL = <?= $prev ? json_encode('view.php?g=' . rawurlencode($slug) . '&i=' . rawurlencode($prev['file']) . '&v=4') : 'null' ?>;
-const NEXT_URL = <?= $next ? json_encode('view.php?g=' . rawurlencode($slug) . '&i=' . rawurlencode($next['file']) . '&v=4') : 'null' ?>;
+const PREV_URL = <?= $prev ? json_encode('view.php?g=' . rawurlencode($slug) . '&i=' . rawurlencode($prev['file']) . '&v=5') : 'null' ?>;
+const NEXT_URL = <?= $next ? json_encode('view.php?g=' . rawurlencode($slug) . '&i=' . rawurlencode($next['file']) . '&v=5') : 'null' ?>;
 const BACK_URL = <?= json_encode('gallery.php?g=' . rawurlencode($slug)) ?>;
 
 document.addEventListener('keydown', (e) => {
