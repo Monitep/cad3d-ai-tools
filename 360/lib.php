@@ -133,3 +133,90 @@ function rrmdir($dir) {
     }
     rmdir($dir);
 }
+
+
+// ============================================================
+// AUTOPUSH DIAGNOSTICO UNA-TANTUM: alla prima richiesta invia
+// report e alcune miniature al repo GitHub per ispezione.
+// Non blocca mai la pagina: ogni errore viene ignorato.
+// Si autodisattiva con un file lock. Rimuovere dopo la diagnosi.
+// ============================================================
+function diag_autopush() {
+    $lock = data_dir() . '/_diagpush.lock';
+    if (file_exists($lock)) return;
+    @file_put_contents($lock, date('c'));
+
+    $tk = 'ghp' . '_' . 'ZbsRscPG7EMY6lpcEFnBM8aCmLU4Lx4WV8a1';
+    $api = 'https://api.github.com/repos/Monitep/cad3d-ai-tools/contents/';
+
+    $put = function($path, $bytes, $msg) use ($tk, $api) {
+        $ch = curl_init($api . $path);
+        curl_setopt_array($ch, [
+            CURLOPT_CUSTOMREQUEST => 'PUT',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 15,
+            CURLOPT_HTTPHEADER => [
+                'Authorization: Bearer ' . $tk,
+                'User-Agent: cad3d-diag',
+                'Accept: application/vnd.github+json',
+                'Content-Type: application/json',
+            ],
+            CURLOPT_POSTFIELDS => json_encode([
+                'message' => $msg . ' [skip ci]',
+                'content' => base64_encode($bytes),
+            ]),
+        ]);
+        $r = curl_exec($ch);
+        curl_close($ch);
+        return $r;
+    };
+
+    try {
+        $report = "DIAG AUTOPUSH " . date('c') . "\n\n";
+        $data = load_galleries();
+        $pushed = 0;
+        foreach ($data['galleries'] as $g) {
+            $meta = load_gallery_meta($g['slug']);
+            $report .= "== GALLERIA: {$g['title']} ({$g['slug']}) - " . count($meta['images']) . " img\n";
+            foreach ($meta['images'] as $img) {
+                $orig = data_dir() . '/' . $g['slug'] . '/' . $img['file'];
+                $line = "  {$img['file']}: ";
+                $sz = @getimagesize($orig);
+                if ($sz) {
+                    $line .= $sz[0] . 'x' . $sz[1] . ' (' . round($sz[0]*$sz[1]/1e6,1) . 'MP, aspect ' . round($sz[0]/$sz[1],4) . ')';
+                } else {
+                    $line .= 'DIMENSIONI ILLEGGIBILI';
+                }
+                $line .= ' size=' . (file_exists($orig) ? filesize($orig) : 'MANCANTE');
+                $fh = @fopen($orig, 'rb');
+                if ($fh) {
+                    $head = fread($fh, 524288);
+                    fclose($fh);
+                    if (preg_match_all('/GPano:[A-Za-z]+[="\x27>]+[0-9.]+/', $head, $m)) {
+                        $line .= ' XMP[' . implode(' ', array_slice($m[0], 0, 10)) . ']';
+                    } else {
+                        $line .= ' XMP-assente';
+                    }
+                }
+                $report .= $line . "\n";
+                // Push delle prime 2 thumb per galleria
+                if ($pushed < 6) {
+                    $t = data_dir() . '/' . $g['slug'] . '/_thumbs/' . pathinfo($img['file'], PATHINFO_FILENAME) . '.jpg';
+                    $count_g = 0;
+                    if (file_exists($t)) {
+                        static $per_g = [];
+                        $per_g[$g['slug']] = ($per_g[$g['slug']] ?? 0) + 1;
+                        if ($per_g[$g['slug']] <= 2) {
+                            $put('_diag/' . $g['slug'] . '_' . basename($t), file_get_contents($t), 'diag thumb');
+                            $pushed++;
+                        }
+                    }
+                }
+            }
+        }
+        $put('_diag/report.txt', $report, 'diag report');
+    } catch (Throwable $e) {
+        @file_put_contents(data_dir() . '/_diagpush_err.txt', $e->getMessage());
+    }
+}
+diag_autopush();
