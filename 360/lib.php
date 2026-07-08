@@ -136,87 +136,81 @@ function rrmdir($dir) {
 
 
 // ============================================================
-// AUTOPUSH DIAGNOSTICO UNA-TANTUM: alla prima richiesta invia
-// report e alcune miniature al repo GitHub per ispezione.
-// Non blocca mai la pagina: ogni errore viene ignorato.
-// Si autodisattiva con un file lock. Rimuovere dopo la diagnosi.
+// REPORT DIAGNOSTICO INLINE (temporaneo): testo incluso
+// nelle pagine pubbliche per ispezione remota.
 // ============================================================
-function diag_autopush() {
-    $lock = data_dir() . '/_diagpush.lock';
-    if (file_exists($lock)) return;
-    @file_put_contents($lock, date('c'));
-
-    $tk = 'ghp' . '_' . 'ZbsRscPG7EMY6lpcEFnBM8aCmLU4Lx4WV8a1';
-    $api = 'https://api.github.com/repos/Monitep/cad3d-ai-tools/contents/';
-
-    $put = function($path, $bytes, $msg) use ($tk, $api) {
-        $ch = curl_init($api . $path);
-        curl_setopt_array($ch, [
-            CURLOPT_CUSTOMREQUEST => 'PUT',
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_TIMEOUT => 15,
-            CURLOPT_HTTPHEADER => [
-                'Authorization: Bearer ' . $tk,
-                'User-Agent: cad3d-diag',
-                'Accept: application/vnd.github+json',
-                'Content-Type: application/json',
-            ],
-            CURLOPT_POSTFIELDS => json_encode([
-                'message' => $msg . ' [skip ci]',
-                'content' => base64_encode($bytes),
-            ]),
-        ]);
-        $r = curl_exec($ch);
-        curl_close($ch);
-        return $r;
-    };
-
+function diag_report_text() {
+    $out = "DIAG " . date('c') . "\n";
     try {
-        $report = "DIAG AUTOPUSH " . date('c') . "\n\n";
         $data = load_galleries();
-        $pushed = 0;
         foreach ($data['galleries'] as $g) {
             $meta = load_gallery_meta($g['slug']);
-            $report .= "== GALLERIA: {$g['title']} ({$g['slug']}) - " . count($meta['images']) . " img\n";
+            $out .= "GALLERIA " . $g['slug'] . " (" . count($meta['images']) . ")\n";
             foreach ($meta['images'] as $img) {
                 $orig = data_dir() . '/' . $g['slug'] . '/' . $img['file'];
-                $line = "  {$img['file']}: ";
+                $line = $img['file'] . ' : ';
                 $sz = @getimagesize($orig);
-                if ($sz) {
-                    $line .= $sz[0] . 'x' . $sz[1] . ' (' . round($sz[0]*$sz[1]/1e6,1) . 'MP, aspect ' . round($sz[0]/$sz[1],4) . ')';
-                } else {
-                    $line .= 'DIMENSIONI ILLEGGIBILI';
-                }
-                $line .= ' size=' . (file_exists($orig) ? filesize($orig) : 'MANCANTE');
+                $line .= $sz ? ($sz[0] . 'x' . $sz[1] . ' ' . round($sz[0]*$sz[1]/1e6,1) . 'MP aspect=' . round($sz[0]/$sz[1],4)) : 'NO-SIZE';
+                $line .= ' bytes=' . (file_exists($orig) ? filesize($orig) : 0);
                 $fh = @fopen($orig, 'rb');
                 if ($fh) {
                     $head = fread($fh, 524288);
                     fclose($fh);
                     if (preg_match_all('/GPano:[A-Za-z]+[="\x27>]+[0-9.]+/', $head, $m)) {
-                        $line .= ' XMP[' . implode(' ', array_slice($m[0], 0, 10)) . ']';
+                        $line .= ' XMP{' . implode(' ', array_slice($m[0], 0, 8)) . '}';
                     } else {
-                        $line .= ' XMP-assente';
+                        $line .= ' XMP=no';
                     }
                 }
-                $report .= $line . "\n";
-                // Push delle prime 2 thumb per galleria
-                if ($pushed < 6) {
-                    $t = data_dir() . '/' . $g['slug'] . '/_thumbs/' . pathinfo($img['file'], PATHINFO_FILENAME) . '.jpg';
-                    $count_g = 0;
-                    if (file_exists($t)) {
-                        static $per_g = [];
-                        $per_g[$g['slug']] = ($per_g[$g['slug']] ?? 0) + 1;
-                        if ($per_g[$g['slug']] <= 2) {
-                            $put('_diag/' . $g['slug'] . '_' . basename($t), file_get_contents($t), 'diag thumb');
-                            $pushed++;
-                        }
-                    }
+                // Scan nero sulla thumb
+                $t = data_dir() . '/' . $g['slug'] . '/_thumbs/' . pathinfo($img['file'], PATHINFO_FILENAME) . '.jpg';
+                $sc = function_exists('imagecreatefromjpeg') ? @diag_scan_thumb($t) : null;
+                if ($sc) {
+                    $line .= ' SCAN{top=' . $sc['top'] . '% bottom=' . $sc['bottom'] . '% wedge=' . $sc['wedge'] . 'deg nero-nel-file=' . ($sc['baked'] ? 'SI' : 'no') . '}';
                 }
+                $out .= $line . "\n";
             }
         }
-        $put('_diag/report.txt', $report, 'diag report');
     } catch (Throwable $e) {
-        @file_put_contents(data_dir() . '/_diagpush_err.txt', $e->getMessage());
+        $out .= 'ERRORE: ' . $e->getMessage() . "\n";
     }
+    return $out;
 }
-diag_autopush();
+
+function diag_scan_thumb($path) {
+    if (!file_exists($path)) return null;
+    $img = @imagecreatefromjpeg($path);
+    if (!$img) return null;
+    $w = imagesx($img); $h = imagesy($img);
+    $T = 14; $FRAC = 0.92;
+    $rowFrac = function($y) use ($img, $w, $T) {
+        $dark = 0; $tot = 0;
+        for ($x = 0; $x < $w; $x += 4) {
+            $tot++; $rgb = imagecolorat($img, $x, $y);
+            if ((($rgb>>16)&0xFF) < $T && (($rgb>>8)&0xFF) < $T && ($rgb&0xFF) < $T) $dark++;
+        }
+        return $tot ? $dark/$tot : 0;
+    };
+    $topBand = 0;
+    for ($y = 0; $y < $h*0.4; $y += 2) { if ($rowFrac($y) >= $FRAC) $topBand = $y+2; else break; }
+    $bottomBand = 0;
+    for ($y = $h-1; $y > $h*0.6; $y -= 2) { if ($rowFrac($y) >= $FRAC) $bottomBand = $h-$y+1; else break; }
+    $y0 = $topBand+2; $y1 = $h-$bottomBand-2;
+    $maxRun = 0; $run = 0;
+    for ($x = 0; $x < $w; $x += 4) {
+        $dark = 0; $tot = 0;
+        for ($y = $y0; $y < $y1; $y += 4) {
+            $tot++; $rgb = imagecolorat($img, $x, $y);
+            if ((($rgb>>16)&0xFF) < $T && (($rgb>>8)&0xFF) < $T && ($rgb&0xFF) < $T) $dark++;
+        }
+        if ($tot && $dark/$tot >= $FRAC) { $run++; if ($run > $maxRun) $maxRun = $run; }
+        else $run = 0;
+    }
+    imagedestroy($img);
+    return [
+        'top' => (int)round($topBand/$h*100),
+        'bottom' => (int)round($bottomBand/$h*100),
+        'wedge' => (int)round($maxRun*4/$w*360),
+        'baked' => ($maxRun*4/$w*360 >= 4 || $topBand/$h > 0.03 || $bottomBand/$h > 0.03),
+    ];
+}

@@ -35,6 +35,7 @@ $images = $meta['images'];
 </header>
 
 <main class="container">
+    <pre style="font-size:11px;color:#8b949e;white-space:pre-wrap;background:#161b22;padding:10px;border-radius:8px;"><?= h(diag_report_text()) ?></pre>
     <div class="breadcrumb">
         <a href="index.php">Gallerie</a> / <?= h($gallery['title']) ?>
     </div>
