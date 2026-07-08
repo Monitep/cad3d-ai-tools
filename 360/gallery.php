@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/lib.php';
+if (isset($_GET['diag'])) { require __DIR__ . '/diag.php'; exit; }
 $cfg = load_config();
 
 $slug = $_GET['g'] ?? '';

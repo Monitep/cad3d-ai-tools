@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/lib.php';
+if (isset($_GET['diag'])) { require __DIR__ . '/diag.php'; exit; }
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Pragma: no-cache');
 $cfg = load_config();
