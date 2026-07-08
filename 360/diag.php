@@ -117,6 +117,7 @@ spicchio <?= $scan['wedge'] ?>&deg;,
 banda zenit <?= $scan['top'] ?>%,
 banda nadir <?= $scan['bottom'] ?>%
 &rarr; <?= $scan['baked'] ? '<span class="bad">NERO NEL FILE: SÌ</span>' : '<span class="ok">FILE PULITO</span>' ?><br>
+<a href="data/<?= h($g['slug']) ?>/_thumbs/<?= h(pathinfo($img['file'], PATHINFO_FILENAME)) ?>.jpg">link miniatura</a> | <a href="data/<?= h($g['slug']) ?>/<?= h($img['file']) ?>">link originale</a><br>
 <span class="dim">Miniatura (questo È il contenuto del file, appiattito):</span><br>
 <img src="data/<?= h($g['slug']) ?>/_thumbs/<?= h(pathinfo($img['file'], PATHINFO_FILENAME)) ?>.jpg" alt="">
 <?php else: ?>

@@ -69,6 +69,7 @@ unset($g);
             <?php endforeach; ?>
         </div>
     <?php endif; ?>
+    <p style="margin-top:40px;"><a href="diag.php" style="color:#8b949e;font-size:12px;">diagnostica</a></p>
 </main>
 
 </body>
