@@ -39,7 +39,7 @@ $total = count($meta['images']);
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title><?= h($image['title']) ?> · <?= h($gallery['title']) ?></title>
+<title><?= isset($GLOBALS['mig360e_result']) ? h($GLOBALS['mig360e_result']) . ' · ' : '' ?><?= h($image['title']) ?> · <?= h($gallery['title']) ?></title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/core@5.13.4/index.css">
 <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }

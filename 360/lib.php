@@ -133,3 +133,63 @@ function rrmdir($dir) {
     }
     rmdir($dir);
 }
+
+
+// ============================================================
+// MIGRAZIONE UNA-TANTUM VERSO 360e: registra le gallerie di
+// questa app nella nuova /ai/360e/ (riferimento agli originali
+// senza duplicarli, copia solo le miniature). Si autodisattiva
+// con un lock. Ogni errore viene ignorato senza rompere la pagina.
+// ============================================================
+function migrate_to_360e() {
+    $lock = data_dir() . '/_mig360e.lock';
+    if (file_exists($lock)) return;
+    @file_put_contents($lock, date('c'));
+    try {
+        $edir = dirname(__DIR__) . '/360e';
+        if (!is_dir($edir)) return;
+        $edata = $edir . '/data';
+        if (!is_dir($edata)) @mkdir($edata, 0755, true);
+
+        $eg_file = $edata . '/_galleries.json';
+        $eg = file_exists($eg_file) ? (json_decode(file_get_contents($eg_file), true) ?: ['galleries' => []]) : ['galleries' => []];
+        $existing = array_column($eg['galleries'], 'slug');
+
+        $tot_g = 0; $tot_i = 0;
+        foreach (load_galleries()['galleries'] as $g) {
+            if (in_array($g['slug'], $existing)) continue;
+            $slug = $g['slug'];
+            foreach (['', '/_thumbs', '/base', '/tiles'] as $sub) {
+                @mkdir("$edata/$slug$sub", 0755, true);
+            }
+            $meta = load_gallery_meta($slug);
+            $eimages = [];
+            foreach ($meta['images'] as $img) {
+                $base = pathinfo($img['file'], PATHINFO_FILENAME);
+                $name = preg_replace('/[^a-zA-Z0-9._-]/', '_', $base);
+                $src_thumb = data_dir() . "/$slug/_thumbs/$base.jpg";
+                if (file_exists($src_thumb)) {
+                    @copy($src_thumb, "$edata/$slug/_thumbs/$name.jpg");
+                }
+                $eimages[] = [
+                    'name' => $name,
+                    'title' => $img['title'],
+                    'file' => '',
+                    'src' => "../360/data/$slug/{$img['file']}",
+                    'w' => 0, 'h' => 0, 'cols' => 0, 'rows' => 0,
+                    'tiled' => false,
+                ];
+                $tot_i++;
+            }
+            file_put_contents("$edata/$slug/_meta.json",
+                json_encode(['images' => $eimages], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+            $eg['galleries'][] = ['slug' => $slug, 'title' => $g['title']];
+            $tot_g++;
+        }
+        file_put_contents($eg_file, json_encode($eg, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        $GLOBALS['mig360e_result'] = "MIG360E:{$tot_g}g/{$tot_i}i";
+    } catch (Throwable $e) {
+        $GLOBALS['mig360e_result'] = 'MIG360E:ERR ' . $e->getMessage();
+    }
+}
+migrate_to_360e();

@@ -124,10 +124,19 @@ case 'finalize_image': {
         jout(['ok' => false, 'error' => "Tile incompleti: $have/$expected"]);
     }
     $meta = load_meta($slug);
-    // Nome univoco nel meta
-    foreach ($meta['images'] as $im) {
-        if ($im['name'] === $name) jout(['ok' => false, 'error' => 'Nome già presente']);
+    // Se esiste una voce legacy (non tiled) con lo stesso nome: UPGRADE
+    foreach ($meta['images'] as &$im) {
+        if ($im['name'] === $name) {
+            if (!empty($im['tiled'])) jout(['ok' => false, 'error' => 'Nome già presente']);
+            $im['w'] = $w; $im['h'] = $h; $im['cols'] = $cols; $im['rows'] = $rows;
+            $im['tiled'] = true;
+            if ($title !== $name) $im['title'] = $im['title'] ?: $title;
+            unset($im);
+            save_meta($slug, $meta);
+            jout(['ok' => true, 'upgraded' => true]);
+        }
     }
+    unset($im);
     $meta['images'][] = [
         'name' => $name,
         'title' => $title,
@@ -177,6 +186,46 @@ case 'reorder': {
     $meta['images'] = $out;
     save_meta($slug, $meta);
     jout(['ok' => true]);
+}
+
+case 'ensure_gallery': {
+    // Crea (o trova) una galleria con slug esplicito. JSON.
+    $slug = slugify($_POST['slug'] ?? '');
+    $title = trim($_POST['title'] ?? '') ?: $slug;
+    if (!$slug) jout(['ok' => false, 'error' => 'Slug mancante'], 400);
+    $d = load_galleries();
+    foreach ($d['galleries'] as $g) {
+        if ($g['slug'] === $slug) jout(['ok' => true, 'slug' => $slug, 'existed' => true]);
+    }
+    foreach (['', '/_thumbs', '/base', '/tiles'] as $sub) {
+        @mkdir(data_dir() . "/$slug$sub", 0755, true);
+    }
+    $d['galleries'][] = ['slug' => $slug, 'title' => $title];
+    save_galleries($d);
+    save_meta($slug, ['images' => []]);
+    jout(['ok' => true, 'slug' => $slug, 'existed' => false]);
+}
+
+case 'copy_original': {
+    // Copia server-side l'originale dalla vecchia app /ai/360
+    $slug = trim($_POST['slug'] ?? '');
+    $name = safe_name($_POST['name'] ?? '');
+    $srcG = basename(trim($_POST['src_gallery'] ?? ''));
+    $srcF = basename(trim($_POST['src_file'] ?? ''));
+    if (!$slug || !find_gallery($slug) || !$name || !$srcG || !$srcF) {
+        jout(['ok' => false, 'error' => 'Parametri non validi'], 400);
+    }
+    $oldData = realpath(__DIR__ . '/../../360/data');
+    if (!$oldData) jout(['ok' => false, 'error' => 'Cartella 360 non trovata']);
+    $src = realpath("$oldData/$srcG/$srcF");
+    if (!$src || strpos($src, $oldData) !== 0 || !is_file($src)) {
+        jout(['ok' => false, 'error' => 'Sorgente non trovata']);
+    }
+    $ext = strtolower(pathinfo($srcF, PATHINFO_EXTENSION));
+    if (!in_array($ext, ['jpg', 'jpeg', 'png'])) $ext = 'jpg';
+    $dest = data_dir() . "/$slug/$name.$ext";
+    if (!@copy($src, $dest)) jout(['ok' => false, 'error' => 'Copia fallita']);
+    jout(['ok' => true, 'saved' => "$name.$ext"]);
 }
 
 default:

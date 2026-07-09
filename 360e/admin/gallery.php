@@ -42,6 +42,7 @@ $msg = $_GET['msg'] ?? ''; $err = $_GET['err'] ?? '';
         <h1 class="pg" style="margin:0;font-size:22px;"><?= count($meta['images']) ?> sfere</h1>
         <div class="sp"></div>
         <?php if ($meta['images']): ?>
+        <button class="btn btn-sm" id="upgAll" onclick="upgradeAll()">Genera tile HD per tutte</button>
         <button class="btn btn-sm btn-amber" id="so" style="display:none;" onclick="saveOrder()">Salva ordine</button>
         <?php endif; ?>
     </div>
@@ -51,14 +52,20 @@ $msg = $_GET['msg'] ?? ''; $err = $_GET['err'] ?? '';
     <?php else: ?>
     <div class="grid-i" id="gi">
         <?php foreach ($meta['images'] as $img): ?>
-        <div class="icard" data-name="<?= h($img['name']) ?>" style="cursor:default;">
+        <div class="icard" data-name="<?= h($img['name']) ?>" data-src="<?= h($img['src'] ?? '') ?>" data-tiled="<?= !empty($img['tiled']) ? 1 : 0 ?>" style="cursor:default;">
             <a href="../view.php?g=<?= h(urlencode($slug)) ?>&i=<?= h(urlencode($img['name'])) ?>" target="_blank">
                 <div class="icard-thumb"><img src="../data/<?= h($slug) ?>/_thumbs/<?= h($img['name']) ?>.jpg" alt="" loading="lazy"></div>
             </a>
             <div class="icard-info">
                 <span class="icard-title"><?= h($img['title']) ?></span>
-                <?php if (!empty($img['tiled'])): ?><span class="badge-hq"><?= round($img['w'] * $img['h'] / 1e6) ?>MP</span><?php endif; ?>
+                <?php if (!empty($img['tiled'])): ?><span class="badge-hq"><?= round($img['w'] * $img['h'] / 1e6) ?>MP</span>
+                <?php else: ?><span class="badge-hq" style="color:var(--dim);border-color:var(--line);">8K</span><?php endif; ?>
             </div>
+            <?php if (empty($img['tiled'])): ?>
+            <div style="padding:0 10px 8px;">
+                <button class="btn btn-sm btn-amber upg" style="width:100%;justify-content:center;" onclick="upgradeOne(this.closest('.icard'))">Genera tile HD</button>
+            </div>
+            <?php endif; ?>
             <div style="padding:0 10px 10px;display:flex;gap:6px;">
                 <button class="btn btn-sm" onclick="mv(this,-1)" title="Sposta prima">↑</button>
                 <button class="btn btn-sm" onclick="mv(this,1)" title="Sposta dopo">↓</button>
@@ -92,141 +99,25 @@ $msg = $_GET['msg'] ?? ''; $err = $_GET['err'] ?? '';
     <input type="hidden" name="name" id="din">
 </form>
 
+<script src="../assets/pipeline.js"></script>
 <script>
 const SLUG = <?= json_encode($slug) ?>;
 const MAX_MB = <?= (int)$cfg['max_upload_mb'] ?>;
 
-// ============================================================
-// PIPELINE DI UPLOAD 360e
-// Per ogni panorama il browser genera:
-//   thumb 1024px · base 2048px · griglia di tile alla
-//   risoluzione PIENA (la larghezza viene normalizzata al
-//   multiplo di 64 più vicino per una griglia esatta).
-// I tile permettono al viewer di mostrare i 120MP interi
-// caricando in GPU solo la porzione inquadrata.
-// ============================================================
-
-function tileGrid(w) {
-    // Larghezza normalizzata (multiplo di 64) e colonne ottimali
-    const normW = Math.max(2048, Math.round(w / 64) * 64);
-    let best = 16, bestD = Infinity;
-    for (const c of [16, 32, 64]) {
-        const t = normW / c;
-        const d = Math.abs(t - 512);
-        if (Number.isInteger(t) && d < bestD) { best = c; bestD = d; }
-    }
-    return { normW: normW, normH: normW / 2, cols: best, rows: best / 2, tile: normW / best };
-}
-
-async function decodeFull(file) {
-    return new Promise((ok, ko) => {
-        const u = URL.createObjectURL(file);
-        const im = new Image();
-        im.onload = () => ok({ img: im, w: im.naturalWidth, h: im.naturalHeight, url: u });
-        im.onerror = () => { URL.revokeObjectURL(u); ko(new Error('Immagine non decodificabile')); };
-        im.src = u;
-    });
-}
-
-function canvasBlob(c, q) {
-    return new Promise((ok, ko) => c.toBlob(b => b ? ok(b) : ko(new Error('toBlob nullo')), 'image/jpeg', q));
-}
-
-async function post(fields, files, onProgress) {
-    const fd = new FormData();
-    for (const k in fields) fd.append(k, fields[k]);
-    for (const k in files) fd.append(k, files[k], k + '.jpg');
-    return new Promise((ok, ko) => {
-        const x = new XMLHttpRequest();
-        if (onProgress) x.upload.addEventListener('progress', e => {
-            if (e.lengthComputable) onProgress(e.loaded / e.total);
-        });
-        x.onload = () => {
-            try {
-                const r = JSON.parse(x.responseText);
-                r.ok ? ok(r) : ko(new Error(r.error || 'errore server'));
-            } catch (e) { ko(new Error('risposta non valida: ' + x.responseText.slice(0, 120))); }
-        };
-        x.onerror = () => ko(new Error('errore di rete'));
-        x.open('POST', 'api.php');
-        x.send(fd);
-    });
-}
+// Pipeline condivisa in ../assets/pipeline.js
 
 async function processFile(file, ui) {
     if (file.size > MAX_MB * 1024 * 1024) throw new Error('File oltre ' + MAX_MB + 'MB');
     const name = file.name.replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 60) || ('pano_' + Date.now());
     const title = file.name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ');
+    await tileAndSend(file, name, title, ui, false);
+}
 
-    // 1) Decodifica
-    ui.phase('Decodifica...'); ui.pct(3);
-    const d = await decodeFull(file);
-    const grid = tileGrid(d.w);
-    console.log('[360e] ' + name + ': ' + d.w + 'x' + d.h + ' -> griglia ' + grid.cols + 'x' + grid.rows + ' tile ' + grid.tile + 'px');
-
-    // 2) Canvas alla risoluzione normalizzata
-    ui.phase('Preparazione ' + Math.round(grid.normW * grid.normH / 1e6) + 'MP...'); ui.pct(6);
-    const full = document.createElement('canvas');
-    full.width = grid.normW; full.height = grid.normH;
-    const fctx = full.getContext('2d');
-    fctx.drawImage(d.img, 0, 0, grid.normW, grid.normH);
-    URL.revokeObjectURL(d.url);
-
-    // 3) Miniatura + base
-    ui.phase('Miniatura e base...'); ui.pct(9);
-    const th = document.createElement('canvas'); th.width = 1024; th.height = 512;
-    th.getContext('2d').drawImage(full, 0, 0, 1024, 512);
-    const thumbBlob = await canvasBlob(th, 0.82);
-    const bs = document.createElement('canvas'); bs.width = 2048; bs.height = 1024;
-    bs.getContext('2d').drawImage(full, 0, 0, 2048, 1024);
-    const baseBlob = await canvasBlob(bs, 0.85);
-    await post({ action: 'upload_asset', slug: SLUG, name: name, kind: 'thumb' }, { file: thumbBlob });
-    await post({ action: 'upload_asset', slug: SLUG, name: name, kind: 'base' }, { file: baseBlob });
-
-    // 4) Tile: genera e invia a lotti di 12
-    const totTiles = grid.cols * grid.rows;
-    const tcan = document.createElement('canvas');
-    tcan.width = grid.tile; tcan.height = grid.tile;
-    const tctx = tcan.getContext('2d');
-    let sent = 0;
-    let batch = [], coords = [];
-    for (let r = 0; r < grid.rows; r++) {
-        for (let c = 0; c < grid.cols; c++) {
-            tctx.clearRect(0, 0, grid.tile, grid.tile);
-            tctx.drawImage(full, c * grid.tile, r * grid.tile, grid.tile, grid.tile, 0, 0, grid.tile, grid.tile);
-            batch.push(await canvasBlob(tcan, 0.82));
-            coords.push({ c: c, r: r });
-            if (batch.length === 12 || (r === grid.rows - 1 && c === grid.cols - 1)) {
-                const files = {};
-                batch.forEach((b, i) => files['t' + i] = b);
-                await post({ action: 'upload_tiles', slug: SLUG, name: name, coords: JSON.stringify(coords) }, files);
-                sent += batch.length;
-                batch = []; coords = [];
-                ui.phase('Tile ' + sent + '/' + totTiles);
-                ui.pct(12 + sent / totTiles * 72);
-            }
-        }
-    }
-
-    // 5) Originale (facoltativo: se fallisce per limiti server, si prosegue)
-    let origName = '';
-    ui.phase('Invio originale...'); ui.pct(86);
-    try {
-        await post({ action: 'upload_asset', slug: SLUG, name: name, kind: 'original' }, { file: file },
-            f => ui.pct(86 + f * 10));
-        origName = name + '.jpg';
-    } catch (e) {
-        console.log('[360e] originale non caricato (' + e.message + '), i tile bastano al viewer');
-    }
-
-    // 6) Finalizza
-    ui.phase('Finalizzazione...'); ui.pct(97);
-    await post({
-        action: 'finalize_image', slug: SLUG, name: name, title: title,
-        w: grid.normW, h: grid.normH, cols: grid.cols, rows: grid.rows, orig_file: origName,
-    }, {});
-    ui.pct(100);
-    ui.phase('Completata ✓');
+async function tileAndSend(file, name, title, ui, isUpgrade) {
+    await processPano({
+        slug: SLUG, name: name, title: title, blob: file, ui: ui,
+        orig: { mode: 'upload', file: file },
+    });
 }
 
 function mkUi(fname) {
@@ -261,6 +152,56 @@ async function runQueue(files) {
     }
     running = false;
     if (okCount) setTimeout(() => location.reload(), 1400);
+}
+
+// ============================================================
+// UPGRADE A TILE HD delle sfere migrate dalla vecchia /360:
+// scarica l'originale gia' presente sul server, genera i tile
+// nel browser e promuove la voce a qualita' piena. Da fare
+// preferibilmente da PC (i 120MP richiedono memoria).
+// ============================================================
+async function upgradeCard(card, ui) {
+    const name = card.dataset.name;
+    const src = card.dataset.src;
+    if (!src) throw new Error('origine mancante');
+    ui.phase('Download originale...'); ui.pct(2);
+    const res = await fetch('../' + src);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const blob = await res.blob();
+    const file = new File([blob], name + '.jpg', { type: 'image/jpeg' });
+    await tileAndSend(file, name, null, ui, true);
+    card.dataset.tiled = '1';
+    const b = card.querySelector('.upg');
+    if (b) { b.textContent = 'HD pronta ✓'; b.disabled = true; b.classList.remove('btn-amber'); }
+}
+
+async function upgradeOne(card) {
+    if (running) return;
+    running = true;
+    const ui = mkUi('HD: ' + card.dataset.name);
+    try {
+        await upgradeCard(card, ui);
+        ui.el.classList.add('done');
+    } catch (e) {
+        ui.el.classList.add('err');
+        ui.phase('Errore: ' + e.message);
+    }
+    running = false;
+}
+
+async function upgradeAll() {
+    if (running) return;
+    running = true;
+    const cards = Array.from(document.querySelectorAll('#gi .icard')).filter(c => c.dataset.tiled === '0' && c.dataset.src);
+    if (!cards.length) { alert('Tutte le sfere sono già in HD.'); running = false; return; }
+    let ok = 0;
+    for (const card of cards) {
+        const ui = mkUi('HD: ' + card.dataset.name);
+        try { await upgradeCard(card, ui); ui.el.classList.add('done'); ok++; }
+        catch (e) { ui.el.classList.add('err'); ui.phase('Errore: ' + e.message); }
+    }
+    running = false;
+    if (ok) setTimeout(() => location.reload(), 1200);
 }
 
 const drop = document.getElementById('drop');

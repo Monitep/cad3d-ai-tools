@@ -27,7 +27,7 @@ unset($g);
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title><?= h($cfg['site_title']) ?></title>
+<title><?= isset($GLOBALS['mig360e_result']) ? h($GLOBALS['mig360e_result']) . ' · ' : '' ?><?= h($cfg['site_title']) ?></title>
 <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>

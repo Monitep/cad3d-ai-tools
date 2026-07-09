@@ -159,7 +159,7 @@ const IMG_COLS = <?= (int)($image['cols'] ?? 0) ?>;
 const IMG_ROWS = <?= (int)($image['rows'] ?? 0) ?>;
 const BASE_URL = <?= json_encode($base) ?>;
 const TILES_DIR = <?= json_encode($tiles) ?>;
-const LEGACY_URL = <?= json_encode("data/$slug/{$image['file']}") ?>;
+const LEGACY_URL = <?= json_encode(!empty($image['src']) ? $image['src'] : "data/$slug/{$image['file']}") ?>;
 console.log('[360e] v1', TILED ? 'tiled ' + IMG_W + 'px ' + IMG_COLS + 'x' + IMG_ROWS : 'legacy');
 
 const rfg = document.getElementById('rfg');

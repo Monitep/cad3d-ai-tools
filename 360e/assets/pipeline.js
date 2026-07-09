@@ -1,0 +1,127 @@
+// ============================================================
+// 360e - Pipeline condivisa: da un Blob equirettangolare
+// genera thumb, base e griglia di tile, e li invia alle API.
+// Usata dall'upload admin e dalla migrazione da 360.
+// ============================================================
+
+function tileGrid(w) {
+    const normW = Math.max(2048, Math.round(w / 64) * 64);
+    let best = 16, bestD = Infinity;
+    for (const c of [16, 32, 64]) {
+        const t = normW / c;
+        const d = Math.abs(t - 512);
+        if (Number.isInteger(t) && d < bestD) { best = c; bestD = d; }
+    }
+    return { normW: normW, normH: normW / 2, cols: best, rows: best / 2, tile: normW / best };
+}
+
+function decodeFull(blob) {
+    return new Promise((ok, ko) => {
+        const u = URL.createObjectURL(blob);
+        const im = new Image();
+        im.onload = () => ok({ img: im, w: im.naturalWidth, h: im.naturalHeight, url: u });
+        im.onerror = () => { URL.revokeObjectURL(u); ko(new Error('Immagine non decodificabile')); };
+        im.src = u;
+    });
+}
+
+function canvasBlob(c, q) {
+    return new Promise((ok, ko) => c.toBlob(b => b ? ok(b) : ko(new Error('toBlob nullo')), 'image/jpeg', q));
+}
+
+function apiPost(fields, files, onProgress) {
+    const fd = new FormData();
+    for (const k in fields) fd.append(k, fields[k]);
+    for (const k in files) fd.append(k, files[k], k + '.jpg');
+    return new Promise((ok, ko) => {
+        const x = new XMLHttpRequest();
+        if (onProgress) x.upload.addEventListener('progress', e => {
+            if (e.lengthComputable) onProgress(e.loaded / e.total);
+        });
+        x.onload = () => {
+            try {
+                const r = JSON.parse(x.responseText);
+                r.ok ? ok(r) : ko(new Error(r.error || 'errore server'));
+            } catch (e) { ko(new Error('risposta non valida: ' + x.responseText.slice(0, 120))); }
+        };
+        x.onerror = () => ko(new Error('errore di rete'));
+        x.open('POST', 'api.php');
+        x.send(fd);
+    });
+}
+
+// opts: { slug, name, title, blob, ui,
+//         orig: {mode:'upload'|'copy'|'skip', file?, srcGallery?, srcFile?} }
+async function processPano(opts) {
+    const { slug, name, title, blob, ui } = opts;
+    const orig = opts.orig || { mode: 'skip' };
+
+    ui.phase('Decodifica...'); ui.pct(3);
+    const d = await decodeFull(blob);
+    const grid = tileGrid(d.w);
+    console.log('[360e] ' + name + ': ' + d.w + 'x' + d.h + ' -> ' + grid.cols + 'x' + grid.rows + ' tile ' + grid.tile + 'px');
+
+    ui.phase('Preparazione ' + Math.round(grid.normW * grid.normH / 1e6) + 'MP...'); ui.pct(6);
+    const full = document.createElement('canvas');
+    full.width = grid.normW; full.height = grid.normH;
+    full.getContext('2d').drawImage(d.img, 0, 0, grid.normW, grid.normH);
+    URL.revokeObjectURL(d.url);
+
+    ui.phase('Miniatura e base...'); ui.pct(9);
+    const th = document.createElement('canvas'); th.width = 1024; th.height = 512;
+    th.getContext('2d').drawImage(full, 0, 0, 1024, 512);
+    const bs = document.createElement('canvas'); bs.width = 2048; bs.height = 1024;
+    bs.getContext('2d').drawImage(full, 0, 0, 2048, 1024);
+    await apiPost({ action: 'upload_asset', slug: slug, name: name, kind: 'thumb' }, { file: await canvasBlob(th, 0.82) });
+    await apiPost({ action: 'upload_asset', slug: slug, name: name, kind: 'base' }, { file: await canvasBlob(bs, 0.85) });
+
+    const totTiles = grid.cols * grid.rows;
+    const tc = document.createElement('canvas');
+    tc.width = grid.tile; tc.height = grid.tile;
+    const tctx = tc.getContext('2d');
+    let sent = 0, batch = [], coords = [];
+    for (let r = 0; r < grid.rows; r++) {
+        for (let c = 0; c < grid.cols; c++) {
+            tctx.clearRect(0, 0, grid.tile, grid.tile);
+            tctx.drawImage(full, c * grid.tile, r * grid.tile, grid.tile, grid.tile, 0, 0, grid.tile, grid.tile);
+            batch.push(await canvasBlob(tc, 0.82));
+            coords.push({ c: c, r: r });
+            if (batch.length === 12 || (r === grid.rows - 1 && c === grid.cols - 1)) {
+                const files = {};
+                batch.forEach((b, i) => files['t' + i] = b);
+                await apiPost({ action: 'upload_tiles', slug: slug, name: name, coords: JSON.stringify(coords) }, files);
+                sent += batch.length;
+                batch = []; coords = [];
+                ui.phase('Tile ' + sent + '/' + totTiles);
+                ui.pct(12 + sent / totTiles * 74);
+            }
+        }
+    }
+
+    let origName = '';
+    if (orig.mode === 'upload' && orig.file) {
+        ui.phase('Invio originale...'); ui.pct(88);
+        try {
+            await apiPost({ action: 'upload_asset', slug: slug, name: name, kind: 'original' }, { file: orig.file },
+                f => ui.pct(88 + f * 8));
+            origName = name + '.jpg';
+        } catch (e) { console.log('[360e] originale non caricato:', e.message); }
+    } else if (orig.mode === 'copy') {
+        ui.phase('Copia originale sul server...'); ui.pct(90);
+        try {
+            const r = await apiPost({
+                action: 'copy_original', slug: slug, name: name,
+                src_gallery: orig.srcGallery, src_file: orig.srcFile,
+            }, {});
+            origName = r.saved || '';
+        } catch (e) { console.log('[360e] copia originale fallita:', e.message); }
+    }
+
+    ui.phase('Finalizzazione...'); ui.pct(97);
+    await apiPost({
+        action: 'finalize_image', slug: slug, name: name, title: title,
+        w: grid.normW, h: grid.normH, cols: grid.cols, rows: grid.rows, orig_file: origName,
+    }, {});
+    ui.pct(100);
+    ui.phase('Completata ✓');
+}

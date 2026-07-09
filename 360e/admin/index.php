@@ -15,6 +15,7 @@ $msg = $_GET['msg'] ?? ''; $err = $_GET['err'] ?? '';
     <div class="brand"><span class="brand-title">Admin <em>360e</em></span></div>
     <div style="display:flex;gap:10px;">
         <a href="../index.php" target="_blank" class="btn btn-sm">Vedi sito</a>
+        <a href="migrate.php" class="btn btn-sm">Importa da 360</a>
         <a href="password.php" class="btn btn-sm">Password</a>
         <a href="logout.php" class="btn btn-sm btn-danger">Esci</a>
     </div>
