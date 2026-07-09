@@ -1,0 +1,15 @@
+# 360e - Nessuna direttiva php_value (con PHP-FPM di Aruba causano 500).
+# I limiti upload sono in php.ini (copialo anche in admin/ se serve).
+DirectoryIndex index.php
+<FilesMatch "^(config\.php|lib\.php)$">
+    Require all denied
+</FilesMatch>
+<FilesMatch "\.json$">
+    Require all denied
+</FilesMatch>
+Options -Indexes
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/jpeg "access plus 30 days"
+    ExpiresByType text/css "access plus 7 days"
+</IfModule>

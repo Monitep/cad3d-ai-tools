@@ -1,0 +1,7 @@
+<FilesMatch "\.(php|phtml|phar)$">
+    Require all denied
+</FilesMatch>
+Options -Indexes
+<FilesMatch "\.json$">
+    Require all denied
+</FilesMatch>
