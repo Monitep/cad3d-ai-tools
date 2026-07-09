@@ -99,6 +99,7 @@ async function processPano(opts) {
     }
 
     let origName = '';
+    let origSrc = '';
     if (orig.mode === 'upload' && orig.file) {
         ui.phase('Invio originale...'); ui.pct(88);
         try {
@@ -107,20 +108,15 @@ async function processPano(opts) {
             origName = name + '.jpg';
         } catch (e) { console.log('[360e] originale non caricato:', e.message); }
     } else if (orig.mode === 'copy') {
-        ui.phase('Copia originale sul server...'); ui.pct(90);
-        try {
-            const r = await apiPost({
-                action: 'copy_original', slug: slug, name: name,
-                src_gallery: orig.srcGallery, src_file: orig.srcFile,
-            }, {});
-            origName = r.saved || '';
-        } catch (e) { console.log('[360e] copia originale fallita:', e.message); }
+        // Nessuna copia: l'originale resta in /360 e viene referenziato.
+        origSrc = '../360/data/' + orig.srcGallery + '/' + orig.srcFile;
     }
 
     ui.phase('Finalizzazione...'); ui.pct(97);
     await apiPost({
         action: 'finalize_image', slug: slug, name: name, title: title,
         w: grid.normW, h: grid.normH, cols: grid.cols, rows: grid.rows, orig_file: origName,
+        src: origSrc,
     }, {});
     ui.pct(100);
     ui.phase('Completata ✓');

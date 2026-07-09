@@ -23,7 +23,7 @@ if ($old_data && file_exists("$old_data/_galleries.json")) {
 $existing = [];
 foreach ($old as $g) {
     $m = load_meta($g['slug']);
-    $existing[$g['slug']] = array_column($m['images'], 'name');
+    $existing[$g['slug']] = array_column(array_filter($m['images'], fn($i) => !empty($i['tiled'])), 'name');
 }
 ?><!DOCTYPE html>
 <html lang="it">
@@ -105,7 +105,7 @@ document.getElementById('go')?.addEventListener('click', async () => {
             const name = im.file.replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 60);
             const ui = mkUi(cont, im.title + ' (' + im.file + ')');
             if ((EXISTING[g.slug] || []).includes(name)) {
-                ui.pct(100); ui.phase('Già importata, saltata');
+                ui.pct(100); ui.phase('Già in HD, saltata');
                 ui.el.classList.add('done');
                 skipped++;
                 continue;

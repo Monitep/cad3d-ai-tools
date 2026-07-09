@@ -24,6 +24,23 @@ case 'create_gallery': {
     back_ok('index.php', 'Galleria creata.');
 }
 
+case 'ensure_gallery': {
+    // Crea la galleria con lo slug indicato se non esiste (per la migrazione)
+    $slug = preg_replace('/[^a-z0-9-]/', '', strtolower(trim($_POST['slug'] ?? '')));
+    $title = trim($_POST['title'] ?? '') ?: $slug;
+    if (!$slug) jout(['ok' => false, 'error' => 'Slug non valido'], 400);
+    $d = load_galleries();
+    if (!in_array($slug, array_column($d['galleries'], 'slug'))) {
+        $d['galleries'][] = ['slug' => $slug, 'title' => $title];
+        save_galleries($d);
+        save_meta($slug, load_meta($slug));
+    }
+    foreach (['', '/_thumbs', '/base', '/tiles'] as $sub) {
+        @mkdir(data_dir() . "/$slug$sub", 0755, true);
+    }
+    jout(['ok' => true, 'slug' => $slug]);
+}
+
 case 'rename_gallery': {
     $slug = trim($_POST['slug'] ?? ''); $title = trim($_POST['title'] ?? '');
     if (!$slug || !$title) back_err('index.php', 'Dati mancanti.');
@@ -113,6 +130,9 @@ case 'finalize_image': {
     $cols = (int)($_POST['cols'] ?? 0);
     $rows = (int)($_POST['rows'] ?? 0);
     $file = $_POST['orig_file'] ?? '';
+    $src = trim($_POST['src'] ?? '');
+    // Solo riferimenti interni alla vecchia app sono ammessi
+    if ($src !== '' && (strpos($src, '../360/data/') !== 0 || strpos($src, '..', 3) !== false)) $src = '';
     if (!$slug || !find_gallery($slug) || !$name || $w < 64 || $cols < 1) {
         jout(['ok' => false, 'error' => 'Parametri non validi'], 400);
     }
@@ -141,6 +161,7 @@ case 'finalize_image': {
         'name' => $name,
         'title' => $title,
         'file' => $file ? safe_name(pathinfo($file, PATHINFO_FILENAME)) . '.' . strtolower(pathinfo($file, PATHINFO_EXTENSION) ?: 'jpg') : '',
+        'src' => $src,
         'w' => $w, 'h' => $h, 'cols' => $cols, 'rows' => $rows,
         'tiled' => true,
     ];

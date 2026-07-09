@@ -116,7 +116,7 @@ async function processFile(file, ui) {
 async function tileAndSend(file, name, title, ui, isUpgrade) {
     await processPano({
         slug: SLUG, name: name, title: title, blob: file, ui: ui,
-        orig: { mode: 'upload', file: file },
+        orig: isUpgrade ? { mode: 'skip' } : { mode: 'upload', file: file },
     });
 }
 
