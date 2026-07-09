@@ -172,6 +172,8 @@ function prog(p) {
 }
 
 let viewer = null;
+// Sensibilita' del trascinamento: 1 = default PSV, troppo timido.
+const MOVE_SPEED = ('ontouchstart' in window) ? 2.2 : 1.5;
 
 function hideLoad() {
     prog(100);
@@ -203,6 +205,7 @@ async function boot() {
             container: document.getElementById('viewer'),
             navbar: false,
             defaultZoomLvl: 30,
+            moveSpeed: MOVE_SPEED,
             mousewheel: true,
             touchmoveTwoFingers: false,
             ...cfg,
@@ -248,6 +251,7 @@ async function boot() {
             panorama: src,
             navbar: false,
             defaultZoomLvl: 30,
+            moveSpeed: MOVE_SPEED,
             mousewheel: true,
             touchmoveTwoFingers: false,
         });
