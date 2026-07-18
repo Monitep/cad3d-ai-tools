@@ -90,13 +90,13 @@ body{font-family:'Courier New',Courier,monospace;-webkit-font-smoothing:none;fon
 @keyframes blink{50%{opacity:0}}
 
 /* ============ CALCULATOR ============ */
-.calc{padding:8px;background:var(--c0);height:100%}
+.calc{padding:8px;background:var(--c0);height:100%;display:flex;flex-direction:column;gap:8px}
 .cdisp{background:var(--c2);color:var(--c3);font:bold 20px 'Courier New',monospace;
- text-align:right;padding:4px 8px;border:2px solid var(--c1);margin-bottom:8px;
- overflow:hidden;white-space:nowrap;height:34px}
-.cgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+ text-align:right;padding:4px 8px;border:2px solid var(--c1);
+ overflow:hidden;white-space:nowrap;height:34px;flex:none}
+.cgrid{flex:1;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(5,1fr);gap:6px;min-height:0}
 .cbtn{background:var(--c1);color:var(--c2);border:2px solid var(--c2);
- font:bold 16px 'Courier New',monospace;height:28px;cursor:pointer;user-select:none;
+ font:bold 16px 'Courier New',monospace;min-height:22px;cursor:pointer;user-select:none;
  box-shadow:2px 2px 0 var(--c2)}
 .cbtn:active{background:var(--c3);transform:translate(1px,1px);box-shadow:1px 1px 0 var(--c2)}
 
@@ -236,7 +236,9 @@ const screenEl=document.getElementById('screen');
 const desktop=document.getElementById('desktop');
 const stitle=document.getElementById('stitle');
 let zTop=100, selectedIcon=null, freeMem=837240;
-const openWins={};           // key -> win element (evita doppie aperture)
+const openWins={};           // key -> win element (solo dischi/cassetti: to-front se già aperti)
+let cascade=0, shellN=0;
+function casc(){ cascade=(cascade+1)%9; return cascade*18; }
 
 /* ---------- scaling per adattarsi allo schermo ---------- */
 function fit(){
@@ -480,7 +482,8 @@ function requester(text,title){
 
 /* ---------- CLOCK ---------- */
 function openClock(){
-  const win=createWindow({key:'clock',title:'Clock',x:330,y:60,w:200,h:200,resizable:true,memCost:14200});
+  const o=casc();
+  const win=createWindow({title:'Clock',x:330+o,y:60+o,w:200,h:200,resizable:true,memCost:14200});
   if(!win)return;
   const body=win.querySelector('.wbody');
   body.className='wbody clockbody';
@@ -530,7 +533,8 @@ function openClock(){
 
 /* ---------- CALCULATOR ---------- */
 function openCalc(){
-  const win=createWindow({key:'calc',title:'Calculator',x:120,y:90,w:196,h:220,memCost:9600});
+  const o=casc();
+  const win=createWindow({title:'Calculator',x:120+o,y:90+o,w:196,h:236,resizable:true,memCost:9600});
   if(!win)return;
   const body=win.querySelector('.wbody');
   body.className='wbody calc';
@@ -578,9 +582,9 @@ function openCalc(){
 }
 
 /* ---------- SHELL ---------- */
-function openShell(n){
-  const key='shell';
-  const win=createWindow({key,title:'AmigaShell',x:60,y:220,w:440,h:210,resizable:true,memCost:32768});
+function openShell(){
+  const pn=++shellN, o=casc();
+  const win=createWindow({title:'AmigaShell',x:60+o,y:220+o,w:440,h:210,resizable:true,memCost:32768});
   if(!win)return;
   const body=win.querySelector('.wbody');
   body.innerHTML=`<div class="shell"></div>`;
@@ -589,10 +593,10 @@ function openShell(n){
   function line(t){const d=document.createElement('div');d.className='cline';d.textContent=t;sh.insertBefore(d,prompt);sh.scrollTop=sh.scrollHeight;}
   const prompt=document.createElement('div');
   prompt.className='cline';
-  prompt.innerHTML=`<span>1&gt; </span><input type="text" autocomplete="off" spellcheck="false"><span class="cursorblk"></span>`;
+  prompt.innerHTML=`<span>${pn}&gt; </span><input type="text" autocomplete="off" spellcheck="false"><span class="cursorblk"></span>`;
   sh.appendChild(prompt);
   const inp=prompt.querySelector('input');
-  line('New Shell process 1');
+  line('New Shell process '+pn);
   sh.addEventListener('pointerup',()=>inp.focus());
   setTimeout(()=>inp.focus(),50);
 
@@ -600,7 +604,7 @@ function openShell(n){
   function exec(raw){
     const cmd=raw.trim(); if(!cmd)return;
     hist.push(cmd); hIdx=hist.length;
-    line('1> '+cmd);
+    line(pn+'> '+cmd);
     const [c,...rest]=cmd.split(/\s+/); const arg=rest.join(' ');
     switch(c.toLowerCase()){
       case 'dir': case 'list':
@@ -618,7 +622,7 @@ function openShell(n){
       case 'say': if(arg){speak(arg);line('...');}else line('Say: no input'); break;
       case 'why': line("Last command didn't fail."); break;
       case 'guru': gogo(); break;
-      case 'endcli': case 'exit': closeWindow(win,key,32768); return;
+      case 'endcli': case 'exit': closeWindow(win,null,32768); return;
       case 'help':
         line('Commands: dir list avail date echo cls version say why guru endcli'); break;
       default: line(`${c}: Unknown command`); line("Type 'help' for a command list.");
@@ -641,7 +645,8 @@ function speak(t){
   }catch(e){}
 }
 function openSay(){
-  const win=createWindow({key:'say',title:'Say',x:200,y:170,w:290,h:130,memCost:8100});
+  const o=casc();
+  const win=createWindow({title:'Say',x:200+o,y:170+o,w:290,h:130,memCost:8100});
   if(!win)return;
   const b=win.querySelector('.wbody');
   b.className='wbody saybody';
@@ -655,7 +660,8 @@ function openSay(){
 
 /* ---------- MORE (text viewer) ---------- */
 function openMore(){
-  const win=createWindow({key:'more',title:'More: ReadMe',x:150,y:70,w:380,h:280,resizable:true,memCost:11000});
+  const o=casc();
+  const win=createWindow({title:'More: ReadMe',x:150+o,y:70+o,w:380,h:280,resizable:true,memCost:11000});
   if(!win)return;
   const b=win.querySelector('.wbody');
   b.className='wbody morebody';
@@ -681,8 +687,10 @@ Da provare:
   sulla barra del titolo)
 - Trascina le finestre dalla barra
 - Gadget depth: porta avanti/dietro
-- Clock: ridimensionabile
-- Calculator: funzionante, anche
+- Clock e Calculator: apribili in
+  decine di istanze, entrambi
+  ridimensionabili
+- Calculator funziona anche
   da tastiera
 - Shell: digita "help"
 - Say: il Narrator parla davvero
