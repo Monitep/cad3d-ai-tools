@@ -248,6 +248,13 @@ body{font-family:'Courier New',Courier,monospace;-webkit-font-smoothing:none;fon
 #imrender .reqbtn{border-color:#FFAA33;color:#FFAA33;background:#111;padding:1px 10px;font-size:12px}
 #imrender .reqbtn:active{background:#FFAA33;color:#000}
 
+#dpscreen.on,#imscreen.on{inset:auto;left:50%;top:50%;transform:translate(-50%,-50%);
+ width:640px;height:512px;box-shadow:0 0 0 4000px #000}
+.smrow{font:bold 14px 'Courier New',monospace;color:var(--c2);padding:3px 8px;cursor:pointer;user-select:none}
+.smrow.on{background:var(--c0);color:var(--c1)}
+.smprops{font:bold 12px 'Courier New',monospace;color:var(--c2);padding:6px 8px;border-top:2px solid var(--c0)}
+#imstatus .axq{border:1px solid #FFAA33;padding:0 5px;cursor:pointer}
+#imstatus .axq.on{background:#FFAA33;color:#000}
 ::-webkit-scrollbar{width:14px;height:14px}
 ::-webkit-scrollbar-track{background:var(--c1);border-left:2px solid var(--c0)}
 ::-webkit-scrollbar-thumb{background:var(--c0);border:2px solid var(--c1)}
@@ -334,7 +341,15 @@ body{font-family:'Courier New',Courier,monospace;-webkit-font-smoothing:none;fon
    Palette OCS a 4 colori, gadget originali, Topaz-style text.
    ===================================================================== */
 
-const SW=640, SH=512;
+let SW=640, SH=512, PAR=1;
+const SMODES=[
+ {n:'PAL:Hires',w:640,h:256,par:2,chip:40960},
+ {n:'PAL:Hires Interlace',w:640,h:512,par:1,chip:81920},
+ {n:'NTSC:Hires Interlace',w:640,h:400,par:1.28,chip:64000},
+ {n:'Picasso II: 800 x 600',w:800,h:600,par:1,chip:0},
+ {n:'Picasso II: 1024 x 768',w:1024,h:768,par:1,chip:0}
+];
+let smCur=1;
 const screenEl=document.getElementById('screen');
 const desktop=document.getElementById('desktop');
 const stitle=document.getElementById('stitle');
@@ -345,8 +360,10 @@ function casc(){ cascade=(cascade+1)%9; return cascade*18; }
 
 /* ---------- scaling per adattarsi allo schermo ---------- */
 function fit(){
-  const s=Math.min(window.innerWidth/SW, window.innerHeight/SH);
-  screenEl.style.transform=`scale(${s})`;
+  screenEl.style.width=SW+'px';
+  screenEl.style.height=SH+'px';
+  const s=Math.min(window.innerWidth/SW, window.innerHeight/(SH*PAR));
+  screenEl.style.transform=`scale(${s},${s*PAR})`;
 }
 window.addEventListener('resize',fit); fit();
 
@@ -442,6 +459,15 @@ imagine:`<svg width="50" height="42" viewBox="0 0 50 42">
  <line x1="25" y1="3" x2="25" y2="39" stroke="var(--c1)" stroke-width="1.5"/>
  <circle cx="36" cy="10" r="4" fill="var(--c3)" stroke="var(--c2)" stroke-width="2"/>
 </svg>`,
+smode:`<svg width="48" height="42" viewBox="0 0 48 42">
+ <rect x="3" y="3" width="42" height="28" fill="var(--c1)" stroke="var(--c2)" stroke-width="2"/>
+ <rect x="7" y="7" width="34" height="20" fill="var(--c0)" stroke="var(--c2)" stroke-width="2"/>
+ <rect x="9" y="9" width="15" height="7" fill="var(--c1)"/>
+ <rect x="9" y="18" width="30" height="2" fill="var(--c3)"/>
+ <rect x="9" y="22" width="22" height="2" fill="var(--c3)"/>
+ <rect x="18" y="31" width="12" height="4" fill="var(--c1)" stroke="var(--c2)" stroke-width="2"/>
+ <rect x="12" y="35" width="24" height="4" fill="var(--c1)" stroke="var(--c2)" stroke-width="2"/>
+</svg>`,
 more:`<svg width="40" height="44" viewBox="0 0 40 44">
  <path d="M4 2 L28 2 L36 10 L36 42 L4 42 Z" fill="var(--c1)" stroke="var(--c2)" stroke-width="2"/>
  <path d="M28 2 L28 10 L36 10 Z" fill="var(--c0)" stroke="var(--c2)" stroke-width="2"/>
@@ -510,6 +536,9 @@ function createWindow({key,title,x,y,w,h,resizable,memCost}){
   if(key&&openWins[key]){ setActive(openWins[key]); return null; }
   const win=document.createElement('div');
   win.className='win active';
+  w=Math.min(w,SW-8);h=Math.min(h,SH-24);
+  x=Math.max(0,Math.min(x,SW-w-4));
+  y=Math.max(0,Math.min(y,SH-h-24));
   win.style.left=x+'px'; win.style.top=y+'px';
   win.style.width=w+'px'; win.style.height=h+'px';
   win.innerHTML=`
@@ -830,6 +859,12 @@ Da provare:
   attributi, luci e camera, render
   Scanline e Trace con ombre e
   riflessioni, salva/carica progetto
+- Prefs > ScreenMode: cambia la
+  risoluzione come con una scheda
+  grafica Picasso II (i modi RTG
+  liberano Chip RAM); i modi PAL
+  hanno l'aspect ratio dei pixel
+  originale
 - Shell: prova il comando "guru"...
 
 cad3d.expert/ai - 2026`;
@@ -890,6 +925,52 @@ function openPrefs(){
   paintSwatches(); syncSliders();
 }
 
+/* ---------- SCREENMODE (scheda grafica) ---------- */
+function setScreenMode(i){
+  const prev=SMODES[smCur],m=SMODES[i];
+  smCur=i;
+  SW=m.w;SH=m.h;PAR=m.par;
+  fit();
+  /* Chip RAM: i modi Picasso usano la memoria della scheda */
+  freeMem=Math.max(12288,freeMem+prev.chip-m.chip);updMem();
+  /* riposiziona icone e finestre nei nuovi limiti */
+  cleanUp();
+  document.querySelectorAll('.win').forEach(w=>{
+    w.style.left=Math.max(0,Math.min(SW-120,parseFloat(w.style.left)))+'px';
+    w.style.top=Math.max(0,Math.min(SH-80,parseFloat(w.style.top)))+'px';
+  });
+  try{localStorage.setItem('wb_screenmode',i);}catch(err){}
+}
+function openScreenMode(){
+  const win=createWindow({key:'smode',title:'ScreenMode',x:150,y:100,w:330,h:250,memCost:13400});
+  if(!win)return;
+  const b=win.querySelector('.wbody');
+  let pick=smCur;
+  function paint(){
+    const m=SMODES[pick];
+    b.innerHTML=`
+     <div style="font:bold 12px 'Courier New';color:var(--c2);padding:6px 8px">Display Mode:</div>
+     ${SMODES.map((x,i)=>`<div class="smrow${i===pick?' on':''}" data-i="${i}">${x.n}</div>`).join('')}
+     <div class="smprops">Mode Properties:
+${m.w} x ${m.h}${m.par!==1?'  (pixel '+(m.par===2?'2:1':'1.28:1')+')':''}
+Colors: 4    Chip RAM: ${m.chip?Math.round(m.chip/1024)+'K':'0K (card mem)'}
+${m.chip?'':'Board: Picasso II RTG'}</div>
+     <div style="display:flex;gap:10px;padding:8px">
+      <button class="reqbtn" style="border-color:var(--c0);color:var(--c0)" data-a="use">Use</button>
+      <button class="reqbtn" style="border-color:var(--c0);color:var(--c0)" data-a="cancel">Cancel</button>
+     </div>`;
+    b.querySelector('.smprops').style.whiteSpace='pre';
+  }
+  paint();
+  b.addEventListener('click',e=>{
+    const r=e.target.closest('.smrow');
+    if(r){pick=+r.dataset.i;paint();return;}
+    const a=e.target.dataset&&e.target.dataset.a;
+    if(a==='use'){setScreenMode(pick);closeWindow(win,'smode',13400);}
+    if(a==='cancel')closeWindow(win,'smode',13400);
+  });
+}
+
 /* ---------- GURU ---------- */
 const guru=document.getElementById('guru');
 function gogo(){ guru.classList.add('on'); }
@@ -916,10 +997,11 @@ function openSystem(){
   makeIcon({art:'more',label:'FixFonts',parent:b,onOpen:()=>requester('FixFonts: all fonts OK.')});
 }
 function openPrefsDrawer(){
-  const win=createWindow({key:'prefsdir',title:'Prefs',x:200,y:180,w:260,h:150,resizable:true,memCost:12600});
+  const win=createWindow({key:'prefsdir',title:'Prefs',x:200,y:180,w:300,h:160,resizable:true,memCost:12600});
   if(!win)return;
   const b=win.querySelector('.wbody');
   makeIcon({art:'prefs',label:'Preferences',parent:b,onOpen:openPrefs});
+  makeIcon({art:'smode',label:'ScreenMode',parent:b,onOpen:openScreenMode});
 }
 function openTrash(){
   const win=createWindow({key:'trash',title:'Trashcan',x:260,y:200,w:280,h:140,resizable:true,memCost:9800});
@@ -1932,7 +2014,10 @@ function draw(){
     ctx.restore();
   }
 }
-function loop(){ if(!visible){raf=false;return;} draw(); requestAnimationFrame(loop); }
+function loop(){ if(!visible){raf=false;return;}
+  draw();
+  if(els.quadb)els.quadb.classList.toggle('on',singleView<0);
+  requestAnimationFrame(loop); }
 function startLoop(){ if(!raf){raf=true;requestAnimationFrame(loop);} }
 
 /* ---------- interaction ---------- */
@@ -2392,6 +2477,7 @@ function build(){
     <span id="immode"></span>
     <span>Axis:</span>
     <span class="ax" data-x="x">X</span><span class="ax" data-x="y">Y</span><span class="ax" data-x="z">Z</span>
+    <span class="axq" id="imquadb" title="Quad / Single view">QUAD</span>
     <span>Sel: <b id="imsel">--</b></span>
     <span class="sp"></span>
     <span id="imcoord"></span>
@@ -2421,6 +2507,8 @@ function build(){
   els.axx=scr.querySelector('[data-x="x"]');
   els.axy=scr.querySelector('[data-x="y"]');
   els.axz=scr.querySelector('[data-x="z"]');
+  els.quadb=scr.querySelector('#imquadb');
+  els.quadb.addEventListener('click',()=>{singleView=singleView>=0?-1:0;});
   els.file=document.createElement('input');
   els.file.type='file';els.file.accept='.json';els.file.style.display='none';
   scr.appendChild(els.file);
@@ -2542,6 +2630,10 @@ function openImagine(){IM.show();}
 const kick=document.getElementById('kick');
 function boot(){
   kick.classList.add('off');
+  try{
+    const sm=parseInt(localStorage.getItem('wb_screenmode'));
+    if(!isNaN(sm)&&SMODES[sm]&&sm!==smCur)setScreenMode(sm);
+  }catch(err){}
   updMem();
   buildDesktop();
   /* apri il disco Workbench come al primo avvio */
