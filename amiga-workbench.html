@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Amiga 500 Workbench 1.3</title>
+<style>
+:root{
+  --c0:#0055AA; /* blue  */
+  --c1:#FFFFFF; /* white */
+  --c2:#000020; /* black */
+  --c3:#FF8800; /* orange*/
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;height:100%;overflow:hidden;background:#111;touch-action:manipulation}
+body{font-family:'Courier New',Courier,monospace;-webkit-font-smoothing:none;font-smooth:never}
+
+/* ============ MONITOR / SCALING ============ */
+#monitor{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:
+ radial-gradient(ellipse at center,#1a1a1a 0%,#050505 100%)}
+#screen{position:relative;width:640px;height:512px;background:var(--c0);overflow:hidden;
+ transform-origin:center center;
+ cursor:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'><path d='M1 0 L13 5 L8 7 L12 14 L9 15 L6 9 L2 12 Z' fill='%23DD2222' stroke='%23000020' stroke-width='1'/></svg>") 1 0, auto;
+ box-shadow:0 0 60px rgba(0,60,150,.35)}
+#screen::after{ /* subtle scanlines */
+ content:"";position:absolute;inset:0;pointer-events:none;z-index:9000;
+ background:repeating-linear-gradient(to bottom,rgba(0,0,0,.10) 0 1px,transparent 1px 2px)}
+
+/* ============ SCREEN TITLE BAR ============ */
+#sbar{position:absolute;top:0;left:0;right:0;height:20px;background:var(--c1);color:var(--c2);
+ display:flex;align-items:center;z-index:5000;border-bottom:1px solid var(--c2);user-select:none}
+#sbar .stitle{flex:1;font:bold 15px 'Courier New',monospace;padding-left:6px;white-space:nowrap;overflow:hidden;letter-spacing:0}
+#sbar .sgad{width:24px;height:100%;border-left:2px solid var(--c2);display:flex;align-items:center;justify-content:center;cursor:pointer}
+#sbar .sgad:active{background:var(--c3)}
+
+/* ============ MENU BAR ============ */
+#menubar{position:absolute;top:0;left:0;right:0;height:20px;background:var(--c1);color:var(--c2);
+ display:none;z-index:6000;border-bottom:1px solid var(--c2);user-select:none;font:bold 15px 'Courier New',monospace}
+#menubar.on{display:flex}
+.menu{position:relative;padding:0 12px;height:100%;display:flex;align-items:center;cursor:pointer}
+.menu.open,.menu:hover{background:var(--c2);color:var(--c1)}
+.mdrop{position:absolute;top:20px;left:0;min-width:170px;background:var(--c1);color:var(--c2);
+ border:1px solid var(--c2);display:none;z-index:6001}
+.menu.open .mdrop{display:block}
+.mitem{padding:2px 10px;white-space:nowrap;font:bold 15px 'Courier New',monospace}
+.mitem:hover{background:var(--c2);color:var(--c1)}
+.mitem.ghost{color:var(--c2);opacity:.45;background-image:repeating-linear-gradient(45deg,transparent 0 2px,rgba(255,255,255,.7) 2px 4px)}
+.mitem.ghost:hover{background:var(--c1);color:var(--c2);cursor:default}
+
+/* ============ DESKTOP + ICONS ============ */
+#desktop{position:absolute;top:20px;left:0;right:0;bottom:0}
+.icon{position:absolute;width:80px;text-align:center;cursor:pointer;user-select:none;z-index:10}
+.icon svg{display:block;margin:0 auto;image-rendering:pixelated}
+.icon .lbl{margin-top:2px;font:bold 13px 'Courier New',monospace;color:var(--c1);white-space:nowrap}
+.win .icon{position:relative;display:inline-block;vertical-align:top;margin:8px 4px}
+.win .icon .lbl{color:var(--c2)}
+.icon.sel svg{filter:invert(1) hue-rotate(180deg)}
+.icon.sel .lbl{background:var(--c2);color:var(--c3)}
+.win .icon.sel .lbl{background:var(--c2);color:var(--c3)}
+
+/* ============ WINDOWS ============ */
+.win{position:absolute;background:var(--c1);border:2px solid var(--c0);z-index:100;
+ display:flex;flex-direction:column;min-width:120px;min-height:80px}
+.win.active{border-color:var(--c0)}
+.tbar{height:20px;background:var(--c0);color:var(--c1);display:flex;align-items:stretch;
+ user-select:none;cursor:move;flex:none}
+.win:not(.active) .tbar{background:var(--c1);color:var(--c2);
+ background-image:repeating-linear-gradient(to bottom,var(--c0) 0 1px,transparent 1px 4px)}
+.win:not(.active) .tbar .ttl{background:var(--c1)}
+.tgad{width:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none}
+.tgad:active{background:var(--c3)}
+.tgad.cl{border-right:2px solid var(--c1)}
+.tgad.dep{border-left:2px solid var(--c1)}
+.win:not(.active) .tgad.cl{border-right-color:var(--c0)}
+.win:not(.active) .tgad.dep{border-left-color:var(--c0)}
+.ttl{flex:1;font:bold 15px 'Courier New',monospace;padding:0 6px;display:flex;align-items:center;
+ white-space:nowrap;overflow:hidden}
+.wbody{flex:1;overflow:auto;position:relative;background:var(--c1)}
+.wbody.bluebody{background:var(--c0)}
+.sizegad{position:absolute;right:0;bottom:0;width:18px;height:18px;cursor:nwse-resize;z-index:50;
+ background:var(--c0);display:flex;align-items:center;justify-content:center}
+
+/* ============ SHELL ============ */
+.shell{background:var(--c0);color:var(--c1);font:bold 14px 'Courier New',monospace;
+ padding:4px 6px;height:100%;overflow-y:auto;cursor:text;line-height:16px}
+.shell .cline{white-space:pre-wrap;word-break:break-all}
+.shell input{background:transparent;border:0;outline:0;color:var(--c1);
+ font:bold 14px 'Courier New',monospace;width:70%;caret-color:var(--c3)}
+.cursorblk{display:inline-block;width:8px;height:14px;background:var(--c3);animation:blink 1s steps(1) infinite;vertical-align:text-bottom}
+@keyframes blink{50%{opacity:0}}
+
+/* ============ CALCULATOR ============ */
+.calc{padding:8px;background:var(--c0);height:100%}
+.cdisp{background:var(--c2);color:var(--c3);font:bold 20px 'Courier New',monospace;
+ text-align:right;padding:4px 8px;border:2px solid var(--c1);margin-bottom:8px;
+ overflow:hidden;white-space:nowrap;height:34px}
+.cgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.cbtn{background:var(--c1);color:var(--c2);border:2px solid var(--c2);
+ font:bold 16px 'Courier New',monospace;height:28px;cursor:pointer;user-select:none;
+ box-shadow:2px 2px 0 var(--c2)}
+.cbtn:active{background:var(--c3);transform:translate(1px,1px);box-shadow:1px 1px 0 var(--c2)}
+
+/* ============ CLOCK ============ */
+.clockbody{background:var(--c0);height:100%;display:flex;align-items:center;justify-content:center}
+.clockbody canvas{image-rendering:auto}
+
+/* ============ REQUESTER ============ */
+.reqbody{background:var(--c0);color:var(--c1);padding:14px 12px 12px;height:100%;
+ display:flex;flex-direction:column;gap:14px}
+.reqtxt{font:bold 14px 'Courier New',monospace;white-space:pre-wrap;flex:1;line-height:18px}
+.reqbtns{display:flex;gap:12px}
+.reqbtn{border:2px solid var(--c1);color:var(--c1);background:var(--c0);padding:3px 14px;
+ font:bold 14px 'Courier New',monospace;cursor:pointer}
+.reqbtn:active{background:var(--c3);color:var(--c2)}
+
+/* ============ PREFS ============ */
+.prefs{background:var(--c0);height:100%;padding:10px;color:var(--c1);font:bold 13px 'Courier New',monospace}
+.swrow{display:flex;gap:8px;margin-bottom:10px}
+.swatch{width:44px;height:26px;border:2px solid var(--c1);cursor:pointer}
+.swatch.cur{border-color:var(--c3);outline:2px solid var(--c3)}
+.slrow{display:flex;align-items:center;gap:8px;margin:6px 0}
+.slrow label{width:14px}
+.slrow input[type=range]{flex:1;accent-color:var(--c3);height:16px}
+.slrow .v{width:24px;text-align:right}
+.prefbtns{display:flex;gap:10px;margin-top:12px}
+
+/* ============ SAY ============ */
+.saybody{background:var(--c0);height:100%;padding:12px;display:flex;flex-direction:column;gap:10px}
+.saybody input{background:var(--c1);color:var(--c2);border:2px solid var(--c2);
+ font:bold 14px 'Courier New',monospace;padding:4px 6px;width:100%}
+
+/* ============ MORE (text viewer) ============ */
+.morebody{background:var(--c1);color:var(--c2);font:bold 13px 'Courier New',monospace;
+ padding:8px 10px;height:100%;overflow-y:auto;white-space:pre-wrap;line-height:17px}
+
+/* ============ KICKSTART ============ */
+#kick{position:absolute;inset:0;background:#fff;z-index:9500;display:flex;
+ align-items:center;justify-content:center;cursor:pointer}
+#kick.off{display:none}
+
+/* ============ GURU ============ */
+#guru{position:absolute;top:0;left:0;right:0;background:#000;color:#f00;z-index:9800;
+ font:bold 15px 'Courier New',monospace;text-align:center;padding:10px 8px;display:none;cursor:pointer}
+#guru.on{display:block}
+#guru .box{border:4px solid #f00;padding:8px 4px;animation:gblink 1.4s steps(1) infinite}
+@keyframes gblink{50%{border-color:#000}}
+
+::-webkit-scrollbar{width:14px;height:14px}
+::-webkit-scrollbar-track{background:var(--c1);border-left:2px solid var(--c0)}
+::-webkit-scrollbar-thumb{background:var(--c0);border:2px solid var(--c1)}
+</style>
+</head>
+<body>
+<div id="monitor">
+ <div id="screen">
+  <!-- Screen title bar -->
+  <div id="sbar">
+   <div class="stitle" id="stitle">Workbench release.  837,240 free memory</div>
+   <div class="sgad" title="Screen to back">
+    <svg width="16" height="12" viewBox="0 0 16 12"><rect x="0" y="0" width="10" height="8" fill="var(--c2)"/><rect x="5" y="3" width="10" height="8" fill="var(--c1)" stroke="var(--c2)"/></svg>
+   </div>
+   <div class="sgad" title="Screen to front">
+    <svg width="16" height="12" viewBox="0 0 16 12"><rect x="5" y="3" width="10" height="8" fill="var(--c1)" stroke="var(--c2)"/><rect x="0" y="0" width="10" height="8" fill="var(--c2)"/></svg>
+   </div>
+  </div>
+
+  <!-- Menu bar (right mouse button) -->
+  <div id="menubar">
+   <div class="menu" data-m="wb">Workbench
+    <div class="mdrop">
+     <div class="mitem" data-a="open">Open</div>
+     <div class="mitem" data-a="close">Close</div>
+     <div class="mitem ghost">Duplicate</div>
+     <div class="mitem ghost">Rename</div>
+     <div class="mitem" data-a="info">Info</div>
+     <div class="mitem ghost">Discard</div>
+    </div>
+   </div>
+   <div class="menu" data-m="disk">Disk
+    <div class="mdrop">
+     <div class="mitem ghost">Empty Trash</div>
+     <div class="mitem ghost">Initialize</div>
+     <div class="mitem ghost">Relabel</div>
+    </div>
+   </div>
+   <div class="menu" data-m="sp">Special
+    <div class="mitem-holder mdrop">
+     <div class="mitem" data-a="cleanup">Clean Up</div>
+     <div class="mitem" data-a="lastmsg">Last Message</div>
+     <div class="mitem" data-a="redraw">Redraw</div>
+     <div class="mitem" data-a="version">Version</div>
+    </div>
+   </div>
+  </div>
+
+  <div id="desktop"></div>
+
+  <!-- Kickstart 1.3 insert-disk screen -->
+  <div id="kick">
+   <svg width="360" height="320" viewBox="0 0 180 160">
+    <!-- hand -->
+    <g stroke="#000" stroke-width="2" fill="#fff" stroke-linejoin="round">
+     <path d="M30 155 L30 120 Q30 105 42 100 L60 92 L60 80 Q60 74 66 74 Q71 74 71 80 L71 70 Q71 64 77 64 Q82 64 82 70 L82 66 Q82 60 88 60 Q93 60 93 66 L93 72 Q93 66 99 66 Q104 66 104 72 L104 100 Q104 112 96 118 L88 124 L88 155 Z"/>
+    </g>
+    <!-- floppy -->
+    <g transform="translate(78,28) rotate(18)">
+     <rect x="0" y="0" width="72" height="72" fill="#fff" stroke="#000" stroke-width="3"/>
+     <rect x="20" y="0" width="32" height="22" fill="#fff" stroke="#000" stroke-width="3"/>
+     <rect x="38" y="4" width="10" height="14" fill="#000"/>
+     <rect x="8" y="34" width="56" height="32" fill="#59f" stroke="#000" stroke-width="3"/>
+     <text x="36" y="56" text-anchor="middle" font-family="Courier New" font-weight="bold" font-size="16" fill="#000">1.3</text>
+    </g>
+    <text x="90" y="152" text-anchor="middle" font-family="Courier New" font-weight="bold" font-size="9" fill="#06c">Click to insert Workbench disk</text>
+   </svg>
+  </div>
+
+  <!-- Guru meditation -->
+  <div id="guru">
+   <div class="box">
+    Software Failure.&nbsp;&nbsp;&nbsp;Press left mouse button to continue.<br>
+    Guru Meditation #00000003.48454C50
+   </div>
+  </div>
+ </div>
+</div>
+
+<script>
+"use strict";
+/* =====================================================================
+   AMIGA 500  WORKBENCH 1.3  SIMULATION
+   Palette OCS a 4 colori, gadget originali, Topaz-style text.
+   ===================================================================== */
+
+const SW=640, SH=512;
+const screenEl=document.getElementById('screen');
+const desktop=document.getElementById('desktop');
+const stitle=document.getElementById('stitle');
+let zTop=100, selectedIcon=null, freeMem=837240;
+const openWins={};           // key -> win element (evita doppie aperture)
+
+/* ---------- scaling per adattarsi allo schermo ---------- */
+function fit(){
+  const s=Math.min(window.innerWidth/SW, window.innerHeight/SH);
+  screenEl.style.transform=`scale(${s})`;
+}
+window.addEventListener('resize',fit); fit();
+
+function updMem(){
+  stitle.textContent=`Workbench release.  ${freeMem.toLocaleString('en-US')} free memory`;
+}
+function chewMem(n){ freeMem=Math.max(12288,freeMem-n); updMem(); }
+function freeMemBack(n){ freeMem=Math.min(837240,freeMem+n); updMem(); }
+
+/* =====================================================================
+   ICON ARTWORK  (SVG pixel-style, palette WB1.3)
+   ===================================================================== */
+const ART={
+disk:`<svg width="52" height="42" viewBox="0 0 52 42">
+ <rect x="2" y="2" width="48" height="38" fill="var(--c1)" stroke="var(--c2)" stroke-width="2"/>
+ <rect x="14" y="2" width="24" height="13" fill="var(--c0)" stroke="var(--c2)" stroke-width="2"/>
+ <rect x="28" y="4" width="7" height="9" fill="var(--c2)"/>
+ <rect x="8" y="20" width="36" height="17" fill="var(--c0)" stroke="var(--c2)" stroke-width="2"/>
+ <rect x="12" y="24" width="28" height="4" fill="var(--c1)"/>
+ <rect x="12" y="30" width="18" height="4" fill="var(--c1)"/>
+</svg>`,
+drawer:`<svg width="54" height="38" viewBox="0 0 54 38">
+ <path d="M4 12 L14 4 L50 4 L50 26 L40 34 L4 34 Z" fill="var(--c1)" stroke="var(--c2)" stroke-width="2"/>
+ <path d="M14 4 L50 4 L50 26 L14 26 Z" fill="var(--c0)" stroke="var(--c2)" stroke-width="2"/>
+ <path d="M4 12 L14 4 L14 26 L4 34 Z" fill="var(--c1)" stroke="var(--c2)" stroke-width="2"/>
+ <rect x="24" y="13" width="16" height="5" fill="var(--c3)" stroke="var(--c2)" stroke-width="2"/>
+</svg>`,
+shell:`<svg width="54" height="40" viewBox="0 0 54 40">
+ <rect x="2" y="2" width="50" height="30" fill="var(--c0)" stroke="var(--c2)" stroke-width="2"/>
+ <text x="7" y="16" font-family="Courier New" font-weight="bold" font-size="11" fill="var(--c1)">1&gt;</text>
+ <rect x="24" y="8" width="7" height="9" fill="var(--c3)"/>
+ <rect x="14" y="32" width="26" height="4" fill="var(--c1)" stroke="var(--c2)" stroke-width="2"/>
+</svg>`,
+clock:`<svg width="46" height="42" viewBox="0 0 46 42">
+ <circle cx="23" cy="21" r="18" fill="var(--c1)" stroke="var(--c2)" stroke-width="2"/>
+ <circle cx="23" cy="21" r="2" fill="var(--c2)"/>
+ <line x1="23" y1="21" x2="23" y2="9" stroke="var(--c2)" stroke-width="2"/>
+ <line x1="23" y1="21" x2="32" y2="26" stroke="var(--c3)" stroke-width="2"/>
+ <rect x="21" y="1" width="4" height="4" fill="var(--c0)"/><rect x="21" y="37" width="4" height="4" fill="var(--c0)"/>
+ <rect x="3" y="19" width="4" height="4" fill="var(--c0)"/><rect x="39" y="19" width="4" height="4" fill="var(--c0)"/>
+</svg>`,
+calc:`<svg width="40" height="44" viewBox="0 0 40 44">
+ <rect x="2" y="2" width="36" height="40" fill="var(--c0)" stroke="var(--c2)" stroke-width="2"/>
+ <rect x="6" y="6" width="28" height="8" fill="var(--c2)"/>
+ <text x="31" y="13" text-anchor="end" font-family="Courier New" font-weight="bold" font-size="7" fill="var(--c3)">0.</text>
+ <g fill="var(--c1)" stroke="var(--c2)" stroke-width="1">
+  <rect x="6" y="18" width="6" height="5"/><rect x="14" y="18" width="6" height="5"/><rect x="22" y="18" width="6" height="5"/><rect x="30" y="18" width="4" height="5"/>
+  <rect x="6" y="26" width="6" height="5"/><rect x="14" y="26" width="6" height="5"/><rect x="22" y="26" width="6" height="5"/><rect x="30" y="26" width="4" height="5"/>
+  <rect x="6" y="34" width="6" height="5"/><rect x="14" y="34" width="6" height="5"/><rect x="22" y="34" width="6" height="5"/><rect x="30" y="34" width="4" height="5" fill="var(--c3)"/>
+ </g>
+</svg>`,
+trash:`<svg width="42" height="44" viewBox="0 0 42 44">
+ <path d="M8 12 L34 12 L31 40 L11 40 Z" fill="var(--c1)" stroke="var(--c2)" stroke-width="2"/>
+ <ellipse cx="21" cy="12" rx="13" ry="4" fill="var(--c1)" stroke="var(--c2)" stroke-width="2"/>
+ <ellipse cx="21" cy="8" rx="9" ry="3" fill="var(--c0)" stroke="var(--c2)" stroke-width="2"/>
+ <line x1="15" y1="17" x2="16" y2="36" stroke="var(--c0)" stroke-width="2"/>
+ <line x1="21" y1="17" x2="21" y2="36" stroke="var(--c0)" stroke-width="2"/>
+ <line x1="27" y1="17" x2="26" y2="36" stroke="var(--c0)" stroke-width="2"/>
+</svg>`,
+prefs:`<svg width="46" height="42" viewBox="0 0 46 42">
+ <rect x="2" y="4" width="42" height="34" fill="var(--c1)" stroke="var(--c2)" stroke-width="2"/>
+ <rect x="6" y="8" width="10" height="8" fill="var(--c0)" stroke="var(--c2)"/>
+ <rect x="18" y="8" width="10" height="8" fill="var(--c3)" stroke="var(--c2)"/>
+ <rect x="30" y="8" width="10" height="8" fill="var(--c2)"/>
+ <rect x="6" y="22" width="34" height="3" fill="var(--c2)"/>
+ <rect x="20" y="19" width="5" height="9" fill="var(--c3)" stroke="var(--c2)"/>
+ <rect x="6" y="31" width="34" height="3" fill="var(--c2)"/>
+ <rect x="10" y="28" width="5" height="9" fill="var(--c3)" stroke="var(--c2)"/>
+</svg>`,
+say:`<svg width="46" height="40" viewBox="0 0 46 40">
+ <rect x="2" y="2" width="34" height="26" rx="4" fill="var(--c1)" stroke="var(--c2)" stroke-width="2"/>
+ <path d="M10 28 L10 38 L20 28 Z" fill="var(--c1)" stroke="var(--c2)" stroke-width="2"/>
+ <text x="19" y="20" text-anchor="middle" font-family="Courier New" font-weight="bold" font-size="12" fill="var(--c0)">Hi!</text>
+ <path d="M38 10 q6 6 0 12" fill="none" stroke="var(--c3)" stroke-width="2"/>
+ <path d="M41 6 q10 10 0 20" fill="none" stroke="var(--c3)" stroke-width="2"/>
+</svg>`,
+more:`<svg width="40" height="44" viewBox="0 0 40 44">
+ <path d="M4 2 L28 2 L36 10 L36 42 L4 42 Z" fill="var(--c1)" stroke="var(--c2)" stroke-width="2"/>
+ <path d="M28 2 L28 10 L36 10 Z" fill="var(--c0)" stroke="var(--c2)" stroke-width="2"/>
+ <g stroke="var(--c0)" stroke-width="2">
+  <line x1="9" y1="16" x2="31" y2="16"/><line x1="9" y1="22" x2="31" y2="22"/>
+  <line x1="9" y1="28" x2="31" y2="28"/><line x1="9" y1="34" x2="24" y2="34"/>
+ </g>
+</svg>`
+};
+
+/* =====================================================================
+   ICON FACTORY
+   ===================================================================== */
+let iconSeq=0;
+function makeIcon({art,label,x,y,parent,onOpen,info}){
+  const el=document.createElement('div');
+  el.className='icon'; el.dataset.iid=++iconSeq;
+  el.innerHTML=ART[art]+`<div class="lbl">${label}</div>`;
+  if(parent===desktop){el.style.left=x+'px'; el.style.top=y+'px';}
+  el._info=info||`${label}\nType: ${art==='disk'?'Disk':art==='drawer'?'Drawer':'Tool'}\nStatus: read/write`;
+  el._label=label;
+  let lastTap=0;
+  el.addEventListener('pointerdown',e=>{
+    e.stopPropagation();
+    if(selectedIcon) selectedIcon.classList.remove('sel');
+    selectedIcon=el; el.classList.add('sel');
+    const now=Date.now();
+    if(now-lastTap<380){ onOpen&&onOpen(); lastTap=0; } else lastTap=now;
+  });
+  el.addEventListener('dblclick',e=>{e.stopPropagation(); onOpen&&onOpen();});
+  el._open=onOpen;
+  parent.appendChild(el);
+  return el;
+}
+
+desktop.addEventListener('pointerdown',()=>{
+  if(selectedIcon){selectedIcon.classList.remove('sel'); selectedIcon=null;}
+});
+
+/* =====================================================================
+   WINDOW MANAGER
+   ===================================================================== */
+function svgGad(kind){
+  if(kind==='close') return `<svg width="14" height="12" viewBox="0 0 14 12">
+   <rect x="1" y="1" width="12" height="10" fill="none" stroke="currentColor" stroke-width="2"/>
+   <rect x="5" y="4" width="4" height="4" fill="currentColor"/></svg>`;
+  if(kind==='back') return `<svg width="16" height="12" viewBox="0 0 16 12">
+   <rect x="0" y="0" width="10" height="8" fill="currentColor"/>
+   <rect x="5" y="3" width="10" height="8" fill="var(--c0)" stroke="currentColor" stroke-width="1.5"/></svg>`;
+  if(kind==='front') return `<svg width="16" height="12" viewBox="0 0 16 12">
+   <rect x="5" y="3" width="10" height="8" fill="var(--c0)" stroke="currentColor" stroke-width="1.5"/>
+   <rect x="0" y="0" width="10" height="8" fill="currentColor"/></svg>`;
+  if(kind==='size') return `<svg width="14" height="14" viewBox="0 0 14 14">
+   <path d="M2 12 L12 12 L12 2 Z" fill="var(--c1)" stroke="var(--c1)"/>
+   <path d="M5 12 L12 12 L12 5 Z" fill="var(--c3)"/></svg>`;
+  return '';
+}
+
+function setActive(win){
+  document.querySelectorAll('.win').forEach(w=>w.classList.remove('active'));
+  win.classList.add('active');
+  win.style.zIndex=++zTop;
+}
+
+function createWindow({key,title,x,y,w,h,resizable,memCost}){
+  if(key&&openWins[key]){ setActive(openWins[key]); return null; }
+  const win=document.createElement('div');
+  win.className='win active';
+  win.style.left=x+'px'; win.style.top=y+'px';
+  win.style.width=w+'px'; win.style.height=h+'px';
+  win.innerHTML=`
+   <div class="tbar">
+    <div class="tgad cl" title="Close">${svgGad('close')}</div>
+    <div class="ttl">${title}</div>
+    <div class="tgad dep" title="To back">${svgGad('back')}</div>
+    <div class="tgad dep" title="To front">${svgGad('front')}</div>
+   </div>
+   <div class="wbody"></div>`;
+  desktop.appendChild(win);
+  setActive(win);
+  const cost=memCost||21384; chewMem(cost);
+  if(key) openWins[key]=win;
+  win._onClose=null;
+
+  /* gadgets */
+  const [gClose,gBack,gFront]=win.querySelectorAll('.tgad');
+  gClose.addEventListener('click',()=>closeWindow(win,key,cost));
+  gBack.addEventListener('click',e=>{e.stopPropagation(); win.style.zIndex=50;});
+  gFront.addEventListener('click',e=>{e.stopPropagation(); setActive(win);});
+  win.addEventListener('pointerdown',()=>setActive(win));
+
+  /* drag */
+  const tbar=win.querySelector('.tbar');
+  tbar.addEventListener('pointerdown',e=>{
+    if(e.target.closest('.tgad'))return;
+    setActive(win);
+    const sx=e.clientX, sy=e.clientY;
+    const scale=screenEl.getBoundingClientRect().width/SW;
+    const ox=parseFloat(win.style.left), oy=parseFloat(win.style.top);
+    tbar.setPointerCapture(e.pointerId);
+    function mv(ev){
+      let nx=ox+(ev.clientX-sx)/scale, ny=oy+(ev.clientY-sy)/scale;
+      nx=Math.max(-w+60,Math.min(SW-60,nx));
+      ny=Math.max(0,Math.min(SH-40,ny));
+      win.style.left=nx+'px'; win.style.top=ny+'px';
+    }
+    function up(){tbar.removeEventListener('pointermove',mv);tbar.removeEventListener('pointerup',up);}
+    tbar.addEventListener('pointermove',mv);
+    tbar.addEventListener('pointerup',up);
+  });
+
+  /* resize */
+  if(resizable){
+    const sg=document.createElement('div');
+    sg.className='sizegad'; sg.innerHTML=svgGad('size');
+    win.appendChild(sg);
+    sg.addEventListener('pointerdown',e=>{
+      e.stopPropagation(); setActive(win);
+      const sx=e.clientX, sy=e.clientY;
+      const scale=screenEl.getBoundingClientRect().width/SW;
+      const ow=win.offsetWidth, oh=win.offsetHeight;
+      sg.setPointerCapture(e.pointerId);
+      function mv(ev){
+        const nw=Math.max(120,Math.min(SW,ow+(ev.clientX-sx)/scale));
+        const nh=Math.max(110,Math.min(SH-20,oh+(ev.clientY-sy)/scale));
+        win.style.width=nw+'px'; win.style.height=nh+'px';
+        win._onResize&&win._onResize();
+      }
+      function up(){sg.removeEventListener('pointermove',mv);sg.removeEventListener('pointerup',up);}
+      sg.addEventListener('pointermove',mv);
+      sg.addEventListener('pointerup',up);
+    });
+  }
+  return win;
+}
+
+function closeWindow(win,key,cost){
+  win._onClose&&win._onClose();
+  win.remove();
+  if(key) delete openWins[key];
+  freeMemBack(cost||21384);
+}
+
+/* =====================================================================
+   REQUESTER (System Request)
+   ===================================================================== */
+function requester(text,title){
+  const win=createWindow({title:title||'System Request',x:170,y:140,w:300,h:120,memCost:4096});
+  if(!win)return;
+  const b=win.querySelector('.wbody');
+  b.className='wbody reqbody';
+  b.innerHTML=`<div class="reqtxt">${text}</div>
+   <div class="reqbtns"><button class="reqbtn">Continue</button></div>`;
+  b.querySelector('.reqbtn').addEventListener('click',()=>closeWindow(win,null,4096));
+}
+
+/* =====================================================================
+   APPS
+   ===================================================================== */
+
+/* ---------- CLOCK ---------- */
+function openClock(){
+  const win=createWindow({key:'clock',title:'Clock',x:330,y:60,w:200,h:200,resizable:true,memCost:14200});
+  if(!win)return;
+  const body=win.querySelector('.wbody');
+  body.className='wbody clockbody';
+  const cv=document.createElement('canvas');
+  body.appendChild(cv);
+  function draw(){
+    const s=Math.min(body.clientWidth,body.clientHeight)-14;
+    if(s<20)return;
+    cv.width=s; cv.height=s;
+    const ctx=cv.getContext('2d');
+    const cs=getComputedStyle(document.documentElement);
+    const C1=cs.getPropertyValue('--c1').trim(), C2=cs.getPropertyValue('--c2').trim(), C3=cs.getPropertyValue('--c3').trim();
+    const r=s/2;
+    ctx.clearRect(0,0,s,s);
+    ctx.fillStyle=C1; ctx.beginPath(); ctx.arc(r,r,r-2,0,7); ctx.fill();
+    ctx.strokeStyle=C2; ctx.lineWidth=Math.max(2,s*.015); ctx.stroke();
+    /* tacche */
+    for(let i=0;i<12;i++){
+      const a=i*Math.PI/6;
+      const l=(i%3===0)?.16:.08;
+      ctx.beginPath();
+      ctx.moveTo(r+Math.sin(a)*(r*.86),r-Math.cos(a)*(r*.86));
+      ctx.lineTo(r+Math.sin(a)*(r*(0.86-l)),r-Math.cos(a)*(r*(0.86-l)));
+      ctx.lineWidth=(i%3===0)?Math.max(2,s*.02):Math.max(1,s*.01);
+      ctx.strokeStyle=C2; ctx.stroke();
+    }
+    const now=new Date();
+    const hr=(now.getHours()%12)+now.getMinutes()/60;
+    const mn=now.getMinutes()+now.getSeconds()/60;
+    const sc=now.getSeconds();
+    function hand(angle,len,wid,col){
+      ctx.beginPath();
+      ctx.moveTo(r-Math.sin(angle)*r*.12,r+Math.cos(angle)*r*.12);
+      ctx.lineTo(r+Math.sin(angle)*r*len,r-Math.cos(angle)*r*len);
+      ctx.lineWidth=wid; ctx.strokeStyle=col; ctx.lineCap='butt'; ctx.stroke();
+    }
+    hand(hr*Math.PI/6,.45,Math.max(3,s*.03),C2);
+    hand(mn*Math.PI/30,.66,Math.max(2,s*.02),C2);
+    hand(sc*Math.PI/30,.72,Math.max(1,s*.012),C3);
+    ctx.fillStyle=C2; ctx.beginPath(); ctx.arc(r,r,Math.max(2,s*.03),0,7); ctx.fill();
+  }
+  draw();
+  const iv=setInterval(draw,1000);
+  win._onResize=draw;
+  win._onClose=()=>clearInterval(iv);
+}
+
+/* ---------- CALCULATOR ---------- */
+function openCalc(){
+  const win=createWindow({key:'calc',title:'Calculator',x:120,y:90,w:196,h:220,memCost:9600});
+  if(!win)return;
+  const body=win.querySelector('.wbody');
+  body.className='wbody calc';
+  body.innerHTML=`<div class="cdisp">0.</div><div class="cgrid"></div>`;
+  const disp=body.querySelector('.cdisp');
+  const grid=body.querySelector('.cgrid');
+  const keys=['CA','CE','\u00AB','\u00F7','7','8','9','\u00D7','4','5','6','-','1','2','3','+','.','0','\u00B1','='];
+  let acc=null,op=null,cur='0',fresh=true;
+  function show(){ disp.textContent=(cur.includes('.')?cur:cur+'.'); }
+  function calc(a,b,o){
+    a=parseFloat(a); b=parseFloat(b);
+    let r=o==='+'?a+b:o==='-'?a-b:o==='\u00D7'?a*b:o==='\u00F7'?(b===0?NaN:a/b):b;
+    if(!isFinite(r)||isNaN(r)) return 'Error';
+    r=Math.round(r*1e10)/1e10;
+    let s=String(r);
+    if(s.replace('-','').replace('.','').length>10) s=r.toExponential(4);
+    return s;
+  }
+  function press(k){
+    if(k==='CA'){acc=null;op=null;cur='0';fresh=true;}
+    else if(k==='CE'){cur='0';fresh=true;}
+    else if(k==='\u00AB'){cur=cur.length>1?cur.slice(0,-1):'0';}
+    else if(k==='\u00B1'){cur=cur.startsWith('-')?cur.slice(1):(cur!=='0'?'-'+cur:cur);}
+    else if(k==='.'){if(fresh){cur='0.';fresh=false;}else if(!cur.includes('.'))cur+='.';}
+    else if(k>='0'&&k<='9'){ if(fresh){cur=k;fresh=false;} else if(cur.replace('-','').replace('.','').length<10) cur=(cur==='0'?k:cur+k); }
+    else if(k==='='){ if(op&&acc!==null){cur=calc(acc,cur,op);acc=null;op=null;fresh=true;} }
+    else { /* operatore */
+      if(op&&acc!==null&&!fresh){cur=calc(acc,cur,op);}
+      acc=cur; op=k; fresh=true;
+    }
+    show();
+  }
+  keys.forEach(k=>{
+    const b=document.createElement('button');
+    b.className='cbtn'; b.textContent=k;
+    b.addEventListener('click',()=>press(k));
+    grid.appendChild(b);
+  });
+  win.addEventListener('keydown',e=>{
+    const map={'*':'\u00D7','/':'\u00F7','x':'\u00D7','Enter':'=','Backspace':'\u00AB','Escape':'CA'};
+    const k=map[e.key]||e.key;
+    if(keys.includes(k)){press(k);e.preventDefault();}
+  });
+  win.tabIndex=0; win.focus();
+}
+
+/* ---------- SHELL ---------- */
+function openShell(n){
+  const key='shell';
+  const win=createWindow({key,title:'AmigaShell',x:60,y:220,w:440,h:210,resizable:true,memCost:32768});
+  if(!win)return;
+  const body=win.querySelector('.wbody');
+  body.innerHTML=`<div class="shell"></div>`;
+  const sh=body.querySelector('.shell');
+  let hist=[],hIdx=0;
+  function line(t){const d=document.createElement('div');d.className='cline';d.textContent=t;sh.insertBefore(d,prompt);sh.scrollTop=sh.scrollHeight;}
+  const prompt=document.createElement('div');
+  prompt.className='cline';
+  prompt.innerHTML=`<span>1&gt; </span><input type="text" autocomplete="off" spellcheck="false"><span class="cursorblk"></span>`;
+  sh.appendChild(prompt);
+  const inp=prompt.querySelector('input');
+  line('New Shell process 1');
+  sh.addEventListener('pointerup',()=>inp.focus());
+  setTimeout(()=>inp.focus(),50);
+
+  const FILES=['Utilities (dir)','System (dir)','Prefs (dir)','Trashcan (dir)','Shell','Disk.info','.info files'];
+  function exec(raw){
+    const cmd=raw.trim(); if(!cmd)return;
+    hist.push(cmd); hIdx=hist.length;
+    line('1> '+cmd);
+    const [c,...rest]=cmd.split(/\s+/); const arg=rest.join(' ');
+    switch(c.toLowerCase()){
+      case 'dir': case 'list':
+        FILES.forEach(f=>line('  '+f));
+        line(FILES.length+' files - 837K bytes used'); break;
+      case 'avail':
+        line('Type   Available    In-Use   Maximum');
+        line(`chip     ${String(freeMem).padStart(7)}    ${String(524288-Math.min(freeMem,524288)).padStart(6)}    524288`);
+        line('fast      524288         0    524288');
+        line(`total    ${String(freeMem+524288).padStart(7)}`); break;
+      case 'date': line(new Date().toString()); break;
+      case 'echo': line(arg||''); break;
+      case 'cls': case 'clear': sh.querySelectorAll('.cline:not(:last-child)').forEach(e=>e.remove()); break;
+      case 'version': line('Kickstart version 34.5. Workbench version 34.28'); break;
+      case 'say': if(arg){speak(arg);line('...');}else line('Say: no input'); break;
+      case 'why': line("Last command didn't fail."); break;
+      case 'guru': gogo(); break;
+      case 'endcli': case 'exit': closeWindow(win,key,32768); return;
+      case 'help':
+        line('Commands: dir list avail date echo cls version say why guru endcli'); break;
+      default: line(`${c}: Unknown command`); line("Type 'help' for a command list.");
+    }
+    sh.scrollTop=sh.scrollHeight;
+  }
+  inp.addEventListener('keydown',e=>{
+    if(e.key==='Enter'){exec(inp.value);inp.value='';}
+    else if(e.key==='ArrowUp'){if(hIdx>0){hIdx--;inp.value=hist[hIdx]||'';}e.preventDefault();}
+    else if(e.key==='ArrowDown'){if(hIdx<hist.length){hIdx++;inp.value=hist[hIdx]||'';}e.preventDefault();}
+  });
+}
+
+/* ---------- SAY (sintesi vocale in stile Narrator) ---------- */
+function speak(t){
+  try{
+    const u=new SpeechSynthesisUtterance(t);
+    u.pitch=0.5; u.rate=0.85; u.lang='en-US';
+    speechSynthesis.cancel(); speechSynthesis.speak(u);
+  }catch(e){}
+}
+function openSay(){
+  const win=createWindow({key:'say',title:'Say',x:200,y:170,w:290,h:130,memCost:8100});
+  if(!win)return;
+  const b=win.querySelector('.wbody');
+  b.className='wbody saybody';
+  b.innerHTML=`<div style="font:bold 13px 'Courier New';color:var(--c1)">Enter text for the Narrator device:</div>
+   <input type="text" value="hello, I am the Amiga computer">
+   <div><button class="reqbtn">Speak</button></div>`;
+  const inp=b.querySelector('input');
+  b.querySelector('.reqbtn').addEventListener('click',()=>speak(inp.value));
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter')speak(inp.value);});
+}
+
+/* ---------- MORE (text viewer) ---------- */
+function openMore(){
+  const win=createWindow({key:'more',title:'More: ReadMe',x:150,y:70,w:380,h:280,resizable:true,memCost:11000});
+  if(!win)return;
+  const b=win.querySelector('.wbody');
+  b.className='wbody morebody';
+  b.textContent=
+`AMIGA 500 - WORKBENCH 1.3
+=========================
+
+Simulazione web del Workbench 1.3
+(Kickstart 34.5 / Workbench 34.28),
+il sistema operativo dell'Amiga 500,
+Commodore 1987.
+
+Palette OCS a 4 colori:
+  0  $0055AA  blu
+  1  $FFFFFF  bianco
+  2  $000020  nero
+  3  $FF8800  arancio
+
+Da provare:
+- Doppio click sulle icone
+- Tasto destro del mouse: menu
+  (su mobile: pressione lunga
+  sulla barra del titolo)
+- Trascina le finestre dalla barra
+- Gadget depth: porta avanti/dietro
+- Clock: ridimensionabile
+- Calculator: funzionante, anche
+  da tastiera
+- Shell: digita "help"
+- Say: il Narrator parla davvero
+- Preferences: cambia la palette
+  con slider RGB a 4 bit
+- Shell: prova il comando "guru"...
+
+cad3d.expert/ai - 2026`;
+}
+
+/* ---------- PREFERENCES (palette editor) ---------- */
+const DEFPAL=[[0,5,10],[15,15,15],[0,0,2],[15,8,0]];  /* RGB 0-15 */
+let pal=DEFPAL.map(c=>[...c]);
+function applyPal(){
+  pal.forEach((c,i)=>{
+    const hex='#'+c.map(v=>v.toString(16).repeat(2)).join('');
+    document.documentElement.style.setProperty('--c'+i,hex);
+  });
+}
+function openPrefs(){
+  const win=createWindow({key:'prefs',title:'Preferences',x:240,y:110,w:300,h:250,memCost:18400});
+  if(!win)return;
+  const b=win.querySelector('.wbody');
+  b.className='wbody prefs';
+  b.innerHTML=`
+   <div style="margin-bottom:6px">Screen Colors</div>
+   <div class="swrow"></div>
+   <div class="sliders"></div>
+   <div class="prefbtns">
+    <button class="reqbtn">Reset Colors</button>
+    <button class="reqbtn">OK</button>
+   </div>`;
+  const swrow=b.querySelector('.swrow');
+  const sliders=b.querySelector('.sliders');
+  let cur=0;
+  const sw=[];
+  for(let i=0;i<4;i++){
+    const s=document.createElement('div');
+    s.className='swatch'+(i===0?' cur':'');
+    swrow.appendChild(s); sw.push(s);
+    s.addEventListener('click',()=>{cur=i;sw.forEach((x,j)=>x.classList.toggle('cur',j===i));syncSliders();});
+  }
+  sliders.innerHTML=['R','G','B'].map((l,i)=>`
+   <div class="slrow"><label>${l}</label>
+    <input type="range" min="0" max="15" step="1" data-ch="${i}">
+    <span class="v">0</span></div>`).join('');
+  const rngs=[...sliders.querySelectorAll('input')];
+  function paintSwatches(){
+    sw.forEach((s,i)=>{
+      s.style.background='#'+pal[i].map(v=>v.toString(16).repeat(2)).join('');
+    });
+  }
+  function syncSliders(){
+    rngs.forEach((r,i)=>{r.value=pal[cur][i]; r.nextElementSibling.textContent=pal[cur][i];});
+  }
+  rngs.forEach((r,i)=>r.addEventListener('input',()=>{
+    pal[cur][i]=+r.value; r.nextElementSibling.textContent=r.value;
+    applyPal(); paintSwatches();
+  }));
+  const[btnReset,btnOk]=b.querySelectorAll('.reqbtn');
+  btnReset.addEventListener('click',()=>{pal=DEFPAL.map(c=>[...c]);applyPal();paintSwatches();syncSliders();});
+  btnOk.addEventListener('click',()=>closeWindow(win,'prefs',18400));
+  paintSwatches(); syncSliders();
+}
+
+/* ---------- GURU ---------- */
+const guru=document.getElementById('guru');
+function gogo(){ guru.classList.add('on'); }
+guru.addEventListener('pointerdown',()=>guru.classList.remove('on'));
+
+/* =====================================================================
+   DISK & DRAWER WINDOWS
+   ===================================================================== */
+function openUtilities(){
+  const win=createWindow({key:'utils',title:'Utilities',x:120,y:120,w:330,h:170,resizable:true,memCost:16800});
+  if(!win)return;
+  const b=win.querySelector('.wbody');
+  makeIcon({art:'clock',label:'Clock',parent:b,onOpen:openClock});
+  makeIcon({art:'calc',label:'Calculator',parent:b,onOpen:openCalc});
+  makeIcon({art:'say',label:'Say',parent:b,onOpen:openSay});
+  makeIcon({art:'more',label:'More',parent:b,onOpen:openMore});
+}
+function openSystem(){
+  const win=createWindow({key:'system',title:'System',x:160,y:150,w:300,h:160,resizable:true,memCost:15200});
+  if(!win)return;
+  const b=win.querySelector('.wbody');
+  makeIcon({art:'shell',label:'CLI',parent:b,onOpen:openShell});
+  makeIcon({art:'disk',label:'Format',parent:b,onOpen:()=>requester('Please insert the disk to\nformat in any drive.\n\n(No drive found.)','Format Request')});
+  makeIcon({art:'more',label:'FixFonts',parent:b,onOpen:()=>requester('FixFonts: all fonts OK.')});
+}
+function openPrefsDrawer(){
+  const win=createWindow({key:'prefsdir',title:'Prefs',x:200,y:180,w:260,h:150,resizable:true,memCost:12600});
+  if(!win)return;
+  const b=win.querySelector('.wbody');
+  makeIcon({art:'prefs',label:'Preferences',parent:b,onOpen:openPrefs});
+}
+function openTrash(){
+  const win=createWindow({key:'trash',title:'Trashcan',x:260,y:200,w:280,h:140,resizable:true,memCost:9800});
+  if(!win)return;
+  const b=win.querySelector('.wbody');
+  b.innerHTML=`<div style="font:bold 13px 'Courier New';color:var(--c2);padding:14px">The trashcan is empty.</div>`;
+}
+function openRam(){
+  const win=createWindow({key:'ram',title:'Ram Disk',x:300,y:90,w:280,h:150,resizable:true,memCost:8400});
+  if(!win)return;
+  const b=win.querySelector('.wbody');
+  b.innerHTML=`<div style="font:bold 13px 'Courier New';color:var(--c2);padding:14px">Ram Disk: 0% full, 0 files.</div>`;
+}
+function openWBDisk(){
+  const win=createWindow({key:'wbdisk',title:'Workbench1.3',x:70,y:40,w:430,h:200,resizable:true,memCost:24600});
+  if(!win)return;
+  const b=win.querySelector('.wbody');
+  makeIcon({art:'drawer',label:'Utilities',parent:b,onOpen:openUtilities});
+  makeIcon({art:'drawer',label:'System',parent:b,onOpen:openSystem});
+  makeIcon({art:'drawer',label:'Prefs',parent:b,onOpen:openPrefsDrawer});
+  makeIcon({art:'shell',label:'Shell',parent:b,onOpen:openShell});
+  makeIcon({art:'trash',label:'Trashcan',parent:b,onOpen:openTrash});
+}
+
+/* =====================================================================
+   DESKTOP ICONS
+   ===================================================================== */
+const dIcons=[];
+function buildDesktop(){
+  dIcons.push(makeIcon({art:'disk',label:'Workbench1.3',x:SW-96,y:14,parent:desktop,onOpen:openWBDisk,
+    info:'Workbench1.3\nType: Disk (DF0:)\n98% full  17K free  820K in use'}));
+  dIcons.push(makeIcon({art:'disk',label:'Ram Disk',x:SW-96,y:88,parent:desktop,onOpen:openRam,
+    info:'Ram Disk\nType: Disk (RAM:)\n0% full'}));
+}
+function cleanUp(){
+  dIcons.forEach((ic,i)=>{ic.style.left=(SW-96)+'px'; ic.style.top=(14+i*74)+'px';});
+}
+
+/* =====================================================================
+   MENUS (tasto destro = menu bar, come sull'Amiga)
+   ===================================================================== */
+const menubar=document.getElementById('menubar');
+let menuOpen=false;
+function showMenus(v){
+  menuOpen=v;
+  menubar.classList.toggle('on',v);
+  if(!v)document.querySelectorAll('.menu').forEach(m=>m.classList.remove('open'));
+}
+screenEl.addEventListener('contextmenu',e=>{e.preventDefault(); showMenus(!menuOpen);});
+document.querySelectorAll('.menu').forEach(m=>{
+  m.addEventListener('pointerenter',()=>{if(menuOpen){document.querySelectorAll('.menu').forEach(x=>x.classList.remove('open'));m.classList.add('open');}});
+  m.addEventListener('pointerdown',e=>{e.stopPropagation();document.querySelectorAll('.menu').forEach(x=>x.classList.remove('open'));m.classList.add('open');});
+});
+menubar.addEventListener('click',e=>{
+  const it=e.target.closest('.mitem');
+  if(!it||it.classList.contains('ghost'))return;
+  const a=it.dataset.a;
+  showMenus(false);
+  if(a==='open'){ if(selectedIcon&&selectedIcon._open)selectedIcon._open(); else requester('No icon selected.'); }
+  if(a==='close'){ const w=document.querySelector('.win.active'); if(w){const k=Object.keys(openWins).find(k=>openWins[k]===w); closeWindow(w,k);} }
+  if(a==='info'){ requester(selectedIcon?selectedIcon._info:'No icon selected.','Icon Information'); }
+  if(a==='cleanup')cleanUp();
+  if(a==='lastmsg')requester('No errors since last boot.\nAll systems nominal.');
+  if(a==='redraw'){desktop.style.visibility='hidden';setTimeout(()=>desktop.style.visibility='',120);}
+  if(a==='version')requester('Kickstart version 34.5\nWorkbench version 34.28\n\nCopyright \u00A9 1987\nCommodore-Amiga, Inc.','About');
+});
+desktop.addEventListener('pointerdown',()=>{if(menuOpen)showMenus(false);});
+/* long-press sulla barra per menu su touch */
+let lpTimer=null;
+document.getElementById('sbar').addEventListener('pointerdown',()=>{lpTimer=setTimeout(()=>showMenus(true),550);});
+document.getElementById('sbar').addEventListener('pointerup',()=>clearTimeout(lpTimer));
+document.getElementById('sbar').addEventListener('pointerleave',()=>clearTimeout(lpTimer));
+
+/* =====================================================================
+   BOOT: Kickstart -> Workbench
+   ===================================================================== */
+const kick=document.getElementById('kick');
+function boot(){
+  kick.classList.add('off');
+  updMem();
+  buildDesktop();
+  /* apri il disco Workbench come al primo avvio */
+  setTimeout(openWBDisk,450);
+}
+kick.addEventListener('pointerdown',boot);
+setTimeout(()=>{ if(!kick.classList.contains('off')) boot(); },4000);
+</script>
+</body>
+</html>
