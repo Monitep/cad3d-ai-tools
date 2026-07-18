@@ -165,6 +165,7 @@ body{font-family:'Courier New',Courier,monospace;-webkit-font-smoothing:none;fon
 #dptools{position:absolute;right:0;top:20px;width:78px;background:#AAAAAA;
  border:2px solid #000;border-right:0;padding:3px 2px;z-index:20;user-select:none}
 #dptools.hid{display:none}
+.dpt.dpmini{font:bold 9px 'Courier New',monospace;height:18px;letter-spacing:0}
 .dpbrow{display:flex;justify-content:space-between;margin-bottom:3px;background:#888;
  border:1px solid #000;padding:1px}
 .dpb{width:8px;height:14px;display:flex;align-items:center;justify-content:center;cursor:pointer}
@@ -1141,6 +1142,8 @@ function setCycle(v){
   cycling=v;
   if(cycT){clearInterval(cycT);cycT=null;}
   if(v)cycT=setInterval(()=>{ const last=pal[31]; for(let i=31;i>16;i--)pal[i]=pal[i-1]; pal[16]=last; },110);
+  const cb=els.tools&&els.tools.querySelector('[data-t="mcyc"]');
+  if(cb)cb.classList.toggle('on',cycling);
   syncPalUI();
 }
 
@@ -1271,6 +1274,13 @@ function buildToolbox(){
     }
     h+=`</div>`;
   }
+  h+=`<div class="dprow">
+   <div class="dpt dpmini" data-t="mload" title="Load picture">LOAD</div>
+   <div class="dpt dpmini" data-t="msave" title="Save as PNG">SAVE</div>
+  </div>
+  <div class="dprow">
+   <div class="dpt dpmini" data-t="mcyc" title="Color cycling (Tab)">CYCLE</div>
+  </div>`;
   h+=`<div class="dpfgbg" title="FG / BG"><div class="bgc"></div><div class="fgc"></div></div>`;
   h+=`<div class="dpal">`;
   for(let i=0;i<NC;i++)h+=`<div data-c="${i}"></div>`;
@@ -1304,7 +1314,7 @@ function setTool(t,fill){
   if(tool==='text'&&t!=='text')textAct=false;
   tool=t; if(fill!==undefined)fillMode=fill;
   els.tools.querySelectorAll('.dpt').forEach(b=>b.classList.toggle('on',
-    b.dataset.t===t||(b.dataset.t==='gridt'&&grid)||(b.dataset.t==='symt'&&sym)));
+    b.dataset.t===t||(b.dataset.t==='gridt'&&grid)||(b.dataset.t==='symt'&&sym)||(b.dataset.t==='mcyc'&&cycling)));
 }
 let airT=null,airPos=null;
 function wireEvents(){
@@ -1313,6 +1323,7 @@ function wireEvents(){
 
   /* barra: titolo + depth gadget + menu su tasto destro */
   els.bar.querySelector('.g').addEventListener('click',()=>hide());
+  els.bar.querySelector('.t').addEventListener('click',()=>els.menu.classList.toggle('on'));
   els.bar.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();
     els.menu.classList.toggle('on');});
   els.menu.addEventListener('contextmenu',e=>e.preventDefault());
@@ -1337,6 +1348,9 @@ function wireEvents(){
     }
     const bt=e.target.closest('.dpt'); if(!bt)return;
     const t=bt.dataset.t;
+    if(t==='mload'){els.file.click();return;}
+    if(t==='msave'){menuAction('save');return;}
+    if(t==='mcyc'){setCycle(!cycling);return;}
     if(t==='undo'){undo();return;}
     if(t==='clr'){pushUndo();buf.fill(bg);return;}
     if(t==='gridt'){grid=!grid;setTool(tool);return;}
