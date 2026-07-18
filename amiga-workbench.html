@@ -239,7 +239,7 @@ body{font-family:'Courier New',Courier,monospace;-webkit-font-smoothing:none;fon
 #impanel .reqbtn:active{background:#FFAA33;color:#000}
 #imrender{position:absolute;left:0;top:0;width:640px;height:512px;background:#000;z-index:70;display:none}
 #imrender.on{display:block}
-#imrender canvas{position:absolute;left:0;top:20px;width:640px;height:470px;image-rendering:pixelated}
+#imrender canvas{position:absolute;image-rendering:pixelated}
 #imrender .rbar{position:absolute;top:0;left:0;right:0;height:20px;background:#111;color:#FFAA33;
  display:flex;align-items:center;padding:0 8px;font:bold 13px 'Courier New',monospace;
  border-bottom:2px solid #FFAA33}
@@ -255,6 +255,18 @@ body{font-family:'Courier New',Courier,monospace;-webkit-font-smoothing:none;fon
 .smprops{font:bold 12px 'Courier New',monospace;color:var(--c2);padding:6px 8px;border-top:2px solid var(--c0)}
 #imstatus .axq{border:1px solid #FFAA33;padding:0 5px;cursor:pointer}
 #imstatus .axq.on{background:#FFAA33;color:#000}
+/* ============ SINPLOT ============ */
+.spbody{background:var(--c1);height:100%;display:flex;flex-direction:column}
+.spbody canvas{flex:1;min-height:0;width:100%;display:block}
+.spctl{flex:none;display:flex;align-items:center;gap:6px;padding:4px 6px;
+ border-top:2px solid var(--c0);background:var(--c1);flex-wrap:wrap}
+.spbtn{border:2px solid var(--c0);color:var(--c0);background:var(--c1);
+ font:bold 12px 'Courier New',monospace;padding:2px 8px;cursor:pointer;user-select:none}
+.spbtn:active{background:var(--c3);color:var(--c2)}
+.spbtn.on{background:var(--c0);color:var(--c1)}
+.sptime{font:bold 13px 'Courier New',monospace;color:var(--c2);margin-left:auto}
+.spinfo{flex:none;font:bold 11px 'Courier New',monospace;color:var(--c2);
+ padding:3px 6px;border-top:1px solid var(--c0);background:var(--c1);white-space:pre}
 ::-webkit-scrollbar{width:14px;height:14px}
 ::-webkit-scrollbar-track{background:var(--c1);border-left:2px solid var(--c0)}
 ::-webkit-scrollbar-thumb{background:var(--c0);border:2px solid var(--c1)}
@@ -467,6 +479,13 @@ smode:`<svg width="48" height="42" viewBox="0 0 48 42">
  <rect x="9" y="22" width="22" height="2" fill="var(--c3)"/>
  <rect x="18" y="31" width="12" height="4" fill="var(--c1)" stroke="var(--c2)" stroke-width="2"/>
  <rect x="12" y="35" width="24" height="4" fill="var(--c1)" stroke="var(--c2)" stroke-width="2"/>
+</svg>`,
+sinplot:`<svg width="50" height="42" viewBox="0 0 50 42">
+ <rect x="2" y="2" width="46" height="38" fill="var(--c1)" stroke="var(--c2)" stroke-width="2"/>
+ <line x1="6" y1="21" x2="44" y2="21" stroke="var(--c0)" stroke-width="2"/>
+ <line x1="25" y1="5" x2="25" y2="37" stroke="var(--c0)" stroke-width="2"/>
+ <path d="M6 21 Q11 7 16 21 T25 21 T35 21 T44 21" fill="none" stroke="var(--c3)" stroke-width="2.5"/>
+ <text x="41" y="12" font-family="Courier New" font-weight="bold" font-size="9" fill="var(--c2)">y</text>
 </svg>`,
 more:`<svg width="40" height="44" viewBox="0 0 40 44">
  <path d="M4 2 L28 2 L36 10 L36 42 L4 42 Z" fill="var(--c1)" stroke="var(--c2)" stroke-width="2"/>
@@ -859,6 +878,10 @@ Da provare:
   attributi, luci e camera, render
   Scanline e Trace con ombre e
   riflessioni, salva/carica progetto
+- SinPlot (in Utilities): plotta
+  sin(x) cronometrando 68030 in
+  softfloat IEEE (~10 s, punto per
+  punto) contro 68882 FPU (~0.3 s)
 - Prefs > ScreenMode: cambia la
   risoluzione come con una scheda
   grafica Picasso II (i modi RTG
@@ -925,6 +948,143 @@ function openPrefs(){
   paintSwatches(); syncSliders();
 }
 
+/* ---------- SINPLOT (benchmark 68030 vs 68882) ---------- */
+/* Emulazione softfloat: riduzione argomento + serie di Taylor, come le
+   librerie IEEE mathieeedoubbas senza coprocessore. */
+function softSin(x){
+  const PI2=6.283185307179586;
+  x=x%PI2; if(x>Math.PI)x-=PI2; if(x<-Math.PI)x+=PI2;
+  let t=x,r=x;
+  for(let n=1;n<=9;n++){
+    t*=-x*x/((2*n)*(2*n+1));
+    r+=t;
+  }
+  return r;
+}
+function openSinplot(){
+  const o=casc();
+  const win=createWindow({title:'SinPlot 1.2',x:90+o,y:60+o,w:470,h:320,resizable:true,memCost:11800});
+  if(!win)return;
+  const b=win.querySelector('.wbody');
+  b.className='wbody spbody';
+  b.innerHTML=`<canvas></canvas>
+   <div class="spctl">
+    <span style="font:bold 11px 'Courier New';color:var(--c2)">CPU:</span>
+    <span class="spbtn on" data-c="030">68030</span>
+    <span class="spbtn" data-c="882">68030+68882</span>
+    <span class="spbtn" data-a="plot">Plot</span>
+    <span class="spbtn" data-a="stop">Stop</span>
+    <span class="sptime">Time: 0.00 s</span>
+   </div>
+   <div class="spinfo">f(x)=sin(x)  x:[-2pi,+2pi]  68030 softfloat: --.-- s   68882 FPU: --.-- s</div>`;
+  const cv=b.querySelector('canvas');
+  const timeEl=b.querySelector('.sptime');
+  const infoEl=b.querySelector('.spinfo');
+  const btn030=b.querySelector('[data-c="030"]');
+  const btn882=b.querySelector('[data-c="882"]');
+  let fpu=false,job=null,timerJob=null;
+  let last={o:null,f:null};
+
+  function cssv(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim();}
+  function axes(){
+    const w=cv.width=cv.clientWidth,h=cv.height=cv.clientHeight;
+    const ctx=cv.getContext('2d');
+    const C0=cssv('--c0'),C1=cssv('--c1'),C2=cssv('--c2');
+    ctx.fillStyle=C1;ctx.fillRect(0,0,w,h);
+    const cx=w/2,cy=h/2,px=w/(4*Math.PI); /* pixel per unita' x */
+    const py=(h/2-14);                    /* pixel per unita' y */
+    ctx.strokeStyle=C0;ctx.lineWidth=1;
+    /* griglia pi/2 */
+    for(let k=-4;k<=4;k++){
+      const x=cx+k*Math.PI/2*px;
+      ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.globalAlpha=k%2?0.25:0.5;ctx.stroke();
+      ctx.globalAlpha=1;
+    }
+    [-1,-0.5,0.5,1].forEach(v=>{
+      ctx.globalAlpha=0.3;
+      ctx.beginPath();ctx.moveTo(0,cy-v*py);ctx.lineTo(w,cy-v*py);ctx.stroke();
+      ctx.globalAlpha=1;
+    });
+    /* assi */
+    ctx.strokeStyle=C2;ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(0,cy);ctx.lineTo(w,cy);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx,0);ctx.lineTo(cx,h);ctx.stroke();
+    /* etichette */
+    ctx.fillStyle=C2;ctx.font="bold 10px 'Courier New'";
+    const labs=[['-2pi',-2*Math.PI],['-pi',-Math.PI],['pi',Math.PI],['2pi',2*Math.PI]];
+    labs.forEach(l=>ctx.fillText(l[0],cx+l[1]*px-10,cy+12));
+    ctx.fillText('+1',cx+4,cy-py+4);ctx.fillText('-1',cx+4,cy+py+4);
+    return{w,h,cx,cy,px,py,ctx};
+  }
+  let G=null;
+  function reset(){G=axes();}
+  win._onResize=()=>{stop();reset();};
+  function stop(){
+    if(job){clearInterval(job);cancelAnimationFrame(job);job=null;}
+    if(timerJob){clearInterval(timerJob);timerJob=null;}
+  }
+  function updInfo(){
+    infoEl.textContent=
+     `f(x)=sin(x)  x:[-2pi,+2pi]  68030 softfloat: ${last.o?last.o.toFixed(2):'--.--'} s   68882 FPU: ${last.f?last.f.toFixed(2):'--.--'} s`;
+  }
+  function plot(){
+    stop();reset();
+    const{w,cx,cy,px,py,ctx}=G;
+    const C3=cssv('--c3');
+    ctx.strokeStyle=C3;ctx.lineWidth=2;ctx.lineJoin='round';
+    const N=Math.max(80,w);
+    const t0=performance.now();
+    let i=0,prev=null;
+    timerJob=setInterval(()=>{
+      timeEl.textContent='Time: '+((performance.now()-t0)/1000).toFixed(2)+' s';
+    },50);
+    function point(){
+      const x=-2*Math.PI+4*Math.PI*i/(N-1);
+      const y=fpu?Math.sin(x):softSin(x);
+      const sx=cx+x*px,sy=cy-y*py;
+      if(prev){ctx.beginPath();ctx.moveTo(prev[0],prev[1]);ctx.lineTo(sx,sy);ctx.stroke();}
+      ctx.fillStyle=C3;ctx.fillRect(sx-1,sy-1,2,2);
+      prev=[sx,sy];
+      i++;
+    }
+    function done(){
+      stop();
+      const el=(performance.now()-t0)/1000;
+      timeEl.textContent='Time: '+el.toFixed(2)+' s';
+      if(fpu)last.f=el;else last.o=el;
+      updInfo();
+    }
+    if(fpu){
+      /* 68882: pochi frame e via */
+      job=setInterval(()=>{
+        for(let k=0;k<Math.ceil(N/16)&&i<N;k++)point();
+        if(i>=N)done();
+      },16);
+    }else{
+      /* 68030: emulazione IEEE, un punto alla volta */
+      const iv=Math.max(18,Math.round(10500/N));
+      job=setInterval(()=>{
+        point();
+        if(i>=N)done();
+      },iv);
+    }
+  }
+  b.querySelector('.spctl').addEventListener('click',e=>{
+    const t=e.target;
+    if(t.dataset.c){
+      fpu=(t.dataset.c==='882');
+      btn030.classList.toggle('on',!fpu);
+      btn882.classList.toggle('on',fpu);
+      return;
+    }
+    if(t.dataset.a==='plot')plot();
+    if(t.dataset.a==='stop'){stop();timeEl.textContent=timeEl.textContent+' (stopped)';}
+  });
+  win._onClose=stop;
+  setTimeout(reset,30);
+  updInfo();
+}
+
 /* ---------- SCREENMODE (scheda grafica) ---------- */
 function setScreenMode(i){
   const prev=SMODES[smCur],m=SMODES[i];
@@ -980,13 +1140,14 @@ guru.addEventListener('pointerdown',()=>guru.classList.remove('on'));
    DISK & DRAWER WINDOWS
    ===================================================================== */
 function openUtilities(){
-  const win=createWindow({key:'utils',title:'Utilities',x:120,y:120,w:330,h:170,resizable:true,memCost:16800});
+  const win=createWindow({key:'utils',title:'Utilities',x:120,y:120,w:420,h:170,resizable:true,memCost:16800});
   if(!win)return;
   const b=win.querySelector('.wbody');
   makeIcon({art:'clock',label:'Clock',parent:b,onOpen:openClock});
   makeIcon({art:'calc',label:'Calculator',parent:b,onOpen:openCalc});
   makeIcon({art:'say',label:'Say',parent:b,onOpen:openSay});
   makeIcon({art:'more',label:'More',parent:b,onOpen:openMore});
+  makeIcon({art:'sinplot',label:'SinPlot',parent:b,onOpen:openSinplot});
 }
 function openSystem(){
   const win=createWindow({key:'system',title:'System',x:160,y:150,w:300,h:160,resizable:true,memCost:15200});
@@ -2308,9 +2469,9 @@ function shade(tris,lights,hit,pnt,rd,depth){
   }
   return[Math.min(255,r),Math.min(255,g),Math.min(255,b)];
 }
-function renderTrace(){
-  const W=160,H=128;
-  openRender(W,H,'Trace 160x128');
+function renderTrace(W=160,H=128){
+  const t0=performance.now();
+  openRender(W,H,'Trace '+W+'x'+H);
   const{tris,lights,cam}=gatherTris();
   const{P,F,R,U}=camBasis(cam);
   const tan=0.55,asp=W/H;
@@ -2337,15 +2498,15 @@ function renderTrace(){
     }
     ctx.putImageData(img,0,y);
     y++;
-    els.rtitle.textContent=`IMAGINE  Trace  ${tris.length} faces  line ${y}/${H}`;
+    els.rtitle.textContent=`IMAGINE  Trace ${W}x${H}  ${tris.length} faces  line ${y}/${H}`;
     if(y<H)renderJob=setTimeout(row,0);
-    else els.rtitle.textContent=`IMAGINE  Trace  ${tris.length} faces  DONE`;
+    else els.rtitle.textContent=`IMAGINE  Trace ${W}x${H}  ${tris.length} faces  DONE in ${((performance.now()-t0)/1000).toFixed(2)} s`;
   }
   row();
 }
-function renderScan(){
-  const W=320,H=256;
-  openRender(W,H,'Scanline 320x256');
+function renderScan(W=320,H=256){
+  const t0=performance.now();
+  openRender(W,H,'Scanline '+W+'x'+H);
   const{tris,lights,cam}=gatherTris();
   const{P,F,R,U}=camBasis(cam);
   const ctx=els.rcv.getContext('2d');
@@ -2403,11 +2564,16 @@ function renderScan(){
     }
   }
   ctx.putImageData(img,0,0);
-  els.rtitle.textContent=`IMAGINE  Scanline  ${tris.length} faces  DONE`;
+  els.rtitle.textContent=`IMAGINE  Scanline ${W}x${H}  ${tris.length} faces  DONE in ${((performance.now()-t0)/1000).toFixed(2)} s`;
 }
 function cancelRender(){if(renderJob){clearTimeout(renderJob);renderJob=null;}}
 function openRender(w,h,label){
   els.rcv.width=w;els.rcv.height=h;
+  const sc=Math.min(640/w,470/h);
+  els.rcv.style.width=Math.round(w*sc)+'px';
+  els.rcv.style.height=Math.round(h*sc)+'px';
+  els.rcv.style.left=Math.round((640-w*sc)/2)+'px';
+  els.rcv.style.top=Math.round(20+(470-h*sc)/2)+'px';
   const ctx=els.rcv.getContext('2d');
   ctx.fillStyle='#000';ctx.fillRect(0,0,w,h);
   els.rtitle.textContent='IMAGINE  '+label+'  rendering...';
@@ -2451,8 +2617,14 @@ function build(){
      <div class="imit" data-a="quad">Quad / Single (dbl-click)</div>
     </div></div>
     <div class="immenu">RENDER<div class="imdrop">
-     <div class="imit" data-a="scan">Scanline 320x256</div>
-     <div class="imit" data-a="trace">Trace 160x128 + shadows</div>
+     <div class="imit" data-a="scan:320:256">Scanline 320 x 256</div>
+     <div class="imit" data-a="scan:640:512">Scanline 640 x 512</div>
+     <div class="imit" data-a="scan:800:600">Scanline 800 x 600</div>
+     <div class="imit" data-a="scan:1024:768">Scanline 1024 x 768</div>
+     <div class="imit" data-a="trace:160:128">Trace 160 x 128</div>
+     <div class="imit" data-a="trace:320:256">Trace 320 x 256</div>
+     <div class="imit" data-a="trace:640:512">Trace 640 x 512 (slow)</div>
+     <div class="imit" data-a="trace:1024:768">Trace 1024 x 768 (very slow)</div>
     </div></div>
     <div class="g" title="Workbench screen">
      <svg width="16" height="12" viewBox="0 0 16 12"><rect x="0" y="0" width="10" height="8" fill="#FFAA33"/><rect x="5" y="3" width="10" height="8" fill="#111" stroke="#FFAA33"/></svg>
@@ -2465,8 +2637,8 @@ function build(){
     <button class="pbtn" data-a="pnew">New Project (demo scene)</button>
     <button class="pbtn" data-a="pload">Load Project (.json)</button>
     <button class="pbtn" data-a="psave">Save Project (.json)</button>
-    <button class="pbtn" data-a="scan">Quickrender - Scanline</button>
-    <button class="pbtn" data-a="trace">Quickrender - Trace</button>
+    <button class="pbtn" data-a="scan:320:256">Quickrender - Scanline 320x256</button>
+    <button class="pbtn" data-a="trace:160:128">Quickrender - Trace 160x128</button>
     <div style="margin-top:20px;color:#996611;font-size:12px;line-height:16px">
      La camera inquadra sempre l'origine (0,0,0).<br>
      Detail editor: trascina per muovere, doppio<br>
@@ -2548,11 +2720,8 @@ function build(){
     if(a==='rclose'){cancelRender();els.rwin.classList.remove('on');}
     if(a==='rsave'){
       const link=document.createElement('a');
-      link.download='imagine-render.png';
-      const out=document.createElement('canvas');out.width=640;out.height=512;
-      const c=out.getContext('2d');c.imageSmoothingEnabled=false;
-      c.drawImage(els.rcv,0,0,640,512);
-      link.href=out.toDataURL('image/png');link.click();
+      link.download='imagine-render-'+els.rcv.width+'x'+els.rcv.height+'.png';
+      link.href=els.rcv.toDataURL('image/png');link.click();
     }
   });
   els.file.addEventListener('change',()=>{
@@ -2589,8 +2758,8 @@ function action(a){
   if(a==='zout')VIEWS.forEach(v=>{if(!v.persp)v.zoom=Math.max(0.1,v.zoom/1.25);});
   if(a==='vrst'){VIEWS.forEach(v=>{v.zoom=v.persp?1:0.7;v.ox=0;v.oy=0;});orbit={th:-0.65,ph:0.42,dist:900,pf:520};singleView=-1;}
   if(a==='quad')singleView=singleView>=0?-1:0;
-  if(a==='scan'){switchEd('detail');renderScan();}
-  if(a==='trace'){switchEd('detail');renderTrace();}
+  if(a&&a.indexOf('scan:')===0){const p=a.split(':');switchEd('detail');renderScan(+p[1],+p[2]);}
+  if(a&&a.indexOf('trace:')===0){const p=a.split(':');switchEd('detail');renderTrace(+p[1],+p[2]);}
   if(a==='pnew'){pushUndo();scene={objs:[],seq:1};sel=null;demoScene();switchEd('detail');}
   if(a==='pload')els.file.click();
   if(a==='psave'){
