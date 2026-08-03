@@ -46,6 +46,7 @@ function is_public_host($host) {
 
 $url = isset($_GET['url']) ? trim($_GET['url']) : '';
 $dl  = isset($_GET['dl']) && $_GET['dl'] == '1';
+$debug = isset($_GET['debug']) && $_GET['debug'] == '1';
 
 if ($url === '' || !preg_match('#^https?://#i', $url)) {
     bad('URL mancante o non valido.');
@@ -130,6 +131,44 @@ curl_close($ch);
 
 if ($html === false || $html === '') {
     bad('Impossibile scaricare la pagina: ' . ($err ?: ('HTTP ' . $code)), 502);
+}
+
+/* ---- MODALITA DEBUG: diagnostica di cosa contiene la pagina ---- */
+if ($debug) {
+    $hits = [];
+    $keywords = ['m3u8', 'mp4', 'timelapse', 'time-lapse', 'videoUrl', 'contentUrl',
+                 'source', 'playlist', 'cdn.', 'hd-auth', 'hddn', 'player', '.webm',
+                 'jwplayer', 'videojs', 'hls', 'setup(', 'file:'];
+    foreach ($keywords as $kw) {
+        $off = 0;
+        while (($pos = stripos($html, $kw, $off)) !== false && count($hits) < 60) {
+            $start = max(0, $pos - 80);
+            $frag = substr($html, $start, 220);
+            $frag = preg_replace('/\s+/', ' ', $frag);
+            $hits[] = ['kw' => $kw, 'text' => $frag];
+            $off = $pos + strlen($kw);
+        }
+    }
+
+    $scripts = [];
+    if (preg_match_all('#<script[^>]+src=["\']([^"\']+)["\']#i', $html, $m)) {
+        $scripts = array_slice(array_unique($m[1]), 0, 40);
+    }
+    $iframes = [];
+    if (preg_match_all('#<iframe[^>]+src=["\']([^"\']+)["\']#i', $html, $m)) {
+        $iframes = array_slice(array_unique($m[1]), 0, 20);
+    }
+
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode([
+        'ok'          => true,
+        'http_code'   => $code,
+        'html_length' => strlen($html),
+        'scripts'     => $scripts,
+        'iframes'     => $iframes,
+        'hits'        => $hits,
+    ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+    exit;
 }
 
 $found = [];
