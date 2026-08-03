@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Timelapse Grabber - SkylineWebcams Downloader</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a0e14;
+  --surface:#131920;
+  --card:#1a2230;
+  --border:#243040;
+  --accent:#00d4aa;
+  --accent2:#00b4ff;
+  --text:#e0e6ed;
+  --muted:#7a8a9e;
+  --danger:#ff5c5c;
+  --gradient:linear-gradient(135deg,#00d4aa,#00b4ff);
+}
+html{font-size:16px;scroll-behavior:smooth}
+body{
+  font-family:'Space Grotesk',system-ui,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100dvh;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* Header */
+.header{
+  padding:2rem 1.5rem 1rem;
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+}
+.header::before{
+  content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;
+  background:radial-gradient(ellipse at 50% 0%,rgba(0,212,170,.08) 0%,transparent 60%);
+  pointer-events:none;
+}
+.logo{
+  display:inline-flex;align-items:center;gap:.6rem;
+  font-size:1.1rem;font-weight:600;letter-spacing:.02em;
+  color:var(--accent);margin-bottom:.8rem;
+}
+.logo svg{width:28px;height:28px}
+h1{
+  font-size:clamp(1.8rem,5vw,2.6rem);
+  font-weight:700;line-height:1.15;
+  background:var(--gradient);-webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;background-clip:text;
+  margin-bottom:.5rem;
+}
+.subtitle{color:var(--muted);font-size:.95rem;max-width:480px;margin:0 auto}
+
+/* Main */
+.main{max-width:640px;margin:0 auto;padding:1rem 1.5rem 3rem}
+
+/* Bookmarklet Section */
+.bookmarklet-section{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:1.8rem 1.5rem;
+  margin-bottom:1.5rem;
+  position:relative;
+  overflow:hidden;
+}
+.bookmarklet-section::after{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:var(--gradient);
+}
+.section-label{
+  font-size:.7rem;font-weight:600;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--accent);margin-bottom:1rem;
+}
+.section-title{font-size:1.25rem;font-weight:600;margin-bottom:.8rem}
+
+/* Bookmarklet button */
+.bookmarklet-wrap{
+  display:flex;flex-direction:column;align-items:center;
+  gap:1rem;margin:1.5rem 0;
+}
+.bookmarklet-btn{
+  display:inline-flex;align-items:center;gap:.5rem;
+  padding:.9rem 2rem;
+  background:var(--gradient);
+  color:#0a0e14;font-family:inherit;
+  font-weight:600;font-size:1rem;
+  border-radius:12px;border:none;
+  cursor:grab;
+  text-decoration:none;
+  transition:transform .15s,box-shadow .15s;
+  box-shadow:0 4px 20px rgba(0,212,170,.25);
+}
+.bookmarklet-btn:hover{
+  transform:translateY(-2px);
+  box-shadow:0 8px 30px rgba(0,212,170,.35);
+}
+.bookmarklet-btn:active{cursor:grabbing}
+.bookmarklet-btn svg{width:20px;height:20px}
+.drag-hint{
+  font-size:.8rem;color:var(--muted);
+  background:var(--surface);border:1px dashed var(--border);
+  border-radius:8px;padding:.5rem 1rem;
+  text-align:center;line-height:1.5;
+}
+.drag-hint em{color:var(--accent);font-style:normal}
+
+/* Steps */
+.steps{list-style:none;counter-reset:step;margin-top:1.5rem}
+.steps li{
+  counter-increment:step;
+  padding:.8rem 0 .8rem 3rem;
+  position:relative;
+  border-bottom:1px solid var(--border);
+}
+.steps li:last-child{border-bottom:none}
+.steps li::before{
+  content:counter(step);
+  position:absolute;left:0;top:.8rem;
+  width:2rem;height:2rem;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:8px;font-size:.8rem;font-weight:600;
+  color:var(--accent);
+}
+.steps li strong{color:var(--text)}
+
+/* Console fallback */
+.console-section{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:1.5rem;
+  margin-bottom:1.5rem;
+}
+.console-section summary{
+  cursor:pointer;font-weight:600;font-size:.95rem;
+  color:var(--muted);list-style:none;
+  display:flex;align-items:center;gap:.5rem;
+}
+.console-section summary::before{content:'▸';transition:transform .2s}
+.console-section[open] summary::before{transform:rotate(90deg)}
+.console-section summary:hover{color:var(--text)}
+.code-block{
+  margin-top:1rem;position:relative;
+  background:var(--bg);
+  border:1px solid var(--border);
+  border-radius:10px;
+  overflow:hidden;
+}
+.code-block pre{
+  padding:1rem 1.2rem;
+  overflow-x:auto;
+  font-family:'JetBrains Mono',monospace;
+  font-size:.78rem;line-height:1.6;
+  color:#b0c4de;
+  -webkit-overflow-scrolling:touch;
+}
+.copy-btn{
+  position:absolute;top:.6rem;right:.6rem;
+  background:var(--card);border:1px solid var(--border);
+  color:var(--muted);border-radius:6px;
+  padding:.3rem .6rem;font-size:.7rem;font-family:inherit;
+  cursor:pointer;transition:all .15s;
+  touch-action:manipulation;
+}
+.copy-btn:hover,.copy-btn:active{color:var(--accent);border-color:var(--accent)}
+.copy-btn.copied{color:var(--accent);border-color:var(--accent)}
+
+/* Info box */
+.info-box{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:1.2rem 1.5rem;
+  margin-bottom:1.5rem;
+}
+.info-box h3{font-size:.9rem;color:var(--accent2);margin-bottom:.5rem;display:flex;align-items:center;gap:.4rem}
+.info-box p{font-size:.85rem;color:var(--muted);line-height:1.6}
+.info-box p+p{margin-top:.4rem}
+
+/* Compatible sites */
+.sites-list{
+  display:flex;flex-wrap:wrap;gap:.5rem;
+  margin-top:.8rem;
+}
+.site-tag{
+  font-size:.75rem;font-weight:500;
+  padding:.3rem .7rem;
+  background:var(--card);border:1px solid var(--border);
+  border-radius:6px;color:var(--muted);
+}
+
+/* Footer */
+.footer{
+  text-align:center;padding:2rem 1.5rem;
+  font-size:.75rem;color:var(--muted);
+  border-top:1px solid var(--border);
+}
+.footer a{color:var(--accent);text-decoration:none}
+
+/* Mobile-first touch */
+@media(max-width:480px){
+  .bookmarklet-section{padding:1.5rem 1.2rem}
+  .steps li{padding-left:2.5rem}
+  .code-block pre{font-size:.72rem}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="23 7 16 12 23 17 23 7"/>
+      <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+    </svg>
+    CAD3D.Expert
+  </div>
+  <h1>Timelapse Grabber</h1>
+  <p class="subtitle">Estrai e scarica i video timelapse da SkylineWebcams e altri siti di webcam</p>
+</div>
+
+<div class="main">
+
+  <!-- Bookmarklet -->
+  <div class="bookmarklet-section">
+    <div class="section-label">Strumento principale</div>
+    <div class="section-title">Bookmarklet</div>
+    <p style="color:var(--muted);font-size:.9rem;margin-bottom:.5rem">
+      Trascina il pulsante qui sotto nella barra dei preferiti del browser. 
+      Poi vai su una pagina timelapse e cliccalo.
+    </p>
+
+    <div class="bookmarklet-wrap">
+      <a class="bookmarklet-btn" href="javascript:void(function(){var o=document.createElement('div');o.id='tg-overlay';o.innerHTML='<div style=&quot;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:999999;display:flex;align-items:center;justify-content:center;font-family:system-ui,sans-serif&quot;><div style=&quot;background:%23131920;border:1px solid %23243040;border-radius:16px;max-width:500px;width:90%25;max-height:80vh;overflow-y:auto;padding:24px;color:%23e0e6ed&quot;><div style=&quot;display:flex;justify-content:space-between;align-items:center;margin-bottom:16px&quot;><span style=&quot;font-weight:700;font-size:18px;background:linear-gradient(135deg,%2300d4aa,%2300b4ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent&quot;>Timelapse Grabber</span><button onclick=&quot;document.getElementById(%27tg-overlay%27).remove()&quot; style=&quot;background:none;border:none;color:%237a8a9e;font-size:20px;cursor:pointer&quot;>&times;</button></div><div id=&quot;tg-results&quot;><div style=&quot;color:%237a8a9e;text-align:center;padding:20px&quot;>Ricerca video in corso...</div></div></div></div>';document.body.appendChild(o);var r=document.getElementById('tg-results');var urls=[];function addUrl(u,t){if(u&&!urls.some(function(x){return x.url===u})){urls.push({url:u,type:t})}}try{document.querySelectorAll('video').forEach(function(v){addUrl(v.src,'Video src');addUrl(v.currentSrc,'Video currentSrc');v.querySelectorAll('source').forEach(function(s){addUrl(s.src,'Source tag')})});document.querySelectorAll('script').forEach(function(s){var t=s.textContent||'';var m1=t.match(/https?:\/\/[^\s'\"<>]+\.mp4[^\s'\"<>]*/g);if(m1)m1.forEach(function(u){addUrl(u,'MP4 in script')});var m2=t.match(/https?:\/\/[^\s'\"<>]+\.m3u8[^\s'\"<>]*/g);if(m2)m2.forEach(function(u){addUrl(u,'HLS in script')});var m3=t.match(/['\"]([^'\"]*\.mp4[^'\"]*)['\"/]/g);if(m3)m3.forEach(function(u){var c=u.replace(/^['\"]/,'').replace(/['\"]$/,'');if(c.startsWith('http'))addUrl(c,'MP4 URL');else if(c.startsWith('/'))addUrl(location.origin+c,'MP4 path')});var m4=t.match(/source\s*:\s*['\"](livee?\.m3u8[^'\"]*)['\"/]/g);if(m4)m4.forEach(function(u){var c=u.match(/['\"](livee?\.m3u8[^'\"]*)['\"/]/);if(c)addUrl('https://hd-auth.skylinewebcams.com/'+c[1].replace('livee.','live.'),'SkylineWebcams HLS')});var m5=t.match(/videoUrl\s*[:=]\s*['\"]([^'\"]+)['\"/]/g);if(m5)m5.forEach(function(u){var c=u.match(/['\"]([^'\"]+)['\"/]/);if(c)addUrl(c[1].startsWith('http')?c[1]:location.origin+c[1],'videoUrl')})});document.querySelectorAll('script[type=&quot;application/ld+json&quot;]').forEach(function(s){try{var j=JSON.parse(s.textContent);addUrl(j.contentUrl,'LD+JSON contentUrl');addUrl(j.embedUrl,'LD+JSON embedUrl');if(j.video)addUrl(j.video.contentUrl||j.video.embedUrl,'LD+JSON video')}catch(e){}});var og=document.querySelector('meta[property=&quot;og:video&quot;]');if(og)addUrl(og.content,'OG:Video');var ogUrl=document.querySelector('meta[property=&quot;og:video:url&quot;]');if(ogUrl)addUrl(ogUrl.content,'OG:Video URL');document.querySelectorAll('iframe').forEach(function(f){try{var fd=f.contentDocument||f.contentWindow.document;fd.querySelectorAll('video').forEach(function(v){addUrl(v.src,'iframe video');addUrl(v.currentSrc,'iframe currentSrc')})}catch(e){}});if(window.jwplayer){try{var p=jwplayer();if(p&&p.getPlaylistItem){var pi=p.getPlaylistItem();addUrl(pi.file||pi.sources[0].file,'JWPlayer')}}catch(e){}}if(window.videojs){try{document.querySelectorAll('.video-js').forEach(function(el){var p=videojs(el.id);addUrl(p.currentSrc(),'VideoJS')})}catch(e){}}}catch(e){r.innerHTML='<div style=&quot;color:%23ff5c5c&quot;>Errore: '+e.message+'</div>'}if(urls.length===0){r.innerHTML='<div style=&quot;color:%23ff5c5c;padding:12px;background:%231a1a2e;border-radius:8px;font-size:14px&quot;><strong>Nessun video trovato.</strong><br><br>Prova il metodo alternativo:<br>1. Apri DevTools (F12)<br>2. Tab Network &rarr; filtra &quot;media&quot;<br>3. Ricarica la pagina<br>4. Cerca file .mp4 o .m3u8</div>'}else{var h='';urls.forEach(function(u,i){var ext=u.url.match(/\.(mp4|m3u8|webm|ts)/i);ext=ext?ext[1].toUpperCase():'VIDEO';var isDownloadable=u.url.match(/\.mp4/i);h+='<div style=&quot;background:%230a0e14;border:1px solid %23243040;border-radius:10px;padding:12px;margin-bottom:8px&quot;><div style=&quot;font-size:11px;color:%2300d4aa;font-weight:600;margin-bottom:6px&quot;>'+ext+' &middot; '+u.type+'</div><div style=&quot;font-size:12px;word-break:break-all;color:%23b0c4de;font-family:monospace;margin-bottom:10px;max-height:60px;overflow:hidden&quot;>'+u.url+'</div><div style=&quot;display:flex;gap:8px;flex-wrap:wrap&quot;><button onclick=&quot;navigator.clipboard.writeText(%27'+encodeURIComponent(u.url)+'%27).then(function(){this.textContent=%27Copiato!%27}.bind(this))&quot; style=&quot;padding:6px 14px;background:%231a2230;border:1px solid %23243040;color:%23e0e6ed;border-radius:6px;font-size:12px;cursor:pointer;font-family:system-ui&quot;>Copia URL</button>'+(isDownloadable?'<a href=&quot;'+u.url+'&quot; download style=&quot;padding:6px 14px;background:linear-gradient(135deg,%2300d4aa,%2300b4ff);color:%230a0e14;border-radius:6px;font-size:12px;text-decoration:none;font-weight:600;font-family:system-ui&quot;>Scarica</a>':'<a href=&quot;'+u.url+'&quot; target=&quot;_blank&quot; style=&quot;padding:6px 14px;background:%231a2230;border:1px solid %23243040;color:%2300b4ff;border-radius:6px;font-size:12px;text-decoration:none;font-family:system-ui&quot;>Apri &rarr;</a>')+'</div></div>'});r.innerHTML=h}})();">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Timelapse Grabber
+      </a>
+
+      <div class="drag-hint">
+        <em>Desktop:</em> trascina il pulsante nella barra dei preferiti<br>
+        <em>Mobile:</em> tieni premuto &rarr; Aggiungi ai preferiti
+      </div>
+    </div>
+
+    <ol class="steps">
+      <li>Vai su <strong>skylinewebcams.com</strong> e apri la pagina timelapse di una webcam</li>
+      <li>Clicca il bookmarklet <strong>"Timelapse Grabber"</strong> dalla barra dei preferiti</li>
+      <li>Appare un pannello con i <strong>video trovati</strong>. Clicca <strong>Scarica</strong> o <strong>Copia URL</strong></li>
+    </ol>
+  </div>
+
+  <!-- Console fallback -->
+  <details class="console-section">
+    <summary>Metodo alternativo: Console del browser</summary>
+    <p style="color:var(--muted);font-size:.85rem;margin-top:.8rem">
+      Se il bookmarklet non funziona, puoi incollare questo script nella console del browser (F12 &rarr; Console) mentre sei sulla pagina del timelapse.
+    </p>
+    <div class="code-block">
+      <button class="copy-btn" onclick="copyCode(this)" data-target="consoleCode">Copia</button>
+      <pre id="consoleCode">// Timelapse Grabber - Console Script
+(function() {
+  var found = [];
+
+  // 1. Video elements
+  document.querySelectorAll('video').forEach(v =&gt; {
+    if (v.src) found.push(v.src);
+    if (v.currentSrc) found.push(v.currentSrc);
+    v.querySelectorAll('source').forEach(s =&gt; {
+      if (s.src) found.push(s.src);
+    });
+  });
+
+  // 2. Script tags
+  document.querySelectorAll('script').forEach(s =&gt; {
+    var t = s.textContent || '';
+    // MP4 URLs
+    var mp4 = t.match(
+      /https?:\/\/[^\s'"&lt;&gt;]+\.mp4[^\s'"&lt;&gt;]*/g
+    );
+    if (mp4) found.push(...mp4);
+    // M3U8 URLs
+    var m3u8 = t.match(
+      /https?:\/\/[^\s'"&lt;&gt;]+\.m3u8[^\s'"&lt;&gt;]*/g
+    );
+    if (m3u8) found.push(...m3u8);
+    // SkylineWebcams pattern
+    var swc = t.match(
+      /source\s*:\s*['"](livee?\.m3u8[^'"]*)['"]/g
+    );
+    if (swc) swc.forEach(u =&gt; {
+      var c = u.match(/['"](livee?\.m3u8[^'"]*)['"]/);
+      if (c) found.push(
+        'https://hd-auth.skylinewebcams.com/'
+        + c[1].replace('livee.', 'live.')
+      );
+    });
+  });
+
+  // 3. LD+JSON
+  document.querySelectorAll(
+    'script[type="application/ld+json"]'
+  ).forEach(s =&gt; {
+    try {
+      var j = JSON.parse(s.textContent);
+      if (j.contentUrl) found.push(j.contentUrl);
+      if (j.embedUrl) found.push(j.embedUrl);
+    } catch(e) {}
+  });
+
+  // 4. OG meta
+  var og = document.querySelector(
+    'meta[property="og:video"]'
+  );
+  if (og) found.push(og.content);
+
+  // Deduplicate
+  found = [...new Set(found)];
+
+  if (found.length === 0) {
+    console.log('%c Nessun video trovato!',
+      'color:red;font-size:14px');
+    console.log('Prova: Network tab &gt; media');
+  } else {
+    console.log('%c Video trovati:',
+      'color:#00d4aa;font-size:14px');
+    found.forEach((u, i) =&gt; {
+      console.log(`${i+1}. ${u}`);
+    });
+  }
+})();</pre>
+    </div>
+  </details>
+
+  <!-- DevTools Method -->
+  <details class="console-section">
+    <summary>Metodo DevTools: Network Inspector</summary>
+    <p style="color:var(--muted);font-size:.85rem;margin-top:.8rem;line-height:1.7">
+      Il metodo pi&ugrave; affidabile se gli altri non funzionano:
+    </p>
+    <ol class="steps" style="margin-top:.5rem">
+      <li>Apri la pagina timelapse su SkylineWebcams</li>
+      <li>Premi <strong>F12</strong> (o Cmd+Opt+I su Mac) per aprire DevTools</li>
+      <li>Vai nel tab <strong>Network</strong></li>
+      <li>Filtra per <strong>"media"</strong> o cerca <strong>".mp4"</strong> / <strong>".m3u8"</strong></li>
+      <li><strong>Ricarica la pagina</strong> (F5)</li>
+      <li>Appariranno le richieste video. Click destro sulla riga &rarr; <strong>Copy &rarr; Copy URL</strong></li>
+      <li>Incolla l'URL nel browser per scaricare il video</li>
+    </ol>
+  </details>
+
+  <!-- Info boxes -->
+  <div class="info-box">
+    <h3>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+      Come funziona
+    </h3>
+    <p>Il bookmarklet analizza la pagina corrente cercando: elementi &lt;video&gt;, URL .mp4 e .m3u8 nei tag &lt;script&gt;, dati strutturati LD+JSON, meta tag OG:video, e pattern specifici di SkylineWebcams (incluso il reindirizzamento livee &rarr; live).</p>
+    <p>Funziona con qualsiasi sito che usa player HTML5 standard.</p>
+  </div>
+
+  <div class="info-box">
+    <h3>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Note legali
+    </h3>
+    <p>SkylineWebcams genera un timelapse al giorno, sovrascritto quotidianamente. Secondo i loro ToS, i timelapse non possono essere ri-pubblicati o usati per opere derivate. Questo strumento &egrave; per uso personale.</p>
+  </div>
+
+  <div class="info-box">
+    <h3>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      Siti compatibili
+    </h3>
+    <p>Il bookmarklet cerca pattern video universali, quindi funziona con molti siti di webcam.</p>
+    <div class="sites-list">
+      <span class="site-tag">SkylineWebcams</span>
+      <span class="site-tag">Webcam.io</span>
+      <span class="site-tag">EarthCam</span>
+      <span class="site-tag">Windy Webcams</span>
+      <span class="site-tag">Qualsiasi HTML5 video</span>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  <a href="https://cad3d.expert">CAD3D.Expert</a> &middot; Timelapse Grabber v1.0
+</div>
+
+<script>
+function copyCode(btn) {
+  const targetId = btn.dataset.target;
+  const pre = document.getElementById(targetId);
+  // Decode HTML entities back to actual characters
+  const text = pre.textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Copiato!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'Copia';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+</script>
+</body>
+</html>
