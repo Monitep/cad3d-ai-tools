@@ -294,12 +294,18 @@ function escapeHtml(s){
 }
 
 function renderResults(videos, slug){
-  const today = new Date().toISOString().slice(0,10).replace(/-/g,'');
-  videos.forEach(v=>{
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  const dateStr = now.getFullYear() + pad(now.getMonth()+1) + pad(now.getDate());
+  const timeStr = pad(now.getHours()) + pad(now.getMinutes()) + pad(now.getSeconds());
+  const multi = videos.length > 1;
+  videos.forEach((v,i)=>{
     const isMp4 = /mp4/i.test(v.ext);
     const isHls = /m3u8/i.test(v.ext);
     const isSkyline = /skylinewebcams\.com/i.test(v.url);
-    const fname = slug + '_' + today + (isMp4 ? '.mp4' : (isHls ? '.m3u8' : '.mp4'));
+    const suffix = multi ? ('_' + (i+1)) : '';
+    const ext = isMp4 ? '.mp4' : (isHls ? '.m3u8' : '.mp4');
+    const fname = slug + '_' + dateStr + '_' + timeStr + suffix + ext;
 
     const card = document.createElement('div');
     card.className = 'result-card';
