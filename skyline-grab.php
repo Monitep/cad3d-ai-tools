@@ -159,11 +159,17 @@ if ($debug) {
         $iframes = array_slice(array_unique($m[1]), 0, 20);
     }
 
+    $nkeys = [];
+    if (preg_match_all('#nkey\s*[:=]\s*["\']?([A-Za-z0-9_\-]+)["\']?#i', $html, $m)) {
+        $nkeys = array_slice(array_unique($m[1]), 0, 10);
+    }
+
     header('Content-Type: application/json; charset=utf-8');
     echo json_encode([
         'ok'          => true,
         'http_code'   => $code,
         'html_length' => strlen($html),
+        'nkeys'       => $nkeys,
         'scripts'     => $scripts,
         'iframes'     => $iframes,
         'hits'        => $hits,
@@ -234,6 +240,29 @@ if (preg_match_all('#<script[^>]+application/ld\+json[^>]*>(.*?)</script>#is', $
 // 6) og:video meta
 if (preg_match('#<meta[^>]+property=["\']og:video(?::url)?["\'][^>]+content=["\']([^"\']+)["\']#i', $html, $m)) {
     $add($m[1], 'OG:Video');
+}
+
+// 7) array sources:[ ... ] del player (Clappr / SkylineWebcams)
+if (preg_match_all('#sources?\s*:\s*\[([^\]]+)\]#i', $html, $m)) {
+    foreach ($m[1] as $blk) {
+        if (preg_match_all('#["\']([^"\']+\.(?:mp4|m3u8|webm)[^"\']*)["\']#i', $blk, $mm)) {
+            foreach ($mm[1] as $u) $add($u, 'Player sources[]');
+        }
+    }
+}
+
+// 8) SkylineWebcams: option 'source' passata al player -> hd-auth.skylinewebcams.com
+if (preg_match_all('#source\s*:\s*["\']([^"\']*\.m3u8[^"\']*)["\']#i', $html, $m)) {
+    foreach ($m[1] as $s) {
+        $s = str_replace('livee.', 'live.', $s);
+        if (stripos($s, 'http') === 0) $add($s, 'SkylineWebcams source');
+        else $add('https://hd-auth.skylinewebcams.com/' . ltrim($s, '/'), 'SkylineWebcams source');
+    }
+}
+
+// 9) attributi data-* con video (data-source, data-src, data-hls, data-file)
+if (preg_match_all('#data-(?:source|src|hls|file|video)=["\']([^"\']+\.(?:mp4|m3u8|webm)[^"\']*)["\']#i', $html, $m)) {
+    foreach ($m[1] as $u) $add($u, 'data-attribute');
 }
 
 // Ordina: MP4 prima (piu facile da scaricare)

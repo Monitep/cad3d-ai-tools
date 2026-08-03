@@ -237,7 +237,8 @@ async function grab(){
       grabBtn.disabled = false; return;
     }
     if (!data.videos || data.videos.length === 0){
-      showStatus('error','Nessun video trovato in questa pagina. Apri "Se non trova il video".');
+      showStatus('error','Nessun video trovato con i metodi automatici. Carico la diagnostica...');
+      await showDiagnostics(url);
       grabBtn.disabled = false; return;
     }
     hideStatus();
@@ -246,6 +247,50 @@ async function grab(){
     showStatus('error','Connessione fallita. Riprova tra poco. ('+err.message+')');
   }
   grabBtn.disabled = false;
+}
+
+async function showDiagnostics(url){
+  try{
+    const res = await fetch(PROXY + '?debug=1&url=' + encodeURIComponent(url));
+    const d = await res.json();
+    if (!d.ok){ showStatus('error','Diagnostica non disponibile: '+(d.error||'')); return; }
+    hideStatus();
+
+    let html = '<div class="result-card" style="border-color:#3a4a5f">';
+    html += '<div class="result-top"><span class="badge" style="background:rgba(0,180,255,.15);color:var(--accent2)">DIAGNOSTICA</span>';
+    html += '<span class="result-type">HTTP '+d.http_code+' &middot; '+(d.html_length||0)+' byte</span></div>';
+
+    html += '<p class="hls-note" style="margin:.2rem 0 .6rem;color:var(--text)">Fai uno screenshot di questa schermata e mandalo. Serve a capire come la pagina carica il video.</p>';
+
+    if (d.nkeys && d.nkeys.length){
+      html += '<div style="margin-bottom:.6rem"><b style="color:var(--accent);font-size:.8rem">nkey:</b> <span class="result-url" style="display:inline-block;margin:0">'+d.nkeys.join(', ')+'</span></div>';
+    }
+
+    html += '<div style="font-size:.78rem;color:var(--accent);font-weight:600;margin:.4rem 0 .3rem">SCRIPT ('+ (d.scripts?d.scripts.length:0) +')</div>';
+    html += '<div class="result-url" style="max-height:150px">'+(d.scripts&&d.scripts.length? d.scripts.join('<br>') : '(nessuno)')+'</div>';
+
+    if (d.iframes && d.iframes.length){
+      html += '<div style="font-size:.78rem;color:var(--accent);font-weight:600;margin:.6rem 0 .3rem">IFRAME</div>';
+      html += '<div class="result-url" style="max-height:100px">'+d.iframes.join('<br>')+'</div>';
+    }
+
+    html += '<div style="font-size:.78rem;color:var(--accent);font-weight:600;margin:.6rem 0 .3rem">RIFERIMENTI VIDEO ('+(d.hits?d.hits.length:0)+')</div>';
+    if (d.hits && d.hits.length){
+      html += '<div class="result-url" style="max-height:280px">';
+      d.hits.forEach(h=>{ html += '<div style="margin-bottom:.5rem"><b style="color:#ffc93c">['+h.kw+']</b> '+escapeHtml(h.text)+'</div>'; });
+      html += '</div>';
+    } else {
+      html += '<div class="result-url">Nessun riferimento a mp4/m3u8/video nella pagina servita. Il video arriva quasi certamente da una chiamata separata protetta.</div>';
+    }
+    html += '</div>';
+    resultsEl.innerHTML = html;
+  }catch(err){
+    showStatus('error','Diagnostica fallita: '+err.message);
+  }
+}
+
+function escapeHtml(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
 function renderResults(videos, slug){
