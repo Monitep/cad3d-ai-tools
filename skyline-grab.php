@@ -115,6 +115,10 @@ if ($browse) {
     $lang = 'it';
     if (preg_match('#skylinewebcams\.com/([a-z]{2})/#i', $url, $mm)) $lang = strtolower($mm[1]);
 
+    // percorso della pagina corrente (es. "italia" o "italia/liguria/genova")
+    $curPath = '';
+    if (preg_match('#/webcam/(.+?)\.html#i', $url, $cp)) $curPath = trim($cp[1], '/');
+
     $items = [];
     $seen = [];
     // Trova gli <a> che puntano a una pagina webcam
@@ -125,39 +129,42 @@ if ($browse) {
             elseif (strpos($href, '/') === 0) $href = 'https://' . $host . $href;
             elseif (!preg_match('#^https?://#i', $href)) continue;
 
-            // solo skylinewebcams, escludi i link timelapse stessi
             if (!preg_match('#skylinewebcams\.com/#i', $href)) continue;
             if (preg_match('#/timelapse\.html$#i', $href)) continue;
+
+            // percorso del link
+            $linkPath = '';
+            if (preg_match('#/webcam/(.+?)\.html#i', $href, $lp)) $linkPath = trim($lp[1], '/');
+            if ($linkPath === '') continue;
+
+            // solo discendenti diretti/indiretti della pagina corrente (esclude il menu globale)
+            if ($curPath !== '') {
+                if ($linkPath === $curPath) continue;
+                if (strpos($linkPath . '/', $curPath . '/') !== 0) continue;
+            }
 
             $key = preg_replace('~[?\#].*$~', '', $href);
             if (isset($seen[$key])) continue;
             $seen[$key] = true;
 
-            $inner = $a[2];
-            // thumbnail
+            // profondita e tipo
+            $depth = count(explode('/', $linkPath));
+            $isCam = $depth >= 4;
+
+            // nome pulito dallo slug finale
+            $slug = '';
+            if (preg_match('#/([^/]+)\.html$#i', $href, $sm)) $slug = $sm[1];
+            $name = trim(ucwords(str_replace('-', ' ', $slug)));
+
+            // thumbnail (di solito assente: lazy-load JS)
             $thumb = '';
-            if (preg_match('#<img[^>]+(?:data-src|data-original|src)=["\']([^"\']+)["\']#i', $inner, $im)) {
+            $inner = $a[2];
+            if (preg_match('#<img[^>]+(?:data-src|data-original|data-lazy|src)=["\']([^"\']+\.(?:jpg|jpeg|png|webp)[^"\']*)["\']#i', $inner, $im)) {
                 $thumb = html_entity_decode($im[1], ENT_QUOTES);
                 if (strpos($thumb, '//') === 0) $thumb = 'https:' . $thumb;
                 elseif (strpos($thumb, '/') === 0) $thumb = 'https://' . $host . $thumb;
                 if (strpos($thumb, 'data:') === 0) $thumb = '';
             }
-            // nome
-            $name = '';
-            if (preg_match('#<img[^>]+alt=["\']([^"\']+)["\']#i', $inner, $al)) $name = trim($al[1]);
-            if ($name === '') { $name = trim(preg_replace('#\s+#', ' ', strip_tags($inner))); }
-            if ($name === '') {
-                if (preg_match('#/webcam/(?:[^/]+/)*([^/.]+)\.html#i', $href, $sm)) {
-                    $name = ucwords(str_replace('-', ' ', $sm[1]));
-                }
-            }
-
-            // profondita nel percorso: paese/regione/prov/cam
-            $depth = 0;
-            if (preg_match('#/webcam/(.+?)\.html#i', $href, $pm)) {
-                $depth = count(explode('/', trim($pm[1], '/')));
-            }
-            $isCam = $depth >= 4;
 
             $items[] = [
                 'name'  => $name ?: 'webcam',
@@ -168,6 +175,12 @@ if ($browse) {
             ];
         }
     }
+
+    // categorie prima, poi webcam; ognuna in ordine alfabetico
+    usort($items, function ($a, $b) {
+        if ($a['isCam'] !== $b['isCam']) return $a['isCam'] ? 1 : -1;
+        return strcasecmp($a['name'], $b['name']);
+    });
 
     // Titolo pagina per il breadcrumb
     $pageTitle = '';

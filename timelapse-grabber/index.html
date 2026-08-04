@@ -67,15 +67,18 @@ h1{font-size:clamp(1.7rem,6.5vw,2.4rem);font-weight:700;line-height:1.1;
 .back-btn{background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:.55rem .8rem;font-size:.85rem;font-weight:600;cursor:pointer;touch-action:manipulation;display:inline-flex;align-items:center;gap:.35rem}
 .back-btn:disabled{opacity:.4}
 
-.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.7rem}
-.tile{background:var(--card);border:1px solid var(--border);border-radius:13px;overflow:hidden;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:transform .12s,border-color .12s;display:flex;flex-direction:column}
-.tile:active{transform:scale(.98)}
-.tile.cam{border-color:rgba(0,212,170,.35)}
-.tile-thumb{width:100%;aspect-ratio:16/10;background:#0c1119 center/cover no-repeat;position:relative;display:flex;align-items:center;justify-content:center}
-.tile-thumb .ph{color:#33465c;font-size:1.6rem}
-.tile-badge{position:absolute;top:.4rem;right:.4rem;font-size:.6rem;font-weight:700;letter-spacing:.04em;padding:.15rem .4rem;border-radius:5px;background:rgba(0,212,170,.9);color:#06121a}
-.tile-badge.cat{background:rgba(122,138,158,.85);color:#0a0e14}
-.tile-name{padding:.55rem .6rem;font-size:.82rem;font-weight:500;line-height:1.25;color:var(--text)}
+.grid{display:flex;flex-direction:column;gap:.5rem}
+.row{display:flex;align-items:center;gap:.75rem;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:.7rem .8rem;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:transform .1s,border-color .1s}
+.row:active{transform:scale(.99)}
+.row.cam{border-color:rgba(0,212,170,.35)}
+.row-icon{width:40px;height:40px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:var(--surface);color:var(--muted)}
+.row.cam .row-icon{background:rgba(0,212,170,.12);color:var(--accent)}
+.row-icon svg{width:20px;height:20px}
+.row-thumb{width:56px;height:40px;border-radius:8px;flex-shrink:0;background:#0c1119 center/cover no-repeat}
+.row-name{flex:1;font-size:.94rem;font-weight:500;line-height:1.2;overflow:hidden;text-overflow:ellipsis}
+.row-badge{font-size:.62rem;font-weight:700;letter-spacing:.04em;padding:.2rem .45rem;border-radius:5px;background:rgba(0,212,170,.9);color:#06121a;flex-shrink:0}
+.row-chev{color:var(--muted);flex-shrink:0;display:flex}
+.row-chev svg{width:18px;height:18px}
 
 /* Status */
 .status{margin-top:.9rem;padding:.85rem 1rem;border-radius:11px;font-size:.86rem;display:none;align-items:center;gap:.55rem}
@@ -246,20 +249,24 @@ async function doBrowse(url, push){
 }
 function renderGrid(items){
   grid.innerHTML = '';
+  const camIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>';
+  const catIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>';
+  const chev = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>';
   items.forEach(it=>{
-    const tile = document.createElement('div');
-    tile.className = 'tile' + (it.isCam ? ' cam' : '');
-    const thumbStyle = it.thumb ? ('background-image:url('+it.thumb.replace(/'/g,"%27")+')') : '';
-    tile.innerHTML =
-      '<div class="tile-thumb" style="'+thumbStyle+'">'
-      + (it.thumb ? '' : '<span class="ph">&#9707;</span>')
-      + '<span class="tile-badge '+(it.isCam?'':'cat')+'">'+(it.isCam?'TIMELAPSE':'APRI')+'</span></div>'
-      + '<div class="tile-name">'+escapeHtml(it.name)+'</div>';
-    tile.addEventListener('click', ()=>{
+    const row = document.createElement('div');
+    row.className = 'row' + (it.isCam ? ' cam' : '');
+    const left = it.thumb
+      ? '<div class="row-thumb" style="background-image:url('+it.thumb.replace(/'/g,"%27")+')"></div>'
+      : '<div class="row-icon">'+(it.isCam?camIcon:catIcon)+'</div>';
+    const right = it.isCam
+      ? '<span class="row-badge">TIMELAPSE</span>'
+      : '<span class="row-chev">'+chev+'</span>';
+    row.innerHTML = left + '<div class="row-name">'+escapeHtml(it.name)+'</div>' + right;
+    row.addEventListener('click', ()=>{
       if (it.isCam){ grabFromCam(it.url); }
       else { doBrowse(it.url, true); window.scrollTo({top:0,behavior:'smooth'}); }
     });
-    grid.appendChild(tile);
+    grid.appendChild(row);
   });
 }
 backBtn.addEventListener('click', ()=>{
