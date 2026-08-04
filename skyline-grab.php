@@ -47,12 +47,144 @@ function is_public_host($host) {
 $url = isset($_GET['url']) ? trim($_GET['url']) : '';
 $dl  = isset($_GET['dl']) && $_GET['dl'] == '1';
 $debug = isset($_GET['debug']) && $_GET['debug'] == '1';
+$browse = isset($_GET['browse']) && $_GET['browse'] == '1';
+$stream = isset($_GET['stream']) && $_GET['stream'] == '1';
 
 if ($url === '' || !preg_match('#^https?://#i', $url)) {
     bad('URL mancante o non valido.');
 }
 if (!is_public_host(host_of($url))) {
     bad('Host non consentito.', 403);
+}
+
+/* =========================================================
+ *  MODALITA STREAM: serve il video inline (stesso dominio)
+ *  cosi il tag <video> puo essere catturato senza taint CORS
+ * ========================================================= */
+if ($stream) {
+    $host = host_of($url);
+    if (!preg_match('/skylinewebcams\.com$/', $host)) {
+        bad('Stream consentito solo da skylinewebcams.com.', 403);
+    }
+    set_time_limit(0);
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_MAXREDIRS      => 5,
+        CURLOPT_USERAGENT      => $UA,
+        CURLOPT_HTTPHEADER     => ['Referer: https://www.skylinewebcams.com/'],
+        CURLOPT_CONNECTTIMEOUT => 15,
+        CURLOPT_TIMEOUT        => 90,
+        CURLOPT_HEADER         => false,
+        CURLOPT_WRITEFUNCTION  => function ($ch, $chunk) { echo $chunk; flush(); return strlen($chunk); },
+        CURLOPT_HEADERFUNCTION => function ($ch, $line) {
+            if (stripos($line, 'Content-Type:') === 0 || stripos($line, 'Content-Length:') === 0 || stripos($line, 'Accept-Ranges:') === 0) {
+                header(trim($line));
+            }
+            return strlen($line);
+        },
+    ]);
+    curl_exec($ch);
+    curl_close($ch);
+    exit;
+}
+
+/* =========================================================
+ *  MODALITA SFOGLIA: elenca le webcam di una pagina Skyline
+ * ========================================================= */
+if ($browse) {
+    $host = host_of($url);
+    if (!preg_match('/skylinewebcams\.com$/', $host)) {
+        bad('Sfoglia consentito solo su skylinewebcams.com.', 403);
+    }
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_MAXREDIRS      => 5,
+        CURLOPT_USERAGENT      => $UA,
+        CURLOPT_HTTPHEADER     => ['Accept-Language: it-IT,it;q=0.9,en;q=0.8'],
+        CURLOPT_CONNECTTIMEOUT => 15,
+        CURLOPT_TIMEOUT        => 25,
+    ]);
+    $html = curl_exec($ch);
+    $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    if (!$html) bad('Pagina non raggiungibile (HTTP ' . $code . ').', 502);
+
+    $lang = 'it';
+    if (preg_match('#skylinewebcams\.com/([a-z]{2})/#i', $url, $mm)) $lang = strtolower($mm[1]);
+
+    $items = [];
+    $seen = [];
+    // Trova gli <a> che puntano a una pagina webcam
+    if (preg_match_all('#<a\b[^>]*href=["\']([^"\']*?/webcam/[^"\']*?\.html)["\'][^>]*>(.*?)</a>#is', $html, $mm, PREG_SET_ORDER)) {
+        foreach ($mm as $a) {
+            $href = html_entity_decode($a[1], ENT_QUOTES);
+            if (strpos($href, '//') === 0) $href = 'https:' . $href;
+            elseif (strpos($href, '/') === 0) $href = 'https://' . $host . $href;
+            elseif (!preg_match('#^https?://#i', $href)) continue;
+
+            // solo skylinewebcams, escludi i link timelapse stessi
+            if (!preg_match('#skylinewebcams\.com/#i', $href)) continue;
+            if (preg_match('#/timelapse\.html$#i', $href)) continue;
+
+            $key = preg_replace('~[?\#].*$~', '', $href);
+            if (isset($seen[$key])) continue;
+            $seen[$key] = true;
+
+            $inner = $a[2];
+            // thumbnail
+            $thumb = '';
+            if (preg_match('#<img[^>]+(?:data-src|data-original|src)=["\']([^"\']+)["\']#i', $inner, $im)) {
+                $thumb = html_entity_decode($im[1], ENT_QUOTES);
+                if (strpos($thumb, '//') === 0) $thumb = 'https:' . $thumb;
+                elseif (strpos($thumb, '/') === 0) $thumb = 'https://' . $host . $thumb;
+                if (strpos($thumb, 'data:') === 0) $thumb = '';
+            }
+            // nome
+            $name = '';
+            if (preg_match('#<img[^>]+alt=["\']([^"\']+)["\']#i', $inner, $al)) $name = trim($al[1]);
+            if ($name === '') { $name = trim(preg_replace('#\s+#', ' ', strip_tags($inner))); }
+            if ($name === '') {
+                if (preg_match('#/webcam/(?:[^/]+/)*([^/.]+)\.html#i', $href, $sm)) {
+                    $name = ucwords(str_replace('-', ' ', $sm[1]));
+                }
+            }
+
+            // profondita nel percorso: paese/regione/prov/cam
+            $depth = 0;
+            if (preg_match('#/webcam/(.+?)\.html#i', $href, $pm)) {
+                $depth = count(explode('/', trim($pm[1], '/')));
+            }
+            $isCam = $depth >= 4;
+
+            $items[] = [
+                'name'  => $name ?: 'webcam',
+                'url'   => $href,
+                'thumb' => $thumb,
+                'depth' => $depth,
+                'isCam' => $isCam,
+            ];
+        }
+    }
+
+    // Titolo pagina per il breadcrumb
+    $pageTitle = '';
+    if (preg_match('#<title>(.*?)</title>#is', $html, $tm)) {
+        $pageTitle = trim(preg_replace('#\s+#', ' ', strip_tags($tm[1])));
+        $pageTitle = preg_replace('#\s*[\|\-–].*$#u', '', $pageTitle);
+    }
+
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode([
+        'ok'    => true,
+        'lang'  => $lang,
+        'title' => $pageTitle,
+        'count' => count($items),
+        'items' => $items,
+    ], JSON_UNESCAPED_SLASHES);
+    exit;
 }
 
 /* =========================================================

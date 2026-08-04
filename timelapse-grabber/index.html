@@ -17,336 +17,500 @@
   --danger:#ff6b6b; --grad:linear-gradient(135deg,#00d4aa,#00b4ff);
 }
 html{font-size:16px}
-body{
-  font-family:'Space Grotesk',system-ui,sans-serif;
-  background:var(--bg); color:var(--text);
-  min-height:100dvh; line-height:1.55;
-  -webkit-font-smoothing:antialiased;
-  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-}
-button,input,a{font-family:inherit}
+body{font-family:'Space Grotesk',system-ui,sans-serif;background:var(--bg);color:var(--text);
+  min-height:100dvh;line-height:1.55;-webkit-font-smoothing:antialiased;
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+button,input,select,a{font-family:inherit}
 
-.header{padding:2rem 1.25rem 1rem;text-align:center;position:relative;overflow:hidden}
+.header{padding:1.6rem 1.25rem .6rem;text-align:center;position:relative;overflow:hidden}
 .header::before{content:'';position:absolute;top:-60%;left:-50%;width:200%;height:200%;
   background:radial-gradient(ellipse at 50% 0%,rgba(0,212,170,.1) 0%,transparent 55%);pointer-events:none}
-.logo{display:inline-flex;align-items:center;gap:.5rem;font-size:1rem;font-weight:600;color:var(--accent);margin-bottom:.75rem}
-.logo svg{width:26px;height:26px}
-h1{font-size:clamp(1.9rem,7vw,2.6rem);font-weight:700;line-height:1.1;
-  background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:.4rem}
-.subtitle{color:var(--muted);font-size:.9rem;max-width:420px;margin:0 auto}
+.logo{display:inline-flex;align-items:center;gap:.5rem;font-size:.92rem;font-weight:600;color:var(--accent);margin-bottom:.55rem}
+.logo svg{width:24px;height:24px}
+h1{font-size:clamp(1.7rem,6.5vw,2.4rem);font-weight:700;line-height:1.1;
+  background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:.3rem}
+.subtitle{color:var(--muted);font-size:.86rem;max-width:420px;margin:0 auto}
 
-.main{max-width:620px;margin:0 auto;padding:.5rem 1.25rem 3rem}
+.main{max-width:640px;margin:0 auto;padding:.4rem 1.1rem 3rem}
 
-.grab-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:1.4rem 1.2rem;position:relative;overflow:hidden;margin-bottom:1.25rem}
-.grab-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--grad)}
+/* Tabs */
+.tabs{display:flex;gap:.5rem;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:.35rem;margin-bottom:1.1rem}
+.tab{flex:1;padding:.7rem;text-align:center;font-weight:600;font-size:.9rem;border-radius:9px;cursor:pointer;color:var(--muted);
+  touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:all .15s;border:none;background:transparent}
+.tab.active{background:var(--card);color:var(--accent)}
 
-.field-label{font-size:.72rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.7rem;display:block}
+.panel{display:none}
+.panel.active{display:block}
 
-.url-input{
-  width:100%;padding:1rem;font-size:1rem;
-  background:var(--bg);border:1.5px solid var(--border);border-radius:12px;
-  color:var(--text);outline:none;transition:border-color .15s;word-break:break-all;
-}
+/* Cards */
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.2rem 1.1rem;margin-bottom:1rem;position:relative;overflow:hidden}
+.card.accent::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--grad)}
+.label{font-size:.7rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.6rem;display:block}
+
+.url-input{width:100%;padding:.9rem 1rem;font-size:1rem;background:var(--bg);border:1.5px solid var(--border);border-radius:11px;color:var(--text);outline:none;word-break:break-all;transition:border-color .15s}
 .url-input::placeholder{color:var(--muted)}
 .url-input:focus{border-color:var(--accent)}
 
-.btn-row{display:flex;gap:.6rem;margin-top:.8rem;flex-wrap:wrap}
-.btn{
-  flex:1;min-width:130px;
-  display:inline-flex;align-items:center;justify-content:center;gap:.5rem;
-  padding:.95rem 1rem;font-size:.95rem;font-weight:600;
-  border-radius:12px;border:none;cursor:pointer;
-  touch-action:manipulation;-webkit-tap-highlight-color:transparent;
-  transition:transform .12s,opacity .12s;text-decoration:none;
-}
+.btn-row{display:flex;gap:.55rem;margin-top:.7rem;flex-wrap:wrap}
+.btn{flex:1;min-width:120px;display:inline-flex;align-items:center;justify-content:center;gap:.45rem;
+  padding:.85rem 1rem;font-size:.92rem;font-weight:600;border-radius:11px;border:none;cursor:pointer;text-decoration:none;
+  touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:transform .12s,opacity .12s}
 .btn:active{transform:scale(.97)}
-.btn svg{width:18px;height:18px}
-.btn-primary{background:var(--grad);color:#06121a;box-shadow:0 4px 18px rgba(0,212,170,.28)}
+.btn svg{width:17px;height:17px}
+.btn-primary{background:var(--grad);color:#06121a;box-shadow:0 4px 16px rgba(0,212,170,.25)}
 .btn-secondary{background:var(--surface);border:1px solid var(--border);color:var(--text)}
 .btn:disabled{opacity:.5;cursor:default}
 
-.status{margin-top:1rem;padding:.9rem 1rem;border-radius:12px;font-size:.88rem;display:none;align-items:center;gap:.6rem}
+/* Browser */
+.crumbbar{display:flex;align-items:center;gap:.5rem;margin-bottom:.8rem}
+.crumb{font-size:.85rem;color:var(--muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.back-btn{background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:.55rem .8rem;font-size:.85rem;font-weight:600;cursor:pointer;touch-action:manipulation;display:inline-flex;align-items:center;gap:.35rem}
+.back-btn:disabled{opacity:.4}
+
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.7rem}
+.tile{background:var(--card);border:1px solid var(--border);border-radius:13px;overflow:hidden;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:transform .12s,border-color .12s;display:flex;flex-direction:column}
+.tile:active{transform:scale(.98)}
+.tile.cam{border-color:rgba(0,212,170,.35)}
+.tile-thumb{width:100%;aspect-ratio:16/10;background:#0c1119 center/cover no-repeat;position:relative;display:flex;align-items:center;justify-content:center}
+.tile-thumb .ph{color:#33465c;font-size:1.6rem}
+.tile-badge{position:absolute;top:.4rem;right:.4rem;font-size:.6rem;font-weight:700;letter-spacing:.04em;padding:.15rem .4rem;border-radius:5px;background:rgba(0,212,170,.9);color:#06121a}
+.tile-badge.cat{background:rgba(122,138,158,.85);color:#0a0e14}
+.tile-name{padding:.55rem .6rem;font-size:.82rem;font-weight:500;line-height:1.25;color:var(--text)}
+
+/* Status */
+.status{margin-top:.9rem;padding:.85rem 1rem;border-radius:11px;font-size:.86rem;display:none;align-items:center;gap:.55rem}
 .status.show{display:flex}
 .status.loading{background:rgba(0,180,255,.1);border:1px solid rgba(0,180,255,.3);color:var(--accent2)}
 .status.error{background:rgba(255,107,107,.1);border:1px solid rgba(255,107,107,.3);color:var(--danger)}
-.spinner{width:16px;height:16px;border:2px solid rgba(0,180,255,.3);border-top-color:var(--accent2);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+.spinner{width:15px;height:15px;border:2px solid rgba(0,180,255,.3);border-top-color:var(--accent2);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-.results{margin-top:.5rem}
-.result-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1rem 1.1rem;margin-bottom:.8rem;animation:pop .25s ease}
+/* Results / player */
+#results{margin-top:.4rem}
+.result-card{background:var(--card);border:1px solid var(--border);border-radius:15px;padding:1rem 1.05rem;margin-bottom:.9rem;animation:pop .25s ease}
 @keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-.result-top{display:flex;align-items:center;gap:.5rem;margin-bottom:.6rem;flex-wrap:wrap}
-.badge{font-size:.68rem;font-weight:700;letter-spacing:.04em;padding:.22rem .55rem;border-radius:6px;background:rgba(0,212,170,.15);color:var(--accent)}
+.rtop{display:flex;align-items:center;gap:.5rem;margin-bottom:.6rem;flex-wrap:wrap}
+.badge{font-size:.66rem;font-weight:700;letter-spacing:.04em;padding:.2rem .5rem;border-radius:6px;background:rgba(0,212,170,.15);color:var(--accent)}
 .badge.hls{background:rgba(255,180,0,.15);color:#ffc93c}
-.result-type{font-size:.78rem;color:var(--muted)}
-.result-url{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:#8fa8c4;word-break:break-all;background:var(--bg);padding:.6rem .7rem;border-radius:8px;margin-bottom:.75rem;max-height:52px;overflow:hidden}
-.result-actions{display:flex;gap:.5rem;flex-wrap:wrap}
-.result-actions .btn{flex:1;min-width:110px;padding:.7rem;font-size:.85rem}
-.hls-note{font-size:.76rem;color:var(--muted);margin-top:.5rem;line-height:1.5}
+.rtype{font-size:.78rem;color:var(--muted)}
+.rurl{font-family:'JetBrains Mono',monospace;font-size:.71rem;color:#8fa8c4;word-break:break-all;background:var(--bg);padding:.55rem .65rem;border-radius:8px;margin-bottom:.7rem;max-height:50px;overflow:hidden}
+.ractions{display:flex;gap:.5rem;flex-wrap:wrap}
+.ractions .btn{flex:1;min-width:110px;padding:.7rem;font-size:.84rem}
 
-.help{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.2rem;margin-top:1.5rem}
-.help summary{cursor:pointer;font-weight:600;font-size:.92rem;color:var(--muted);list-style:none;display:flex;align-items:center;gap:.5rem}
+video.preview{width:100%;border-radius:11px;background:#000;margin-bottom:.7rem;display:block}
+.ctrl-group{margin:.6rem 0}
+.ctrl-title{font-size:.72rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem}
+.chips{display:flex;gap:.4rem;flex-wrap:wrap}
+.chip{padding:.5rem .8rem;border-radius:9px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:.85rem;font-weight:600;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.chip.active{background:var(--grad);color:#06121a;border-color:transparent}
+.enc-progress{height:6px;background:var(--bg);border-radius:4px;overflow:hidden;margin-top:.6rem;display:none}
+.enc-progress.show{display:block}
+.enc-progress > i{display:block;height:100%;width:0;background:var(--grad);transition:width .2s}
+.hls-note{font-size:.75rem;color:var(--muted);margin-top:.5rem;line-height:1.5}
+
+/* Help */
+.help{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:1.1rem;margin-top:1.3rem}
+.help summary{cursor:pointer;font-weight:600;font-size:.9rem;color:var(--muted);list-style:none;display:flex;align-items:center;gap:.5rem}
 .help summary::before{content:'▸';transition:transform .2s;color:var(--accent)}
 .help[open] summary::before{transform:rotate(90deg)}
-.help summary:hover{color:var(--text)}
-.steps{list-style:none;counter-reset:s;margin-top:1rem}
-.steps li{counter-increment:s;padding:.6rem 0 .6rem 2.6rem;position:relative;border-bottom:1px solid var(--border);font-size:.88rem}
+.steps{list-style:none;counter-reset:s;margin-top:.9rem}
+.steps li{counter-increment:s;padding:.55rem 0 .55rem 2.5rem;position:relative;border-bottom:1px solid var(--border);font-size:.86rem}
 .steps li:last-child{border-bottom:none}
-.steps li::before{content:counter(s);position:absolute;left:0;top:.6rem;width:1.7rem;height:1.7rem;display:flex;align-items:center;justify-content:center;background:var(--card);border:1px solid var(--border);border-radius:7px;font-size:.75rem;font-weight:600;color:var(--accent)}
+.steps li::before{content:counter(s);position:absolute;left:0;top:.55rem;width:1.6rem;height:1.6rem;display:flex;align-items:center;justify-content:center;background:var(--card);border:1px solid var(--border);border-radius:7px;font-size:.72rem;font-weight:600;color:var(--accent)}
 .steps strong{color:var(--text)}
-
-.info{font-size:.8rem;color:var(--muted);line-height:1.6;margin-top:1.5rem;padding:0 .3rem}
+.info{font-size:.78rem;color:var(--muted);line-height:1.6;margin-top:1.2rem;padding:0 .2rem}
 .info b{color:var(--accent2)}
-
-.footer{text-align:center;padding:2rem 1.25rem 1rem;font-size:.74rem;color:var(--muted)}
+.footer{text-align:center;padding:1.6rem 1.25rem 1rem;font-size:.72rem;color:var(--muted)}
 .footer a{color:var(--accent);text-decoration:none}
-
-@media(max-width:400px){
-  .btn{min-width:100%}
-  .result-actions .btn{min-width:100%}
-}
+@media(max-width:400px){.btn,.ractions .btn{min-width:100%}}
 </style>
 </head>
 <body>
 
 <div class="header">
   <div class="logo">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>
-    </svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
     CAD3D.Expert
   </div>
   <h1>Timelapse Grabber</h1>
-  <p class="subtitle">Incolla il link della webcam e scarica il timelapse. Funziona da telefono.</p>
+  <p class="subtitle">Sfoglia le webcam, scegli il timelapse e scaricalo nel formato e alla velocità che vuoi.</p>
 </div>
 
 <div class="main">
 
-  <div class="grab-card">
-    <label class="field-label" for="url">Link della pagina timelapse</label>
-    <input class="url-input" id="url" type="url" inputmode="url" autocomplete="off"
-           placeholder="https://www.skylinewebcams.com/.../timelapse.html">
-    <div class="btn-row">
-      <button class="btn btn-secondary" id="pasteBtn" type="button">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
-        Incolla
-      </button>
-      <button class="btn btn-primary" id="grabBtn" type="button">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        Cerca video
-      </button>
-    </div>
-    <div class="status" id="status"></div>
+  <div class="tabs">
+    <button class="tab active" id="tabBrowse" type="button">Sfoglia webcam</button>
+    <button class="tab" id="tabPaste" type="button">Incolla link</button>
   </div>
 
-  <div class="results" id="results"></div>
+  <!-- BROWSE -->
+  <div class="panel active" id="panelBrowse">
+    <div class="card">
+      <div class="crumbbar">
+        <button class="back-btn" id="backBtn" type="button" disabled>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          Indietro
+        </button>
+        <span class="crumb" id="crumb">Italia</span>
+      </div>
+      <div class="status" id="browseStatus"></div>
+      <div class="grid" id="grid"></div>
+    </div>
+  </div>
+
+  <!-- PASTE -->
+  <div class="panel" id="panelPaste">
+    <div class="card accent">
+      <label class="label" for="url">Link della pagina timelapse o webcam</label>
+      <input class="url-input" id="url" type="url" inputmode="url" autocomplete="off"
+             placeholder="https://www.skylinewebcams.com/.../timelapse.html">
+      <div class="btn-row">
+        <button class="btn btn-secondary" id="pasteBtn" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+          Incolla
+        </button>
+        <button class="btn btn-primary" id="grabBtn" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Cerca video
+        </button>
+      </div>
+      <div class="status" id="pasteStatus"></div>
+    </div>
+  </div>
+
+  <div id="results"></div>
 
   <details class="help">
-    <summary>Come si usa (Android)</summary>
+    <summary>Come funziona</summary>
     <ol class="steps">
-      <li>Su <strong>SkylineWebcams</strong>, apri la pagina <strong>timelapse</strong> della webcam</li>
-      <li>Tocca la barra indirizzi del browser, <strong>copia il link</strong></li>
-      <li>Torna qui, tocca <strong>Incolla</strong> poi <strong>Cerca video</strong></li>
-      <li>Tocca <strong>Scarica</strong>. Il file finisce nella cartella Download</li>
+      <li><strong>Sfoglia webcam</strong>: parti dall'Italia, entra nella regione, provincia e tocca la webcam. Parte l'estrazione del timelapse</li>
+      <li>Oppure <strong>Incolla link</strong>: copia l'indirizzo di una pagina SkylineWebcams e cercalo</li>
+      <li>Nel riquadro risultato: <strong>MP4 originale</strong> scarica subito. Con <strong>anteprima</strong> scegli velocit&agrave; e formato, poi <strong>Scarica elaborato</strong></li>
     </ol>
-    <p class="hls-note" style="margin-top:1rem">
-      Suggerimento: aggiungi questa pagina alla schermata Home del telefono. Cos&igrave; puoi anche
-      <b style="color:var(--accent2)">condividere</b> il link della webcam direttamente verso questa app dal menu Condividi di Chrome.
-    </p>
+    <p class="hls-note">La conversione velocit&agrave;/formato avviene dentro il telefono e in tempo reale: una clip di un minuto a 1x impiega circa un minuto. A 4x molto meno.</p>
   </details>
 
-  <details class="help">
-    <summary>Se non trova il video</summary>
-    <p class="hls-note" style="margin-top:.8rem">
-      Alcune webcam caricano il video con un codice che scade in fretta. In quel caso:
-    </p>
-    <ol class="steps">
-      <li>Da PC: apri la pagina, premi <strong>F12</strong>, tab <strong>Network</strong>, filtra <strong>media</strong>, ricarica e cerca il file <strong>.mp4</strong></li>
-      <li>Da telefono: usa un <strong>registratore schermo</strong> mentre il timelapse gira a schermo intero</li>
-    </ol>
-  </details>
-
-  <p class="info">
-    <b>Nota.</b> SkylineWebcams genera un timelapse al giorno, sovrascritto ogni notte. Secondo i loro termini
-    i timelapse non vanno ripubblicati o usati per opere derivate. Strumento per uso personale.
-  </p>
+  <p class="info"><b>Nota.</b> SkylineWebcams genera un timelapse al giorno, sovrascritto ogni notte. Secondo i loro termini i timelapse non vanno ripubblicati o usati per opere derivate. Strumento per uso personale.</p>
 
 </div>
 
-<div class="footer">
-  <a href="https://cad3d.expert">CAD3D.Expert</a> &middot; Timelapse Grabber v2.0
-</div>
+<div class="footer"><a href="https://cad3d.expert">CAD3D.Expert</a> &middot; Timelapse Grabber v3.0</div>
 
 <script>
 const PROXY = 'https://www.cad3d.expert/ai/skyline-grab.php';
-const urlInput = document.getElementById('url');
-const grabBtn  = document.getElementById('grabBtn');
-const pasteBtn = document.getElementById('pasteBtn');
-const statusEl = document.getElementById('status');
-const resultsEl= document.getElementById('results');
+const START = 'https://www.skylinewebcams.com/it/webcam/italia.html';
+const SPEEDS = [0.5, 1, 2, 4, 8];
 
-function showStatus(type, html){
-  statusEl.className = 'status show ' + type;
-  statusEl.innerHTML = (type==='loading' ? '<span class="spinner"></span>' : '') + html;
+const $ = id => document.getElementById(id);
+const grid = $('grid'), crumb = $('crumb'), backBtn = $('backBtn');
+const browseStatus = $('browseStatus'), pasteStatus = $('pasteStatus');
+const resultsEl = $('results'), urlInput = $('url');
+
+let browseStack = [];
+
+/* ---------- Tabs ---------- */
+$('tabBrowse').addEventListener('click', ()=>switchTab('browse'));
+$('tabPaste').addEventListener('click', ()=>switchTab('paste'));
+function switchTab(which){
+  const b = which==='browse';
+  $('tabBrowse').classList.toggle('active', b);
+  $('tabPaste').classList.toggle('active', !b);
+  $('panelBrowse').classList.toggle('active', b);
+  $('panelPaste').classList.toggle('active', !b);
 }
-function hideStatus(){ statusEl.className = 'status'; statusEl.innerHTML=''; }
 
-// Auto-fill from ?url= (link condiviso / share target)
+/* ---------- Status helpers ---------- */
+function setStatus(el, type, html){
+  el.className = 'status show ' + type;
+  el.innerHTML = (type==='loading' ? '<span class="spinner"></span>' : '') + html;
+}
+function clearStatus(el){ el.className='status'; el.innerHTML=''; }
+
+/* ---------- Browse ---------- */
+async function doBrowse(url, push){
+  setStatus(browseStatus, 'loading', 'Carico le webcam...');
+  grid.innerHTML = '';
+  try{
+    const res = await fetch(PROXY + '?browse=1&url=' + encodeURIComponent(url));
+    const data = await res.json();
+    if (!data.ok){ setStatus(browseStatus,'error', data.error || 'Errore.'); return; }
+    if (!data.items || !data.items.length){ setStatus(browseStatus,'error','Nessuna webcam qui. Prova a tornare indietro.'); return; }
+    if (push !== false) browseStack.push(url);
+    backBtn.disabled = browseStack.length <= 1;
+    crumb.textContent = data.title || 'SkylineWebcams';
+    clearStatus(browseStatus);
+    renderGrid(data.items);
+  }catch(err){
+    setStatus(browseStatus,'error','Connessione fallita. ('+err.message+')');
+  }
+}
+function renderGrid(items){
+  grid.innerHTML = '';
+  items.forEach(it=>{
+    const tile = document.createElement('div');
+    tile.className = 'tile' + (it.isCam ? ' cam' : '');
+    const thumbStyle = it.thumb ? ('background-image:url('+it.thumb.replace(/'/g,"%27")+')') : '';
+    tile.innerHTML =
+      '<div class="tile-thumb" style="'+thumbStyle+'">'
+      + (it.thumb ? '' : '<span class="ph">&#9707;</span>')
+      + '<span class="tile-badge '+(it.isCam?'':'cat')+'">'+(it.isCam?'TIMELAPSE':'APRI')+'</span></div>'
+      + '<div class="tile-name">'+escapeHtml(it.name)+'</div>';
+    tile.addEventListener('click', ()=>{
+      if (it.isCam){ grabFromCam(it.url); }
+      else { doBrowse(it.url, true); window.scrollTo({top:0,behavior:'smooth'}); }
+    });
+    grid.appendChild(tile);
+  });
+}
+backBtn.addEventListener('click', ()=>{
+  if (browseStack.length > 1){
+    browseStack.pop();
+    const prev = browseStack[browseStack.length-1];
+    doBrowse(prev, false);
+  }
+});
+
+function camToTimelapse(u){
+  if (/\/timelapse\.html(\?.*)?$/i.test(u)) return u;
+  return u.replace(/\.html(\?.*)?$/i, '/timelapse.html');
+}
+function grabFromCam(camUrl){
+  const tl = camToTimelapse(camUrl);
+  window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});
+  grab(tl, browseStatus);
+}
+
+/* ---------- Paste ---------- */
+$('pasteBtn').addEventListener('pointerdown', async (e)=>{
+  e.preventDefault();
+  try{
+    const txt = await navigator.clipboard.readText();
+    const m = txt.match(/https?:\/\/\S+/);
+    urlInput.value = m ? m[0] : txt.trim();
+    urlInput.focus();
+  }catch(err){
+    setStatus(pasteStatus,'error','Non riesco a leggere gli appunti. Incolla a mano.');
+  }
+});
+$('grabBtn').addEventListener('pointerdown',(e)=>{ e.preventDefault(); grab(urlInput.value.trim(), pasteStatus); });
+urlInput.addEventListener('keydown',(e)=>{ if(e.key==='Enter') grab(urlInput.value.trim(), pasteStatus); });
+
+// Share target / ?url=
 (function(){
   const p = new URLSearchParams(location.search);
   const shared = p.get('url') || p.get('text') || p.get('link');
   if (shared){
     const m = shared.match(/https?:\/\/\S+/);
-    if (m){ urlInput.value = m[0]; grab(); }
+    if (m){ switchTab('paste'); urlInput.value = m[0]; grab(m[0], pasteStatus); }
   }
 })();
 
-// Incolla dagli appunti
-pasteBtn.addEventListener('pointerdown', async (e)=>{
-  e.preventDefault();
-  try{
-    const txt = await navigator.clipboard.readText();
-    if (txt){
-      const m = txt.match(/https?:\/\/\S+/);
-      urlInput.value = m ? m[0] : txt.trim();
-      urlInput.focus();
-    }
-  }catch(err){
-    showStatus('error','Non riesco a leggere gli appunti. Incolla a mano nel campo qui sopra.');
-    urlInput.focus();
-  }
-});
-
-grabBtn.addEventListener('pointerdown',(e)=>{ e.preventDefault(); grab(); });
-urlInput.addEventListener('keydown',(e)=>{ if(e.key==='Enter') grab(); });
-
-async function grab(){
-  const url = urlInput.value.trim();
+/* ---------- Extraction ---------- */
+async function grab(url, statusEl){
   resultsEl.innerHTML = '';
-  if (!/^https?:\/\//i.test(url)){
-    showStatus('error','Inserisci un link valido che inizia con http.');
-    return;
-  }
-  grabBtn.disabled = true;
-  showStatus('loading','Analizzo la pagina...');
+  if (!/^https?:\/\//i.test(url)){ setStatus(statusEl,'error','Inserisci un link valido.'); return; }
+  // se e' una pagina webcam (non timelapse), passa al timelapse
+  if (!/\/timelapse\.html/i.test(url) && /\/webcam\//i.test(url)) url = camToTimelapse(url);
+
+  setStatus(statusEl,'loading','Analizzo la pagina...');
   try{
     const res = await fetch(PROXY + '?url=' + encodeURIComponent(url));
     const data = await res.json();
-    if (!data.ok){
-      showStatus('error', data.error || 'Errore nel recupero della pagina.');
-      grabBtn.disabled = false; return;
+    if (!data.ok){ setStatus(statusEl,'error', data.error || 'Errore.'); return; }
+    if (!data.videos || !data.videos.length){
+      setStatus(statusEl,'error','Nessun video trovato. Carico la diagnostica...');
+      await showDiagnostics(url); return;
     }
-    if (!data.videos || data.videos.length === 0){
-      showStatus('error','Nessun video trovato con i metodi automatici. Carico la diagnostica...');
-      await showDiagnostics(url);
-      grabBtn.disabled = false; return;
-    }
-    hideStatus();
+    clearStatus(statusEl);
     renderResults(data.videos, data.slug || 'timelapse');
   }catch(err){
-    showStatus('error','Connessione fallita. Riprova tra poco. ('+err.message+')');
-  }
-  grabBtn.disabled = false;
-}
-
-async function showDiagnostics(url){
-  try{
-    const res = await fetch(PROXY + '?debug=1&url=' + encodeURIComponent(url));
-    const d = await res.json();
-    if (!d.ok){ showStatus('error','Diagnostica non disponibile: '+(d.error||'')); return; }
-    hideStatus();
-
-    let html = '<div class="result-card" style="border-color:#3a4a5f">';
-    html += '<div class="result-top"><span class="badge" style="background:rgba(0,180,255,.15);color:var(--accent2)">DIAGNOSTICA</span>';
-    html += '<span class="result-type">HTTP '+d.http_code+' &middot; '+(d.html_length||0)+' byte</span></div>';
-
-    html += '<p class="hls-note" style="margin:.2rem 0 .6rem;color:var(--text)">Fai uno screenshot di questa schermata e mandalo. Serve a capire come la pagina carica il video.</p>';
-
-    if (d.nkeys && d.nkeys.length){
-      html += '<div style="margin-bottom:.6rem"><b style="color:var(--accent);font-size:.8rem">nkey:</b> <span class="result-url" style="display:inline-block;margin:0">'+d.nkeys.join(', ')+'</span></div>';
-    }
-
-    html += '<div style="font-size:.78rem;color:var(--accent);font-weight:600;margin:.4rem 0 .3rem">SCRIPT ('+ (d.scripts?d.scripts.length:0) +')</div>';
-    html += '<div class="result-url" style="max-height:150px">'+(d.scripts&&d.scripts.length? d.scripts.join('<br>') : '(nessuno)')+'</div>';
-
-    if (d.iframes && d.iframes.length){
-      html += '<div style="font-size:.78rem;color:var(--accent);font-weight:600;margin:.6rem 0 .3rem">IFRAME</div>';
-      html += '<div class="result-url" style="max-height:100px">'+d.iframes.join('<br>')+'</div>';
-    }
-
-    html += '<div style="font-size:.78rem;color:var(--accent);font-weight:600;margin:.6rem 0 .3rem">RIFERIMENTI VIDEO ('+(d.hits?d.hits.length:0)+')</div>';
-    if (d.hits && d.hits.length){
-      html += '<div class="result-url" style="max-height:280px">';
-      d.hits.forEach(h=>{ html += '<div style="margin-bottom:.5rem"><b style="color:#ffc93c">['+h.kw+']</b> '+escapeHtml(h.text)+'</div>'; });
-      html += '</div>';
-    } else {
-      html += '<div class="result-url">Nessun riferimento a mp4/m3u8/video nella pagina servita. Il video arriva quasi certamente da una chiamata separata protetta.</div>';
-    }
-    html += '</div>';
-    resultsEl.innerHTML = html;
-  }catch(err){
-    showStatus('error','Diagnostica fallita: '+err.message);
+    setStatus(statusEl,'error','Connessione fallita. ('+err.message+')');
   }
 }
 
-function escapeHtml(s){
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
+/* ---------- Results + player ---------- */
 function renderResults(videos, slug){
-  const now = new Date();
-  const pad = n => String(n).padStart(2,'0');
-  const dateStr = now.getFullYear() + pad(now.getMonth()+1) + pad(now.getDate());
-  const timeStr = pad(now.getHours()) + pad(now.getMinutes()) + pad(now.getSeconds());
+  resultsEl.innerHTML = '';
+  const now = new Date(), pad = n => String(n).padStart(2,'0');
+  const stamp = now.getFullYear()+pad(now.getMonth()+1)+pad(now.getDate())+'_'+pad(now.getHours())+pad(now.getMinutes())+pad(now.getSeconds());
   const multi = videos.length > 1;
+
   videos.forEach((v,i)=>{
     const isMp4 = /mp4/i.test(v.ext);
     const isHls = /m3u8/i.test(v.ext);
-    const isSkyline = /skylinewebcams\.com/i.test(v.url);
-    const suffix = multi ? ('_' + (i+1)) : '';
-    const ext = isMp4 ? '.mp4' : (isHls ? '.m3u8' : '.mp4');
-    const fname = slug + '_' + dateStr + '_' + timeStr + suffix + ext;
+    const isSky = /skylinewebcams\.com/i.test(v.url);
+    const suffix = multi ? ('_'+(i+1)) : '';
+    const baseName = slug + '_' + stamp + suffix;
 
     const card = document.createElement('div');
     card.className = 'result-card';
 
     let actions = '';
-    if (isMp4 && isSkyline){
-      const dl = PROXY + '?dl=1&url=' + encodeURIComponent(v.url) + '&name=' + encodeURIComponent(fname);
-      actions += '<a class="btn btn-primary" href="'+dl+'">'
-        +'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>'
-        +'Scarica</a>';
+    if (isMp4 && isSky){
+      const dl = PROXY + '?dl=1&url=' + encodeURIComponent(v.url) + '&name=' + encodeURIComponent(baseName+'.mp4');
+      actions += '<a class="btn btn-primary" href="'+dl+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>MP4 originale</a>';
     } else if (isMp4){
-      actions += '<a class="btn btn-primary" href="'+v.url+'" download="'+fname+'" target="_blank" rel="noopener">'
-        +'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>'
-        +'Scarica</a>';
+      actions += '<a class="btn btn-primary" href="'+v.url+'" download="'+baseName+'.mp4" target="_blank" rel="noopener">MP4 originale</a>';
     }
     actions += '<a class="btn btn-secondary" href="'+v.url+'" target="_blank" rel="noopener">Apri diretto</a>';
-    actions += '<button class="btn btn-secondary copy-btn" data-url="'+encodeURIComponent(v.url)+'">Copia URL</button>';
 
     card.innerHTML =
-      '<div class="result-top">'
-      +'<span class="badge '+(isHls?'hls':'')+'">'+v.ext+'</span>'
-      +'<span class="result-type">'+v.type+'</span>'
-      +'</div>'
-      +'<div class="result-url">'+v.url+'</div>'
-      +'<div class="result-actions">'+actions+'</div>'
-      +(isHls ? '<p class="hls-note">Questo &egrave; uno stream HLS (live). Non &egrave; un file scaricabile in un tap: serve un player o ffmpeg. Il timelapse vero &egrave; di solito un file MP4.</p>' : '');
+      '<div class="rtop"><span class="badge '+(isHls?'hls':'')+'">'+v.ext+'</span><span class="rtype">'+v.type+'</span></div>'
+      + '<div class="rurl">'+v.url+'</div>'
+      + '<div class="ractions">'+actions+'</div>'
+      + (isHls ? '<p class="hls-note">Stream HLS (live): non scaricabile in un tap. Il timelapse vero &egrave; un MP4.</p>' : '');
 
     resultsEl.appendChild(card);
+
+    // Player + velocita/formato solo per MP4 skyline (stream stesso dominio)
+    if (isMp4 && isSky){
+      buildEncoder(card, v.url, baseName);
+    }
+  });
+}
+
+function buildEncoder(card, mp4url, baseName){
+  const streamUrl = PROXY + '?stream=1&url=' + encodeURIComponent(mp4url);
+  const wrap = document.createElement('div');
+  wrap.style.marginTop = '.8rem';
+
+  // formati supportati
+  const fmts = [];
+  if (window.MediaRecorder){
+    if (MediaRecorder.isTypeSupported('video/mp4')) fmts.push({label:'MP4', mime:'video/mp4', ext:'mp4'});
+    if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9')) fmts.push({label:'WebM', mime:'video/webm;codecs=vp9', ext:'webm'});
+    else if (MediaRecorder.isTypeSupported('video/webm')) fmts.push({label:'WebM', mime:'video/webm', ext:'webm'});
+  }
+
+  let speed = 1, fmt = fmts[0] || null;
+
+  const speedChips = SPEEDS.map(s=>'<button class="chip'+(s===1?' active':'')+'" data-speed="'+s+'">'+ (s===1?'1x':(s+'x')) +'</button>').join('');
+  const fmtChips = fmts.length ? fmts.map((f,idx)=>'<button class="chip'+(idx===0?' active':'')+'" data-fmt="'+idx+'">'+f.label+'</button>').join('') : '<span class="hls-note">Conversione non supportata su questo browser. Usa MP4 originale.</span>';
+
+  wrap.innerHTML =
+    '<video class="preview" controls playsinline preload="metadata" src="'+streamUrl+'"></video>'
+    + '<div class="ctrl-group"><div class="ctrl-title">Velocit&agrave;</div><div class="chips speedchips">'+speedChips+'</div></div>'
+    + '<div class="ctrl-group"><div class="ctrl-title">Formato</div><div class="chips fmtchips">'+fmtChips+'</div></div>'
+    + '<div class="ractions" style="margin-top:.6rem">'
+    +   (fmts.length ? '<button class="btn btn-primary encBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Scarica elaborato</button>' : '')
+    +   '</div>'
+    + '<div class="enc-progress"><i></i></div>'
+    + '<p class="hls-note encMsg"></p>';
+
+  card.appendChild(wrap);
+
+  const video = wrap.querySelector('video');
+  const prog = wrap.querySelector('.enc-progress');
+  const progBar = wrap.querySelector('.enc-progress > i');
+  const encMsg = wrap.querySelector('.encMsg');
+
+  wrap.querySelectorAll('.speedchips .chip').forEach(c=>{
+    c.addEventListener('click', ()=>{
+      speed = parseFloat(c.dataset.speed);
+      wrap.querySelectorAll('.speedchips .chip').forEach(x=>x.classList.remove('active'));
+      c.classList.add('active');
+      video.playbackRate = speed; // anteprima immediata
+    });
+  });
+  wrap.querySelectorAll('.fmtchips .chip').forEach(c=>{
+    c.addEventListener('click', ()=>{
+      fmt = fmts[parseInt(c.dataset.fmt)];
+      wrap.querySelectorAll('.fmtchips .chip').forEach(x=>x.classList.remove('active'));
+      c.classList.add('active');
+    });
   });
 
-  resultsEl.querySelectorAll('.copy-btn').forEach(b=>{
-    b.addEventListener('pointerdown', (e)=>{
-      e.preventDefault();
-      const u = decodeURIComponent(b.dataset.url);
-      navigator.clipboard.writeText(u).then(()=>{
-        const t = b.textContent; b.textContent = 'Copiato!';
-        setTimeout(()=>b.textContent = t, 1500);
-      });
+  const encBtn = wrap.querySelector('.encBtn');
+  if (encBtn){
+    encBtn.addEventListener('click', async ()=>{
+      if (!fmt){ encMsg.textContent='Nessun formato disponibile.'; return; }
+      encBtn.disabled = true;
+      encMsg.textContent = 'Elaborazione in corso... tieni la pagina aperta.';
+      prog.classList.add('show');
+      try{
+        await recordAtSpeed(video, streamUrl, speed, fmt, baseName+'_'+speed+'x.'+fmt.ext, p=>{ progBar.style.width=(p*100).toFixed(0)+'%'; });
+        encMsg.textContent = 'Fatto. Controlla i Download.';
+      }catch(err){
+        encMsg.textContent = 'Errore: '+err.message+'. Prova MP4 originale.';
+      }
+      prog.classList.remove('show'); progBar.style.width='0';
+      encBtn.disabled = false;
+    });
+  }
+}
+
+function recordAtSpeed(previewVideo, streamUrl, speed, fmt, outName, onProgress){
+  return new Promise((resolve, reject)=>{
+    // usa un video dedicato per non disturbare l'anteprima
+    const v = document.createElement('video');
+    v.src = streamUrl; v.muted = true; v.playsInline = true; v.preload = 'auto';
+    v.addEventListener('error', ()=>reject(new Error('caricamento video')));
+    v.addEventListener('loadedmetadata', ()=>{
+      let stream;
+      try{
+        stream = v.captureStream ? v.captureStream() : (v.mozCaptureStream ? v.mozCaptureStream() : null);
+      }catch(e){ return reject(new Error('cattura non permessa')); }
+      if (!stream) return reject(new Error('captureStream non disponibile'));
+
+      let rec;
+      try{ rec = new MediaRecorder(stream, {mimeType: fmt.mime}); }
+      catch(e){ return reject(new Error('formato non supportato')); }
+
+      const chunks = [];
+      rec.ondataavailable = e=>{ if (e.data && e.data.size) chunks.push(e.data); };
+      rec.onstop = ()=>{
+        try{
+          const blob = new Blob(chunks, {type: fmt.mime});
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = outName;
+          document.body.appendChild(a); a.click(); a.remove();
+          setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
+          resolve();
+        }catch(e){ reject(e); }
+      };
+
+      const dur = isFinite(v.duration) && v.duration>0 ? v.duration : 0;
+      const pi = setInterval(()=>{ if (dur) onProgress(Math.min(1, v.currentTime/dur)); }, 250);
+
+      v.playbackRate = speed;
+      v.onended = ()=>{ clearInterval(pi); onProgress(1); try{ rec.stop(); }catch(e){} };
+      rec.start();
+      v.play().catch(err=>{ clearInterval(pi); reject(new Error('play bloccato')); });
+
+      // sicurezza: stop massimo dopo (durata/velocita + 5s)
+      const maxMs = dur ? ((dur/speed)*1000 + 8000) : 120000;
+      setTimeout(()=>{ if (rec.state!=='inactive'){ clearInterval(pi); try{rec.stop();}catch(e){} } }, maxMs);
     });
   });
 }
+
+/* ---------- Diagnostics ---------- */
+async function showDiagnostics(url){
+  try{
+    const res = await fetch(PROXY + '?debug=1&url=' + encodeURIComponent(url));
+    const d = await res.json();
+    if (!d.ok){ return; }
+    let html = '<div class="result-card" style="border-color:#3a4a5f">';
+    html += '<div class="rtop"><span class="badge" style="background:rgba(0,180,255,.15);color:var(--accent2)">DIAGNOSTICA</span><span class="rtype">HTTP '+d.http_code+' &middot; '+(d.html_length||0)+' byte</span></div>';
+    html += '<p class="hls-note" style="color:var(--text)">Fai uno screenshot e mandalo se il video non viene trovato.</p>';
+    if (d.nkeys && d.nkeys.length) html += '<div class="rurl" style="max-height:none">nkey: '+d.nkeys.join(', ')+'</div>';
+    html += '<div class="ctrl-title" style="margin:.5rem 0 .3rem">Script</div><div class="rurl" style="max-height:150px">'+((d.scripts&&d.scripts.length)?d.scripts.join('<br>'):'(nessuno)')+'</div>';
+    html += '<div class="ctrl-title" style="margin:.5rem 0 .3rem">Riferimenti video ('+((d.hits&&d.hits.length)||0)+')</div>';
+    if (d.hits && d.hits.length){
+      html += '<div class="rurl" style="max-height:260px">';
+      d.hits.forEach(h=>{ html += '<div style="margin-bottom:.4rem"><b style="color:#ffc93c">['+h.kw+']</b> '+escapeHtml(h.text)+'</div>'; });
+      html += '</div>';
+    } else html += '<div class="rurl">Nessun riferimento a mp4/m3u8 nella pagina servita.</div>';
+    html += '</div>';
+    resultsEl.innerHTML = html;
+  }catch(err){}
+}
+
+function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* ---------- Start ---------- */
+doBrowse(START, true);
 </script>
 </body>
 </html>
