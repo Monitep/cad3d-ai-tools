@@ -1,0 +1,38 @@
+name: CG50 calculator checks
+on:
+  pull_request:
+    paths:
+      - "cg50/**"
+      - ".github/tests/cg50*"
+      - ".github/workflows/cg50-check.yml"
+  push:
+    branches: [main]
+    paths:
+      - "cg50/**"
+      - ".github/tests/cg50*"
+      - ".github/workflows/cg50-check.yml"
+permissions:
+  contents: read
+jobs:
+  numerical-and-ui:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Check syntax and numerical behavior
+        run: |
+          node --check cg50/app.js
+          node --check cg50/engine.js
+          node --check cg50/charts.js
+          node --check cg50/help.js
+          node .github/tests/cg50-engine.test.cjs
+      - name: Install browser test tools
+        run: |
+          npm install --no-save --package-lock=false playwright@1.51.1
+          npx playwright install --with-deps chromium
+      - name: Run responsive browser checks
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/cg50-server.log 2>&1 &
+          node .github/tests/cg50-ui.cjs
