@@ -37,6 +37,8 @@ Il workflow FTP già presente pubblica la cartella dopo il merge autorizzato in 
 
 La guida interna ha **21 sezioni in italiano e inglese**, ricerca, esempi caricabili e tutorial. Le etichette dei moduli, i testi d'aiuto e le informazioni di copertura cambiano lingua; alcuni errori tecnici delle librerie restano in inglese.
 
+Sul telefono i tasti della calcolatrice inseriscono e modificano la formula senza aprire la tastiera di sistema. Toccare direttamente il campo formula permette di scrivere, selezionare e incollare con la tastiera del dispositivo.
+
 ## Differenze e funzioni non implementate
 
 - Nessuna emulazione firmware, tastiera esatta Casio, modalità esame, USB, E-CON4, sensori o formato .g3m/.g3a/eActivity.
@@ -76,7 +78,7 @@ npx playwright install chromium
 node .github/tests/cg50-ui.cjs
 ```
 
-`CG50_URL` cambia il server; `CG50_CHROMIUM` indica un browser Chromium già installato. La suite verifica funzionamento, memoria, persistenza, errori, lingua, tema, guida e assenza di overflow orizzontale a 320, 390, 768 e 1440 px. Python è verificato separatamente perché richiede rete. GitHub Actions esegue i test numerici e browser nella PR, senza accedere a secrets FTP.
+`CG50_URL` cambia il server; `CG50_CHROMIUM` indica un browser Chromium già installato. La suite verifica funzionamento, memoria, persistenza, errori, lingua, tema, guida e assenza di overflow orizzontale a 320, 390, 768 e 1440 px. I test touch verificano che tasti, catalogo, esempi e cronologia non attivino il campo formula, mantenendo modifica del cursore e digitazione diretta. Il browser headless non mostra la tastiera del sistema operativo: la verifica automatica copre gli eventi di focus che la attiverebbero. Python è verificato separatamente perché richiede rete. GitHub Actions esegue i test numerici e browser nella PR, senza accedere a secrets FTP.
 
 ## Sorgenti di riferimento e dipendenze
 

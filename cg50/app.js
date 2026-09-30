@@ -729,14 +729,18 @@ function setExpr(value) {
   expression = value;
   save("expression", expression);
   if ($("#expression")) {
-    $("#expression").value = value;
-    $("#expression").focus();
+    const el = $("#expression");
+    el.value = value;
+    el.setSelectionRange(value.length, value.length);
   }
   finished = false;
 }
 function insert(text) {
   const el = $("#expression");
   if (!el) return;
+  // Keypad input must not open a phone's software keyboard. Directly tapping
+  // the expression still focuses it for native typing, selection and paste.
+  if (document.activeElement === el) el.blur();
   let start = el.selectionStart,
     end = el.selectionEnd;
   if (finished) {
@@ -750,7 +754,6 @@ function insert(text) {
     finished = false;
   }
   el.value = el.value.slice(0, start) + text + el.value.slice(end);
-  el.focus();
   el.setSelectionRange(start + text.length, start + text.length);
   expression = el.value;
   save("expression", expression);
@@ -1412,6 +1415,7 @@ function wire() {
         (b.onclick = () => {
           const key = b.dataset.key,
             el = $("#expression");
+          if (document.activeElement === el) el.blur();
           if (key === "shift") {
             shift = !shift;
             b.classList.toggle("active", shift);
@@ -1434,7 +1438,6 @@ function wire() {
             return;
           }
           if (key === "left" || key === "right") {
-            el.focus();
             const pos = Math.max(
               0,
               Math.min(
@@ -1455,11 +1458,8 @@ function wire() {
                 0,
                 start === end ? Math.max(0, start - 1) : start,
               ) + el.value.slice(end);
-            el.focus();
-            el.setSelectionRange(
-              Math.max(0, start - 1),
-              Math.max(0, start - 1),
-            );
+            const pos = start === end ? Math.max(0, start - 1) : start;
+            el.setSelectionRange(pos, pos);
             expression = el.value;
             save("expression", expression);
             return;

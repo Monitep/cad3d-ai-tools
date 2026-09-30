@@ -114,8 +114,8 @@ export function helpTopics(lang) {
         ) +
         list([
           L(
-            "Nel calcolo scientifico scrivi la formula oppure usa i tasti. Premi EXE o Invio.",
-            "In the scientific calculator, type a formula or use the keys. Press EXE or Enter.",
+            "Nel calcolo scientifico usa i tasti senza aprire la tastiera del telefono. Per scrivere o incollare con la tastiera del dispositivo, tocca direttamente il campo formula. Premi EXE o Invio per calcolare.",
+            "Use the calculator keys without opening your phone's keyboard. To type or paste with your device keyboard, tap the expression field directly. Press EXE or Enter to calculate.",
           ),
           L(
             "SHIFT seleziona la funzione secondaria indicata sopra il tasto e poi si disattiva. OPTN apre il catalogo.",
