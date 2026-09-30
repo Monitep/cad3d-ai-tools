@@ -19,6 +19,93 @@ const run = async () => {
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
   try {
+    // Real touch events: keypad actions must never focus the editable field,
+    // which would summon the native keyboard on Android/iOS. Headless browsers
+    // cannot display an OS keyboard, so also track transient focus events.
+    const phone = await browser.newPage({
+      viewport: { width: 390, height: 844 },
+      isMobile: true,
+      hasTouch: true,
+    });
+    phone.on("pageerror", (e) => errors.push(e.message));
+    await phone.goto(base);
+    await phone.waitForSelector("#expression");
+    const expr = phone.locator("#expression");
+    await phone.evaluate(() => {
+      window.expressionFocusCount = 0;
+      document.querySelector("#expression").addEventListener("focus", () => {
+        window.expressionFocusCount++;
+      });
+    });
+    const tapWithoutKeyboard = async (selector) => {
+      const before = await phone.evaluate(() => window.expressionFocusCount);
+      await phone.locator(selector).tap();
+      assert.equal(
+        await phone.evaluate(() => window.expressionFocusCount),
+        before,
+        `${selector}: unexpectedly focused the expression`,
+      );
+      assert.equal(
+        await expr.evaluate((el) => document.activeElement === el),
+        false,
+      );
+    };
+    const key = (value) => tapWithoutKeyboard(`[data-key="${value}"]`);
+    await key("clear");
+    for (const value of ["7", "*", "8", "execute"]) await key(value);
+    await phone.waitForFunction(
+      () => document.querySelector("#calc-result").textContent === "56",
+    );
+    for (const value of ["+", "2", "execute"]) await key(value);
+    await phone.waitForFunction(
+      () => document.querySelector("#calc-result").textContent === "58",
+    );
+    await key("clear");
+    for (const value of ["1", "2", "3", "left", "9"])
+      await key(value);
+    assert.equal(await expr.inputValue(), "1293");
+    await key("delete");
+    assert.equal(await expr.inputValue(), "123");
+    await key("right");
+    await key("4");
+    assert.equal(await expr.inputValue(), "1234");
+    await expr.evaluate((el) => el.setSelectionRange(1, 3));
+    await key("delete");
+    assert.equal(await expr.inputValue(), "14");
+    await key("9");
+    assert.equal(await expr.inputValue(), "194");
+    await expr.evaluate((el) => el.setSelectionRange(1, 2));
+    await key("8");
+    assert.equal(await expr.inputValue(), "184");
+    await key("clear");
+    await key("shift");
+    await key("sin(");
+    assert.equal(await expr.inputValue(), "asin(");
+    await key("catalog");
+    await tapWithoutKeyboard('[data-insert="gcd("]');
+    assert.equal(await expr.inputValue(), "asin(gcd(");
+    await key("catalog");
+    await tapWithoutKeyboard('[data-demo="trig"]');
+    await phone.waitForFunction(
+      () => document.querySelector("#calc-result").textContent === "1",
+    );
+    await tapWithoutKeyboard('[data-history="0"]');
+    // Native typing remains opt-in by directly tapping the expression.
+    await expr.tap();
+    assert.equal(
+      await expr.evaluate((el) => document.activeElement === el),
+      true,
+    );
+    await expr.fill("2+3");
+    await expr.press("Enter");
+    await phone.waitForFunction(
+      () => document.querySelector("#calc-result").textContent === "5",
+    );
+    // Return from native typing to the keypad without reopening the field.
+    await key("clear");
+    await key("6");
+    assert.equal(await expr.inputValue(), "6");
+    await phone.close();
     await page.goto(base);
     await page.waitForSelector("#expression");
     const navigate = async (mode) => {
@@ -204,7 +291,7 @@ const run = async () => {
     assert.equal(await page.locator("#content img").count(), 0);
     assert.deepEqual(errors, []);
     console.log(
-      "Browser checks passed: calculation, memory, persistence, errors, modes, language, theme, help, 320/390/768/1440 px layouts.",
+      "Browser checks passed: touch keypad without expression focus, opt-in native typing, cursor editing, calculation, memory, persistence, errors, modes, language, theme, help, 320/390/768/1440 px layouts.",
     );
   } finally {
     await browser.close();
