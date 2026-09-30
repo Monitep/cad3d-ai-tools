@@ -48,7 +48,7 @@ const L = (it, en) => (lang === "it" ? it : en);
 const modes = [
   [
     "calc",
-    "⌗",
+    "#",
     "Calcolo scientifico",
     "Scientific calculator",
     "RUN · MATRIX",
@@ -824,7 +824,7 @@ function graphUI() {
   return `<div class="two-col">${card(L("Funzioni", "Functions"), rows + `<div class="fields">${field("min", L("Da x / t", "From x / t"), "number")}${field("max", L("A x / t", "To x / t"), "number")}${field("ymin", "y min", "number")}${field("ymax", "y max", "number")}</div><div class="parameter">${field("a", L("Parametro a (grafico dinamico)", "Parameter a (dynamic graph)"), "number")}<input id="dynamic-a" type="range" min="-5" max="5" step="0.1" value="${esc(get("a"))}" aria-label="Parameter a"></div><div class="row">${btn("run", L("Disegna", "Plot"))}${btn("animate", L("▶ Anima a", "▶ Animate a"), true)}</div>`)}<div class="stack">${card(
     L("Piano cartesiano", "Coordinate plane"),
     chart() +
-      `<div class="canvas-actions">${btn("zoom-in", "＋", true)}${btn("zoom-out", "−", true)}${btn("auto-range", L("Adatta", "Fit"), true)}${btn("reset-view", L("Ripristina", "Reset"), true)}${btn("png", "PNG ↓", true)}</div><div id="legend" class="chart-caption"></div><div class="fields">${select(
+      `<div class="canvas-actions">${btn("zoom-in", "+", true)}${btn("zoom-out", "−", true)}${btn("auto-range", L("Adatta", "Fit"), true)}${btn("reset-view", L("Ripristina", "Reset"), true)}${btn("png", "PNG ↓", true)}</div><div id="legend" class="chart-caption"></div><div class="fields">${select(
         "analysis",
         L("Analizza Y1 (cartesiana)", "Analyze Y1 (Cartesian)"),
         [
