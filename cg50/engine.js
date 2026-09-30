@@ -21,6 +21,7 @@
       "zeros",
       "identity",
       "random",
+      "randomInt",
     ].map((k) => [k, m[k]]),
   );
   let angle = "RAD";
@@ -190,6 +191,14 @@
           throw Error("random: zero, one or two scalar arguments");
         args.forEach(scalar);
         return native.random(...args);
+      },
+      randomInt: (...args) => {
+        if (!args.length || args.length > 2)
+          throw Error("randomInt: one or two integer arguments required");
+        args.forEach((v) =>
+          integer(v, -Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER),
+        );
+        return native.randomInt(...args);
       },
       log: (v, b = 10) => native.log(v, b),
       ln: (v) => native.log(v),

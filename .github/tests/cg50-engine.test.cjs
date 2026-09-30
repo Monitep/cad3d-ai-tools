@@ -414,6 +414,8 @@ test("input validation and expression sandbox", () => {
   );
   assert.throws(() => calc("ones(100000000,100000000)"));
   assert.throws(() => calc("random([10000000])"));
+  assert.throws(() => calc("randomInt([10000000])"));
+  assert.equal(calc("randomInt(1,2)").value, 1);
   assert.throws(() => calc("[1/0]"));
   assert.throws(() => calc("factorial(10000000)"));
 });
