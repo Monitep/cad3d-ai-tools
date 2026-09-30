@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#143d39" />
+    <meta
+      name="description"
+      content="CG50 Studio by CAD3D.Expert: calcolatrice scientifica e grafica web, con guida italiana e inglese."
+    />
+    <title>CG50 Studio · CAD3D.Expert</title>
+    <link rel="icon" href="icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <a class="skip" href="#workspace">Vai al contenuto / Skip to content</a>
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="../"
+        ><span class="brand-icon">∿</span
+        ><span
+          >CAD3D<span class="brand-dot">.</span>Expert<small
+            >MATHEMATICS LAB</small
+          ></span
+        ></a
+      >
+      <div class="side-caption" id="nav-caption"></div>
+      <nav id="navigation" aria-label="Modalità / Modes"></nav>
+      <div class="side-bottom">
+        <button id="help-side" class="quiet"></button
+        ><span class="version">CG50 Studio · v1.0</span>
+      </div>
+    </aside>
+    <div class="page">
+      <header class="topbar">
+        <button
+          class="icon-button mobile-menu"
+          id="menu"
+          aria-label="Menu"
+          aria-expanded="false"
+        >
+          ☰
+        </button>
+        <div class="product">
+          CG50 <strong>Studio</strong><span class="pill">WEB</span>
+        </div>
+        <div class="header-actions">
+          <button id="language" class="language" aria-label="Switch language">
+            IT <span>/ EN</span>
+          </button>
+          <button id="theme" class="icon-button" aria-label="Tema / Theme">
+            ◐
+          </button>
+          <button id="help" class="help-button">?</button>
+        </div>
+      </header>
+      <main id="workspace" tabindex="-1">
+        <div class="heading">
+          <div>
+            <div class="eyebrow" id="eyebrow"></div>
+            <h1 id="title"></h1>
+            <p id="subtitle"></p>
+          </div>
+          <button id="example" class="button secondary"></button>
+        </div>
+        <div id="content"></div>
+        <footer id="footnote"></footer>
+      </main>
+    </div>
+    <div id="toast" role="status" aria-live="polite"></div>
+    <dialog id="help-dialog">
+      <div class="dialog-top">
+        <div>
+          <div class="eyebrow">CG50 STUDIO</div>
+          <h2 id="help-title"></h2>
+        </div>
+        <button id="close-help" class="icon-button" aria-label="Chiudi / Close">
+          ✕
+        </button>
+      </div>
+      <input id="help-search" type="search" autocomplete="off" />
+      <div id="help-content"></div>
+    </dialog>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
