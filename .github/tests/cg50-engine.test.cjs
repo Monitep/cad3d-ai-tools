@@ -46,6 +46,18 @@ test("complex values, arrays, bitwise and stored variables", () => {
   close(calc("bitAnd(12,10)").value, 8);
   close(calc("A+Ans", "RAD", { A: 4, Ans: 3 }).value, 7);
   assert.deepEqual(calc("A=12").variables, { A: 12 });
+  const fraction = structuredClone(calc("A=fraction(1,3)"));
+  assert.doesNotThrow(() => JSON.stringify(fraction));
+  const saved = JSON.parse(JSON.stringify(fraction));
+  close(
+    calc("A+Ans", "RAD", { ...saved.variables, Ans: saved.value }).value
+      .value === "2/3"
+      ? 2 / 3
+      : NaN,
+    2 / 3,
+  );
+  const complexArray = structuredClone(calc("[1+i,2-i]").value);
+  close(calc("re(sum(Ans))", "RAD", { Ans: complexArray }).value, 3);
 });
 test("numerical calculus, reversed integration and oscillatory formula", () => {
   close(calc('diff("x^3",2)').value, 12, 1e-7);

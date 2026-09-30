@@ -52,6 +52,17 @@ const run = async () => {
     );
     await page.locator("#fraction-toggle").click();
     assert.equal(await page.locator("#calc-result").textContent(), "5/6");
+    await page.locator("#expression").fill("fraction(1,3)");
+    await page.locator("#expression").press("Enter");
+    await page.waitForFunction(() =>
+      document.querySelector("#calc-result").textContent.startsWith("0.3333"),
+    );
+    await page.reload();
+    await page.locator("#expression").fill("Ans+fraction(1,3)");
+    await page.locator("#expression").press("Enter");
+    await page.waitForFunction(() =>
+      document.querySelector("#calc-result").textContent.startsWith("0.6666"),
+    );
     const historyCount = await page.locator(".history-item").count();
     await page.reload();
     assert.equal(await page.locator(".history-item").count(), historyCount);

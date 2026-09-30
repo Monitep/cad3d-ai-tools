@@ -99,10 +99,16 @@
     return node.compile();
   }
   function scopeOf(scope = {}) {
+    const revive = (v) => {
+      if (v?.mathjs === "Complex") return m.complex(v.re, v.im);
+      if (v?.mathjs === "Fraction")
+        return m.fraction(v.value ?? `${v.n}/${v.d}`);
+      if (Array.isArray(v)) return v.map(revive);
+      return v;
+    };
     const out = {};
     for (const [k, v] of Object.entries(scope))
-      if (variables.has(k))
-        out[k] = v && v.mathjs === "Complex" ? m.complex(v.re, v.im) : v;
+      if (variables.has(k)) out[k] = revive(v);
     return out;
   }
   function evaluate(expr, scope = {}, assignment = false) {
@@ -264,6 +270,7 @@
   m.createUnit("ha", "10000 m^2");
   function plain(v) {
     if (v && v.isComplex) return { mathjs: "Complex", re: v.re, im: v.im };
+    if (v && v.isFraction) return { mathjs: "Fraction", value: v.toFraction() };
     if (v && v.toArray) return v.toArray().map(plain);
     if (Array.isArray(v)) return v.map(plain);
     return v;
@@ -940,7 +947,7 @@
         const next = {};
         for (const [k, v] of Object.entries(scope))
           if (/^[A-Z]$/.test(k)) next[k] = plain(v);
-        let fractional = null;
+        let fractional = result?.isFraction ? result.toFraction() : null;
         if (
           typeof result === "number" &&
           Number.isFinite(result) &&
@@ -952,7 +959,7 @@
           } catch {}
         }
         return {
-          text: format(result, p),
+          text: format(result?.isFraction ? m.number(result) : result, p),
           value: plain(result),
           fraction: fractional,
           variables: next,
