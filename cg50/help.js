@@ -259,8 +259,8 @@ export function helpTopics(lang) {
       body:
         list([
           L(
-            "1. Carica l’esempio: Y1=a*sin(x), Y2=cos(x), intervallo −2π…2π; l’esempio imposta RAD.",
-            "1. Load the example: Y1=a*sin(x), Y2=cos(x), interval −2π…2π; the example sets RAD.",
+            "1. Scegli l’unità angolare direttamente nei grafici: RAD (radianti), DEG (gradi), GRA (gradi centesimali). È condivisa con la calcolatrice e compare nella legenda e nel PNG. Carica l’esempio: Y1=a*sin(x), Y2=cos(x), intervallo −2π…2π; l’esempio imposta RAD.",
+            "1. Select the angle unit directly in graphs: RAD (radians), DEG (degrees), GRA (gradians). It is shared with the calculator and appears in the legend and PNG. Load the example: Y1=a*sin(x), Y2=cos(x), interval −2π…2π; the example sets RAD.",
           ),
           L(
             "2. Muovi il cursore a: l’ampiezza di Y1 cambia. Premi «Anima a» per una scansione continua; premi «Ferma» per interrompere.",
@@ -283,6 +283,18 @@ export function helpTopics(lang) {
             "6. Export PNG to save your graph.",
           ),
         ]) +
+        p(
+          L(
+            "Prova il pulsante «sin(1/x) in radianti»: imposta RAD, x tra −1 e 1, y tra −1.1 e 1.1. La funzione non è definita in zero e oscilla infinite volte nelle sue vicinanze. In DEG, sin(1/10) vale circa 0.001745; in RAD circa 0.099833: i due grafici sono diversi.",
+            "Try the “sin(1/x) in radians” button: it sets RAD, x from −1 to 1, and y from −1.1 to 1.1. The function is undefined at zero and oscillates infinitely often nearby. In DEG, sin(1/10) is about 0.001745; in RAD about 0.099833: the plots differ.",
+          ),
+        ) +
+        p(
+          L(
+            "Le curve cartesiane usano campionamento adattivo alla vista: più punti dove la curva cambia rapidamente, con nuovi campioni dopo zoom, spostamento o ridimensionamento. I punti fuori dal dominio reale e i tratti non risolti interrompono la curva. Un avviso invita a ingrandire quando il dettaglio supera la risoluzione o il limite di calcolo. Nessun numero finito di campioni può rappresentare tutte le oscillazioni di sin(1/x), né garantire di rilevare ogni discontinuità o dettaglio di una funzione arbitraria. Polari e parametriche mantengono il campionamento uniforme.",
+            "Cartesian curves use view-adaptive sampling: more points where the curve changes rapidly, with fresh samples after zoom, pan or resize. Points outside the real domain and unresolved spans break the curve. A notice suggests zooming when detail exceeds display resolution or the calculation limit. No finite sampler can show every oscillation of sin(1/x), or guarantee detection of every discontinuity or feature of an arbitrary function. Polar and parametric plots retain uniform sampling.",
+          ),
+        ) +
         p(
           L(
             "Grafico polare: r(t)=2*cos(3*t), RAD, t da 0 a 2*pi (inserisci i limiti come numeri, 0 e 6.283185307). Parametrico: x(t)=3*cos(t), y(t)=2*sin(t). Le disuguaglianze ombreggiano sopra/sotto f(x). La ricerca delle radici è numerica e non garantisce completezza; i grafici sono campionati e possono omettere dettagli fini.",

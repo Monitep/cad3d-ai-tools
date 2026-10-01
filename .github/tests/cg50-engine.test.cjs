@@ -337,6 +337,113 @@ test("tables, simultaneous recurrence and graph sampling", () => {
     72,
   );
 });
+test("graph angle units agree with scalar calculations", () => {
+  for (const angle of ["DEG", "RAD", "GRA"]) {
+    const curve = run({
+      task: "graph",
+      angle,
+      rows: [{ expr: "sin(1/x)" }],
+      min: 0,
+      max: 20,
+      viewport: { width: 400, height: 320, ymin: -1.1, ymax: 1.1 },
+    })[0];
+    assert.equal(curve.angle, angle);
+    close(
+      curve.points.find((p) => p?.[0] === 10)[1],
+      calc("sin(1/10)", angle).value,
+    );
+  }
+});
+test("adaptive graphs resolve oscillations and resample a zoomed view", () => {
+  const sample = (min, max) =>
+    run({
+      task: "graph",
+      angle: "RAD",
+      rows: [{ expr: "sin(1/x)" }],
+      min,
+      max,
+      viewport: { width: 400, height: 320, ymin: -1.1, ymax: 1.1 },
+    })[0];
+  const wide = sample(-1, 1),
+    zoom = sample(0.005, 0.015);
+  assert.ok(wide.points.some((p) => p === null));
+  assert.equal(wide.sampling.limited, true);
+  assert.equal(zoom.sampling.limited, false);
+  assert.ok(zoom.points.length > wide.points.length);
+  for (const curve of [wide, zoom]) {
+    for (const p of curve.points.filter(Boolean)) {
+      assert.notEqual(p[0], 0);
+      close(p[1], Math.sin(1 / p[0]));
+    }
+    assert.ok(curve.points.some((p) => p && p[1] > 0.99));
+    assert.ok(curve.points.some((p) => p && p[1] < -0.99));
+    assert.ok(curve.sampling.evaluations <= 12000);
+  }
+  // Midpoint interpolation accuracy on a resolved view, in display pixels.
+  for (let j = 1; j < zoom.points.length; j++) {
+    const a = zoom.points[j - 1],
+      b = zoom.points[j];
+    const midpoint = (a[0] + b[0]) / 2;
+    const error = Math.abs(Math.sin(1 / midpoint) - (a[1] + b[1]) / 2);
+    assert.ok((error * 320) / 2.2 < 1, `Interpolation error: ${error}`);
+  }
+});
+test("adaptive graphs break at off-grid poles and respect the real domain", () => {
+  for (const [expr, min, max, pole] of [
+    ["1/(x-0.037)", -1, 1, 0.037],
+    ["tan(x)", 1, 2, Math.PI / 2],
+  ]) {
+    const curve = run({
+      task: "graph",
+      angle: "RAD",
+      rows: [{ expr }],
+      min,
+      max,
+      viewport: { width: 400, height: 320, ymin: -5, ymax: 5 },
+    })[0];
+    assert.ok(curve.points.some((p) => p === null));
+    for (let j = 1; j < curve.points.length; j++) {
+      const a = curve.points[j - 1],
+        b = curve.points[j];
+      if (a && b)
+        assert.ok(!(a[0] < pole && b[0] > pole), "Connected across a pole");
+    }
+  }
+  const root = run({
+    task: "graph",
+    rows: [{ expr: "sqrt(x)" }],
+    min: -1,
+    max: 1,
+    viewport: { width: 400, height: 320, ymin: -1, ymax: 1 },
+  })[0];
+  for (const p of root.points.filter(Boolean)) {
+    assert.ok(p[0] >= 0);
+    close(p[1], Math.sqrt(p[0]));
+  }
+});
+test("adaptive graphs stay bounded and preserve smooth curves", () => {
+  const args = {
+    task: "graph",
+    angle: "RAD",
+    min: -1,
+    max: 1,
+    viewport: { width: 400, height: 320, ymin: -1.1, ymax: 1.1 },
+  };
+  const rapid = run({ ...args, rows: [{ expr: "sin(10000*x)" }] })[0];
+  assert.equal(rapid.sampling.limited, true);
+  assert.ok(rapid.sampling.evaluations <= 12000);
+  assert.ok(rapid.points.length < 30000);
+  const smooth = run({ ...args, rows: [{ expr: "x^2" }] })[0];
+  assert.equal(smooth.sampling.limited, false);
+  assert.ok(smooth.points.every(Boolean));
+  assert.throws(() =>
+    run({
+      ...args,
+      rows: [{ expr: "x" }],
+      viewport: { width: Infinity, height: 320, ymin: 0, ymax: 1 },
+    }),
+  );
+});
 test("geometry, conversions including hectares, and base validation", () => {
   const g = run({
     task: "geometry",

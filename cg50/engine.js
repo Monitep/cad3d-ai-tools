@@ -693,6 +693,97 @@
     }
     throw Error("Unsupported finance operation");
   }
+  function adaptiveCurve(f, a, b, viewport) {
+    const width = Math.max(100, Math.min(2000, scalar(viewport.width))),
+      height = Math.max(100, Math.min(1200, scalar(viewport.height))),
+      ymin = scalar(viewport.ymin),
+      ymax = scalar(viewport.ymax);
+    if (ymin >= ymax) throw Error("ymin < ymax");
+    const points = [],
+      cache = new Map(),
+      budget = 12000,
+      fractions = [0.211324865405187, 0.5, 0.788675134594813],
+      pixelY = (p) =>
+        Math.max(
+          -height,
+          Math.min(2 * height, ((p[1] - ymin) / (ymax - ymin)) * height),
+        );
+    let limited = false;
+    function sample(x) {
+      if (cache.has(x)) return cache.get(x);
+      if (cache.size >= budget) {
+        limited = true;
+        return null;
+      }
+      let p = null;
+      try {
+        p = [x, scalar(f(x))];
+      } catch {
+        /* Outside the real domain. */
+      }
+      cache.set(x, p);
+      return p;
+    }
+    function append(p) {
+      if (p || points[points.length - 1] !== null) points.push(p);
+    }
+    function refine(x0, p0, x1, p1, depth) {
+      if (cache.size >= budget) {
+        limited = true;
+        append(null);
+        append(p1);
+        return;
+      }
+      // Nonuniform probes reduce regular-grid aliasing. No finite sampler can
+      // resolve infinite oscillations: unresolved subpixel spans stay broken.
+      const probes = fractions.map((t) => sample(x0 + (x1 - x0) * t)),
+        all = [p0, ...probes, p1];
+      if (all.every((p) => !p)) {
+        append(null);
+        return;
+      }
+      const valid = all.every(Boolean),
+        error = valid
+          ? Math.max(
+              ...probes.map((p, j) =>
+                Math.abs(
+                  pixelY(p) -
+                    (pixelY(p0) + (pixelY(p1) - pixelY(p0)) * fractions[j]),
+                ),
+              ),
+            )
+          : Infinity;
+      if (valid && error <= 0.65) {
+        probes.forEach(append);
+        append(p1);
+        return;
+      }
+      const middle = x0 + (x1 - x0) / 2,
+        span = ((x1 - x0) / (b - a)) * width;
+      if (depth >= 12 || span <= 0.1 || middle === x0 || middle === x1) {
+        if (valid) limited = true;
+        append(null);
+        append(p1);
+        return;
+      }
+      refine(x0, p0, middle, probes[1], depth + 1);
+      refine(middle, probes[1], x1, p1, depth + 1);
+    }
+    const intervals = Math.max(50, Math.min(400, Math.ceil(width / 2))),
+      seeds = Array.from(
+        { length: intervals + 1 },
+        (_, j) => a + ((b - a) * j) / intervals,
+      );
+    if (a < 0 && b > 0 && !seeds.includes(0)) seeds.push(0);
+    seeds.sort((x, y) => x - y);
+    append(sample(a));
+    for (let j = 1; j < seeds.length; j++)
+      refine(seeds[j - 1], sample(seeds[j - 1]), seeds[j], sample(seeds[j]), 0);
+    return {
+      points,
+      sampling: { adaptive: true, evaluations: cache.size, limited },
+    };
+  }
   function graph(p) {
     const a = scalar(p.min),
       b = scalar(p.max);
@@ -710,6 +801,15 @@
       );
       const g =
         mode === "parametric" ? fn(row.second, "t", { a: p.a ?? 1 }) : null;
+      if (p.viewport && ["cartesian", "above", "below"].includes(mode)) {
+        curves.push({
+          ...adaptiveCurve(f, a, b, p.viewport),
+          expr: row.expr,
+          type: mode,
+          angle,
+        });
+        continue;
+      }
       const points = [];
       for (let j = 0; j <= count; j++) {
         const v = a + ((b - a) * j) / count;
@@ -726,7 +826,7 @@
           points.push(null);
         }
       }
-      curves.push({ points, expr: row.expr, type: mode });
+      curves.push({ points, expr: row.expr, type: mode, angle });
     }
     if (!curves.length) throw Error("Enter at least one function");
     return curves;

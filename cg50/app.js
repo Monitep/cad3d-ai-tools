@@ -293,7 +293,7 @@ const card = (title, body) =>
   `<section class="card"><div class="card-head"><h2>${title}</h2></div>${body}</section>`;
 const output = '<div id="output" class="output" aria-live="polite"></div>';
 const chart = (id = "chart", preview = false) =>
-  `<div class="chart-wrap ${preview ? "preview" : ""}"><canvas id="${id}" role="img" aria-label="${L("Grafico matematico", "Mathematical graph")}"></canvas><span class="chart-tip">${L("Trascina · zoom con rotella", "Drag · scroll to zoom")}</span></div>`;
+  `<div class="chart-wrap ${preview ? "preview" : ""} ${mode === "graph" ? "graph-plot" : ""}"><canvas id="${id}" role="img" aria-label="${L("Grafico matematico", "Mathematical graph")}"></canvas><span class="chart-tip">${L("Trascina · zoom con rotella", "Drag · scroll to zoom")}</span></div>`;
 function toast(text) {
   $("#toast").textContent = text;
   $("#toast").classList.add("show");
@@ -824,10 +824,20 @@ function graphUI() {
         ["below", "y ≤ f(x)"],
       ],
     )}</div>${field("f" + j, get("type" + j) === "parametric" ? "x(t)" : get("type" + j) === "polar" ? "r(t)" : "f(x)")}${get("type" + j) === "parametric" ? field("second" + j, "y(t)") : ""}</div>`;
-  return `<div class="two-col">${card(L("Funzioni", "Functions"), rows + `<div class="fields">${field("min", L("Da x / t", "From x / t"), "number")}${field("max", L("A x / t", "To x / t"), "number")}${field("ymin", "y min", "number")}${field("ymax", "y max", "number")}</div><div class="parameter">${field("a", L("Parametro a (grafico dinamico)", "Parameter a (dynamic graph)"), "number")}<input id="dynamic-a" type="range" min="-5" max="5" step="0.1" value="${esc(get("a"))}" aria-label="Parameter a"></div><div class="row">${btn("run", L("Disegna", "Plot"))}${btn("animate", L("▶ Anima a", "▶ Animate a"), true)}</div>`)}<div class="stack">${card(
+  const angleSelector = `<label class="field graph-angle"><span>${L("Unità angolare · condivisa con la calcolatrice", "Angle unit · shared with calculator")}</span><select id="graph-angle">${[
+    ["RAD", L("Radianti", "Radians")],
+    ["DEG", L("Gradi", "Degrees")],
+    ["GRA", L("Gradi centesimali", "Gradians")],
+  ]
+    .map(
+      ([value, label]) =>
+        `<option value="${value}" ${angle === value ? "selected" : ""}>${value} · ${label}</option>`,
+    )
+    .join("")}</select></label>`;
+  return `<div class="two-col">${card(L("Funzioni", "Functions"), angleSelector + rows + `<div class="fields">${field("min", L("Da x / t", "From x / t"), "number")}${field("max", L("A x / t", "To x / t"), "number")}${field("ymin", "y min", "number")}${field("ymax", "y max", "number")}</div><div class="parameter">${field("a", L("Parametro a (grafico dinamico)", "Parameter a (dynamic graph)"), "number")}<input id="dynamic-a" type="range" min="-5" max="5" step="0.1" value="${esc(get("a"))}" aria-label="Parameter a"></div><div class="row">${btn("run", L("Disegna", "Plot"))}${btn("animate", L("▶ Anima a", "▶ Animate a"), true)}</div><button id="oscillation-example" class="button-link graph-example">${L("Prova sin(1/x) in radianti ↗", "Try sin(1/x) in radians ↗")}</button>`)}<div class="stack">${card(
     L("Piano cartesiano", "Coordinate plane"),
     chart() +
-      `<div class="canvas-actions">${btn("zoom-in", "+", true)}${btn("zoom-out", "−", true)}${btn("auto-range", L("Adatta", "Fit"), true)}${btn("reset-view", L("Ripristina", "Reset"), true)}${btn("png", "PNG ↓", true)}</div><div id="legend" class="chart-caption"></div><div class="fields">${select(
+      `<div class="canvas-actions">${btn("zoom-in", "+", true)}${btn("zoom-out", "−", true)}${btn("auto-range", L("Adatta", "Fit"), true)}${btn("reset-view", L("Ripristina", "Reset"), true)}${btn("png", "PNG ↓", true)}</div><div id="legend" class="chart-caption"></div><p id="graph-warning" class="graph-warning" role="status" hidden></p><div class="fields">${select(
         "analysis",
         L("Analizza Y1 (cartesiana)", "Analyze Y1 (Cartesian)"),
         [
@@ -1283,7 +1293,19 @@ async function drawGraph() {
     second: get("second" + j),
   }));
   const curves = await run(
-    { task: "graph", rows, min, max, a: num("a") },
+    {
+      task: "graph",
+      rows,
+      min,
+      max,
+      a: num("a"),
+      viewport: {
+        width: Math.max(100, $("#chart").getBoundingClientRect().width - 70),
+        height: Math.max(100, $("#chart").getBoundingClientRect().height - 54),
+        ymin,
+        ymax,
+      },
+    },
     () => {},
   );
   if (!curves || mode !== active || version !== graphVersion) return;
@@ -1305,12 +1327,27 @@ async function drawGraph() {
       100,
     );
   });
-  $("#legend").innerHTML = curves
-    .map(
-      (c, j) =>
-        `<span><i class="swatch" style="background:${COLORS[j]}"></i>${esc(c.expr)}</span>`,
-    )
-    .join("");
+  $("#legend").innerHTML =
+    `<span class="mode-badge">${curves[0].angle}</span>` +
+    curves
+      .map(
+        (c, j) =>
+          `<span><i class="swatch" style="background:${COLORS[j]}"></i>${esc(c.expr)}</span>`,
+      )
+      .join("");
+  const warning = $("#graph-warning");
+  warning.hidden = !curves.some((c) => c.sampling?.limited);
+  warning.textContent = L(
+    "Alcuni dettagli sono troppo fitti per questa vista. Ingrandisci la zona: i tratti non risolti sono lasciati interrotti.",
+    "Some details are too dense for this view. Zoom into the area: unresolved spans are left disconnected.",
+  );
+  $("#chart").setAttribute(
+    "aria-label",
+    L("Grafico in ", "Graph in ") +
+      curves[0].angle +
+      ": " +
+      curves.map((c) => c.expr).join("; "),
+  );
 }
 async function drawSurface() {
   const lines = await run(
@@ -1529,6 +1566,13 @@ function wire() {
     );
   } else if (mode === "graph") {
     bind("#run", drawGraph);
+    $("#graph-angle").onchange = (e) => {
+      angle = e.target.value;
+      save("angle", angle);
+      $("#output").innerHTML = "";
+      drawGraph().catch((e) => toast(error(e)));
+    };
+    bind("#oscillation-example", () => loadExample("oscillation"));
     drawGraph().catch((e) => toast(error(e)));
     $("#dynamic-a").oninput = (e) => {
       set("a", e.target.value);
@@ -1812,14 +1856,12 @@ function wire() {
         lastTable = { rows, headers };
         $("#output").innerHTML = tableHTML(rows, headers);
         setPlot(
-          headers
-            .slice(1)
-            .map((_, j) => ({
-              points: rows.map((r) =>
-                r[j + 1] === null ? null : [r[0], r[j + 1]],
-              ),
-              dots: !isTable,
-            })),
+          headers.slice(1).map((_, j) => ({
+            points: rows.map((r) =>
+              r[j + 1] === null ? null : [r[0], r[j + 1]],
+            ),
+            dots: !isTable,
+          })),
         );
       });
     });
@@ -2165,6 +2207,24 @@ function runPython() {
 }
 
 function loadExample(kind) {
+  if (kind === "oscillation") {
+    if (mode !== "graph") navigate("graph");
+    angle = "RAD";
+    save("angle", angle);
+    fields.graph = {
+      ...defaults.graph,
+      f1: "sin(1/x)",
+      f2: "",
+      f3: "",
+      min: -1,
+      max: 1,
+      ymin: -1.1,
+      ymax: 1.1,
+    };
+    save("fields", fields);
+    render();
+    return;
+  }
   const demos = {
     trig: { expr: "sin(30)+cos(60)", angle: "DEG" },
     complex: { expr: "(2+3i)*(1-i)" },
@@ -2329,7 +2389,8 @@ document.addEventListener("click", (e) => {
 window.addEventListener("resize", () => {
   clearTimeout(resizeTimer);
   resizeTimer = setTimeout(() => {
-    drawCurrent();
+    if (mode === "graph") drawGraph().catch((e) => toast(error(e)));
+    else drawCurrent();
     if (mode === "calc" && $("#preview")) {
       const points = Array.from({ length: 201 }, (_, j) => {
         const x = -4 + (8 * j) / 200;
