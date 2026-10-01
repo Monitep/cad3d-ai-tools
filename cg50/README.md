@@ -20,7 +20,7 @@ Il workflow FTP già presente pubblica la cartella dopo il merge autorizzato in 
 |---|---|
 | Calcolo scientifico | Aritmetica, parentesi, potenze, radici, fattoriali, nCr/nPr, log base 10/naturale/arbitraria, trigonometria DEG/RAD/GRA, iperboliche, complessi, liste, bitwise, Pol/Rec, DMS, variabili A–Z, Ans, cronologia, frazione razionale ricostruita, NORM/FIX/SCI/ENG |
 | Calcolo numerico | Derivate, integrali definiti con Simpson adattivo, sommatorie |
-| Grafici 2D | Tre curve cartesiane/polari/parametriche, disuguaglianze sopra/sotto f(x), parametro dinamico a, animazione, trace campionato, pan/zoom, radici, estremi, intersezioni, integrale, tangente, PNG |
+| Grafici 2D | Tre curve cartesiane/polari/parametriche, selettore DEG/RAD/GRA, campionamento adattivo delle cartesiane, disuguaglianze sopra/sotto f(x), parametro dinamico a, animazione, trace campionato, pan/zoom, radici, estremi, intersezioni, integrale, tangente, PNG con unità angolare |
 | Grafici 3D | Una superficie z=f(x,y), una sfera oppure un cilindro; wireframe, rotazione, zoom, PNG |
 | Equazioni | Polinomi grado 2–6, radici complesse, sistemi lineari fino a 20 incognite, ricerca di radici in intervallo |
 | Matrici / vettori | Determinante, inversa, trasposta, traccia, somma/sottrazione/prodotto/potenza; prodotto scalare/vettoriale, norma |
@@ -38,6 +38,10 @@ Il workflow FTP già presente pubblica la cartella dopo il merge autorizzato in 
 La guida interna ha **21 sezioni in italiano e inglese**, ricerca, esempi caricabili e tutorial. Le etichette dei moduli, i testi d'aiuto e le informazioni di copertura cambiano lingua; alcuni errori tecnici delle librerie restano in inglese.
 
 Sul telefono i tasti della calcolatrice inseriscono e modificano la formula senza aprire la tastiera di sistema. Toccare direttamente il campo formula permette di scrivere, selezionare e incollare con la tastiera del dispositivo.
+
+Nei grafici 2D l'unità angolare è selezionabile e condivisa con il calcolo scientifico. L'esempio «sin(1/x) in radianti» imposta RAD e una vista −1…1, con ordinata −1.1…1.1. Le scritte principali dei tasti sono leggermente più grandi (15 px, 14 px su schermi fino a 380 px; numeri 22/20 px), con funzioni SHIFT a 9.5 px.
+
+Il campionamento cartesiano tiene conto delle dimensioni del grafico e del campo y. Sonde non uniformi e suddivisione ricorsiva aggiungono punti dove la curva cambia rapidamente. Dopo zoom, pan e ridimensionamento il grafico viene ricampionato. Limiti per curva: 12000 valutazioni, 12 livelli di suddivisione e 0.1 pixel di ampiezza minima. I punti fuori dal dominio reale e i tratti che restano non risolti vengono separati; un avviso invita a ingrandire se è stato raggiunto un limite. Non è garantita la rilevazione di ogni discontinuità o dettaglio di funzioni arbitrarie, e le infinite oscillazioni di sin(1/x) non sono rappresentabili tutte. Polari e parametriche conservano campionamento uniforme; l'analisi delle radici mantiene i propri limiti numerici.
 
 ## Differenze e funzioni non implementate
 
@@ -68,7 +72,7 @@ math.js e jStat sono inclusi localmente. Python scarica Pyodide 0.27.7 da jsDeli
 node .github/tests/cg50-engine.test.cjs
 ```
 
-17 gruppi di test numerici coprono convenzioni Casio, calculus, polinomi fino al grado 6, radici pari, esclusione di poli, matrici, regressioni, distribuzioni, inferenza, finanza, conversioni, foglio e limiti.
+21 gruppi di test numerici coprono convenzioni Casio, calculus, polinomi fino al grado 6, radici pari, esclusione di poli, matrici, regressioni, distribuzioni, inferenza, finanza, conversioni, foglio e limiti. Per i grafici vengono verificati DEG/RAD/GRA, valori di sin(1/x), accuratezza dell'interpolazione in una vista ingrandita, interruzioni ai poli fuori griglia, dominio reale e limiti di lavoro.
 
 Test browser (server HTTP già avviato, Playwright installato):
 

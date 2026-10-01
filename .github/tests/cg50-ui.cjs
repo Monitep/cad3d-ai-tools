@@ -61,8 +61,7 @@ const run = async () => {
       () => document.querySelector("#calc-result").textContent === "58",
     );
     await key("clear");
-    for (const value of ["1", "2", "3", "left", "9"])
-      await key(value);
+    for (const value of ["1", "2", "3", "left", "9"]) await key(value);
     assert.equal(await expr.inputValue(), "1293");
     await key("delete");
     assert.equal(await expr.inputValue(), "123");
@@ -233,6 +232,45 @@ const run = async () => {
     await page.locator("#analyze").click();
     await page.waitForTimeout(250);
     assert.match(await page.locator("#output").textContent(), /-2,2/);
+    await page.locator("#graph-angle").selectOption("DEG");
+    await page.waitForFunction(
+      () =>
+        document.querySelector("#legend .mode-badge")?.textContent === "DEG",
+    );
+    await page.locator("#oscillation-example").click();
+    await page.waitForFunction(
+      () =>
+        document.querySelector("#chart")?.getAttribute("aria-label") ===
+        "Graph in RAD: sin(1/x)",
+    );
+    assert.equal(await field("f1").inputValue(), "sin(1/x)");
+    assert.equal(await field("min").inputValue(), "-1");
+    assert.equal(await field("max").inputValue(), "1");
+    assert.equal(
+      await page
+        .locator(".graph-plot")
+        .evaluate(
+          (el) =>
+            el.querySelector(".chart-tip").getBoundingClientRect().top >=
+            el.querySelector("canvas").getBoundingClientRect().bottom,
+        ),
+      true,
+      "Graph instructions cover the plot",
+    );
+    assert.equal(await page.locator("#graph-warning").isVisible(), true);
+    await field("min").fill("0.005");
+    await field("max").fill("0.015");
+    await submit();
+    assert.equal(await page.locator("#graph-warning").isVisible(), false);
+    await page.locator("#graph-angle").selectOption("GRA");
+    await page.waitForFunction(
+      () =>
+        document.querySelector("#legend .mode-badge")?.textContent === "GRA",
+    );
+    await navigate("calc");
+    assert.equal(await page.locator("#angle").inputValue(), "GRA");
+    await page.reload();
+    assert.equal(await page.locator("#angle").inputValue(), "GRA");
     await navigate("graph3d");
     await field("type").selectOption("sphere");
     await submit();
@@ -274,10 +312,29 @@ const run = async () => {
           false,
           `${m}: horizontal overflow at ${width}`,
         );
+        if (m === "calc") {
+          assert.equal(
+            await page
+              .locator(".keys")
+              .evaluate((el) =>
+                [...el.querySelectorAll("button")].every(
+                  (key) => key.scrollWidth <= key.clientWidth,
+                ),
+              ),
+            true,
+            `Key text overflows at ${width}`,
+          );
+        }
       }
     }
     await page.setViewportSize({ width: 390, height: 844 });
     await navigate("calc");
+    assert.equal(
+      await page
+        .locator('[data-key="sin("]')
+        .evaluate((el) => parseFloat(getComputedStyle(el).fontSize)),
+      15,
+    );
     await page.locator("#theme").click();
     assert.equal(await page.locator("body.dark").count(), 1);
     await navigate("notes");

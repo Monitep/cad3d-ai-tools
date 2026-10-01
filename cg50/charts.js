@@ -6,6 +6,7 @@ export const COLORS = [
   "#8573bb",
   "#53a8a6",
 ];
+const PLOT_PADDING = { l: 52, r: 18, t: 20, b: 34 };
 export function plot(canvas, curves, options = {}) {
   const dark = document.body.classList.contains("dark");
   const ink = dark ? "#9cb4a6" : "#7c9485",
@@ -23,7 +24,7 @@ export function plot(canvas, curves, options = {}) {
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, w, h);
   const r = options.range || { xmin: -5, xmax: 5, ymin: -5, ymax: 5 },
-    pad = { l: 43, r: 18, t: 20, b: 30 },
+    pad = PLOT_PADDING,
     pw = w - pad.l - pad.r,
     ph = h - pad.t - pad.b;
   const X = (x) => pad.l + ((x - r.xmin) / (r.xmax - r.xmin)) * pw,
@@ -44,7 +45,12 @@ export function plot(canvas, curves, options = {}) {
       out.push(Math.abs(v) < s * 1e-9 ? 0 : Number(v.toPrecision(8)));
     return out;
   }
-  ctx.font = "10px ui-monospace,Consolas,monospace";
+  ctx.font = "12px ui-monospace,Consolas,monospace";
+  if (curves[0]?.angle) {
+    ctx.fillStyle = ink;
+    ctx.textAlign = "left";
+    ctx.fillText(curves[0].angle, pad.l, 14);
+  }
   ctx.lineWidth = 1;
   for (const x of ticks(r.xmin, r.xmax, pw)) {
     ctx.strokeStyle = x === 0 ? axis : grid;
@@ -73,7 +79,7 @@ export function plot(canvas, curves, options = {}) {
   curves.forEach((c, j) => {
     const color = c.color || COLORS[j % COLORS.length];
     ctx.strokeStyle = color;
-    ctx.lineWidth = c.width || 2;
+    ctx.lineWidth = c.width || 2.25;
     ctx.beginPath();
     let prev = null;
     for (const p of c.points) {
@@ -83,7 +89,8 @@ export function plot(canvas, curves, options = {}) {
       }
       const x = X(p[0]),
         y = Y(p[1]);
-      if (!prev || Math.abs(y - prev[1]) > ph * 1.5) ctx.moveTo(x, y);
+      if (!prev || (!c.sampling?.adaptive && Math.abs(y - prev[1]) > ph * 1.5))
+        ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
       prev = [x, y];
     }
@@ -93,7 +100,12 @@ export function plot(canvas, curves, options = {}) {
       for (let k = 1; k < c.points.length; k++) {
         const a = c.points[k - 1],
           b = c.points[k];
-        if (!a || !b || Math.abs(Y(a[1]) - Y(b[1])) > ph) continue;
+        if (
+          !a ||
+          !b ||
+          (!c.sampling?.adaptive && Math.abs(Y(a[1]) - Y(b[1])) > ph)
+        )
+          continue;
         ctx.beginPath();
         ctx.moveTo(X(a[0]), Y(a[1]));
         ctx.lineTo(X(b[0]), Y(b[1]));
@@ -161,10 +173,12 @@ export function interactivePlot(canvas, curves, range, onRange) {
     const q = canvas.getBoundingClientRect();
     if (drag) {
       const dx =
-          ((e.clientX - drag.x) / Math.max(1, q.width - 61)) *
+          ((e.clientX - drag.x) /
+            Math.max(1, q.width - PLOT_PADDING.l - PLOT_PADDING.r)) *
           (drag.range.xmax - drag.range.xmin),
         dy =
-          ((e.clientY - drag.y) / Math.max(1, q.height - 50)) *
+          ((e.clientY - drag.y) /
+            Math.max(1, q.height - PLOT_PADDING.t - PLOT_PADDING.b)) *
           (drag.range.ymax - drag.range.ymin);
       range = {
         xmin: drag.range.xmin - dx,

@@ -501,7 +501,7 @@ pre {
   color: #e6f3e9;
   box-shadow: 0 3px 0 #0d2623;
   min-height: 43px;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 500;
   position: relative;
   touch-action: manipulation;
@@ -517,7 +517,7 @@ pre {
 .key.number {
   background: linear-gradient(#f9faf7, #e5ede3);
   color: #213c31;
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 600;
   border: 1px solid #dfe9df;
   box-shadow: 0 3px 0 #9daea0;
@@ -531,7 +531,7 @@ pre {
   background: linear-gradient(#cfeeaf, #b6de92);
   color: #23432c;
   box-shadow: 0 3px 0 #78975c;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
 }
 .key.shift {
@@ -542,7 +542,7 @@ pre {
 }
 .key small {
   display: block;
-  font-size: 8px;
+  font-size: 9.5px;
   color: #c8dcb5;
   margin-bottom: 2px;
   font-weight: 400;
@@ -668,13 +668,36 @@ kbd {
   border-radius: 5px;
   pointer-events: none;
 }
+.graph-plot .chart-tip {
+  position: static;
+  display: block;
+  max-width: none;
+  border-top: 1px solid var(--border);
+  border-radius: 0;
+  padding: 7px 12px;
+  font-size: 11px;
+}
 .chart-caption {
   display: flex;
   gap: 15px;
   flex-wrap: wrap;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--muted);
   margin-top: 12px;
+}
+.graph-angle {
+  margin-bottom: 18px;
+}
+.graph-example {
+  margin-top: 16px;
+  font-size: 13px;
+}
+.graph-warning {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+  padding-left: 12px;
+  border-left: 3px solid #c7823a;
 }
 .swatch {
   display: inline-block;
@@ -1322,11 +1345,11 @@ body.dark .button.danger {
     gap: 6px;
   }
   .key {
-    font-size: 12px;
+    font-size: 14px;
     min-height: 44px;
   }
   .key.number {
-    font-size: 18px;
+    font-size: 20px;
   }
   .display {
     padding: 13px;
