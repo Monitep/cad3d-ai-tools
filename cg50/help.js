@@ -122,6 +122,10 @@ export function helpTopics(lang) {
             "SHIFT selects the secondary function shown above a key, then turns off. OPTN opens the catalog.",
           ),
           L(
+            "Sul telefono la calcolatrice si adatta allo spazio visibile, comprese le barre del browser. «Espandi» apre la vista Solo calcolatrice; «Torna» ripristina la pagina. In orizzontale, quando c’è spazio, i tasti scientifici e il tastierino numerico sono affiancati. Nelle finestre troppo basse scorri per raggiungere gli altri tasti: non vengono rimpiccioliti. I risultati lunghi riducono la dimensione del testo; se necessario si scorrono orizzontalmente senza tagliare l’esponente. Il catalogo OPTN ha un pulsante per tornare ai tasti.",
+            "On phones the calculator fits the visible space, including browser bars. “Expand” opens the Calculator only view; “Back” restores the page. In landscape, when space allows, scientific keys and the numeric pad sit side by side. In windows that are too short, scroll to reach other keys: they are not shrunk. Long results use smaller text; if needed, scroll them horizontally without splitting the exponent. The OPTN catalog has a button to return to the keys.",
+          ),
+          L(
             "S ⇄ D alterna numero e frazione quando disponibile. STO A memorizza l’ultimo risultato in A. Ans riusa l’ultima risposta.",
             "S ⇄ D toggles number and fraction when available. STO A stores the last answer in A. Ans reuses the last answer.",
           ),

@@ -105,6 +105,93 @@ let worker,
   pyWorker = null,
   pyBusy = false,
   pyTimer = null;
+let calcFocus = false,
+  resultResizeObserver,
+  resultTextObserver,
+  resultFitFrame,
+  calcViewportHeight = 0,
+  calcViewportWidth = 0;
+
+function scheduleResultFit() {
+  cancelAnimationFrame(resultFitFrame);
+  resultFitFrame = requestAnimationFrame(() => {
+    const el = $("#calc-result");
+    if (!el) return;
+    el.style.fontSize = "";
+    el.removeAttribute("data-overflow");
+    if (el.classList.contains("error")) return;
+    const size = parseFloat(getComputedStyle(el).fontSize);
+    if (el.scrollWidth > el.clientWidth) {
+      el.style.fontSize =
+        Math.max(16, Math.floor((size * el.clientWidth) / el.scrollWidth) - 1) +
+        "px";
+      if (el.scrollWidth > el.clientWidth) el.dataset.overflow = "true";
+    }
+    el.scrollLeft = 0;
+  });
+}
+
+function refreshCalculatorLayout() {
+  const viewport = window.visualViewport;
+  // Keep pinch zoom available: do not resize the page to its zoomed viewport.
+  if (viewport && Math.abs(viewport.scale - 1) > 0.01) return;
+  const height = viewport?.height || window.innerHeight;
+  const width = window.innerWidth;
+  const typing = document.activeElement === $("#expression");
+  if (
+    !typing ||
+    width !== calcViewportWidth ||
+    height >= calcViewportHeight - 100
+  ) {
+    calcViewportHeight = height;
+    calcViewportWidth = width;
+  }
+  const root = document.documentElement;
+  root.style.setProperty("--view-height", height + "px");
+  root.style.setProperty("--view-top", (viewport?.offsetTop || 0) + "px");
+  document.body.classList.toggle(
+    "calc-compact",
+    mode === "calc" &&
+      (width <= 720 ||
+        (matchMedia("(pointer: coarse)").matches && height <= 520)),
+  );
+  if ($("#example"))
+    $("#example").textContent = document.body.classList.contains("calc-compact")
+      ? L("↗ Esempio", "↗ Example")
+      : L("↗ Carica esempio", "↗ Load example");
+  const stage = $("#calc-stage");
+  if (!stage) return;
+  const stageStyle = getComputedStyle(stage);
+  const reserved = calcFocus
+    ? parseFloat(stageStyle.paddingTop) + parseFloat(stageStyle.paddingBottom)
+    : stage.getBoundingClientRect().top + window.scrollY + 12;
+  root.style.setProperty(
+    "--calc-fit-height",
+    Math.max(0, calcViewportHeight - reserved) + "px",
+  );
+  scheduleResultFit();
+}
+
+function setCalcFocus(open) {
+  calcFocus = open && mode === "calc";
+  document.body.classList.toggle("calc-focus", calcFocus);
+  const button = $("#calc-focus");
+  if (button) {
+    button.textContent = calcFocus
+      ? L("↙ Torna", "↙ Back")
+      : L("↗ Espandi", "↗ Expand");
+    button.setAttribute("aria-pressed", String(calcFocus));
+    button.title = calcFocus
+      ? L("Torna alla pagina", "Back to page")
+      : L("Solo calcolatrice", "Calculator only");
+  }
+  $$(
+    "#sidebar, .topbar, .heading, #footnote, .calc-layout > .stack, .shortcut",
+  ).forEach((el) => {
+    el.inert = calcFocus;
+  });
+  refreshCalculatorLayout();
+}
 function makeWorker() {
   worker = new Worker("worker.js");
   worker.onmessage = ({ data }) => {
@@ -462,6 +549,10 @@ function historyReplace(next) {
   window.history.replaceState(null, "", "#" + next);
 }
 function render() {
+  resultResizeObserver?.disconnect();
+  resultTextObserver?.disconnect();
+  document.body.classList.toggle("calc-mode", mode === "calc");
+  if (mode !== "calc") setCalcFocus(false);
   const m = modes.find((m) => m[0] === mode);
   document.documentElement.lang = lang;
   $("#language").innerHTML =
@@ -665,15 +756,15 @@ const keyRows = [
   ],
 ];
 function calcUI() {
-  return `<div class="calc-layout"><div><section class="calculator" aria-label="${L("Calcolatrice scientifica", "Scientific calculator")}"><div class="device-brand">CG50 <small>SCIENTIFIC · GRAPHING</small></div><div class="display"><div class="display-top"><span id="display-mode">${angle} · ${format}</span><span>RUN · ${L("PRONTO", "READY")}</span></div><label class="sr-label" for="expression" hidden>${L("Espressione", "Expression")}</label><textarea id="expression" class="expression" spellcheck="false" autocomplete="off" aria-label="${L("Espressione matematica", "Mathematical expression")}" placeholder="${L("Scrivi una formula…", "Enter an expression…")}">${esc(expression)}</textarea><div id="calc-result" class="result" aria-live="polite">${lastResult ? esc(lastResult.text) : "0"}</div><div class="display-sub" id="calc-detail">${L("Invio o EXE per calcolare", "Enter or EXE to calculate")}</div></div><div class="calc-toolbar"><select id="angle" aria-label="${L("Unità angolare", "Angle unit")}">${["DEG", "RAD", "GRA"].map((v) => `<option ${angle === v ? "selected" : ""}>${v}</option>`).join("")}</select><select id="format" aria-label="${L("Formato risultato", "Result format")}">${["NORM", "FIX", "SCI", "ENG"].map((v) => `<option ${format === v ? "selected" : ""}>${v}</option>`).join("")}</select><button class="mini" id="fraction-toggle" title="${L("Decimale / frazione", "Decimal / fraction")}">S ⇄ D</button><button class="mini" id="store-A">STO A</button><button class="mini" id="copy-result">${L("Copia", "Copy")}</button></div><div class="keys">${keyRows
+  return `<div class="calc-layout"><div class="calc-stage" id="calc-stage"><section class="calculator" aria-label="${L("Calcolatrice scientifica", "Scientific calculator")}"><div class="device-brand"><span>CG50 <small>SCIENTIFIC · GRAPHING</small></span><button id="calc-focus" class="calc-focus-button" aria-pressed="${calcFocus}" title="${L("Solo calcolatrice", "Calculator only")}">${calcFocus ? L("↙ Torna", "↙ Back") : L("↗ Espandi", "↗ Expand")}</button></div><div class="display"><div class="display-top"><span id="display-mode">${angle} · ${format}</span><span>RUN · ${L("PRONTO", "READY")}</span></div><label class="sr-label" for="expression" hidden>${L("Espressione", "Expression")}</label><textarea id="expression" class="expression" spellcheck="false" autocomplete="off" aria-label="${L("Espressione matematica", "Mathematical expression")}" placeholder="${L("Scrivi una formula…", "Enter an expression…")}">${esc(expression)}</textarea><div id="calc-result" class="result" aria-live="polite">${lastResult ? esc(lastResult.text) : "0"}</div><div class="display-sub" id="calc-detail">${L("Invio o EXE per calcolare", "Enter or EXE to calculate")}</div></div><div class="calc-toolbar"><select id="angle" aria-label="${L("Unità angolare", "Angle unit")}">${["DEG", "RAD", "GRA"].map((v) => `<option ${angle === v ? "selected" : ""}>${v}</option>`).join("")}</select><select id="format" aria-label="${L("Formato risultato", "Result format")}">${["NORM", "FIX", "SCI", "ENG"].map((v) => `<option ${format === v ? "selected" : ""}>${v}</option>`).join("")}</select><button class="mini" id="fraction-toggle" title="${L("Decimale / frazione", "Decimal / fraction")}">S ⇄ D</button><button class="mini" id="store-A">STO A</button><button class="mini" id="copy-result">${L("Copia", "Copy")}</button></div><div class="keys">${keyRows
     .flat()
     .map(
-      ([label, value, alt]) =>
-        `<button class="key ${/^[0-9.]$/.test(value) ? "number" : ""} ${value === "execute" ? "exe" : ""} ${["clear", "delete"].includes(value) ? "action" : ""} ${value === "shift" ? "shift" : ""}" data-key="${esc(value)}" ${alt ? `data-alt="${esc(alt)}"` : ""} title="${esc(alt ? label + " · SHIFT: " + alt : label)}">${alt ? `<small>${esc(alt.replace("(", "").replace("^", ""))}</small>` : ""}${label}</button>`,
+      ([label, value, alt], j) =>
+        `<button style="--wide-column:${Math.floor(j / 20) * 5 + (j % 5) + 1};--wide-row:${Math.floor((j % 20) / 5) + 1}" class="key ${/^[0-9.]$/.test(value) ? "number" : ""} ${value === "execute" ? "exe" : ""} ${["clear", "delete"].includes(value) ? "action" : ""} ${value === "shift" ? "shift" : ""}" data-key="${esc(value)}" ${alt ? `data-alt="${esc(alt)}"` : ""} title="${esc(alt ? label + " · SHIFT: " + alt : label)}">${alt ? `<small>${esc(alt.replace("(", "").replace("^", ""))}</small>` : ""}${label}</button>`,
     )
     .join(
       "",
-    )}</div><div class="calc-bottom"><span>CAD3D.EXPERT</span><span>MATHEMATICS, EVERYWHERE.</span></div></section><div class="shortcut"><kbd>Enter</kbd> ${L("calcola", "calculate")} &nbsp; <kbd>Esc</kbd> ${L("pulisci", "clear")}</div><div id="catalog-panel" hidden>${card(L("Catalogo funzioni", "Function catalog"), `<p class="muted">${L("Tocca una funzione per inserirla. Nella guida trovi sintassi ed esempi.", "Tap a function to insert it. Syntax and examples are in the help.")}</p><div class="catalog">${["asin(", "acos(", "atan(", "sinh(", "cosh(", "tanh(", "asinh(", "acosh(", "atanh(", "exp(", "log2(", "abs(", "arg(", "re(", "im(", "conj(", "complex(", "gcd(", "lcm(", "round(", "floor(", "ceil(", "mod(", "random()", "randomInt(", "nCr(", "nPr(", "!", 'intg("x^2",0,1)', 'diff("x^2",2)', 'sigma("n^2",1,10)', "Pol(", "Rec(", "dms(", "toDMS(", "sum(", "mean(", "median(", "std(", "variance(", "sort(", "det(", "inv(", "transpose(", "dot(", "cross(", "norm(", "bitAnd(", "bitOr(", "bitXor(", "bitNot(", "normalPDF(", "normalCDF(", "normalInv(", "binomialPDF(", "binomialCDF(", "poissonPDF(", "poissonCDF(", ..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"].map((v) => `<button data-insert="${esc(v)}">${esc(v)}</button>`).join("")}</div>`)}</div></div><div class="stack"><section class="card"><div class="card-head"><h2>${L("Ogni formula, una scoperta", "Every formula, a discovery")}</h2><span class="mode-badge">GRAPH</span></div>${chart("preview", true)}<div class="chart-caption"><span><i class="swatch" style="background:${COLORS[0]}"></i>y = x² − 4</span><button class="button-link" data-mode="graph">${L("Esplora il grafico ↗", "Explore the graph ↗")}</button></div></section><section class="card"><div class="card-head"><h2>${L("Cronologia", "History")}</h2><div class="history-tools"><button id="export-history" class="button-link">CSV ↓</button><button id="clear-history" class="button-link">${L("Svuota", "Clear")}</button></div></div><div class="history" id="history"></div></section><section class="card"><div class="card-head"><h2>${L("Prova qualcosa di nuovo", "Try something new")}</h2></div><div class="examples">${[
+    )}</div><div class="calc-bottom"><span>CAD3D.EXPERT</span><span>MATHEMATICS, EVERYWHERE.</span></div></section><div class="shortcut"><kbd>Enter</kbd> ${L("calcola", "calculate")} &nbsp; <kbd>Esc</kbd> ${L("pulisci", "clear")}</div><div id="catalog-panel" hidden><button id="close-catalog" class="button small secondary">${L("← Torna ai tasti", "← Back to keys")}</button>${card(L("Catalogo funzioni", "Function catalog"), `<p class="muted">${L("Tocca una funzione per inserirla. Nella guida trovi sintassi ed esempi.", "Tap a function to insert it. Syntax and examples are in the help.")}</p><div class="catalog">${["asin(", "acos(", "atan(", "sinh(", "cosh(", "tanh(", "asinh(", "acosh(", "atanh(", "exp(", "log2(", "abs(", "arg(", "re(", "im(", "conj(", "complex(", "gcd(", "lcm(", "round(", "floor(", "ceil(", "mod(", "random()", "randomInt(", "nCr(", "nPr(", "!", 'intg("x^2",0,1)', 'diff("x^2",2)', 'sigma("n^2",1,10)', "Pol(", "Rec(", "dms(", "toDMS(", "sum(", "mean(", "median(", "std(", "variance(", "sort(", "det(", "inv(", "transpose(", "dot(", "cross(", "norm(", "bitAnd(", "bitOr(", "bitXor(", "bitNot(", "normalPDF(", "normalCDF(", "normalInv(", "binomialPDF(", "binomialCDF(", "poissonPDF(", "poissonCDF(", ..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"].map((v) => `<button data-insert="${esc(v)}">${esc(v)}</button>`).join("")}</div>`)}</div></div><div class="stack"><section class="card"><div class="card-head"><h2>${L("Ogni formula, una scoperta", "Every formula, a discovery")}</h2><span class="mode-badge">GRAPH</span></div>${chart("preview", true)}<div class="chart-caption"><span><i class="swatch" style="background:${COLORS[0]}"></i>y = x² − 4</span><button class="button-link" data-mode="graph">${L("Esplora il grafico ↗", "Explore the graph ↗")}</button></div></section><section class="card"><div class="card-head"><h2>${L("Cronologia", "History")}</h2><div class="history-tools"><button id="export-history" class="button-link">CSV ↓</button><button id="clear-history" class="button-link">${L("Svuota", "Clear")}</button></div></div><div class="history" id="history"></div></section><section class="card"><div class="card-head"><h2>${L("Prova qualcosa di nuovo", "Try something new")}</h2></div><div class="examples">${[
     ["trig", "∠", L("Trigonometria", "Trigonometry"), "sin(30) + cos(60)"],
     [
       "complex",
@@ -1408,6 +1499,18 @@ function wire() {
     });
   });
   if (mode === "calc") {
+    bind("#calc-focus", () => setCalcFocus(!calcFocus));
+    bind("#close-catalog", () => {
+      $("#catalog-panel").hidden = true;
+      $(".calculator").scrollIntoView({ block: "start" });
+    });
+    resultResizeObserver = new ResizeObserver(scheduleResultFit);
+    resultResizeObserver.observe($("#calc-result"));
+    resultTextObserver = new MutationObserver(scheduleResultFit);
+    resultTextObserver.observe($("#calc-result"), { childList: true });
+    refreshCalculatorLayout();
+    setCalcFocus(calcFocus);
+    scheduleResultFit();
     renderHistory();
     const previewPoints = Array.from({ length: 301 }, (_, j) => {
       const x = -4 + (8 * j) / 300;
@@ -1465,6 +1568,8 @@ function wire() {
           }
           if (key === "catalog") {
             $("#catalog-panel").hidden = !$("#catalog-panel").hidden;
+            if (!$("#catalog-panel").hidden)
+              $("#catalog-panel").scrollIntoView({ block: "start" });
             return;
           }
           if (key === "clear") {
@@ -2387,6 +2492,7 @@ document.addEventListener("click", (e) => {
   }
 });
 window.addEventListener("resize", () => {
+  refreshCalculatorLayout();
   clearTimeout(resizeTimer);
   resizeTimer = setTimeout(() => {
     if (mode === "graph") drawGraph().catch((e) => toast(error(e)));
@@ -2401,6 +2507,23 @@ window.addEventListener("resize", () => {
       });
     }
   }, 100);
+});
+window.visualViewport?.addEventListener("resize", refreshCalculatorLayout);
+window.visualViewport?.addEventListener("scroll", () => {
+  if (calcFocus) refreshCalculatorLayout();
+});
+document.addEventListener("focusout", () =>
+  requestAnimationFrame(refreshCalculatorLayout),
+);
+document.addEventListener("keydown", (e) => {
+  if (
+    calcFocus &&
+    e.key === "Escape" &&
+    document.activeElement !== $("#expression")
+  ) {
+    setCalcFocus(false);
+    $("#calc-focus")?.focus({ preventScroll: true });
+  }
 });
 window.addEventListener("hashchange", () => {
   const next = location.hash.slice(1);

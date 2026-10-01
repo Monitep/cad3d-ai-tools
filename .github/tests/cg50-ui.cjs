@@ -104,6 +104,193 @@ const run = async () => {
     await key("clear");
     await key("6");
     assert.equal(await expr.inputValue(), "6");
+    // Fit the entire keypad to actual visible space, without shrinking touch targets.
+    const visibleKeys = async (fullyVisible = true) => {
+      const geometry = await phone.evaluate(() => {
+        return [...document.querySelectorAll("[data-key]")].map((el) => {
+          const r = el.getBoundingClientRect();
+          return {
+            key: el.dataset.key,
+            w: r.width,
+            h: r.height,
+            top: r.top,
+            bottom: r.bottom,
+            left: r.left,
+            right: r.right,
+            visible: el.contains(
+              document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2),
+            ),
+          };
+        });
+      });
+      for (const r of geometry) {
+        assert.ok(r.w >= 44 && r.h >= 44, `${r.key}: touch target too small`);
+        if (fullyVisible) {
+          assert.ok(
+            r.top >= 0 && r.bottom <= phone.viewportSize().height,
+            `${r.key}: outside viewport`,
+          );
+          assert.ok(r.visible, `${r.key}: covered`);
+        }
+      }
+      assert.equal(
+        await phone.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+        true,
+      );
+    };
+    for (const [width, height] of [
+      [384, 740],
+      [390, 740],
+      [412, 780],
+      [360, 720],
+      [320, 720],
+    ]) {
+      await phone.setViewportSize({ width, height });
+      await phone.evaluate(() => scrollTo(0, 0));
+      await phone.waitForTimeout(120);
+      await visibleKeys();
+    }
+    await phone.locator("#expression").fill("7855555555555*5855958818");
+    await phone.locator("#expression").press("Enter");
+    await phone.waitForFunction(
+      () =>
+        document.querySelector("#calc-result").textContent ===
+        "4.60018098258e+22",
+    );
+    await phone.waitForTimeout(100);
+    const resultBox = await phone.locator("#calc-result").evaluate((el) => ({
+      fits: el.scrollWidth <= el.clientWidth,
+      font: parseFloat(getComputedStyle(el).fontSize),
+      lines: getComputedStyle(el).whiteSpace,
+    }));
+    assert.equal(resultBox.fits, true, "Long exponent is clipped");
+    assert.equal(resultBox.lines, "nowrap");
+    assert.ok(resultBox.font >= 16);
+    await visibleKeys();
+    await phone.setViewportSize({ width: 384, height: 640 });
+    await phone.locator("#calc-focus").tap();
+    await phone.waitForTimeout(120);
+    await visibleKeys();
+    assert.equal(
+      await phone.locator(".topbar").evaluate((el) => el.inert),
+      true,
+    );
+    // Browser toolbar and keyboard changes are independent of the layout viewport.
+    await phone.setViewportSize({ width: 390, height: 740 });
+    await phone.evaluate(() => {
+      window.testVisibleHeight = 680;
+      window.testViewportScale = 1;
+      Object.defineProperty(visualViewport, "height", {
+        configurable: true,
+        get: () => window.testVisibleHeight,
+      });
+      Object.defineProperty(visualViewport, "scale", {
+        configurable: true,
+        get: () => window.testViewportScale,
+      });
+      visualViewport.dispatchEvent(new Event("resize"));
+    });
+    await phone.waitForTimeout(100);
+    assert.ok(
+      await phone
+        .locator(".calculator")
+        .evaluate((el) => el.getBoundingClientRect().bottom <= 680),
+    );
+    const stableHeight = await phone
+      .locator(".calculator")
+      .evaluate((el) => el.getBoundingClientRect().height);
+    await phone.locator("#expression").tap();
+    await phone.evaluate(() => {
+      window.testVisibleHeight = 320;
+      visualViewport.dispatchEvent(new Event("resize"));
+    });
+    assert.equal(
+      await phone
+        .locator(".calculator")
+        .evaluate((el) => el.getBoundingClientRect().height),
+      stableHeight,
+      "Typing shrinks all calculator keys",
+    );
+    assert.equal(
+      await phone.locator("#calc-stage").evaluate((el) => el.clientHeight),
+      320,
+    );
+    await phone.evaluate(() => {
+      window.testViewportScale = 2;
+      window.testVisibleHeight = 160;
+      visualViewport.dispatchEvent(new Event("resize"));
+    });
+    assert.equal(
+      await phone.locator("#calc-stage").evaluate((el) => el.clientHeight),
+      320,
+      "Pinch zoom resized the UI",
+    );
+    await phone.evaluate(() => {
+      delete visualViewport.height;
+      delete visualViewport.scale;
+      document.querySelector("#expression").blur();
+      visualViewport.dispatchEvent(new Event("resize"));
+    });
+    await phone.locator('[data-key="catalog"]').tap();
+    await phone.locator('[data-insert="gcd("]').tap();
+    await phone.locator("#close-catalog").tap();
+    assert.equal(await phone.locator("#catalog-panel").isVisible(), false);
+    assert.equal(
+      await phone
+        .locator("#expression")
+        .evaluate((el) => el === document.activeElement),
+      false,
+    );
+    await visibleKeys();
+    for (const [width, height] of [
+      [844, 390],
+      [740, 360],
+      [932, 430],
+    ]) {
+      await phone.setViewportSize({ width, height });
+      await phone.waitForTimeout(120);
+      await visibleKeys();
+      const seven = await phone.locator('[data-key="7"]').boundingBox();
+      const four = await phone.locator('[data-key="4"]').boundingBox();
+      const shiftKey = await phone.locator('[data-key="shift"]').boundingBox();
+      assert.equal(seven.y, shiftKey.y);
+      assert.ok(
+        seven.x > shiftKey.x && four.y > seven.y,
+        "Landscape changed numeric-pad order",
+      );
+    }
+    await phone.setViewportSize({ width: 320, height: 568 });
+    await phone.waitForTimeout(120);
+    await visibleKeys(false);
+    await phone.locator('[data-key="execute"]').tap();
+    assert.equal(
+      await phone
+        .locator("#expression")
+        .evaluate((el) => el === document.activeElement),
+      false,
+    );
+    await phone.locator("#calc-focus").tap();
+    assert.equal(
+      await phone.locator(".topbar").evaluate((el) => el.inert),
+      false,
+    );
+    assert.equal(
+      await phone
+        .locator("body")
+        .evaluate((el) => el.classList.contains("calc-focus")),
+      false,
+    );
+    await phone.locator("#menu").tap();
+    await phone.locator('nav [data-mode="graph"]').tap();
+    assert.equal(await phone.locator("#graph-angle").isVisible(), true);
+    assert.equal(
+      await phone
+        .locator("body")
+        .evaluate((el) => el.classList.contains("calc-compact")),
+      false,
+    );
     await phone.close();
     await page.goto(base);
     await page.waitForSelector("#expression");
@@ -348,7 +535,7 @@ const run = async () => {
     assert.equal(await page.locator("#content img").count(), 0);
     assert.deepEqual(errors, []);
     console.log(
-      "Browser checks passed: touch keypad without expression focus, opt-in native typing, cursor editing, calculation, memory, persistence, errors, modes, language, theme, help, 320/390/768/1440 px layouts.",
+      "Browser checks passed: touch keypad without expression focus, opt-in native typing, cursor editing, calculation, memory, persistence, errors, modes, language, theme, help, 320/390/768/1440 px layouts, visible-viewport fit, long exponents, expanded view, landscape numeric-pad order and small-window scrolling.",
     );
   } finally {
     await browser.close();
