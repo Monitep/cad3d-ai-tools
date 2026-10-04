@@ -104,7 +104,8 @@ async def spawn(payload):
     proc = await asyncio.create_subprocess_exec(sys.executable, str(WORKER),
         stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.DEVNULL, start_new_session=True,
-        limit=1024 * 1024)
+        limit=1024 * 1024,
+        env={key: value for key, value in os.environ.items() if key != 'APP_PASSWORD'})
     proc.stdin.write(json.dumps(payload).encode())
     await proc.stdin.drain()
     proc.stdin.close()

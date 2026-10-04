@@ -97,7 +97,7 @@ Alternativa solo LAN: impostare `NAS_BIND_IP` sull’IP LAN specifico del NAS, a
 | Budget complessivo del volume | 10240 MiB, controllato durante i download |
 | Durata del video / tempo massimo del download | 2 ore |
 | Conservazione dei download terminati | 48 ore |
-| Sessione del telefono | 12 ore, oppure revocata con Disconnetti |
+| Sessione del telefono | Massimo 12 ore; può terminare chiudendo la finestra, revocabile con Disconnetti |
 | Link temporaneo di trasferimento | Valido per avviare richieste entro 60 secondi |
 
 Lo spazio iniziale richiesto include fino a tre volte il limite del file per la lavorazione. La quota è un controllo applicativo con campionamento, non una quota filesystem rigida. I file terminati scadono automaticamente; le copie già salvate sul telefono rimangono. Al riavvio del servizio la coda riprende, ma il download interrotto può dover ripartire e occorre accedere di nuovo.
