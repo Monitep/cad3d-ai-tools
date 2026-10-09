@@ -1,0 +1,1 @@
+{"name":"lamondianese-demo-checks","private":true,"version":"1.0.0","scripts":{"verify":"node verify.cjs"},"devDependencies":{"jsdom":"26.1.0"}}
