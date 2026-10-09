@@ -7,6 +7,14 @@
     1920,
     1264
   ],
+  "bath-blue-ai-v4-small.webp": [
+    880,
+    495
+  ],
+  "bath-blue-ai-v4.webp": [
+    1672,
+    941
+  ],
   "bath-blue-small.webp": [
     880,
     495
@@ -14,6 +22,14 @@
   "bath-blue.webp": [
     1920,
     1080
+  ],
+  "bath-green-ai-v4-small.webp": [
+    880,
+    495
+  ],
+  "bath-green-ai-v4.webp": [
+    1672,
+    941
   ],
   "bath-green-small.webp": [
     880,
@@ -83,6 +99,14 @@
     1920,
     1097
   ],
+  "villa-ai-v4-small.webp": [
+    880,
+    495
+  ],
+  "villa-ai-v4.webp": [
+    1672,
+    941
+  ],
   "villa-hill-small.webp": [
     880,
     584
@@ -90,6 +114,10 @@
   "villa-hill.webp": [
     1600,
     1061
+  ],
+  "villa-mobile-ai-v4.webp": [
+    941,
+    1672
   ],
   "villa-small.webp": [
     880,
