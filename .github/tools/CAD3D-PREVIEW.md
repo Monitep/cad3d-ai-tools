@@ -39,3 +39,9 @@ Fonti: le pagine pubbliche di CAD3D.Expert (home, architettura, energie rinnovab
 ## Correzione compatibilità CSS 3D, revisione v6
 
 Il controllo sul sito pubblicato ha individuato una regola del precedente viewer che assegnava `position:relative` a tutti i canvas del panorama. Questa sovrascriveva il posizionamento assoluto delle facce cubiche CSS 3D e le disponeva fuori dal riquadro. La regola è ora limitata al canvas diretto del renderer: le facce mantengono le regole ufficiali Pannellum. Tutte le pagine richiedono `style.css?v=6`, evitando la cache del CSS precedente. I master 16K e i video v5 non cambiano.
+
+## Verifica pubblica e contrasto dei controlli, revisione v7
+
+Nel browser della pubblicazione v6 entrambe le scene CSS 3D mostrano correttamente i render originali. Le frecce della tastiera e lo zoom cambiano la vista; reset e selezione Terrazza/Piscina funzionano. I due video desktop sono arrivati a fine riproduzione senza errori, rispettivamente 18 e 10,066667 s, decodificati a 1920 × 1080. Dodici viste delle pagine home, architettura, tour e home inglese, a 360/412/768 px, non mostrano overflow orizzontale, titoli o barre dei controlli fuori misura; il rapporto video rimane 16:9. Sui telefoni viene scelta la sorgente 1280 × 720 e tutti i video partono in pausa.
+
+La v7 rende chiare le etichette Terrazza/Piscina e il testo di supporto sul fondo scuro della home, mantenendo i colori dei controlli sulle pagine chiare. CSS richiesto con `v=7`. Il browser di verifica non espone WebGL e rifiuta la richiesta di fullscreen, per cui questi percorsi non sono dichiarati verificati: il sito offre un messaggio esplicito quando il fullscreen non è disponibile.
