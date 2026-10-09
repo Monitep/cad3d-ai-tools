@@ -35,3 +35,7 @@ I due video originali, di circa 18 e 10 secondi, sono presenti in home, architet
 La preparazione è riproducibile con `prepare-cad3d-media.py --source-dir /percorso/materiale` (Pillow e FFmpeg). Gli originali forniti non vengono modificati. Provenienza, hash, risoluzioni native, livelli e file video sono in `CAD3D-MEDIA-ASSETS.json`; le nuove interazioni sono in `assets/media-v5.js`. Tutte le pagine usano CSS/JS `v=5`. Il sito WordPress e i tour già esistenti rimangono fuori dall’ambito della pubblicazione dell’anteprima.
 
 Fonti: le pagine pubbliche di CAD3D.Expert (home, architettura, energie rinnovabili, tour virtuali, studio, contatti); la skill ufficiale `anthropics/skills/skills/frontend-design/SKILL.md`; GSAP e ScrollTrigger da `greensock/GSAP/dist/`. Verificate le versioni correnti del design Anthropic e di `vercel-labs/agent-skills/skills/web-design-guidelines/SKILL.md`, con le regole da `vercel-labs/web-interface-guidelines/command.md` e la documentazione ufficiale GSAP `gsap.matchMedia()`.
+
+## Correzione compatibilità CSS 3D, revisione v6
+
+Il controllo sul sito pubblicato ha individuato una regola del precedente viewer che assegnava `position:relative` a tutti i canvas del panorama. Questa sovrascriveva il posizionamento assoluto delle facce cubiche CSS 3D e le disponeva fuori dal riquadro. La regola è ora limitata al canvas diretto del renderer: le facce mantengono le regole ufficiali Pannellum. Tutte le pagine richiedono `style.css?v=6`, evitando la cache del CSS precedente. I master 16K e i video v5 non cambiano.
