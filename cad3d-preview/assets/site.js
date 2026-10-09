@@ -130,48 +130,7 @@
    catch{output.focus();output.select();button.textContent=text('Selezionato: usa Copia','Selected: use Copy');$('.brief-result [role="status"]',form).textContent=text('Seleziona Copia nel tuo dispositivo per copiare la bozza.','Choose Copy on your device to copy the draft.');}
   });
  }
- function initPanorama(container){
-  const canvas=$('canvas',container), status=$('.pano-status',container);
-  let gl;
-  try{gl=canvas.getContext('webgl',{alpha:false,antialias:false,powerPreference:'low-power'});}catch{}
-  function showFallback(){
-   canvas.hidden=true;$('.panorama-fallback',container).hidden=false;
-   $('.panorama-controls',container).hidden=true;$('.panorama-hint',container).hidden=true;
-   status.textContent=text('Apri il tour completo per esplorare la villa.','Open the full tour to explore the villa.');
-  }
-  if(!gl){showFallback();return;}
-  const vertex='attribute vec2 aPosition;varying vec2 vUV;void main(){vUV=aPosition;gl_Position=vec4(aPosition,0.0,1.0);}';
-  const fragment=`precision mediump float;varying vec2 vUV;uniform sampler2D uImage;uniform float uYaw;uniform float uPitch;uniform float uFov;uniform float uAspect;void main(){vec3 ray=normalize(vec3(vUV.x*uAspect*uFov,vUV.y*uFov,-1.0));float cp=cos(uPitch);float sp=sin(uPitch);ray=vec3(ray.x,cp*ray.y-sp*ray.z,sp*ray.y+cp*ray.z);float cy=cos(uYaw);float sy=sin(uYaw);ray=vec3(cy*ray.x-sy*ray.z,ray.y,sy*ray.x+cy*ray.z);float u=atan(ray.x,-ray.z)/6.2831853+0.5;float v=asin(clamp(ray.y,-1.0,1.0))/3.14159265+0.5;gl_FragColor=texture2D(uImage,vec2(u,v));}`;
-  function shader(type,src){const s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw new Error('Panorama shader');return s;}
-  let program;
-  try{program=gl.createProgram();gl.attachShader(program,shader(gl.VERTEX_SHADER,vertex));gl.attachShader(program,shader(gl.FRAGMENT_SHADER,fragment));gl.linkProgram(program);if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw new Error('Panorama program');gl.useProgram(program);}catch{showFallback();return;}
-  const buffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]),gl.STATIC_DRAW);
-  const position=gl.getAttribLocation(program,'aPosition');gl.enableVertexAttribArray(position);gl.vertexAttribPointer(position,2,gl.FLOAT,false,0,0);
-  const uniforms={};for(const name of ['uYaw','uPitch','uFov','uAspect','uImage'])uniforms[name]=gl.getUniformLocation(program,name);
-  let yaw=0,pitch=.02,fov=75,loaded=false,pending=false,drag=null;
-  const image=new Image();image.onload=()=>{
-   gl.activeTexture(gl.TEXTURE0);const texture=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,texture);
-   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGB,gl.RGB,gl.UNSIGNED_BYTE,image);
-   gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
-   gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
-   gl.uniform1i(uniforms.uImage,0);loaded=true;$('.panorama-fallback',container).hidden=true;draw();
-  };image.onerror=showFallback;
-  function draw(){if(!loaded||pending)return;pending=true;requestAnimationFrame(()=>{pending=false;const r=canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,1.7);const w=Math.max(1,Math.round(r.width*dpr)),h=Math.max(1,Math.round(r.height*dpr));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}gl.viewport(0,0,w,h);gl.uniform1f(uniforms.uYaw,yaw);gl.uniform1f(uniforms.uPitch,pitch);gl.uniform1f(uniforms.uFov,Math.tan(fov*Math.PI/360));gl.uniform1f(uniforms.uAspect,w/h);gl.drawArrays(gl.TRIANGLES,0,6);});}
-  canvas.addEventListener('pointerdown',event=>{if(event.button!==0)return;drag={x:event.clientX,y:event.clientY,yaw,pitch,type:event.pointerType};canvas.setPointerCapture(event.pointerId);canvas.classList.add('dragging');canvas.focus({preventScroll:true});});
-  canvas.addEventListener('pointermove',event=>{if(!drag)return;yaw=drag.yaw-(event.clientX-drag.x)*.004;pitch=Math.max(-1.1,Math.min(1.1,drag.pitch+(drag.type==='mouse'?(event.clientY-drag.y)*.003:0)));draw();});
-  const endDrag=()=>{drag=null;canvas.classList.remove('dragging');};canvas.addEventListener('pointerup',endDrag);canvas.addEventListener('pointercancel',endDrag);
-  canvas.addEventListener('keydown',event=>{const actions={ArrowLeft:()=>yaw-=.12,ArrowRight:()=>yaw+=.12,ArrowUp:()=>pitch=Math.min(1.1,pitch+.09),ArrowDown:()=>pitch=Math.max(-1.1,pitch-.09),'+':()=>fov=Math.max(40,fov-5),'-':()=>fov=Math.min(100,fov+5)};if(actions[event.key]){event.preventDefault();actions[event.key]();draw();}});
-  $$('[data-pano]',container).forEach(button=>button.addEventListener('click',async()=>{
-   const action=button.dataset.pano;
-   if(action==='plus')fov=Math.max(40,fov-10);if(action==='minus')fov=Math.min(100,fov+10);if(action==='reset'){yaw=0;pitch=.02;fov=75;}
-   if(action==='full'){try{if(document.fullscreenElement)await document.exitFullscreen();else if(container.requestFullscreen)await container.requestFullscreen();else status.textContent=text('Usa il tour completo per la visita a schermo intero.','Use the full tour for a full-screen visit.');}catch{status.textContent=text('Schermo intero non disponibile su questo browser.','Full screen is not available in this browser.');}}
-   draw();
-  }));
-  new ResizeObserver(draw).observe(container);document.addEventListener('fullscreenchange',draw);
-  canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();loaded=false;showFallback();});
-  const observer=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting)){image.src=container.dataset.panorama;observer.disconnect();}},{rootMargin:'200px'});observer.observe(container);
- }
- $$('.panorama').forEach(initPanorama);
+ // Native high-resolution panoramas are initialized by media-v5.js.
  if(window.gsap&&window.ScrollTrigger){
   gsap.registerPlugin(ScrollTrigger);
   const mm=gsap.matchMedia();

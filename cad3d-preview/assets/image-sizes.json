@@ -126,5 +126,21 @@
   "villa.webp": [
     1920,
     728
+  ],
+  "panorama-terrace-preview-v5.jpg": [
+    1600,
+    900
+  ],
+  "panorama-pool-preview-v5.jpg": [
+    1600,
+    900
+  ],
+  "film-detail-poster-v5.webp": [
+    1920,
+    1080
+  ],
+  "film-interior-poster-v5.webp": [
+    1920,
+    1080
   ]
 }
