@@ -36,23 +36,25 @@
   }
  });
  matchMedia('(min-width:821px)').addEventListener('change',event=>{if(event.matches)closeMenu();});
- function changeImage(target,src,alt){
+ function changeImage(target,src,alt,mobileSrc=''){
+  const source=target.closest('picture')?.querySelector('source');
+  const applyImage=()=>{if(source)source.srcset=mobileSrc||src;target.src=src;if(alt)target.alt=alt;};
   const image=new Image(); const requestId=(target._requestId||0)+1;target._requestId=requestId;
   image.onload=()=>{
    if(target._requestId!==requestId)return;
    if(window.gsap&&!reduced.matches){
     gsap.killTweensOf(target);
     gsap.timeline().to(target,{opacity:0,duration:.18,ease:'power1.out'})
-     .call(()=>{target.src=src;if(alt)target.alt=alt;})
+     .call(applyImage)
      .fromTo(target,{scale:1.045,opacity:0},{scale:1,opacity:1,duration:.7,ease:'power2.out',immediateRender:false});
-   }else{target.src=src;if(alt)target.alt=alt;}
+   }else{applyImage();}
   };
-  image.onerror=()=>{target._requestId=0;};image.src=src;
+  image.onerror=()=>{target._requestId=0;};image.src=source&&mobileSrc&&matchMedia('(max-width:580px)').matches?mobileSrc:src;
  }
  $$('.scene-picker button').forEach(button=>button.addEventListener('click',()=>{
   $$('.scene-picker button').forEach(b=>{b.classList.toggle('active',b===button);b.setAttribute('aria-pressed',String(b===button));});
   $('.hero-caption').textContent=button.dataset.caption;
-  changeImage($('.hero-picture'),button.dataset.sceneSrc||assets+button.dataset.scene+'.webp',button.dataset.caption);
+  changeImage($('.hero-picture'),button.dataset.sceneSrc||assets+button.dataset.scene+'.webp',button.dataset.caption,button.dataset.mobileSrc);
  }));
  const energyDescriptions={solar:text('Produzione energetica e attività agricola nello stesso paesaggio.','Energy generation and agriculture in the same landscape.'),bess:text('Sistemi di accumulo e infrastrutture, letti nel loro contesto.','Storage systems and infrastructure, seen in their context.'),agri:text('Strutture, pannelli e percorsi: il progetto dal punto di vista di chi lo attraversa.','Structures, panels and paths: the project from the perspective of someone walking through it.')};
  $$('.energy-tabs button').forEach(button=>button.addEventListener('click',()=>{

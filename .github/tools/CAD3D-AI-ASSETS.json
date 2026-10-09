@@ -1,0 +1,79 @@
+{
+  "created": "2026-10-09",
+  "mode": "built-in ImageGen",
+  "site_scope": "CAD3D.Expert preview",
+  "assets": [
+    {
+      "asset": "villa-ai-v4.webp",
+      "native_size": [
+        1672,
+        941
+      ],
+      "source": "villa.webp",
+      "status": "selected",
+      "prompt": "Use case: lighting-weather / precise architectural enhancement.\nAsset type: final premium architectural website hero, photorealistic AI refinement of the user's own render.\nImage 1 is the edit target: the existing CAD3D.Expert villa and pool render. Preserve this exact two-storey villa, its proportions, overhanging pale stone rectangular upper volume, wooden balcony facade, glass balustrades, ground floor glazing, garden layout, pool outline, two loungers, sculptures and sunken lounge. Keep the identity of the architecture; do not redesign or add buildings.\nRe-create the rendering at the highest native detail and resolution available, aiming for 3840 x 2160 pixels, landscape 16:9. Expand the original short wide composition vertically with believable sky and pool foreground, so the architectural subject fits a desktop and mobile hero more naturally. Building centre-right; calm garden and restrained background on the left, suitable for separate HTML headline overlay. Do not render text into the image.\nArt direction: stunning architectural photography rather than glossy CGI, refined warm late-afternoon side light, clean pale travertine with subtle microtexture, precise realistic glazing, richly detailed but natural planting, elegant clear turquoise water with physically convincing ripples and caustics, beautiful restrained tonal range, natural material grain, excellent antialiasing and crisp edges without oversharpening. Preserve accurate camera perspective and realistic proportions. Keep all main building volumes and pool details visible. No people, no watermark, no logo, no text, no UI. Deliver one single final image, not a collage."
+    },
+    {
+      "asset": "villa-mobile-ai-v4.webp",
+      "native_size": [
+        941,
+        1672
+      ],
+      "source": "villa-ai-v4.webp",
+      "status": "selected",
+      "prompt": "Use case: architectural website mobile art direction. Image 1 is the edit target, a photorealistic AI-refined render owned by the user. Create a portrait 9:16 framing of this EXACT villa, preserving every building volume, pale stone rectangular frame, timber facade, glass balustrade, ground-floor glazed room, water and lounge. Preserve the sunlit late-afternoon photorealism, rich detailed materials and natural planting. Reframe with the WHOLE villa visible in the middle/right and calm uncluttered sky in the upper third, pool foreground in the lower third. This image will be behind separately rendered HTML heading text on a phone, so do not add any text or logos. Keep the architecture identical, no new floors, no rearranged windows or objects, no fisheye distortion. A beautiful architectural photograph, detailed glass, foliage, stone and water, precise edges. Largest native pixel dimensions available, ideally 2160 x 3840 portrait. One seamless image, no collage, watermark, logo or UI."
+    },
+    {
+      "asset": "bath-blue-ai-v4.webp",
+      "native_size": [
+        1672,
+        941
+      ],
+      "source": "bath-blue.webp",
+      "status": "selected",
+      "prompt": "Use case: precise-object-edit / photorealistic architectural enhancement. Image 1 is the edit target: the user's own bathroom rendering. Re-render this exact bathroom as exquisite, photorealistic architectural interior photography. Preserve the spatial layout, perspective, double basins and mirror on the left, the large central window with lake and mountains, the curtains, rectangular stone-clad bath on the right, slim globe floor light, and blue Azul Macaubas stone surfaces. Remove the owner's CAD3D.Expert watermark completely and reconstruct a clean, uninterrupted ceiling and natural textures behind it; no lettering or logos anywhere. Improve rich blue stone veining, restrained material reflections, realistic brass/chrome plumbing, soft daylight from the window, exquisite natural texture and crisp geometric edges. Carefully balanced daylight and warm practical lights; luxurious and calm, not oversaturated, not plastic CGI. Keep the same camera and proportions, don't redesign the room or introduce furniture. Highest native resolution available, aim for native 3840 x 2160 pixels, 16:9 landscape. No watermark, no text, no UI, one finished image."
+    },
+    {
+      "asset": "bath-green-ai-v4.webp",
+      "native_size": [
+        1672,
+        941
+      ],
+      "source": "bath-green.webp",
+      "status": "selected",
+      "prompt": "Use case: precise-object-edit / photorealistic architectural enhancement. Image 1 is the edit target: the user's own warm elegant stone bathroom render. Re-render this exact room as beautiful, tactile, photorealistic architectural photography. Preserve its perspective and layout: walk-in shower on the left, central Calacatta Verde green-veined stone vanity with a rectangular mirror and dark timber doors, wall paneling and three narrow artworks on the right, warm floor lamp, bath and copper taps at lower right, cornice and pale ceiling. Remove the owner's CAD3D.Expert watermark and reconstruct clean ceiling/cornice with no letters or marks. Preserve the identity of the materials and room, improving stone detail, actual natural veining, wood grain, precise hardware, soft mixed daylight, warm indirect illumination and shadow detail. Refined magazine photography with crisp edges and a welcoming rich atmosphere, not excessively dark, no plastic sheen. Do not add architectural features or change furniture locations. Highest native output resolution available, aiming for native 3840 x 2160, 16:9 landscape. No logo, watermark, lettering, UI or collage."
+    },
+    {
+      "asset": "panorama-ai-candidate",
+      "native_size": [
+        1774,
+        887
+      ],
+      "source": "panorama.webp",
+      "status": "not_published",
+      "reason": "No increase in native resolution; greater boundary discontinuity than the original, so it is unsuitable as a replacement spherical texture.",
+      "prompt": "Use case: precise architectural enhancement of a full spherical panorama. Image 1 is the EDIT TARGET, an equirectangular 360-degree x 180-degree texture, NOT an ordinary wide photo. Enhance and re-render it with much finer photorealistic surface detail and clean natural light, while STRICTLY preserving its equirectangular projection, horizon level, exact relative positions, angles, proportions, lens geometry and continuous surroundings. The image must remain a full seamless sphere: horizontal 360 degrees, vertical 180 degrees, exact 2:1 width-to-height. The left and right boundaries represent the same meridian and must join seamlessly; the top edge is zenith and bottom edge nadir. Do not straighten the curved pool or convert to rectilinear perspective. Preserve the exact white two-storey timber and glass villa at its current longitude, surrounding planting, sky, loungers, sunken seating and foreground swimming pool. Improve realistic stone, wood, glazing, lush foliage, detailed water caustics and soft late afternoon light without changing the scene layout. Clean exquisite architectural photorealism, precise geometry, excellent detail and antialiasing, no oversharpened noise. Output one single complete 2:1 equirectangular image at the largest native resolution supported; target 4096 x 2048 or larger if possible. Do NOT return a lower-resolution thumbnail or a cinematic photo; this must function as a 360 viewer texture. No text, watermark, logo, UI, borders or collage."
+    },
+    {
+      "asset": "panorama-ai-resolution-attempt",
+      "native_size": [
+        1774,
+        887
+      ],
+      "status": "not_published",
+      "reason": "Native size unchanged after an explicit high-resolution request. Original panorama retained; a high-resolution equirectangular master is needed.",
+      "prompt": "Precise-object-edit: increase the actual native pixel dimensions and detailed rendering of this single 360 x 180-degree equirectangular panorama to 3840 x 1920 pixels or larger. The last version was only 1774 x 887 and is too small for an immersive viewer. Deliver a genuinely higher-pixel-count native render, not a smaller preview or an interpolated enlargement. STRICT exact 2:1 width/height, continuous full spherical equirectangular projection. Retain this scene and horizon, all architecture, pool and plants in exactly the same spherical directions. Reconstruct fine physically plausible material detail, crisp villa glazing and wood, individual foliage and clear swimming-pool caustics. Preserve geometry, camera and composition. LEFT AND RIGHT EDGE MUST MATCH seamlessly, with continuous water, vegetation, horizon and cloud patterns at the wrap meridian. Zenith/nadir must remain suitable for the sphere. No people changes, text, logos, watermark, UI or collage. One final high-resolution panoramic texture."
+    }
+  ],
+  "font": {
+    "name": "Manrope",
+    "license": "SIL OFL",
+    "source": "https://github.com/google/fonts/tree/main/ofl/manrope",
+    "format": "WOFF variable",
+    "weights": [
+      200,
+      800
+    ]
+  },
+  "resolution_note": "Generated images are native sizes stated above. No interpolation enlargement or 4K claim. Original high-resolution tour configuration could not be retrieved by the available HTTP paths."
+}

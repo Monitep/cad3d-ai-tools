@@ -14,9 +14,13 @@ Il 9 ottobre 2026 l’utente ha autorizzato la pubblicazione. La PR #8 è stata 
 
 ## Revisione e manutenzione
 
-Anteprima: https://www.cad3d.expert/ai/cad3d-preview/index.html dopo il completamento del workflow FTP. Logo e immagini degli interni sono locali; i font provengono da Google Fonts. Per verificare il sito completo e le funzioni 360° usare un server HTTP/HTTPS.
+Anteprima: https://www.cad3d.expert/ai/cad3d-preview/index.html dopo il completamento del workflow FTP. Logo, font Manrope e immagini degli interni sono locali. Per verificare il sito completo e le funzioni 360° usare un server HTTP/HTTPS.
 
 La revisione del 9 ottobre conserva il logo originale a 300 × 75 px senza filtri di colore, su fondo chiaro nella home e nel footer. Le immagini dei servizi e la villa in evidenza mostrano l’intera composizione. La home e le aperture dei servizi offrono l’ingrandimento con tastiera, chiusura tramite Escape e ritorno del focus. Le dimensioni intrinseche delle immagini sono registrate in `assets/image-sizes.json`: aggiornare questo manifest quando si sostituiscono gli asset. I filtri del portfolio aggiornano l’URL, supportano Indietro e vengono conservati nel cambio lingua. Le nuove risorse CSS/JS usano `v=3`.
+
+La successiva revisione `v=4` usa quattro immagini rigenerate con ImageGen su richiesta dell’utente: villa panoramica, villa verticale per telefono e due bagni senza la filigrana CAD3D.Expert. I render mantengono il soggetto architettonico e affinano luce e materiali. Le immagini native sono 1672 × 941 px oppure 941 × 1672 px; non sono 4K. I WebP sono esportati alla dimensione nativa, senza ingrandimenti interpolati. `srcset` sceglie le versioni complete sui riquadri grandi o sui display densi; un `<picture>` dedica al telefono la composizione verticale della villa. Manrope è ospitato localmente in WOFF, con licenza SIL OFL, per titoli e testo. La spaziatura negativa dei titoli è ridotta per evitare lettere sovrapposte.
+
+Due prove di rigenerazione della sferica sono state escluse: entrambe 1774 × 887 px, con discontinuità al bordo maggiori dell’originale. Il panorama e il tour originali sono conservati. Il recupero della configurazione pubblica del tour è risultato bloccato negli strumenti disponibili; per migliorare realmente il 360° occorre un originale equirettangolare ad alta risoluzione, idealmente 8192 × 4096 px. Prompt, scelte e limiti effettivi sono in `CAD3D-AI-ASSETS.json`.
 
 I contenuti si modificano in `build-cad3d-preview.py`; dopo le modifiche eseguire il generatore e il controllo. Layout e interazioni sono in `cad3d-preview/assets/style.css` e `site.js`.
 
