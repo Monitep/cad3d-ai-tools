@@ -77,14 +77,34 @@
   let count=0;$$('.project-card').forEach(card=>{card.hidden=category!=='all'&&card.dataset.category!==category;if(!card.hidden)count++;});
   $('.filter-count').textContent=count+' '+text(count===1?'lavoro':'lavori',count===1?'project':'projects');
  }
- filterButtons.forEach(button=>button.addEventListener('click',()=>filterProjects(button.dataset.filter)));
- if(filterButtons.length)filterProjects(new URLSearchParams(location.search).get('settore')||'all');
- const dialog=$('.lightbox');let lastImageButton;
- $$('.project-image').forEach(button=>button.addEventListener('click',()=>{
-  lastImageButton=button;const photo=$('img',dialog);photo.src=button.dataset.image;photo.alt=button.dataset.title;
-  $('h2',dialog).textContent=button.dataset.title;$('p',dialog).textContent=button.dataset.description;
-  dialog.showModal();document.body.style.overflow='hidden';$('.lightbox-close').focus();
+ filterButtons.forEach(button=>button.addEventListener('click',()=>{
+  const category=button.dataset.filter;filterProjects(category);
+  const url=new URL(location.href);
+  if(category==='all')url.searchParams.delete('settore');else url.searchParams.set('settore',category);
+  if(url.href!==location.href)history.pushState(null,'',url);
+  syncFilterLanguage(category);
  }));
+ function syncFilterLanguage(category){
+  const link=$('.language-switch'),url=new URL(link.href);
+  if(category==='all')url.searchParams.delete('settore');else url.searchParams.set('settore',category);
+  link.href=url.href;
+ }
+ if(filterButtons.length)filterProjects(new URLSearchParams(location.search).get('settore')||'all');
+ if(filterButtons.length){
+  syncFilterLanguage(new URLSearchParams(location.search).get('settore')||'all');
+  addEventListener('popstate',()=>{const category=new URLSearchParams(location.search).get('settore')||'all';filterProjects(category);syncFilterLanguage(category);});
+ }
+ const dialog=$('.lightbox');let lastImageButton;
+ function openImage(button,src,title,description=''){
+  lastImageButton=button;const photo=$('img',dialog);photo.src=src;photo.alt=title;
+  photo.onload=()=>{photo.width=photo.naturalWidth;photo.height=photo.naturalHeight;};
+  $('h2',dialog).textContent=title;$('p',dialog).textContent=description;$('p',dialog).hidden=!description;
+  dialog.showModal();document.body.style.overflow='hidden';$('.lightbox-close').focus();
+ }
+ $$('.project-image,.image-zoom').forEach(button=>button.addEventListener('click',()=>openImage(button,button.dataset.image,button.dataset.title,button.dataset.description)));
+ $('[data-open-hero]')?.addEventListener('click',event=>{
+  const image=$('.hero-picture');openImage(event.currentTarget,image.currentSrc||image.src,$('.hero-caption').textContent);
+ });
  $('.lightbox-close').addEventListener('click',()=>dialog.close());
  dialog.addEventListener('click',event=>{if(event.target===dialog){const r=dialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)dialog.close();}});
  dialog.addEventListener('close',()=>{document.body.style.overflow='';lastImageButton?.focus();});
@@ -104,8 +124,8 @@
   });
   $('[data-copy]',form).addEventListener('click',async event=>{
    const output=$('.brief-result textarea',form);const button=event.currentTarget;
-   try{await navigator.clipboard.writeText(output.value);button.textContent=text('Brief copiato','Brief copied');}
-   catch{output.focus();output.select();button.textContent=text('Selezionato: usa Copia','Selected: use Copy');}
+   try{await navigator.clipboard.writeText(output.value);button.textContent=text('Brief copiato','Brief copied');$('.brief-result [role="status"]',form).textContent=text('Brief copiato. Puoi incollarlo nella tua email.','Brief copied. You can paste it into your email.');}
+   catch{output.focus();output.select();button.textContent=text('Selezionato: usa Copia','Selected: use Copy');$('.brief-result [role="status"]',form).textContent=text('Seleziona Copia nel tuo dispositivo per copiare la bozza.','Choose Copy on your device to copy the draft.');}
   });
  }
  function initPanorama(container){
@@ -166,7 +186,7 @@
    return()=>{};
   });
   mm.add('(min-width:821px) and (prefers-reduced-motion: no-preference)',()=>{
-   if($('.hero'))gsap.to('.hero-content',{y:70,opacity:.35,ease:'none',scrollTrigger:{trigger:'.hero',start:'top top',end:'bottom 20%',scrub:.5}});
+   if($('.hero'))gsap.to('.hero-content',{y:30,ease:'none',scrollTrigger:{trigger:'.hero',start:'top top',end:'bottom 20%',scrub:.5}});
   });
   document.fonts.ready.then(()=>ScrollTrigger.refresh());
  }
