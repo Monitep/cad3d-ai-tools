@@ -2,7 +2,7 @@
 
 16 pagine statiche in italiano e inglese: home, portfolio, servizi, architettura, rinnovabili, tour virtuali, studio e contatti. Gli asset e i dati professionali provengono dal sito pubblico CAD3D.Expert. Nessun contenuto della memoria privata, credenziale o dato personale dei clienti è incluso.
 
-La demo usa GSAP e ScrollTrigger ufficiali, un viewer WebGL per un panorama CGI originale, filtri nel portfolio, immagini ingrandibili e un confronto fotografico BESS tra stato di fatto, progetto e mitigazione. Il modulo contatti prepara una bozza email da rileggere e inviare nell'app del visitatore; non invia dati a un server.
+La demo usa GSAP e ScrollTrigger ufficiali, un viewer WebGL per un panorama CGI originale, filtri nel portfolio, immagini ingrandibili e un confronto fotografico BESS tra stato di fatto, progetto e mitigazione. Il modulo contatti prepara una bozza visibile da rileggere, poi offre il collegamento all’app email e la copia del testo. Non invia dati a un server.
 
 Destinazione della pubblicazione autorizzata: `/www.cad3d.expert/ai/cad3d-preview/`, attraverso il workflow FTP già presente. La home WordPress resta fuori dall'ambito della modifica. Le pagine della demo hanno `noindex`.
 
@@ -10,7 +10,7 @@ Destinazione della pubblicazione autorizzata: `/www.cad3d.expert/ai/cad3d-previe
 
 Superati: sintassi di `site.js`, collegamenti locali e ancore, un H1 per pagina, metadati `noindex`, validità delle immagini WebP locali. Lo script `check-cad3d-preview.py` controlla anche i file vuoti.
 
-La verifica visiva locale non è stata possibile: il supervisore delle anteprime non si avvia nell'ambiente. Il 9 ottobre 2026 l'utente ha autorizzato la pubblicazione. Il caricamento segue il percorso branch, PR e merge, dopo il quale si esegue la verifica sul sito HTTPS.
+Il 9 ottobre 2026 l’utente ha autorizzato la pubblicazione. La PR #8 è stata unita e il workflow FTP 37985020300 è terminato con successo. Sul sito HTTPS sono stati verificati cambio scene, menu mobile, tutti i filtri del portfolio, apertura/chiusura delle immagini e confronto BESS con tastiera. Le otto sezioni italiane, più home e contatti inglesi, sono state controllate a 360 e 412 px senza overflow orizzontale. Il browser di verifica non espone WebGL: si verifica la vista alternativa con accesso diretto al tour completo; il rendering 3D resta da verificare su un browser con WebGL.
 
 ## Revisione e manutenzione
 
