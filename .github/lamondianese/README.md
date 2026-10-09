@@ -35,3 +35,8 @@ Controlli statici: asset locali presenti; nessun riferimento mancante; layout co
 Limite: il controllo visivo in un browser reale non è stato disponibile in questa sessione; non è stato eseguito un test su dispositivo fisico né una misura Lighthouse.
 
 Per ripetere il controllo DOM dalla radice del repository: `npm install --prefix .github/lamondianese` e `npm run --prefix .github/lamondianese verify`.
+
+
+## Revisione desktop e leggibilità — 9 ottobre 2026
+
+Il sito pubblicato include ora la revisione descritta in [REVIEW.md](REVIEW.md) e il controllo **Aa** per la dimensione dei testi. L’HTML autonomo `La_Mondianese_Anteprima.html` conserva la prima proposta: per la versione aggiornata usare il sito pubblico. I nuovi test funzionali sono nello stesso `verify.cjs`.
