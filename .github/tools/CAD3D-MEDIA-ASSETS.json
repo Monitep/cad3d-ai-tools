@@ -1,0 +1,75 @@
+{
+  "panoramas": {
+    "terrace": {
+      "source_name": "D5_A03_20240201_184512.jpg",
+      "source_sha256": "cddcdab27772b5b4d2eff8d67e0c06cd7b8c6ad73c885b72627dee56045ccd0f",
+      "source_dimensions": [
+        16384,
+        8192
+      ],
+      "cube_resolution": 5216,
+      "tile_resolution": 2048,
+      "max_level": 3,
+      "fallback_face_resolution": 2048,
+      "directory": "cad3d-preview/assets/pano-terrace-v5",
+      "files": 90,
+      "bytes": 59090698
+    },
+    "pool": {
+      "source_name": "D5_A04_20240201_183040.jpg",
+      "source_sha256": "c95d295a901d26f5745c98af355a3a6eb005322502b23da3652c4912593c8608",
+      "source_dimensions": [
+        16384,
+        8192
+      ],
+      "cube_resolution": 5216,
+      "tile_resolution": 2048,
+      "max_level": 3,
+      "fallback_face_resolution": 2048,
+      "directory": "cad3d-preview/assets/pano-pool-v5",
+      "files": 90,
+      "bytes": 51429008
+    }
+  },
+  "viewer": {
+    "name": "Pannellum",
+    "version": "2.5.7",
+    "source": "https://github.com/mpetroff/pannellum/releases/tag/2.5.7",
+    "license": "MIT"
+  },
+  "notes": [
+    "Both panoramas are projected from the native 16384x8192 ZIP masters.",
+    "5216px cubefaces preserve the source angular sampling density.",
+    "WebGL loads visible tiles at the appropriate resolution, including the full level.",
+    "CSS 3D fallback uses separate 2048px cubefaces; it is not the full-detail WebGL path.",
+    "Video is original CGI, silent, user initiated, 1080p desktop / 720p mobile."
+  ],
+  "videos": [
+    {
+      "source_name": "D5_Clip 1_20231019_230023.mp4",
+      "source_sha256": "ef155a8a19883b47a8cc25e00813d5141444cc3258a8a98eb80dac9262d7df3e",
+      "native_dimensions": [
+        1920,
+        1080
+      ],
+      "duration_approx_s": 18,
+      "audio": false,
+      "web_fps": 30,
+      "desktop": "film-interior-v5.mp4",
+      "mobile": "film-interior-v5-mobile.mp4"
+    },
+    {
+      "source_name": "Clip 11.mp4",
+      "source_sha256": "c19bcce46a6d6648fb5488b8ade8f8e8f95337c4e8079b9a36771b6979fa1209",
+      "native_dimensions": [
+        1920,
+        1080
+      ],
+      "duration_approx_s": 10,
+      "audio": false,
+      "web_fps": 30,
+      "desktop": "film-detail-v5.mp4",
+      "mobile": "film-detail-v5-mobile.mp4"
+    }
+  ]
+}

@@ -24,4 +24,14 @@ Due prove di rigenerazione della sferica sono state escluse: entrambe 1774 × 88
 
 I contenuti si modificano in `build-cad3d-preview.py`; dopo le modifiche eseguire il generatore e il controllo. Layout e interazioni sono in `cad3d-preview/assets/style.css` e `site.js`.
 
+## Master 16K e video originali, revisione v5
+
+L’utente ha fornito `Render Per Tour No People.zip`, con due master sferici nativi 16384 × 8192 px: `D5_A03_20240201_184512.jpg` e `D5_A04_20240201_183040.jpg`. Il 360° in home e nella pagina tour usa entrambi, selezionabili come Terrazza e Piscina. Le vecchie texture ridotte e le prove AI non sono usate dal nuovo viewer.
+
+Pannellum 2.5.7 ufficiale è ospitato localmente, con licenza MIT. I master vengono proiettati in facce cubiche da 5216 px, con densità angolare coerente con l’originale 16K, divise in tasselli JPEG da massimo 2048 px e tre livelli di dettaglio. Il viewer WebGL carica le tessere visibili e aumenta il dettaglio con lo zoom; non scarica un’unica texture ridotta. Il percorso CSS 3D per i browser senza WebGL usa facce alternative da 2048 px. Le immagini prospettiche da 1600 × 900 sono soltanto poster di caricamento e fallback statici. Il full detail WebGL richiede verifica su un dispositivo che lo supporti; il browser di lavoro può verificare il percorso CSS 3D.
+
+I due video originali, di circa 18 e 10 secondi, sono presenti in home, architettura e tour, in entrambe le lingue. Il player mostra l’intero fotogramma, offre due sequenze, riproduzione e pausa, controlli nativi e poster. MP4 H.264 a 1080p per desktop e 720p per telefoni, 30 fps, senza audio, con `faststart` e `preload="none"`. Nessun autoplay; pausa quando il player esce dalla vista o la pagina diventa nascosta.
+
+La preparazione è riproducibile con `prepare-cad3d-media.py --source-dir /percorso/materiale` (Pillow e FFmpeg). Gli originali forniti non vengono modificati. Provenienza, hash, risoluzioni native, livelli e file video sono in `CAD3D-MEDIA-ASSETS.json`; le nuove interazioni sono in `assets/media-v5.js`. Tutte le pagine usano CSS/JS `v=5`. Il sito WordPress e i tour già esistenti rimangono fuori dall’ambito della pubblicazione dell’anteprima.
+
 Fonti: le pagine pubbliche di CAD3D.Expert (home, architettura, energie rinnovabili, tour virtuali, studio, contatti); la skill ufficiale `anthropics/skills/skills/frontend-design/SKILL.md`; GSAP e ScrollTrigger da `greensock/GSAP/dist/`. Verificate le versioni correnti del design Anthropic e di `vercel-labs/agent-skills/skills/web-design-guidelines/SKILL.md`, con le regole da `vercel-labs/web-interface-guidelines/command.md` e la documentazione ufficiale GSAP `gsap.matchMedia()`.

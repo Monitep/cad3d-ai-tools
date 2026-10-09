@@ -13,7 +13,7 @@ class Page(HTMLParser):
         if tag=='h1':self.h1+=1
         if 'id' in a:self.ids.add(a['id'])
         if tag=='meta':self.meta.append(a)
-        for k in ('href','src','data-image','data-panorama','data-scene-src'):
+        for k in ('href','src','poster','data-image','data-panorama','data-scene-src','data-film-src','data-film-mobile','data-film-poster'):
             if a.get(k):self.refs.append(a[k])
 
 pages={p:Page() for p in ROOT.rglob('*.html')}
