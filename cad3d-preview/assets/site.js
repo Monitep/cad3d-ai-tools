@@ -111,7 +111,7 @@
   $('h2',dialog).textContent=title;$('p',dialog).textContent=description;$('p',dialog).hidden=!description;
   dialog.showModal();document.body.style.overflow='hidden';$('.lightbox-close').focus();
  }
- $$('.project-image,.image-zoom').forEach(button=>button.addEventListener('click',()=>openImage(button,button.dataset.image,button.dataset.title,button.dataset.description)));
+ $$('.project-image,.image-zoom,.model-image').forEach(button=>button.addEventListener('click',()=>openImage(button,button.dataset.image,button.dataset.title,button.dataset.description)));
  $('[data-open-hero]')?.addEventListener('click',event=>{
   const image=$('.hero-picture');openImage(event.currentTarget,image.currentSrc||image.src,$('.hero-caption').textContent);
  });
