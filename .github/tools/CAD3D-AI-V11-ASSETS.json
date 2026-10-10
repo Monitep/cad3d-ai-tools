@@ -1,0 +1,582 @@
+{
+  "created": "2026-10-10",
+  "mode": "built-in ImageGen edits",
+  "scope": "40 modelling gallery images and homepage BESS",
+  "resolution_note": "Native sizes listed per asset, unchanged during WebP conversion. Generated BESS is 1539 x 1022; source BESS is 1920 x 1273. Landscape detail is regenerated rather than a claim of higher pixel resolution. No 4K claim.",
+  "assets": [
+    {
+      "id": "10",
+      "asset": "model-10-ai-v11.webp",
+      "original_file": "model-10-v8.webp",
+      "native_size": [
+        1426,
+        1103
+      ],
+      "bytes": 161096,
+      "sha256": "cd5f56d2c5685c76d6b6b86d85f8c41ea25e9735f8c6eed2c1a48df9775d8563",
+      "mode": "built-in ImageGen edit",
+      "prompt": "Use case: precise-object-edit. EDIT TARGET is the supplied original owner's CAD3D.Expert render. Subject: The exact transparent acrylic stepped brochure holder with its original four open horizontal tiers, stepped sidewalls and original slots. Preserve the original number and arrangement of tiers and viewing angle. Upgrade this image into exquisite physically realistic studio product CGI, highest native output resolution, same landscape aspect ratio. Preserve the exact original object's topology, proportions, materials and color identity, component count, holes, assembly and camera view. For acrylic use sophisticated realistic transparent refraction and crisp contour highlights; no opaque redesign. Balanced large softbox lighting on a warm light-gray seamless studio floor with restrained gentle contact shadows and fine realistic material detail. Use the reference layout; keep the whole originally visible object inside the frame with breathing room. Remove only the owner's lower-right CAD3D.Expert watermark. No extra objects, new features, new branding, decorative props or collage. Deliver one standalone finished image.",
+      "review": "Visually compared with source for subject, visible form, component arrangement and absence of watermark. AI presentation is identified in gallery captions; no metrological accuracy claim."
+    },
+    {
+      "id": "11",
+      "asset": "model-11-ai-v11.webp",
+      "original_file": "model-11-v8.webp",
+      "native_size": [
+        1426,
+        1103
+      ],
+      "bytes": 86670,
+      "sha256": "616b3462b878a439440d19417dd6ed0533c19e7e5415743a742694fc1c8d62b6",
+      "mode": "built-in ImageGen edit",
+      "prompt": "Use case: precise-object-edit. EDIT TARGET is the supplied original owner's CAD3D.Expert render. Subject: The exact suspended metal S-shaped ceiling hook and triangular spring link attached to a dark metal clip holding the edge of a flat white sign. Keep hook curvature, clip, ring, sign edge and attachment locations identical. Improve brushed metal and shadow realism on neutral background. Upgrade this image into exquisite physically realistic studio product CGI, highest native output resolution, same landscape aspect ratio. Preserve the exact original object's topology, proportions, materials and color identity, component count, holes, assembly and camera view. For acrylic use sophisticated realistic transparent refraction and crisp contour highlights; no opaque redesign. Balanced large softbox lighting on a warm light-gray seamless studio floor with restrained gentle contact shadows and fine realistic material detail. Use the reference layout; keep the whole originally visible object inside the frame with breathing room. Remove only the owner's lower-right CAD3D.Expert watermark. No extra objects, new features, new branding, decorative props or collage. Deliver one standalone finished image.",
+      "review": "Visually compared with source for subject, visible form, component arrangement and absence of watermark. AI presentation is identified in gallery captions; no metrological accuracy claim."
+    },
+    {
+      "id": "12",
+      "asset": "model-12-ai-v11.webp",
+      "original_file": "model-12-v8.webp",
+      "native_size": [
+        1426,
+        1103
+      ],
+      "bytes": 117396,
+      "sha256": "65072bb52140d1ace39f432d8b3ba358afb316336345b6da92d8c188bd7d2ef5",
+      "mode": "built-in ImageGen edit",
+      "prompt": "Use case: precise-object-edit. EDIT TARGET is the supplied original owner's CAD3D.Expert render. Subject: The exact metal sign holder: small white cubic base, slender twisted pole, clip and rectangular printed card. Preserve the original green apple graphic and every printed element. Text exactly HEALTHY SNACKS, 100% BIO, APPLE CHIPS, in the same locations and typography; do not add or replace copy. Keep the original camera angle and entire holder. Upgrade this image into exquisite physically realistic studio product CGI, highest native output resolution, same landscape aspect ratio. Preserve the exact original object's topology, proportions, materials and color identity, component count, holes, assembly and camera view. For acrylic use sophisticated realistic transparent refraction and crisp contour highlights; no opaque redesign. Balanced large softbox lighting on a warm light-gray seamless studio floor with restrained gentle contact shadows and fine realistic material detail. Use the reference layout; keep the whole originally visible object inside the frame with breathing room. Remove only the owner's lower-right CAD3D.Expert watermark. No extra objects, new features, new branding, decorative props or collage. Deliver one standalone finished image.",
+      "review": "Visually compared with source for subject, visible form, component arrangement and absence of watermark. AI presentation is identified in gallery captions; no metrological accuracy claim."
+    },
+    {
+      "id": "13",
+      "asset": "model-13-ai-v11.webp",
+      "original_file": "model-13-v8.webp",
+      "native_size": [
+        1448,
+        1086
+      ],
+      "bytes": 271980,
+      "sha256": "86878dd1ddc1c9dd9ebe497a4e5c860e623807a6db91d4de040811e29b827924",
+      "mode": "built-in ImageGen edit",
+      "prompt": "Use case: precise-object-edit. Input is the EDIT TARGET, the user's own original CAD3D.Expert work. This is a REAL photograph of three physical translucent milky nylon fastener components on dark textured leather: one assembled two-disc connector at left, one split/ridged cylindrical pin with a round flange in the middle, one separate round washer with its central hole at right. Edit the photograph: preserve the exact photographed components, small imperfections, all ridges/slits/holes, their count, camera angle and positions. Improve photographic clarity, soft lighting and exposure; replace the busy leather surface with elegant neutral light-gray studio surface. Do not redesign objects or claim new geometry. Primary request: exquisite high-resolution upgrade of image lighting, material and presentation. Same aspect ratio as original, highest native output resolution, realistic restrained tonal range, finely detailed surface and crisp readable object contours. Preserve object identity, exact visible geometry, component count and original camera view. No new design features, props, lettering or extra objects. Remove only the user's lower-right CAD3D.Expert watermark. One standalone finished image only.",
+      "review": "Visually compared with source for subject, visible form, component arrangement and absence of watermark. AI presentation is identified in gallery captions; no metrological accuracy claim."
+    },
+    {
+      "id": "14",
+      "asset": "model-14-ai-v11.webp",
+      "original_file": "model-14-v8.webp",
+      "native_size": [
+        1426,
+        1103
+      ],
+      "bytes": 280712,
+      "sha256": "bfc22a1285da4280550f9c3825d562323c9b21b06245e0ce2964ea21b601b691",
+      "mode": "built-in ImageGen edit",
+      "prompt": "Use case: precise-object-edit. Input is the EDIT TARGET, the user's own original CAD3D.Expert work. This is the CAD render of three translucent fastener parts: one assembled two-disc connector at left, one split/ridged cylindrical pin with round flange at the rear, and one separate rounded washer with central hole and radial slots at right. Keep the precise original three-part geometry, proportions, count, hole positions, two ridges and longitudinal slots. Clear milky translucent molded nylon rather than metal. Warm light-gray studio backdrop with subtle contact shadows, even precise edge lighting. Primary request: exquisite high-resolution upgrade of image lighting, material and presentation. Same aspect ratio as original, highest native output resolution, realistic restrained tonal range, finely detailed surface and crisp readable object contours. Preserve object identity, exact visible geometry, component count and original camera view. No new design features, props, lettering or extra objects. Remove only the user's lower-right CAD3D.Expert watermark. One standalone finished image only.",
+      "review": "Visually compared with source for subject, visible form, component arrangement and absence of watermark. AI presentation is identified in gallery captions; no metrological accuracy claim."
+    },
+    {
+      "id": "15",
+      "asset": "model-15-ai-v11.webp",
+      "original_file": "model-15-v8.webp",
+      "native_size": [
+        1426,
+        1103
+      ],
+      "bytes": 150636,
+      "sha256": "58303904f7745d06b885f11899d319e3c961eaf65b53753b796e4bb26f393da5",
+      "mode": "built-in ImageGen edit",
+      "prompt": "Use case: precise-object-edit. Input is the EDIT TARGET, the user's own original CAD3D.Expert work. This is the clear acrylic card/brochure holder with a tall flat rectangular back, the exact curved shoulder junctions, short sidewalls and low front lip. Keep the exact original topology, angle, proportions, clear material and slots. Upgrade studio rendering and replace the wood floor with refined warm light-gray seamless surface. Primary request: exquisite high-resolution upgrade of image lighting, material and presentation. Same aspect ratio as original, highest native output resolution, realistic restrained tonal range, finely detailed surface and crisp readable object contours. Preserve object identity, exact visible geometry, component count and original camera view. No new design features, props, lettering or extra objects. Remove only the user's lower-right CAD3D.Expert watermark. One standalone finished image only.",
+      "review": "Visually compared with source for subject, visible form, component arrangement and absence of watermark. AI presentation is identified in gallery captions; no metrological accuracy claim."
+    },
+    {
+      "id": "16",
+      "asset": "model-16-ai-v11.webp",
+      "original_file": "model-16-v8.webp",
+      "native_size": [
+        1448,
+        1086
+      ],
+      "bytes": 186280,
+      "sha256": "b83f13d99c4c39f0e0ad555a77ace7b7c32df794d9e15250104e361cabbb1958",
+      "mode": "built-in ImageGen edit",
+      "prompt": "Use case: precise-object-edit. Input is the EDIT TARGET, the user's own original CAD3D.Expert work. This is a REAL photograph of a clear molded plastic brochure holder on wood, with tall flat back, curved shoulder junctions, low front lip and original small molded details in the bottom. Edit the photo to improve clarity and studio lighting and replace only the wood backdrop with neutral warm light-gray seamless surface. Preserve the exact photographed product geometry and visible molded details, all edges, count and camera view. Primary request: exquisite high-resolution upgrade of image lighting, material and presentation. Same aspect ratio as original, highest native output resolution, realistic restrained tonal range, finely detailed surface and crisp readable object contours. Preserve object identity, exact visible geometry, component count and original camera view. No new design features, props, lettering or extra objects. Remove only the user's lower-right CAD3D.Expert watermark. One standalone finished image only.",
+      "review": "Visually compared with source for subject, visible form, component arrangement and absence of watermark. AI presentation is identified in gallery captions; no metrological accuracy claim."
+    },
+    {
+      "id": "17",
+      "asset": "model-17-ai-v11.webp",
+      "original_file": "model-17-v8.webp",
+      "native_size": [
+        1426,
+        1103
+      ],
+      "bytes": 37650,
+      "sha256": "45b565c430bf7877cb35e545ebf78abb05b84f0813ab3e9f0b6e7e5ea4defcd0",
+      "mode": "built-in ImageGen edit",
+      "prompt": "Use case: precise-object-edit. Input is the EDIT TARGET, the user's own original CAD3D.Expert work. The exact upright engineering section of a tall slim white/translucent hollow extrusion inserted in a white curved base, with visible dark outlines and multiple narrow internal channels at its top and exposed connecting section near the base. Preserve all the cross-sectional channels and the whole base geometry, original tall proportions and original material identities. Upgrade lighting and readable sharp contours, no invented structure. Primary request: exquisite high-resolution upgrade of image lighting, material and presentation. Same aspect ratio as original, highest native output resolution, realistic restrained tonal range, finely detailed surface and crisp readable object contours. Preserve object identity, exact visible geometry, component count and original camera view. No new design features, props, lettering or extra objects. Remove only the user's lower-right CAD3D.Expert watermark. One standalone finished image only.",
+      "review": "Visually compared with source for subject, visible form, component arrangement and absence of watermark. AI presentation is identified in gallery captions; no metrological accuracy claim."
+    },
+    {
+      "id": "18",
+      "asset": "model-18-ai-v11.webp",
+      "original_file": "model-18-v8.webp",
+      "native_size": [
+        1672,
+        941
+      ],
+      "bytes": 114808,
+      "sha256": "88fdf838c82e353bed7b4006e7a827364bcee5e043a372d2d3386756ca81c18d",
+      "mode": "built-in ImageGen edit",
+      "prompt": "Use case: precise-object-edit. Input is the EDIT TARGET, the user's own original CAD3D.Expert work. This is a REAL photograph of exactly three milky-white ribbed plastic push fasteners, each with a broad circular flange and pointed ribbed shaft, on a wood surface. Preserve each photographed component, the number and original ribs, shape and arrangement; improve photo lighting and sharpness, replace the wood backdrop with warm light-gray studio surface. Reframe slightly wider so all three fasteners including the rightmost tip fit entirely with safe margins. No invented fourth piece or new ribs. Primary request: exquisite high-resolution upgrade of image lighting, material and presentation. Same aspect ratio as original, highest native output resolution, realistic restrained tonal range, finely detailed surface and crisp readable object contours. Preserve object identity, exact visible geometry, component count and original camera view. No new design features, props, lettering or extra objects. Remove only the user's lower-right CAD3D.Expert watermark. One standalone finished image only.",
+      "review": "Visually compared with source for subject, visible form, component arrangement and absence of watermark. AI presentation is identified in gallery captions; no metrological accuracy claim."
+    },
+    {
+      "id": "19",
+      "asset": "model-19-ai-v11.webp",
+      "original_file": "model-19-v8.webp",
+      "native_size": [
+        1672,
+        941
+      ],
+      "bytes": 112654,
+      "sha256": "3635610c4f06f22b1f808bd509934fca6f165a38aa0cfe204fe0e56e2f8b5ea9",
+      "mode": "built-in ImageGen edit",
+      "prompt": "Use case: precise-object-edit. Input is the EDIT TARGET, the user's own original CAD3D.Expert work. The exact polished silver sculptural pendant made of three interlinked rounded triangular/organic loops with its small original silver bail and black cord. Preserve the identical interlinking topology, number and curves of loops, camera angle, proportions and bail. Luxury editorial jewelry product photography: realistic polished silver, controlled softbox highlights, warm light-gray studio background. Keep pendant fully visible, cord naturally exits top as in reference. Primary request: exquisite high-resolution upgrade of image lighting, material and presentation. Same aspect ratio as original, highest native output resolution, realistic restrained tonal range, finely detailed surface and crisp readable object contours. Preserve object identity, exact visible geometry, component count and original camera view. No new design features, props, lettering or extra objects. Remove only the user's lower-right CAD3D.Expert watermark. One standalone finished image only.",
+      "review": "Visually compared with source for subject, visible form, component arrangement and absence of watermark. AI presentation is identified in gallery captions; no metrological accuracy claim."
+    },
+    {
+      "id": "20",
+      "asset": "model-20-ai-v11.webp",
+      "original_file": "model-20-v8.webp",
+      "native_size": [
+        1672,
+        941
+      ],
+      "bytes": 209556,
+      "sha256": "d08e37936fe12927c664675a0dfd4f69daa45bf555ecb001c5da4dc0b31328fe",
+      "mode": "built-in ImageGen edit",
+      "prompt": "Use case: precise-object-edit. Input image is the EDIT TARGET, an original CAD3D.Expert jewelry model belonging to the user. Subject: The original open silver cuff with a long tapered perforated top, circular/oval holes in their exact original sequence and sizes, and its curved open support beneath. Keep all perforations and the exact silhouette. Replace blue reflective floor with warm light-gray studio surface. Upgrade ONLY its rendering and background into exceptional realistic high-resolution luxury jewelry product photography, highest native resolution and same source aspect ratio. Restrained sophisticated studio softboxes and precise bright/dark reflection control, realistic silver/gold color, slight physically plausible microtexture, elegant contact shadows, exquisite crisp geometric detail. Preserve the exact design, every hole, cutout, initial, motif, inscription, component count, proportions, camera view and object placement. No redesign, additional gems, changes to initials, new engravings or props. All jewelry fully in frame with breathing room. Remove only the lower-right owner's CAD3D.Expert watermark. No other text, logos or collage. Deliver one standalone image.",
+      "review": "Visually compared with source for subject, visible form, component arrangement and absence of watermark. AI presentation is identified in gallery captions; no metrological accuracy claim."
+    },
+    {
+      "id": "21",
+      "asset": "model-21-ai-v11.webp",
+      "original_file": "model-21-v8.webp",
+      "native_size": [
+        1672,
+        941
+      ],
+      "bytes": 402752,
+      "sha256": "32633e4611d2d30a026d2a5ce0c79007ab54bf2ac095be240b7a8d8ebe1c879f",
+      "mode": "built-in ImageGen edit",
+      "prompt": "Use case: precise-object-edit. Input image is the EDIT TARGET, an original CAD3D.Expert jewelry model belonging to the user. Subject: The single polished silver ring with the exact repeated four-lobed flower openwork pattern around its band and smooth upper/lower rims. Keep every original flower, the number and arrangement of cutouts, ring thickness and original camera angle. Replace blue background with warm light-gray surface. Upgrade ONLY its rendering and background into exceptional realistic high-resolution luxury jewelry product photography, highest native resolution and same source aspect ratio. Restrained sophisticated studio softboxes and precise bright/dark reflection control, realistic silver/gold color, slight physically plausible microtexture, elegant contact shadows, exquisite crisp geometric detail. Preserve the exact design, every hole, cutout, initial, motif, inscription, component count, proportions, camera view and object placement. No redesign, additional gems, changes to initials, new engravings or props. All jewelry fully in frame with breathing room. Remove only the lower-right owner's CAD3D.Expert watermark. No other text, logos or collage. Deliver one standalone image.",
+      "review": "Visually compared with source for subject, visible form, component arrangement and absence of watermark. AI presentation is identified in gallery captions; no metrological accuracy claim."
+    },
+    {
+      "id": "22",
+      "asset": "model-22-ai-v11.webp",
+      "original_file": "model-22-v8.webp",
+      "native_size": [
+        1673,
+        940
+      ],
+      "bytes": 160204,
+      "sha256": "5e459e94db107fb32cb335125ef81374fc6485ab95754cd06e2168d89b909b7f",
+      "mode": "built-in ImageGen edit",
+      "prompt": "Use case: precise-object-edit. Input image is the EDIT TARGET, an original CAD3D.Expert jewelry model belonging to the user. Subject: The exact yellow-gold letter B ring, with the flat uppercase B front face, original beveled sides, smooth curved shank and original internal inscription only where visible. Keep B (not a different initial), both holes and exact proportions. Neutral warm light-gray studio backdrop. Upgrade ONLY its rendering and background into exceptional realistic high-resolution luxury jewelry product photography, highest native resolution and same source aspect ratio. Restrained sophisticated studio softboxes and precise bright/dark reflection control, realistic silver/gold color, slight physically plausible microtexture, elegant contact shadows, exquisite crisp geometric detail. Preserve the exact design, every hole, cutout, initial, motif, inscription, component count, proportions, camera view and object placement. No redesign, additional gems, changes to initials, new engravings or props. All jewelry fully in frame with breathing room. Remove only the lower-right owner's CAD3D.Expert watermark. No other text, logos or collage. Deliver one standalone image.",
+      "review": "Visually compared with source for subject, visible form, component arrangement and absence of watermark. AI presentation is identified in gallery captions; no metrological accuracy claim."
+    },
+    {
+      "id": "23",
+      "asset": "model-23-ai-v11.webp",
+      "original_file": "model-23-v8.webp",
+      "native_size": [
+        1519,
+        1036
+      ],
+      "bytes": 157038,
+      "sha256": "24507dd45c3a66b7c290dfcae20047b734d9f00f6975dde5246a75630413ee08",
+      "mode": "built-in ImageGen edit",
+      "prompt": "Use case: precise-object-edit. Input image is the EDIT TARGET, an original CAD3D.Expert jewelry model belonging to the user. Subject: The exact rose-gold uppercase letter F ring, with original three-dimensional F front face, two arms, beveled edges and smooth curved shank, original inner inscription only where visible. It is F, NOT T or E. Keep exact source letter orientation and geometry. Neutral warm light-gray studio backdrop. Upgrade ONLY its rendering and background into exceptional realistic high-resolution luxury jewelry product photography, highest native resolution and same source aspect ratio. Restrained sophisticated studio softboxes and precise bright/dark reflection control, realistic silver/gold color, slight physically plausible microtexture, elegant contact shadows, exquisite crisp geometric detail. Preserve the exact design, every hole, cutout, initial, motif, inscription, component count, proportions, camera view and object placement. No redesign, additional gems, changes to initials, new engravings or props. All jewelry fully in frame with breathing room. Remove only the lower-right owner's CAD3D.Expert watermark. No other text, logos or collage. Deliver one standalone image.",
+      "review": "Visually compared with source for subject, visible form, component arrangement and absence of watermark. AI presentation is identified in gallery captions; no metrological accuracy claim."
+    },
+    {
+      "id": "24",
+      "asset": "model-24-ai-v11.webp",
+      "original_file": "model-24-v8.webp",
+      "native_size": [
+        1674,
+        940
+      ],
+      "bytes": 305274,
+      "sha256": "8fe34a94ba618ea60f7aa6b91613c38ab4ae17d040569f98768147623a059cfe",
+      "mode": "built-in ImageGen edit",
+      "prompt": "Use case: precise-object-edit. Input image is the EDIT TARGET, an original CAD3D.Expert jewelry model belonging to the user. Subject: Exactly SEVEN original gold initial rings arranged in their original positions and orientations, with the central upright letter T ring facing the viewer and all other original initials viewed at the reference angles. Preserve each exact initial shape and every ring shank, no extra ring or new letter. Replace purple surface with warm light-gray studio surface. Upgrade ONLY its rendering and background into exceptional realistic high-resolution luxury jewelry product photography, highest native resolution and same source aspect ratio. Restrained sophisticated studio softboxes and precise bright/dark reflection control, realistic silver/gold color, slight physically plausible microtexture, elegant contact shadows, exquisite crisp geometric detail. Preserve the exact design, every hole, cutout, initial, motif, inscription, component count, proportions, camera view and object placement. No redesign, additional gems, changes to initials, new engravings or props. All jewelry fully in frame with breathing room. Remove only the lower-right owner's CAD3D.Expert watermark. No other text, logos or collage. Deliver one standalone image.",
+      "review": "Visually compared with source for subject, visible form, component arrangement and absence of watermark. AI presentation is identified in gallery captions; no metrological accuracy claim."
+    },
+    {
+      "id": "25",
+      "asset": "model-25-ai-v11.webp",
+      "original_file": "model-25-v8.webp",
+      "native_size": [
+        1674,
+        940
+      ],
+      "bytes": 286832,
+      "sha256": "bc0de2119eaca480cc5a22d59ccb9d8e321cee404a2bd5ce1f985c231e5ddb22",
+      "mode": "built-in ImageGen edit",
+      "prompt": "Use case: precise-object-edit. Input image is the EDIT TARGET, an original CAD3D.Expert jewelry model belonging to the user. Subject: Exactly THREE original round monogram/signature rings: yellow gold front left with the original interlocking JC medallion, silver back left, rose gold right. Keep their exact engraved/openwork monogram shapes, shanks, round plaques, count and arrangement. Refined warm light-gray studio surface instead of striped reflective ground. Upgrade ONLY its rendering and background into exceptional realistic high-resolution luxury jewelry product photography, highest native resolution and same source aspect ratio. Restrained sophisticated studio softboxes and precise bright/dark reflection control, realistic silver/gold color, slight physically plausible microtexture, elegant contact shadows, exquisite crisp geometric detail. Preserve the exact design, every hole, cutout, initial, motif, inscription, component count, proportions, camera view and object placement. No redesign, additional gems, changes to initials, new engravings or props. All jewelry fully in frame with breathing room. Remove only the lower-right owner's CAD3D.Expert watermark. No other text, logos or collage. Deliver one standalone image.",
+      "review": "Visually compared with source for subject, visible form, component arrangement and absence of watermark. AI presentation is identified in gallery captions; no metrological accuracy claim."
+    },
+    {
+      "id": "26",
+      "asset": "model-26-ai-v11.webp",
+      "original_file": "model-26-v8.webp",
+      "native_size": [
+        1672,
+        941
+      ],
+      "bytes": 326558,
+      "sha256": "5f17ec9f2e3b7aef1f6623f54d2058f461fe08137cd4fd0a5f6ae0b224102db4",
+      "mode": "built-in ImageGen edit",
+      "prompt": "Use case: precise-object-edit. Input image is the EDIT TARGET, an original CAD3D.Expert jewelry model belonging to the user. Subject: The original polished silver ring with scalloped edges and continuous repeated round/oval openwork loops around the band. Preserve every exact opening and its arrangement, band outline and original camera angle. Warm light-gray studio surface. Upgrade ONLY its rendering and background into exceptional realistic high-resolution luxury jewelry product photography, highest native resolution and same source aspect ratio. Restrained sophisticated studio softboxes and precise bright/dark reflection control, realistic silver/gold color, slight physically plausible microtexture, elegant contact shadows, exquisite crisp geometric detail. Preserve the exact design, every hole, cutout, initial, motif, inscription, component count, proportions, camera view and object placement. No redesign, additional gems, changes to initials, new engravings or props. All jewelry fully in frame with breathing room. Remove only the lower-right owner's CAD3D.Expert watermark. No other text, logos or collage. Deliver one standalone image.",
+      "review": "Visually compared with source for subject, visible form, component arrangement and absence of watermark. AI presentation is identified in gallery captions; no metrological accuracy claim."
+    },
+    {
+      "id": "27",
+      "asset": "model-27-ai-v11.webp",
+      "original_file": "model-27-v8.webp",
+      "native_size": [
+        1672,
+        941
+      ],
+      "bytes": 321774,
+      "sha256": "da432a7aecea9a487ef23b121f2f8cc19e016e2d1ee00950be98ff18689701a2",
+      "mode": "built-in ImageGen edit",
+      "prompt": "Use case: precise-object-edit. Input image is the EDIT TARGET, the user's original CAD3D.Expert model. Subject: The original thick silver band ring with triangular pyramidal textured faceted outer surface and smooth upper/lower circular rims and its original inner grooves. Keep the exact repeating triangular pattern, facet orientations, all rims and proportions. Upgrade into beautiful high-resolution physically realistic luxury jewelry product photography style rendering on an elegant warm light-gray seamless studio surface. Highest native output resolution, same source aspect ratio. Exact geometry and design invariants: preserve all holes, patterns, rims, motif count, topology, shapes, inscriptions, material/color identities, camera view and subject placement. Sophisticated softbox reflections, true refined silver or gold response, crisp smooth contours and fine material microdetail, subtle contact shadow. Entire object visible with generous margin. REMOVE ALL CAD3D.Expert owner watermark and logo pixels, including the translucent rectangle or small text at lower right: that area must become clean uninterrupted background. No new text, logo, watermark, ornaments, gems, props or collage. One standalone finished image.",
+      "review": "Visually compared with source for subject, visible form, component arrangement and absence of watermark. AI presentation is identified in gallery captions; no metrological accuracy claim."
+    },
+    {
+      "id": "28",
+      "asset": "model-28-ai-v11.webp",
+      "original_file": "model-28-v8.webp",
+      "native_size": [
+        1670,
+        942
+      ],
+      "bytes": 200274,
+      "sha256": "60f48dfcb9a43459692a3f80416f5fb36a9ef5257be5fa98d675c1e07417354a",
+      "mode": "built-in ImageGen edit",
+      "prompt": "Use case: precise-object-edit. Input image is the EDIT TARGET, the user's original CAD3D.Expert model. Subject: The exact low silver band with its asymmetrical flowing leaf/teardrop cutouts, smooth circular rims and intertwined curving structural ribs. Keep all original openings and precise organic curvature, original viewing angle. Replace wood ground with warm light-gray studio surface. Upgrade into beautiful high-resolution physically realistic luxury jewelry product photography style rendering on an elegant warm light-gray seamless studio surface. Highest native output resolution, same source aspect ratio. Exact geometry and design invariants: preserve all holes, patterns, rims, motif count, topology, shapes, inscriptions, material/color identities, camera view and subject placement. Sophisticated softbox reflections, true refined silver or gold response, crisp smooth contours and fine material microdetail, subtle contact shadow. Entire object visible with generous margin. REMOVE ALL CAD3D.Expert owner watermark and logo pixels, including the translucent rectangle or small text at lower right: that area must become clean uninterrupted background. No new text, logo, watermark, ornaments, gems, props or collage. One standalone finished image.",
+      "review": "Visually compared with source for subject, visible form, component arrangement and absence of watermark. AI presentation is identified in gallery captions; no metrological accuracy claim."
+    },
+    {
+      "id": "29",
+      "asset": "model-29-ai-v11.webp",
+      "original_file": "model-29-v8.webp",
+      "native_size": [
+        1670,
+        942
+      ],
+      "bytes": 207634,
+      "sha256": "14e6a371477c484aeb74b7971adc327fb8935ee579ea3d8b77a5c3a793641dd5",
+      "mode": "built-in ImageGen edit",
+      "prompt": "Use case: precise-object-edit. Input image is the EDIT TARGET, the user's original CAD3D.Expert model. Subject: The exact polished yellow-gold band with smooth circular top and bottom rims, and its original elongated rounded rectangular slot openings around the band. Preserve all original openings and their sizes, positions and ring proportions. Upgrade into beautiful high-resolution physically realistic luxury jewelry product photography style rendering on an elegant warm light-gray seamless studio surface. Highest native output resolution, same source aspect ratio. Exact geometry and design invariants: preserve all holes, patterns, rims, motif count, topology, shapes, inscriptions, material/color identities, camera view and subject placement. Sophisticated softbox reflections, true refined silver or gold response, crisp smooth contours and fine material microdetail, subtle contact shadow. Entire object visible with generous margin. REMOVE ALL CAD3D.Expert owner watermark and logo pixels, including the translucent rectangle or small text at lower right: that area must become clean uninterrupted background. No new text, logo, watermark, ornaments, gems, props or collage. One standalone finished image.",
+      "review": "Visually compared with source for subject, visible form, component arrangement and absence of watermark. AI presentation is identified in gallery captions; no metrological accuracy claim."
+    },
+    {
+      "id": "30",
+      "asset": "model-30-ai-v11.webp",
+      "original_file": "model-30-v8.webp",
+      "native_size": [
+        1673,
+        940
+      ],
+      "bytes": 208348,
+      "sha256": "14ab510f910cb82485cdaf987544325a46cdc7594d8ab063e2035fae7ffac3f4",
+      "mode": "built-in ImageGen edit",
+      "prompt": "Use case: precise-object-edit. Input image is the EDIT TARGET, the user's original CAD3D.Expert model. Subject: The exact tilted standing yellow-gold band with square/diamond-shaped holes and strongly angular faceted pyramid surfaces on the exterior. Preserve each original opening and facet, the ring's tilted orientation and geometry. Neutral warm light-gray studio floor. Upgrade into beautiful high-resolution physically realistic luxury jewelry product photography style rendering on an elegant warm light-gray seamless studio surface. Highest native output resolution, same source aspect ratio. Exact geometry and design invariants: preserve all holes, patterns, rims, motif count, topology, shapes, inscriptions, material/color identities, camera view and subject placement. Sophisticated softbox reflections, true refined silver or gold response, crisp smooth contours and fine material microdetail, subtle contact shadow. Entire object visible with generous margin. REMOVE ALL CAD3D.Expert owner watermark and logo pixels, including the translucent rectangle or small text at lower right: that area must become clean uninterrupted background. No new text, logo, watermark, ornaments, gems, props or collage. One standalone finished image.",
+      "review": "Visually compared with source for subject, visible form, component arrangement and absence of watermark. AI presentation is identified in gallery captions; no metrological accuracy claim."
+    },
+    {
+      "id": "31",
+      "asset": "model-31-ai-v11.webp",
+      "original_file": "model-31-v8.webp",
+      "native_size": [
+        1448,
+        1086
+      ],
+      "bytes": 284288,
+      "sha256": "f97e5bbfce900442e70a5c4b61073e1b21535600625b963c7c194d272de7f8d3",
+      "mode": "built-in ImageGen edit",
+      "prompt": "Use case: precise-object-edit. Input image is the EDIT TARGET, the user's original CAD3D.Expert model. Subject: The exact tall polished silver ring band with smooth round top and bottom rims, large asymmetric flowing swooping openwork curves between them. Preserve the precise contour of every organic opening, thickness, original camera angle and proportions. Replace wooden background with warm light-gray studio surface. Upgrade into beautiful high-resolution physically realistic luxury jewelry product photography style rendering on an elegant warm light-gray seamless studio surface. Highest native output resolution, same source aspect ratio. Exact geometry and design invariants: preserve all holes, patterns, rims, motif count, topology, shapes, inscriptions, material/color identities, camera view and subject placement. Sophisticated softbox reflections, true refined silver or gold response, crisp smooth contours and fine material microdetail, subtle contact shadow. Entire object visible with generous margin. REMOVE ALL CAD3D.Expert owner watermark and logo pixels, including the translucent rectangle or small text at lower right: that area must become clean uninterrupted background. No new text, logo, watermark, ornaments, gems, props or collage. One standalone finished image.",
+      "review": "Visually compared with source for subject, visible form, component arrangement and absence of watermark. AI presentation is identified in gallery captions; no metrological accuracy claim."
+    },
+    {
+      "id": "32",
+      "asset": "model-32-ai-v11.webp",
+      "original_file": "model-32-v8.webp",
+      "native_size": [
+        1455,
+        1081
+      ],
+      "bytes": 112738,
+      "sha256": "77d13ce425e832f13958377d4546e8fde37bc65cf0284e7768a6f5772fed2cc1",
+      "mode": "built-in ImageGen edit",
+      "prompt": "Use case: precise-object-edit. Input image is the EDIT TARGET, the user's original CAD3D.Expert model. Subject: The exact small yellow-gold SIX-pointed hollow star pendant with softly curved rounded points and one circular bail attached at the LEFT side, as in the source. Preserve six points, the entire open star center, original side bail location and curves. Do not turn it into a five-point star or move the bail to the top. Upgrade into beautiful high-resolution physically realistic luxury jewelry product photography style rendering on an elegant warm light-gray seamless studio surface. Highest native output resolution, same source aspect ratio. Exact geometry and design invariants: preserve all holes, patterns, rims, motif count, topology, shapes, inscriptions, material/color identities, camera view and subject placement. Sophisticated softbox reflections, true refined silver or gold response, crisp smooth contours and fine material microdetail, subtle contact shadow. Entire object visible with generous margin. REMOVE ALL CAD3D.Expert owner watermark and logo pixels, including the translucent rectangle or small text at lower right: that area must become clean uninterrupted background. No new text, logo, watermark, ornaments, gems, props or collage. One standalone finished image.",
+      "review": "Visually compared with source for subject, visible form, component arrangement and absence of watermark. AI presentation is identified in gallery captions; no metrological accuracy claim."
+    },
+    {
+      "id": "33",
+      "asset": "model-33-ai-v11.webp",
+      "original_file": "model-33-v8.webp",
+      "native_size": [
+        1455,
+        1081
+      ],
+      "bytes": 110194,
+      "sha256": "e23a7d3d07d12af79228b7950c7221d8c2ea2185e53d2986081856816e4eceb7",
+      "mode": "built-in ImageGen edit",
+      "prompt": "Use case: precise-object-edit. Input image is the EDIT TARGET, the user's original CAD3D.Expert model. Subject: The exact polished yellow-gold hollow elongated heart pendant with a small circular bail at the TOP, pointed lower end, the original asymmetrical smooth heart outline and open center. Preserve original slim elongated proportions, bail and camera angle. Upgrade into beautiful high-resolution physically realistic luxury jewelry product photography style rendering on an elegant warm light-gray seamless studio surface. Highest native output resolution, same source aspect ratio. Exact geometry and design invariants: preserve all holes, patterns, rims, motif count, topology, shapes, inscriptions, material/color identities, camera view and subject placement. Sophisticated softbox reflections, true refined silver or gold response, crisp smooth contours and fine material microdetail, subtle contact shadow. Entire object visible with generous margin. REMOVE ALL CAD3D.Expert owner watermark and logo pixels, including the translucent rectangle or small text at lower right: that area must become clean uninterrupted background. No new text, logo, watermark, ornaments, gems, props or collage. One standalone finished image.",
+      "review": "Visually compared with source for subject, visible form, component arrangement and absence of watermark. AI presentation is identified in gallery captions; no metrological accuracy claim."
+    },
+    {
+      "id": "34",
+      "asset": "model-34-ai-v11.webp",
+      "original_file": "model-34-v8.webp",
+      "native_size": [
+        1455,
+        1081
+      ],
+      "bytes": 94276,
+      "sha256": "b34ace1daf9e3e1d757145c7160de653958e596e3c0a77999ecc34a1d12e19fd",
+      "mode": "built-in ImageGen edit",
+      "prompt": "Use case: precise-object-edit. Input is the EDIT TARGET, the owner's original CAD3D.Expert model. Subject: The original yellow-gold architectural sculptural ring: thick wide band topped with a raised square pyramidal miniature roof with its dark reflected horizontal band and original small arch-like openings, more original cutouts on the shoulders. Preserve the exact silhouette, roof, original openings and smooth ring shank. Do not add a gemstone or reinvent the design. Upgrade its rendering into exceptionally refined high-resolution physically realistic product studio imagery, highest native resolution, same original aspect ratio and viewing angle. Preserve identical product design, geometry, all holes and relief details, proportions, exact motifs, color and material identities. Soft elegant side light, controlled long softbox highlights that reveal surfaces without hiding detail, realistic fine material finish, restrained warm light-gray seamless studio backdrop and gentle contact shadow. Whole product visible with generous breathing room. REMOVE ALL owner's CAD3D.Expert watermark text, logo and translucent box at lower right: clean uninterrupted background instead. No branding or watermark anywhere, no extra text, new objects, flowers, ornaments, redesigns, props or collage. Deliver one finished standalone image.",
+      "review": "Visually compared with source for subject, visible form, component arrangement and absence of watermark. AI presentation is identified in gallery captions; no metrological accuracy claim."
+    },
+    {
+      "id": "35",
+      "asset": "model-35-ai-v11.webp",
+      "original_file": "model-35-v8.webp",
+      "native_size": [
+        1455,
+        1081
+      ],
+      "bytes": 135446,
+      "sha256": "8c0fffe61198c5ab18f802f6440d48240ce8b925f4ba23290ef8b467a6a4ec8f",
+      "mode": "built-in ImageGen edit",
+      "prompt": "Use case: precise-object-edit. Input is the EDIT TARGET, the owner's original CAD3D.Expert model. Subject: The original tall gently tapered dark-green glossy ceramic vase with an open round top, the exact dense diagonal spiral fluting from rim to base. Preserve original rib direction, spacing and count, taper and proportions. Upgrade its rendering into exceptionally refined high-resolution physically realistic product studio imagery, highest native resolution, same original aspect ratio and viewing angle. Preserve identical product design, geometry, all holes and relief details, proportions, exact motifs, color and material identities. Soft elegant side light, controlled long softbox highlights that reveal surfaces without hiding detail, realistic fine material finish, restrained warm light-gray seamless studio backdrop and gentle contact shadow. Whole product visible with generous breathing room. REMOVE ALL owner's CAD3D.Expert watermark text, logo and translucent box at lower right: clean uninterrupted background instead. No branding or watermark anywhere, no extra text, new objects, flowers, ornaments, redesigns, props or collage. Deliver one finished standalone image.",
+      "review": "Visually compared with source for subject, visible form, component arrangement and absence of watermark. AI presentation is identified in gallery captions; no metrological accuracy claim."
+    },
+    {
+      "id": "36",
+      "asset": "model-36-ai-v11.webp",
+      "original_file": "model-36-v8.webp",
+      "native_size": [
+        1455,
+        1081
+      ],
+      "bytes": 227488,
+      "sha256": "9b25ecb5855b883f01651a88bc7c57d3597c4880509cb9b629b68829eb300c4a",
+      "mode": "built-in ImageGen edit",
+      "prompt": "Use case: precise-object-edit. Input is the EDIT TARGET, the owner's original CAD3D.Expert model. Subject: The original emerald-green glossy organic hollow object with a large oval opening through its front, the original smaller oval opening at the top, smoothly flowing broad curved frame and flattened bottom. Preserve the exact two openings, silhouette, original proportions and material color. Do not add a stem, handle or different form. Upgrade its rendering into exceptionally refined high-resolution physically realistic product studio imagery, highest native resolution, same original aspect ratio and viewing angle. Preserve identical product design, geometry, all holes and relief details, proportions, exact motifs, color and material identities. Soft elegant side light, controlled long softbox highlights that reveal surfaces without hiding detail, realistic fine material finish, restrained warm light-gray seamless studio backdrop and gentle contact shadow. Whole product visible with generous breathing room. REMOVE ALL owner's CAD3D.Expert watermark text, logo and translucent box at lower right: clean uninterrupted background instead. No branding or watermark anywhere, no extra text, new objects, flowers, ornaments, redesigns, props or collage. Deliver one finished standalone image.",
+      "review": "Visually compared with source for subject, visible form, component arrangement and absence of watermark. AI presentation is identified in gallery captions; no metrological accuracy claim."
+    },
+    {
+      "id": "37",
+      "asset": "model-37-ai-v11.webp",
+      "original_file": "model-37-v8.webp",
+      "native_size": [
+        1454,
+        1082
+      ],
+      "bytes": 92766,
+      "sha256": "f37d2ebab11cf9b73067d1f837aba2d9e09c23b02d0bad2aec790a466187fdc6",
+      "mode": "built-in ImageGen edit",
+      "prompt": "Use case: precise-object-edit. Input is the EDIT TARGET, the owner's original CAD3D.Expert model. Subject: The original red glazed ceramic rectangular vase with rounded vertical corners and open rectangular top, its exact repeating spiral recessed motifs on both visible faces, in the original alternating arrangement. Preserve each original spiral, count, shape, position and the whole vase geometry. Upgrade its rendering into exceptionally refined high-resolution physically realistic product studio imagery, highest native resolution, same original aspect ratio and viewing angle. Preserve identical product design, geometry, all holes and relief details, proportions, exact motifs, color and material identities. Soft elegant side light, controlled long softbox highlights that reveal surfaces without hiding detail, realistic fine material finish, restrained warm light-gray seamless studio backdrop and gentle contact shadow. Whole product visible with generous breathing room. REMOVE ALL owner's CAD3D.Expert watermark text, logo and translucent box at lower right: clean uninterrupted background instead. No branding or watermark anywhere, no extra text, new objects, flowers, ornaments, redesigns, props or collage. Deliver one finished standalone image.",
+      "review": "Visually compared with source for subject, visible form, component arrangement and absence of watermark. AI presentation is identified in gallery captions; no metrological accuracy claim."
+    },
+    {
+      "id": "38",
+      "asset": "model-38-ai-v11.webp",
+      "original_file": "model-38-v8.webp",
+      "native_size": [
+        1455,
+        1081
+      ],
+      "bytes": 127424,
+      "sha256": "b946cff599f47404f69013285adbdb976dccc4d399634334a1bf452f9301037b",
+      "mode": "built-in ImageGen edit",
+      "prompt": "Use case: precise-object-edit. Input is the EDIT TARGET, the owner's original CAD3D.Expert model. Subject: The original very pale cyan glazed ceramic rectangular vase with rounded vertical corners and open rectangular top, its exact raised flowing geometric labyrinth/maze relief wrapping around both visible faces. Preserve every original relief route, curvature, connectivity and location. Upgrade its rendering into exceptionally refined high-resolution physically realistic product studio imagery, highest native resolution, same original aspect ratio and viewing angle. Preserve identical product design, geometry, all holes and relief details, proportions, exact motifs, color and material identities. Soft elegant side light, controlled long softbox highlights that reveal surfaces without hiding detail, realistic fine material finish, restrained warm light-gray seamless studio backdrop and gentle contact shadow. Whole product visible with generous breathing room. REMOVE ALL owner's CAD3D.Expert watermark text, logo and translucent box at lower right: clean uninterrupted background instead. No branding or watermark anywhere, no extra text, new objects, flowers, ornaments, redesigns, props or collage. Deliver one finished standalone image.",
+      "review": "Visually compared with source for subject, visible form, component arrangement and absence of watermark. AI presentation is identified in gallery captions; no metrological accuracy claim."
+    },
+    {
+      "id": "39",
+      "asset": "model-39-ai-v11.webp",
+      "original_file": "model-39-v8.webp",
+      "native_size": [
+        1455,
+        1081
+      ],
+      "bytes": 169492,
+      "sha256": "0455b08c6dbfd3a03ee0cf7b75d57c1c2168f2c9f91424cb09e562230f5bbfe8",
+      "mode": "built-in ImageGen edit",
+      "prompt": "Use case: precise-object-edit. Input is the EDIT TARGET, the owner's original CAD3D.Expert model. Subject: The original deep-green glazed ceramic rectangular vase with rounded corners and open rectangular top and the exact raised flowing geometric labyrinth/maze relief wrapping around both visible faces. Preserve every original relief route, curvature, connectivity and location. Upgrade its rendering into exceptionally refined high-resolution physically realistic product studio imagery, highest native resolution, same original aspect ratio and viewing angle. Preserve identical product design, geometry, all holes and relief details, proportions, exact motifs, color and material identities. Soft elegant side light, controlled long softbox highlights that reveal surfaces without hiding detail, realistic fine material finish, restrained warm light-gray seamless studio backdrop and gentle contact shadow. Whole product visible with generous breathing room. REMOVE ALL owner's CAD3D.Expert watermark text, logo and translucent box at lower right: clean uninterrupted background instead. No branding or watermark anywhere, no extra text, new objects, flowers, ornaments, redesigns, props or collage. Deliver one finished standalone image.",
+      "review": "Visually compared with source for subject, visible form, component arrangement and absence of watermark. AI presentation is identified in gallery captions; no metrological accuracy claim."
+    },
+    {
+      "id": "40",
+      "asset": "model-40-ai-v11.webp",
+      "original_file": "model-40-v8.webp",
+      "native_size": [
+        1455,
+        1081
+      ],
+      "bytes": 156950,
+      "sha256": "28ba49236f23781cbdac23ab111820dc8218cdf6932e7c8d18a703b661e7612c",
+      "mode": "built-in ImageGen edit",
+      "prompt": "Use case: precise-object-edit. Input is the EDIT TARGET, the owner's original CAD3D.Expert model. Subject: The original rich cobalt-blue glazed ceramic rectangular vase with rounded corners and open rectangular top and the exact recessed spiral motifs on both visible faces in their original alternating arrangement. Preserve every spiral's count, position, outline and size. Upgrade its rendering into exceptionally refined high-resolution physically realistic product studio imagery, highest native resolution, same original aspect ratio and viewing angle. Preserve identical product design, geometry, all holes and relief details, proportions, exact motifs, color and material identities. Soft elegant side light, controlled long softbox highlights that reveal surfaces without hiding detail, realistic fine material finish, restrained warm light-gray seamless studio backdrop and gentle contact shadow. Whole product visible with generous breathing room. REMOVE ALL owner's CAD3D.Expert watermark text, logo and translucent box at lower right: clean uninterrupted background instead. No branding or watermark anywhere, no extra text, new objects, flowers, ornaments, redesigns, props or collage. Deliver one finished standalone image.",
+      "review": "Visually compared with source for subject, visible form, component arrangement and absence of watermark. AI presentation is identified in gallery captions; no metrological accuracy claim."
+    },
+    {
+      "id": "bess",
+      "asset": "bess-ai-v11.webp",
+      "original_file": "bess.webp",
+      "native_size": [
+        1539,
+        1022
+      ],
+      "bytes": 888290,
+      "sha256": "5b7acc5d3677cef64071547a480be23b3588ea1411cfe8da021da0baf1c1fd5d",
+      "mode": "built-in ImageGen edit",
+      "prompt": "Exact geometry-preserving visual enhancement; BESS landscape realism or transparent spherical dispenser, source invariant lighting and material upgrade.",
+      "review": "Visually compared with source for subject, visible form, component arrangement and absence of watermark. AI presentation is identified in gallery captions; no metrological accuracy claim."
+    },
+    {
+      "id": "01",
+      "asset": "model-01-ai-v11.webp",
+      "original_file": "model-01-v8.webp",
+      "native_size": [
+        1426,
+        1103
+      ],
+      "bytes": 143256,
+      "sha256": "058e17c1ef5c6332e746eb402914c9c2d8cd36dc6f6106850f33aa2aac16bacc",
+      "mode": "built-in ImageGen edit",
+      "prompt": "Exact geometry-preserving visual enhancement; BESS landscape realism or transparent spherical dispenser, source invariant lighting and material upgrade.",
+      "review": "Visually compared with source for subject, visible form, component arrangement and absence of watermark. AI presentation is identified in gallery captions; no metrological accuracy claim."
+    },
+    {
+      "id": "02",
+      "asset": "model-02-ai-v11.webp",
+      "original_file": "model-02-v8.webp",
+      "native_size": [
+        1426,
+        1103
+      ],
+      "bytes": 69958,
+      "sha256": "9422d47fc4e0af59d99e285703b6ffbb98601e74b9716f5cbbe8cdd6e38ea809",
+      "mode": "built-in ImageGen edit",
+      "prompt": "Use case: precise-object-edit. Input image is the EDIT TARGET, an original CAD3D.Expert model belonging to the user. Subject: A tall rectangular transparent acrylic brochure/card holder with sloping rounded open top, the exact internal hooks and cutouts and two circular holes in its bottom support. Preserve every visible structural contour. Primary request: upgrade rendering quality into exquisite high-resolution physically realistic product studio CGI, while preserving the identical object, precise geometry, proportions, number of components, camera view and landscape aspect ratio. Transparent parts must stay clear acrylic, with subtle realistic refraction and controlled large softbox highlights and readable fine edges; metallic parts stay metallic. Warm light-gray seamless studio surface, gentle contact shadows, crisp refined material realism, no overexposure hiding contours. Retain the reference composition and all geometry. Remove only the owner's CAD3D.Expert watermark at lower right. No redesign, extra objects, invented features, props, new branding or text. Highest native resolution, one standalone final image.",
+      "review": "Visually compared with source for subject, visible form, component arrangement and absence of watermark. AI presentation is identified in gallery captions; no metrological accuracy claim."
+    },
+    {
+      "id": "03",
+      "asset": "model-03-ai-v11.webp",
+      "original_file": "model-03-v8.webp",
+      "native_size": [
+        1426,
+        1103
+      ],
+      "bytes": 110928,
+      "sha256": "15779fa6a589ee6ac675c11dd17610b2896445bcdff1fb63c8067afc903a4d9e",
+      "mode": "built-in ImageGen edit",
+      "prompt": "Use case: precise-object-edit. Input image is the EDIT TARGET, an original CAD3D.Expert model belonging to the user. Subject: A close-up of the top of the transparent acrylic brochure holder. Preserve the exact embossed phrase PLEASE TAKE ONE, top lips, rounded notches and arrangement of keyhole slots. This is intentionally a close-up: retain its original viewpoint and visible portion. Primary request: upgrade rendering quality into exquisite high-resolution physically realistic product studio CGI, while preserving the identical object, precise geometry, proportions, number of components, camera view and landscape aspect ratio. Transparent parts must stay clear acrylic, with subtle realistic refraction and controlled large softbox highlights and readable fine edges; metallic parts stay metallic. Warm light-gray seamless studio surface, gentle contact shadows, crisp refined material realism, no overexposure hiding contours. Retain the reference composition and all geometry. Remove only the owner's CAD3D.Expert watermark at lower right. No redesign, extra objects, invented features, props, new branding or text. Highest native resolution, one standalone final image.",
+      "review": "Visually compared with source for subject, visible form, component arrangement and absence of watermark. AI presentation is identified in gallery captions; no metrological accuracy claim."
+    },
+    {
+      "id": "04",
+      "asset": "model-04-ai-v11.webp",
+      "original_file": "model-04-v8.webp",
+      "native_size": [
+        1426,
+        1103
+      ],
+      "bytes": 234486,
+      "sha256": "2c50c7d2f717aea1eb4829c0163563cd13e6f5926d4e957637ccdcd39eeb3bd0",
+      "mode": "built-in ImageGen edit",
+      "prompt": "Use case: precise-object-edit. Input image is the EDIT TARGET, an original CAD3D.Expert model belonging to the user. Subject: The transparent acrylic complex box assembly with multiple stepped sidewalls, square and circular bottom features, and a triangular top plate with one large central circular opening and the original small screw holes. Retain ALL panels and holes in their exact positions. Primary request: upgrade rendering quality into exquisite high-resolution physically realistic product studio CGI, while preserving the identical object, precise geometry, proportions, number of components, camera view and landscape aspect ratio. Transparent parts must stay clear acrylic, with subtle realistic refraction and controlled large softbox highlights and readable fine edges; metallic parts stay metallic. Warm light-gray seamless studio surface, gentle contact shadows, crisp refined material realism, no overexposure hiding contours. Retain the reference composition and all geometry. Remove only the owner's CAD3D.Expert watermark at lower right. No redesign, extra objects, invented features, props, new branding or text. Highest native resolution, one standalone final image.",
+      "review": "Visually compared with source for subject, visible form, component arrangement and absence of watermark. AI presentation is identified in gallery captions; no metrological accuracy claim."
+    },
+    {
+      "id": "05",
+      "asset": "model-05-ai-v11.webp",
+      "original_file": "model-05-v8.webp",
+      "native_size": [
+        1426,
+        1103
+      ],
+      "bytes": 97434,
+      "sha256": "9143dc99fda76c25187a3c017f891811529910c94c8bc8c45394d07ed8f9b860",
+      "mode": "built-in ImageGen edit",
+      "prompt": "Use case: precise-object-edit. Input image is the EDIT TARGET, an original CAD3D.Expert model belonging to the user. Subject: A clear acrylic circular clamp with transparent rectangular screw mount and a metal slotted round screw head on its right. Preserve the entire exact circular clamp and mechanical screw thread and slotted head. Primary request: upgrade rendering quality into exquisite high-resolution physically realistic product studio CGI, while preserving the identical object, precise geometry, proportions, number of components, camera view and landscape aspect ratio. Transparent parts must stay clear acrylic, with subtle realistic refraction and controlled large softbox highlights and readable fine edges; metallic parts stay metallic. Warm light-gray seamless studio surface, gentle contact shadows, crisp refined material realism, no overexposure hiding contours. Retain the reference composition and all geometry. Remove only the owner's CAD3D.Expert watermark at lower right. No redesign, extra objects, invented features, props, new branding or text. Highest native resolution, one standalone final image.",
+      "review": "Visually compared with source for subject, visible form, component arrangement and absence of watermark. AI presentation is identified in gallery captions; no metrological accuracy claim."
+    },
+    {
+      "id": "06",
+      "asset": "model-06-ai-v11.webp",
+      "original_file": "model-06-v8.webp",
+      "native_size": [
+        1426,
+        1103
+      ],
+      "bytes": 174594,
+      "sha256": "f81f75e0b4f2e34813aa2c57897a353d81deba5c466b1d1bccd83612647c0158",
+      "mode": "built-in ImageGen edit",
+      "prompt": "Use case: precise-object-edit. EDIT TARGET is the supplied original owner's CAD3D.Expert render. Subject: An arrangement of clear acrylic mechanical screw-and-disc components in the foreground and the same red plastic components at the rear, on the original technical drawing sheets. Keep the exact component count, threads, screw lengths, holes and original component placements. Preserve the drawing linework without inventing dimensions or new annotations, use enough depth of field that rear components are clearly readable. Upgrade this image into exquisite physically realistic studio product CGI, highest native output resolution, same landscape aspect ratio. Preserve the exact original object's topology, proportions, materials and color identity, component count, holes, assembly and camera view. For acrylic use sophisticated realistic transparent refraction and crisp contour highlights; no opaque redesign. Balanced large softbox lighting on a warm light-gray seamless studio floor with restrained gentle contact shadows and fine realistic material detail. Use the reference layout; keep the whole originally visible object inside the frame with breathing room. Remove only the owner's lower-right CAD3D.Expert watermark. No extra objects, new features, new branding, decorative props or collage. Deliver one standalone finished image.",
+      "review": "Visually compared with source for subject, visible form, component arrangement and absence of watermark. AI presentation is identified in gallery captions; no metrological accuracy claim."
+    },
+    {
+      "id": "07",
+      "asset": "model-07-ai-v11.webp",
+      "original_file": "model-07-v8.webp",
+      "native_size": [
+        1426,
+        1103
+      ],
+      "bytes": 74720,
+      "sha256": "b04484eda170f1cad7dcf483104df52d796627def7ae374779d5046cccd9bcd6",
+      "mode": "built-in ImageGen edit",
+      "prompt": "Use case: precise-object-edit. EDIT TARGET is the supplied original owner's CAD3D.Expert render. Subject: The original transparent acrylic rectangular hinged sign panel supported by a cylindrical metal adjustment knob on a white rectangular base with its two front slots. Keep this exact panel, support and base geometry. Upgrade this image into exquisite physically realistic studio product CGI, highest native output resolution, same landscape aspect ratio. Preserve the exact original object's topology, proportions, materials and color identity, component count, holes, assembly and camera view. For acrylic use sophisticated realistic transparent refraction and crisp contour highlights; no opaque redesign. Balanced large softbox lighting on a warm light-gray seamless studio floor with restrained gentle contact shadows and fine realistic material detail. Use the reference layout; keep the whole originally visible object inside the frame with breathing room. Remove only the owner's lower-right CAD3D.Expert watermark. No extra objects, new features, new branding, decorative props or collage. Deliver one standalone finished image.",
+      "review": "Visually compared with source for subject, visible form, component arrangement and absence of watermark. AI presentation is identified in gallery captions; no metrological accuracy claim."
+    },
+    {
+      "id": "08",
+      "asset": "model-08-ai-v11.webp",
+      "original_file": "model-08-v8.webp",
+      "native_size": [
+        1426,
+        1103
+      ],
+      "bytes": 130826,
+      "sha256": "495d42b970854f65e1d4809192e582cb65cff5506b0b55faf30e9d72e8d3d115",
+      "mode": "built-in ImageGen edit",
+      "prompt": "Use case: precise-object-edit. EDIT TARGET is the supplied original owner's CAD3D.Expert render. Subject: The original single translucent pale gray plastic fastener with circular head, rectangular shaft and split wedge/locking end. Preserve exact head, shaft, locking tongues and silhouette, at the original angle. Replace blue background with a restrained warm light-gray studio backdrop, preserve all plastic details. Upgrade this image into exquisite physically realistic studio product CGI, highest native output resolution, same landscape aspect ratio. Preserve the exact original object's topology, proportions, materials and color identity, component count, holes, assembly and camera view. For acrylic use sophisticated realistic transparent refraction and crisp contour highlights; no opaque redesign. Balanced large softbox lighting on a warm light-gray seamless studio floor with restrained gentle contact shadows and fine realistic material detail. Use the reference layout; keep the whole originally visible object inside the frame with breathing room. Remove only the owner's lower-right CAD3D.Expert watermark. No extra objects, new features, new branding, decorative props or collage. Deliver one standalone finished image.",
+      "review": "Visually compared with source for subject, visible form, component arrangement and absence of watermark. AI presentation is identified in gallery captions; no metrological accuracy claim."
+    },
+    {
+      "id": "09",
+      "asset": "model-09-ai-v11.webp",
+      "original_file": "model-09-v8.webp",
+      "native_size": [
+        1426,
+        1103
+      ],
+      "bytes": 120338,
+      "sha256": "1c3834574c5ff7b5b8529f3ca3273d15bd9f4caea5dafaa26f35bb45db4a5737",
+      "mode": "built-in ImageGen edit",
+      "prompt": "Use case: precise-object-edit. EDIT TARGET is the supplied original owner's CAD3D.Expert render. Subject: The exact transparent acrylic tiered brochure rack with its original compartments, dividers and wall heights. Preserve the original number and arrangement of compartments, dimensions and viewing angle; do not simplify or add tiers. Upgrade this image into exquisite physically realistic studio product CGI, highest native output resolution, same landscape aspect ratio. Preserve the exact original object's topology, proportions, materials and color identity, component count, holes, assembly and camera view. For acrylic use sophisticated realistic transparent refraction and crisp contour highlights; no opaque redesign. Balanced large softbox lighting on a warm light-gray seamless studio floor with restrained gentle contact shadows and fine realistic material detail. Use the reference layout; keep the whole originally visible object inside the frame with breathing room. Remove only the owner's lower-right CAD3D.Expert watermark. No extra objects, new features, new branding, decorative props or collage. Deliver one standalone finished image.",
+      "review": "Visually compared with source for subject, visible form, component arrangement and absence of watermark. AI presentation is identified in gallery captions; no metrological accuracy claim."
+    }
+  ]
+}

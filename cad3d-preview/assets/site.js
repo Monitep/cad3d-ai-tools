@@ -68,7 +68,7 @@
  $$('.energy-tabs button').forEach(button=>button.addEventListener('click',()=>{
   $$('.energy-tabs button').forEach(b=>{b.classList.toggle('active',b===button);b.setAttribute('aria-pressed',String(b===button));});
   $('.energy-caption').textContent=energyDescriptions[button.dataset.energy];
-  changeImage($('.energy-image img'),assets+button.dataset.energy+'.webp',energyDescriptions[button.dataset.energy]);
+  changeImage($('.energy-image img'),button.dataset.energySrc||assets+button.dataset.energy+'.webp',energyDescriptions[button.dataset.energy]);
  }));
  const comparison=$('.comparison');
  if(comparison){
