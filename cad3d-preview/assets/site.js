@@ -35,7 +35,15 @@
    else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
   }
  });
- matchMedia('(min-width:821px)').addEventListener('change',event=>{if(event.matches)closeMenu();});
+ matchMedia('(min-width:1025px)').addEventListener('change',event=>{if(event.matches)closeMenu();});
+ const serviceToggle=$('.services-toggle');
+ const serviceMenu=$('.services-menu');
+ function closeServices(){serviceMenu.hidden=true;serviceToggle.setAttribute('aria-expanded','false');}
+ serviceToggle.addEventListener('click',()=>{const open=serviceToggle.getAttribute('aria-expanded')!=='true';serviceMenu.hidden=!open;serviceToggle.setAttribute('aria-expanded',String(open));});
+ document.addEventListener('click',event=>{if(!event.target.closest('.nav-services'))closeServices();});
+ document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!serviceMenu.hidden){closeServices();serviceToggle.focus();}});
+ document.addEventListener('focusin',event=>{if(!event.target.closest('.nav-services'))closeServices();});
+ matchMedia('(max-width:1024px)').addEventListener('change',event=>{if(event.matches)closeServices();});
  function changeImage(target,src,alt,mobileSrc=''){
   const source=target.closest('picture')?.querySelector('source');
   const applyImage=()=>{if(source)source.srcset=mobileSrc||src;target.src=src;if(alt)target.alt=alt;};

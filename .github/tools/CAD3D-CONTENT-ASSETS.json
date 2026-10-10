@@ -1,0 +1,447 @@
+{
+  "source_page": "https://www.cad3d.expert/modellazione-3d/",
+  "retrieved_at": "2026-10-10",
+  "conversion": "WebP quality 95 at native pixel dimensions. No resizing, cropping or AI changes.",
+  "models": [
+    {
+      "id": 1,
+      "source_url": "https://www.cad3d.expert/wp-content/uploads/2020/03/113241_2019-Aug-21_09-58-55AM-000_CustomizedView8691322470_png.jpg",
+      "source_sha256": "c52c10de4126e86e29e9f2579604fb3d1af737ee24a3b5a8e2fa0736cb15c9d7",
+      "file": "model-01-v8.webp",
+      "dimensions": [
+        1024,
+        792
+      ],
+      "bytes": 57402
+    },
+    {
+      "id": 2,
+      "source_url": "https://www.cad3d.expert/wp-content/uploads/2020/03/114274_2019-Aug-28_01-23-00PM-000_CustomizedView27900057980_png.jpg",
+      "source_sha256": "b5ab166e0d08958a0b9205ec66b37c0b471a87797a192d63e1d342ad0cabc387",
+      "file": "model-02-v8.webp",
+      "dimensions": [
+        1024,
+        792
+      ],
+      "bytes": 30782
+    },
+    {
+      "id": 3,
+      "source_url": "https://www.cad3d.expert/wp-content/uploads/2020/03/114274_2019-Aug-28_11-32-20AM-000_CustomizedView17465134372_png.jpg",
+      "source_sha256": "7b2402e614aa6f41e1e79b2ca74d4464ad39f935a1b2e6023690c974a27d68ad",
+      "file": "model-03-v8.webp",
+      "dimensions": [
+        1024,
+        792
+      ],
+      "bytes": 44748
+    },
+    {
+      "id": 4,
+      "source_url": "https://www.cad3d.expert/wp-content/uploads/2020/03/114336_2019-Oct-09_09-06-26PM-000_CustomizedView5816362733_png.jpg",
+      "source_sha256": "b248a180db65287823cfda46c7df1faf7a98a2634983415c7fa36ad7d55a1629",
+      "file": "model-04-v8.webp",
+      "dimensions": [
+        1024,
+        792
+      ],
+      "bytes": 142158
+    },
+    {
+      "id": 5,
+      "source_url": "https://www.cad3d.expert/wp-content/uploads/2020/03/114341_2019-Nov-15_08-21-42AM-000_CustomizedView14879061884_png.jpg",
+      "source_sha256": "dda4c94db477b365ad6e60de729cf7c458218f8c7eb45c356d9de58e62ac83ae",
+      "file": "model-05-v8.webp",
+      "dimensions": [
+        1024,
+        792
+      ],
+      "bytes": 25332
+    },
+    {
+      "id": 6,
+      "source_url": "https://www.cad3d.expert/wp-content/uploads/2020/03/112290_Tavolo_2020-Jan-09_05-53-39PM-000_CustomizedView3269030965_png.jpg",
+      "source_sha256": "ab7722f6cabeb5b3ccf291ba34c8160741e6aac1336b4c1e3982e9bbcbdd080f",
+      "file": "model-06-v8.webp",
+      "dimensions": [
+        1024,
+        792
+      ],
+      "bytes": 67958
+    },
+    {
+      "id": 7,
+      "source_url": "https://www.cad3d.expert/wp-content/uploads/2020/03/409226_2020-Jan-03_05-53-52PM-000_CustomizedView13722934212_png.jpg",
+      "source_sha256": "bb2d0bb75b31e5cf69a382a39c2e20e6a7ea380870ffd21f630ee8b2afd13e54",
+      "file": "model-07-v8.webp",
+      "dimensions": [
+        1024,
+        792
+      ],
+      "bytes": 25484
+    },
+    {
+      "id": 8,
+      "source_url": "https://www.cad3d.expert/wp-content/uploads/2020/03/112276_2019-Oct-08_02-18-10PM-000_CustomizedView28146109587_png.jpg",
+      "source_sha256": "2b304fb6c4df13cf2b6849be32b44fcfdd07ee0d6d6b2cc8fe8a9514df706d4b",
+      "file": "model-08-v8.webp",
+      "dimensions": [
+        1024,
+        792
+      ],
+      "bytes": 28368
+    },
+    {
+      "id": 9,
+      "source_url": "https://www.cad3d.expert/wp-content/uploads/2020/03/114266_2019-Nov-11_01-42-37PM-000_CustomizedView9726253261_png.jpg",
+      "source_sha256": "660f4589699659c6a24d038d027667c5946bc89bed15ca19d74c4ca378e022bd",
+      "file": "model-09-v8.webp",
+      "dimensions": [
+        1024,
+        792
+      ],
+      "bytes": 62008
+    },
+    {
+      "id": 10,
+      "source_url": "https://www.cad3d.expert/wp-content/uploads/2020/03/114321_2019-Aug-28_02-38-21PM-000_CustomizedView15628492911_png.jpg",
+      "source_sha256": "582c5c7d81a8acd48e419948038b99e10f788d6f2cff065ccdf0c6d97f8f91c1",
+      "file": "model-10-v8.webp",
+      "dimensions": [
+        1024,
+        792
+      ],
+      "bytes": 64306
+    },
+    {
+      "id": 11,
+      "source_url": "https://www.cad3d.expert/wp-content/uploads/2020/03/111717_esempio_2019-Nov-27_05-09-54PM-000_CustomizedView25169434829_png.jpg",
+      "source_sha256": "e2326aa40ce4df6f615991725901c60762facf82e1ca3b60b5fa6ede3b745adf",
+      "file": "model-11-v8.webp",
+      "dimensions": [
+        1024,
+        792
+      ],
+      "bytes": 31092
+    },
+    {
+      "id": 12,
+      "source_url": "https://www.cad3d.expert/wp-content/uploads/2020/03/406108_esempio_2019-Nov-28_07-18-10AM-000_CustomizedView775953415_png.jpg",
+      "source_sha256": "327d6235d053435608a2ecb91c704277566a6522ffaa11565db45cea9241f271",
+      "file": "model-12-v8.webp",
+      "dimensions": [
+        1024,
+        792
+      ],
+      "bytes": 35004
+    },
+    {
+      "id": 13,
+      "source_url": "https://www.cad3d.expert/wp-content/uploads/2020/03/IMG_20191005_210159.jpg",
+      "source_sha256": "b7a6ec47afebbade921a72aa92a2e7919145fbb3fc7803ffd6cc2a604735a043",
+      "file": "model-13-v8.webp",
+      "dimensions": [
+        1024,
+        768
+      ],
+      "bytes": 307820
+    },
+    {
+      "id": 14,
+      "source_url": "https://www.cad3d.expert/wp-content/uploads/2020/03/116252_2019-Oct-05_05-06-43PM-000_CustomizedView1059935184_png.jpg",
+      "source_sha256": "5d9ad722d033e9fe0dcf990086dcfcdf39cdf1104fe6b7db96018a42e038f97c",
+      "file": "model-14-v8.webp",
+      "dimensions": [
+        1024,
+        792
+      ],
+      "bytes": 61730
+    },
+    {
+      "id": 15,
+      "source_url": "https://www.cad3d.expert/wp-content/uploads/2020/03/114323_2019-Oct-21_08-38-20AM-000_CustomizedView26148974621_png.jpg",
+      "source_sha256": "56975d3d107952c5ca9be0abcfef37db899b951bbc684d5bcb9fb43e6b9c9462",
+      "file": "model-15-v8.webp",
+      "dimensions": [
+        1024,
+        792
+      ],
+      "bytes": 114734
+    },
+    {
+      "id": 16,
+      "source_url": "https://www.cad3d.expert/wp-content/uploads/2020/03/IMG_20191021_104743.jpg",
+      "source_sha256": "cf595479df89ea13e46aaf06f36069a0d2d4e12214fb746fe402f66bd6469c27",
+      "file": "model-16-v8.webp",
+      "dimensions": [
+        1024,
+        768
+      ],
+      "bytes": 126450
+    },
+    {
+      "id": 17,
+      "source_url": "https://www.cad3d.expert/wp-content/uploads/2020/03/409229_2020-Jan-07_09-05-49AM-000_CustomizedView18973846438_png.jpg",
+      "source_sha256": "6537918bd60cc16575302cefa43fdf721240a52b4f1d21d89b258ca27743fe35",
+      "file": "model-17-v8.webp",
+      "dimensions": [
+        1024,
+        792
+      ],
+      "bytes": 15834
+    },
+    {
+      "id": 18,
+      "source_url": "https://www.cad3d.expert/wp-content/uploads/2020/03/Designer_Club_2018-Nov-16_09-46-18PM-000_CustomizedView10183049808.jpg",
+      "source_sha256": "a339c978ad6d8f25a122bb04b82b636fcaa10c8a5dbdbb0e4594074703c68496",
+      "file": "model-18-v8.webp",
+      "dimensions": [
+        1024,
+        576
+      ],
+      "bytes": 81862
+    },
+    {
+      "id": 19,
+      "source_url": "https://www.cad3d.expert/wp-content/uploads/2021/01/Image00005.jpg",
+      "source_sha256": "0279cebb143d34be76b3c566cbcad4de5f3bb7928a137efc982087a2c6018d2a",
+      "file": "model-19-v8.webp",
+      "dimensions": [
+        1200,
+        675
+      ],
+      "bytes": 67282
+    },
+    {
+      "id": 20,
+      "source_url": "https://www.cad3d.expert/wp-content/uploads/2021/01/Image-0020.jpg",
+      "source_sha256": "9083c1f26501083a94cfe82772e00bf1c4a988f2fd1a3a1586321417eeb098e8",
+      "file": "model-20-v8.webp",
+      "dimensions": [
+        1200,
+        675
+      ],
+      "bytes": 181082
+    },
+    {
+      "id": 21,
+      "source_url": "https://www.cad3d.expert/wp-content/uploads/2021/01/Image00004.jpg",
+      "source_sha256": "84437e4678f01bf78562ce53ab26a4b9d20e71a0906e6b3f611714dfa62c29bc",
+      "file": "model-21-v8.webp",
+      "dimensions": [
+        1200,
+        675
+      ],
+      "bytes": 234182
+    },
+    {
+      "id": 22,
+      "source_url": "https://www.cad3d.expert/wp-content/uploads/2021/01/Image00002.jpg",
+      "source_sha256": "fbf027d36d7889c58b38d780216190cca3a6a6774faa6e33f4569e7ff8bdeb44",
+      "file": "model-22-v8.webp",
+      "dimensions": [
+        1200,
+        674
+      ],
+      "bytes": 100528
+    },
+    {
+      "id": 23,
+      "source_url": "https://www.cad3d.expert/wp-content/uploads/2021/01/Image00006.jpg",
+      "source_sha256": "4e31e81f6097c7a7a9dc74edc8394ab9ee9c1e016b07952fff981a043abe244e",
+      "file": "model-23-v8.webp",
+      "dimensions": [
+        1200,
+        818
+      ],
+      "bytes": 141452
+    },
+    {
+      "id": 24,
+      "source_url": "https://www.cad3d.expert/wp-content/uploads/2021/01/Image00011.jpg",
+      "source_sha256": "d7a496a9af3701f6e035604f22171b6e6f744abfd0e431aaf59bd320b83d0530",
+      "file": "model-24-v8.webp",
+      "dimensions": [
+        1200,
+        674
+      ],
+      "bytes": 186100
+    },
+    {
+      "id": 25,
+      "source_url": "https://www.cad3d.expert/wp-content/uploads/2021/01/Image00010.jpg",
+      "source_sha256": "2a0fa817c7f58f22a7ba3f7c806002271b956dd6f18396763fa3076b1d33529f",
+      "file": "model-25-v8.webp",
+      "dimensions": [
+        1200,
+        674
+      ],
+      "bytes": 150810
+    },
+    {
+      "id": 26,
+      "source_url": "https://www.cad3d.expert/wp-content/uploads/2021/01/Image00008.jpg",
+      "source_sha256": "536805690aa61a2c2d560aa6b43ba2fd6b87d3344cf3d44a8e0f73aadd24a379",
+      "file": "model-26-v8.webp",
+      "dimensions": [
+        1200,
+        675
+      ],
+      "bytes": 147206
+    },
+    {
+      "id": 27,
+      "source_url": "https://www.cad3d.expert/wp-content/uploads/2021/01/Image00009.jpg",
+      "source_sha256": "0cabce8a5cc196d2b22507efc582a7b20808f4940fdd13f064d67d3f51b98d0b",
+      "file": "model-27-v8.webp",
+      "dimensions": [
+        1200,
+        675
+      ],
+      "bytes": 237244
+    },
+    {
+      "id": 28,
+      "source_url": "https://www.cad3d.expert/wp-content/uploads/2020/03/Anello-T-spline-1-v4.jpg",
+      "source_sha256": "792026d91c9afe9db3c626111ab95f735660737ff421ab7715fe464eb4e731b2",
+      "file": "model-28-v8.webp",
+      "dimensions": [
+        1024,
+        577
+      ],
+      "bytes": 135168
+    },
+    {
+      "id": 29,
+      "source_url": "https://www.cad3d.expert/wp-content/uploads/2020/03/Anello-T-spline-1-v2.jpg",
+      "source_sha256": "303f9501da3fc0d3935937fbe8929429326fe3256dbd6fde54ae72d494b4f0d4",
+      "file": "model-29-v8.webp",
+      "dimensions": [
+        1024,
+        577
+      ],
+      "bytes": 73282
+    },
+    {
+      "id": 30,
+      "source_url": "https://www.cad3d.expert/wp-content/uploads/2021/01/Image00003.jpg",
+      "source_sha256": "c9244550c931c7e2823e68ca98f63d59a38bfcfdaf16e3b21a19c23fb1b65a18",
+      "file": "model-30-v8.webp",
+      "dimensions": [
+        1200,
+        674
+      ],
+      "bytes": 125746
+    },
+    {
+      "id": 31,
+      "source_url": "https://www.cad3d.expert/wp-content/uploads/2020/03/Ring-Wave-6-v2.jpg",
+      "source_sha256": "3ac75aedadaa7d8f5fe758ee2661aa4492349381cc088d5c8a151bebe13b3f0e",
+      "file": "model-31-v8.webp",
+      "dimensions": [
+        1017,
+        763
+      ],
+      "bytes": 166294
+    },
+    {
+      "id": 32,
+      "source_url": "https://www.cad3d.expert/wp-content/uploads/2020/03/710x528_6445984_1721835_1459314812.jpg",
+      "source_sha256": "0a5b37574b13905503a687e6ce78ea89cd710a700df00e57661a16323e104410",
+      "file": "model-32-v8.webp",
+      "dimensions": [
+        710,
+        528
+      ],
+      "bytes": 26294
+    },
+    {
+      "id": 33,
+      "source_url": "https://www.cad3d.expert/wp-content/uploads/2020/03/710x528_6448371_104049_1459314835.jpg",
+      "source_sha256": "c4407f9e301d3067c59ce1b5871835ecdb4ea2118ab4d0e9638a30fdd5c1059a",
+      "file": "model-33-v8.webp",
+      "dimensions": [
+        710,
+        528
+      ],
+      "bytes": 21100
+    },
+    {
+      "id": 34,
+      "source_url": "https://www.cad3d.expert/wp-content/uploads/2020/03/710x528_21570546_12153983_1513681491.jpg",
+      "source_sha256": "6d27903e49b2c85abc98472073d49cc288e3a47bcbffdc28f13e4e1bbb1f0a13",
+      "file": "model-34-v8.webp",
+      "dimensions": [
+        710,
+        528
+      ],
+      "bytes": 26072
+    },
+    {
+      "id": 35,
+      "source_url": "https://www.cad3d.expert/wp-content/uploads/2020/03/710x528_15266685_9064849_1470217739.jpg",
+      "source_sha256": "1642e5e37d4427fd93828ada44d36af0e26913e0edc1c68e1422bc6aeb6657d9",
+      "file": "model-35-v8.webp",
+      "dimensions": [
+        710,
+        528
+      ],
+      "bytes": 29176
+    },
+    {
+      "id": 36,
+      "source_url": "https://www.cad3d.expert/wp-content/uploads/2020/03/710x528_15330819_9088352_1470757285.jpg",
+      "source_sha256": "e22eccbd08b151c61d1843a0a3bcc9581611cdf21eddb78ad83f1a329247e67b",
+      "file": "model-36-v8.webp",
+      "dimensions": [
+        710,
+        528
+      ],
+      "bytes": 39604
+    },
+    {
+      "id": 37,
+      "source_url": "https://www.cad3d.expert/wp-content/uploads/2020/03/710x528_15352797_9096829_1470909895.jpg",
+      "source_sha256": "1ade69e7c8c29cbeb01609b102a4258069fa7bbb35e60aeab72247ce50b90c2f",
+      "file": "model-37-v8.webp",
+      "dimensions": [
+        710,
+        528
+      ],
+      "bytes": 24298
+    },
+    {
+      "id": 38,
+      "source_url": "https://www.cad3d.expert/wp-content/uploads/2020/03/710x528_15354394_9097416_1470929828.jpg",
+      "source_sha256": "bf759067c56f77130064f51ab4442e22c594c8132596de80f9540e1163e95cc6",
+      "file": "model-38-v8.webp",
+      "dimensions": [
+        710,
+        528
+      ],
+      "bytes": 20850
+    },
+    {
+      "id": 39,
+      "source_url": "https://www.cad3d.expert/wp-content/uploads/2020/03/710x528_15354395_9097416_1470929728.jpg",
+      "source_sha256": "f6d205600208345f77d9277781828bcebec96b0b1e24b62af61ef76780d1e916",
+      "file": "model-39-v8.webp",
+      "dimensions": [
+        710,
+        528
+      ],
+      "bytes": 27050
+    },
+    {
+      "id": 40,
+      "source_url": "https://www.cad3d.expert/wp-content/uploads/2020/03/710x528_15352795_9096829_1470909967.jpg",
+      "source_sha256": "b6df3463182bc35c2ab40c0141e584363f084e15a6a0e1e9d9477faabe7faf17",
+      "file": "model-40-v8.webp",
+      "dimensions": [
+        710,
+        528
+      ],
+      "bytes": 27210
+    }
+  ]
+}
