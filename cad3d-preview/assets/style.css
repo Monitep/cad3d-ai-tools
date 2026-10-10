@@ -46,3 +46,5 @@ h1,h2,h3{font-weight:550;line-height:1.16}.hero h1{font-weight:550;line-height:1
 .tour-type{text-align:left}.tour-type .demo-number{font-size:48px}.mobile-services>p{margin-top:0}
 /* v9: preserve the full villa thumbnail and expose enlargement on CAD tiles. */
 .tour-card>a>img{object-fit:contain;object-position:center;background:#e2e9e5}.model-image:hover .image-action,.model-image:focus-visible .image-action{opacity:1}
+
+.footer-workflow-note{margin-block:0;padding-bottom:25px;color:#bdcbd0;font-size:12px;line-height:1.65}
