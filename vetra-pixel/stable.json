@@ -1,0 +1,4 @@
+{
+  "payload": "{\"schema\":1,\"channel\":\"stable\",\"target\":\"windows-x86_64\",\"version\":\"0.9.1\",\"url\":\"https://www.cad3d.expert/ai/vetra-pixel/0.9.1/Vetra-Pixel-0.9.1-Setup.exe\",\"bytes\":37439713,\"sha256\":\"3981030326e09af35155085c9bb9eb0bce5ec40387c579953ec23eebca3d8f15\",\"notes_it\":\"Anteprima automatica anche con Real-ESRGAN, zoom conservato cambiando modello e aggiornamenti dal sito ufficiale. Modelli e impostazioni conservati.\",\"notes_en\":\"Automatic preview with Real-ESRGAN, preserved zoom when switching models, and updates from the official website. Models and settings are kept.\"}",
+  "signature": "2eumubx0qVuvBK0CT9xMQvjueO3Phw4ttzeHNFlMfvgJrC1mZR6v2HSdJrTHZ3HhfLhsoJQGDeU6ZNY5HBO6CQ=="
+}

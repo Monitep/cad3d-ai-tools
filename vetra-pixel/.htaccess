@@ -1,0 +1,7 @@
+<IfModule mod_headers.c>
+<Files "stable.json">
+  Header set Cache-Control "no-cache, no-store, must-revalidate"
+</Files>
+</IfModule>
+AddType application/json .json
+AddType application/octet-stream .exe
