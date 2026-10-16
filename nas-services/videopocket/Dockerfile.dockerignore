@@ -1,0 +1,11 @@
+**
+!videopocket/
+!videopocket/**
+videopocket/tests/
+!nas-services/
+!nas-services/videopocket/
+!nas-services/videopocket/*.py
+!nas-services/videopocket/requirements.txt
+!nas-services/videopocket/Dockerfile
+**/.env
+**/__pycache__/

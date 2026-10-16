@@ -1,0 +1,6 @@
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "no-referrer"
+  Header always set X-Frame-Options "DENY"
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https: http:; connect-src 'self' https: http:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'"
+</IfModule>

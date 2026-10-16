@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#10151d">
+  <meta name="description" content="Cerca video, scegli la qualità e scaricali sul tuo NAS e sul telefono.">
+  <meta name="referrer" content="no-referrer">
+  <title>VideoPocket · CAD3D.Expert</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="app.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <a class="brand" href="./" aria-label="VideoPocket, pagina iniziale"><img src="icon.svg" width="38" height="38" alt=""><span>Video<span class="accent">Pocket</span><small>CAD3D.EXPERT</small></span></a>
+      <button class="connection" id="connection" type="button"><span id="connection-state">Collega NAS</span><svg class="icon"><use href="icons.svg#server"></use></svg></button>
+    </header>
+    <div class="notice" id="offline" hidden>Sei offline. Ricerca e download riprenderanno quando tornerai online.</div>
+    <main>
+      <section class="view" id="view-download" aria-labelledby="download-heading">
+        <div class="page-title"><p class="eyebrow">LA TUA VIDEOTECA</p><h1 id="download-heading">Un link. Il tuo video.</h1><p>Incolla un video e scegli come salvarlo.</p></div>
+        <form id="link-form" class="panel input-panel">
+          <label for="video-url">Link del video</label>
+          <div class="link-input"><svg class="icon"><use href="icons.svg#link"></use></svg><input id="video-url" type="url" placeholder="https://…" required maxlength="2048" autocomplete="off" inputmode="url"><button id="paste" type="button" aria-label="Incolla dagli appunti"><svg class="icon"><use href="icons.svg#clipboard"></use></svg></button></div>
+          <button class="primary full" id="analyze" type="submit"><svg class="icon"><use href="icons.svg#play"></use></svg>Leggi il video</button>
+        </form>
+        <div id="video-preview" hidden class="panel preview"></div>
+        <div class="section-title"><h2>I tuoi download</h2><button type="button" id="refresh" class="quiet" aria-label="Aggiorna download"><svg class="icon"><use href="icons.svg#refresh"></use></svg></button></div>
+        <div id="jobs" class="jobs"><div class="empty"><svg class="icon big"><use href="icons.svg#download"></use></svg><h3>Il prossimo video parte da qui</h3><p>Collega il NAS per vedere la tua coda.<br>I download proseguono anche a schermo spento.</p><button type="button" class="secondary connect-action">Collega il NAS</button></div></div>
+        <p class="footnote">Video pubblici supportati da yt-dlp. Alcuni siti richiedono un account o impediscono il download. Le dirette in corso e i video protetti da DRM non sono disponibili.</p>
+      </section>
+      <section class="view" id="view-search" hidden aria-labelledby="search-heading">
+        <div class="page-title"><p class="eyebrow">TROVA IL TUO PROSSIMO VIDEO</p><h1 id="search-heading">Cerca e scegli.</h1><p>Risultati YouTube qui. Gli altri siti nel browser.</p></div>
+        <form id="search-form" class="panel input-panel"><label for="query">Cosa vuoi guardare?</label><div class="link-input"><svg class="icon"><use href="icons.svg#search"></use></svg><input id="query" type="search" placeholder="Titolo, canale o argomento" minlength="2" maxlength="150" required><button type="submit" class="search-submit" aria-label="Cerca su YouTube"><svg class="icon"><use href="icons.svg#search"></use></svg></button></div></form>
+        <div class="source-choices" id="search-sources"></div>
+        <div class="section-title"><h2 id="results-heading">Risultati YouTube</h2><span id="result-count" class="muted"></span></div>
+        <div id="results" class="results"><div class="empty"><svg class="icon big"><use href="icons.svg#search"></use></svg><h3>Segui la tua curiosità</h3><p>Scrivi una ricerca per vedere fino a 8 video.</p></div></div>
+      </section>
+      <section class="view" id="view-sites" hidden aria-labelledby="sites-heading">
+        <div class="page-title"><p class="eyebrow">ESPLORA</p><h1 id="sites-heading">I tuoi siti video.</h1><p>Apri un sito, trova il video e copia il link.</p></div>
+        <div class="site-grid" id="sites"></div>
+        <div class="panel tip"><svg class="icon"><use href="icons.svg#link"></use></svg><div><h3>Dal sito alla tua coda</h3><p>Usa «Condividi → Copia link», poi torna in VideoPocket e incolla. Se installi l’app e Android la propone nel menu Condividi, puoi inviarle il link direttamente.</p></div></div>
+      </section>
+      <section class="view" id="view-settings" hidden aria-labelledby="settings-heading">
+        <div class="page-title"><p class="eyebrow">IL TUO MOTORE DI DOWNLOAD</p><h1 id="settings-heading">Collega il NAS.</h1><p>Una connessione privata, il telefono come telecomando.</p></div>
+        <form id="settings-form" class="panel input-panel">
+          <label for="api-url">Indirizzo del servizio VideoPocket</label><input id="api-url" type="url" placeholder="https://video.tuodominio.it" autocomplete="url" required>
+          <p class="hint">Se usi questa app dal sito, serve HTTPS. In rete locale puoi aprire direttamente l’interfaccia ospitata dal NAS.</p>
+          <label for="password">Password di VideoPocket</label><div class="password-row"><input id="password" type="password" placeholder="La password dedicata all’app" autocomplete="current-password" maxlength="200"><button id="show-password" type="button" class="quiet" aria-label="Mostra password"><svg class="icon"><use href="icons.svg#eye"></use></svg></button></div>
+          <button class="primary full" id="connect-button" type="submit"><svg class="icon"><use href="icons.svg#server"></use></svg>Collega e verifica</button>
+          <p class="hint">Usa la password dell’app, senza inserire le credenziali di amministrazione Synology. La sessione resta valida fino a 12 ore; chiudendo la finestra può essere necessario accedere di nuovo.</p>
+        </form>
+        <div class="panel" id="service-info" hidden></div>
+        <div class="panel install-panel"><div><h3>A portata di pollice</h3><p>Aggiungi VideoPocket alla schermata Home dal menu del browser.</p></div><button id="install" type="button" class="secondary" hidden>Installa</button></div>
+        <button id="logout" class="secondary full" type="button" hidden>Disconnetti questo telefono</button>
+        <p class="footnote">Il NAS prepara e conserva i file. «Salva sul telefono» li trasferisce nei download del browser. Non serve tenere aperta questa pagina durante la preparazione.</p>
+      </section>
+    </main>
+    <nav class="bottom-nav" aria-label="Navigazione principale">
+      <button type="button" data-view="download" aria-current="page"><svg class="icon"><use href="icons.svg#download"></use></svg><span>Download</span></button>
+      <button type="button" data-view="search"><svg class="icon"><use href="icons.svg#search"></use></svg><span>Cerca</span></button>
+      <button type="button" data-view="sites"><svg class="icon"><use href="icons.svg#compass"></use></svg><span>Siti</span></button>
+      <button type="button" data-view="settings"><svg class="icon"><use href="icons.svg#server"></use></svg><span>NAS</span></button>
+    </nav>
+  </div>
+  <div id="toast" role="status" aria-live="polite" hidden></div>
+</body>
+</html>

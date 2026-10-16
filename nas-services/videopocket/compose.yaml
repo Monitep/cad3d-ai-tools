@@ -1,0 +1,29 @@
+services:
+  videopocket:
+    build:
+      context: ../..
+      dockerfile: nas-services/videopocket/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "${NAS_BIND_IP:-127.0.0.1}:8787:8787"
+    environment:
+      APP_PASSWORD: "${APP_PASSWORD:?Imposta APP_PASSWORD nel file .env}"
+      ALLOWED_ORIGINS: "${ALLOWED_ORIGINS:-https://cad3d.expert,https://www.cad3d.expert}"
+      MAX_FILE_MB: "${MAX_FILE_MB:-2048}"
+      STORAGE_MB: "${STORAGE_MB:-10240}"
+      RETENTION_HOURS: "${RETENTION_HOURS:-48}"
+      DENO_DIR: /tmp/deno
+    volumes:
+      - videopocket-data:/data
+    mem_limit: 1536m
+    cpus: 1.5
+    pids_limit: 128
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp:size=256m,mode=1777
+volumes:
+  videopocket-data:

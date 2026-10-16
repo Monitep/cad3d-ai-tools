@@ -23,3 +23,5 @@ jobs:
             **/.git*/**
             README.md
             .github/**
+            nas-services/**
+            videopocket/tests/**
