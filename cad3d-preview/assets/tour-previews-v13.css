@@ -1,0 +1,37 @@
+/* Tour photographs are local assets and remain visible without the 360° players. */
+.tours-page .page-opening{padding-bottom:48px}
+.tour-feature{padding-bottom:88px}
+.tour-feature-panel{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);overflow:hidden;border-radius:8px;background:var(--deep);color:var(--white)}
+.tour-feature-image{display:block;position:relative;min-width:0;min-height:440px}
+.tour-feature-image>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center}
+.tour-feature-image-label{position:absolute;left:24px;bottom:24px;display:inline-flex;align-items:center;gap:20px;padding:12px 18px;border-radius:4px;background:var(--deep);color:var(--white);font-size:16px}
+.tour-feature-copy{min-width:0;padding:clamp(28px,3.2vw,52px);display:flex;flex-direction:column;align-items:flex-start;justify-content:center}
+.tour-feature-copy h2{font-size:clamp(36px,3.4vw,52px);line-height:1.1;margin-bottom:20px}
+.tour-feature-copy p{font-size:16px;line-height:1.65;max-width:44ch;margin-bottom:18px;color:var(--white)}
+.tour-feature-copy .tour-feature-meta{font-size:14px;color:#d4bea2;margin-bottom:20px}
+.tour-feature-copy .button{margin-top:8px;max-width:100%;gap:20px;text-align:left}
+.tour-feature-tab{font-size:12px;margin-top:12px;color:#c4d4d8}
+.tour-feature a:focus-visible{outline-color:var(--sand);outline-offset:-5px}
+.tour-feature-copy a:focus-visible{outline-offset:5px}
+.tour-card-visual{position:relative;overflow:hidden;border-radius:8px;aspect-ratio:8/5;background:#e2e9e5}
+.tour-card-visual>img{width:100%;height:100%;object-fit:cover}
+.tour-card-format{position:absolute;right:14px;bottom:14px;display:inline-flex;align-items:center;gap:12px;padding:8px 12px;border-radius:4px;background:var(--deep);color:var(--white);font-size:13px;line-height:1.3}
+.tour-card-format svg{width:16px;height:16px}
+.tours-page .tour-card p{font-size:15px;line-height:1.6}
+.tours-page .tour-card .text-link{min-height:44px}
+.tours-page .tour-card>a>img{height:auto;aspect-ratio:8/5;object-fit:contain}
+@media(max-width:1000px){
+ .tour-feature-panel{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr)}
+ .tour-feature-copy{padding:28px}
+ .tour-feature-copy h2{font-size:36px}
+}
+@media(max-width:760px){
+ .tours-page .page-opening{padding-bottom:32px}
+ .tour-feature{padding-bottom:60px}
+ .tour-feature-panel{grid-template-columns:minmax(0,1fr)}
+ .tour-feature-image{min-height:0;aspect-ratio:16/10}
+ .tour-feature-copy{padding:30px 24px 32px}
+ .tour-feature-copy h2{font-size:38px}
+ .tour-feature-copy p{max-width:none}
+ .tour-feature-image-label{left:16px;bottom:16px}
+}
