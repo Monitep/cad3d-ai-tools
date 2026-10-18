@@ -1,0 +1,804 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SunShot: luce e meteo per il sopralluogo | CAD3D.Expert</title>
+<meta name="description" content="Pianifica il sopralluogo fotografico e i voli drone per fotoinserimenti: percorso del sole, direzione di ripresa, ombre e meteo attuale.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='7' fill='%23E09B12'/%3E%3Cg stroke='%23E09B12' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='M16 2v4M16 26v4M2 16h4M26 16h4M6 6l3 3M23 23l3 3M6 26l3-3M23 9l3-3'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme: light;
+  --bg:#E8EDF1; --surface:#F6F8FA; --ink:#14233B; --muted:#56667A; --line:#B9C6D2;
+  --sun:#D98F0B; --sunsoft:rgba(224,155,18,.20); --cam:#2E6FA8; --camsoft:rgba(46,111,168,.15);
+  --go:#2F7D5B; --stop:#B4442C;
+  --s-night:#24344F; --s-blue:#4F73AD; --s-gold:#F0B947; --s-day:#BFD6EA;
+  --ring:#C9D4DE; --face:#F2F5F8;
+  --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --text:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme: dark;
+    --bg:#0E1726; --surface:#16233A; --ink:#E3EAF2; --muted:#98A8BC; --line:#33476A;
+    --sun:#F2B43A; --sunsoft:rgba(242,180,58,.22); --cam:#72AAE0; --camsoft:rgba(114,170,224,.16);
+    --go:#5BBF8E; --stop:#E5806A;
+    --s-night:#0A1220; --s-blue:#2F4E86; --s-gold:#C98F22; --s-day:#4C6E94;
+    --ring:#2A3C5B; --face:#122038;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --bg:#0E1726; --surface:#16233A; --ink:#E3EAF2; --muted:#98A8BC; --line:#33476A;
+  --sun:#F2B43A; --sunsoft:rgba(242,180,58,.22); --cam:#72AAE0; --camsoft:rgba(114,170,224,.16);
+  --go:#5BBF8E; --stop:#E5806A;
+  --s-night:#0A1220; --s-blue:#2F4E86; --s-gold:#C98F22; --s-day:#4C6E94;
+  --ring:#2A3C5B; --face:#122038;
+}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:100%}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.5 var(--text)}
+.wrap{max-width:1140px;margin:0 auto;padding:22px 18px 40px}
+a{color:var(--cam)}
+:focus-visible{outline:3px solid var(--cam);outline-offset:2px}
+.dial:focus:not(:focus-visible){outline:none}
+
+/* Testata */
+.brand{display:flex;align-items:center;gap:12px}
+.brand svg{flex:none}
+h1{font:600 2.3rem/1 var(--display);margin:0;letter-spacing:.005em}
+.tag{margin:3px 0 0;color:var(--muted);font-size:.98rem}
+.search{display:flex;gap:8px;margin-top:16px;max-width:640px}
+.search input{flex:1;min-width:0;font:inherit;padding:11px 13px;border:1.5px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink)}
+.search input::placeholder{color:var(--muted)}
+button,input,.strip{touch-action:manipulation}
+button{font:500 1rem/1.2 var(--text);border:0;border-radius:10px;padding:11px 15px;background:var(--ink);color:var(--bg);cursor:pointer}
+button.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+button:disabled{opacity:.55;cursor:default}
+.place{margin:12px 0 0;color:var(--muted);font-size:.95rem}
+.place strong{color:var(--ink);font-weight:600;font-size:1.05rem}
+.status{min-height:1.5em;margin:4px 0 0;font-size:.92rem;color:var(--muted)}
+.status.err{color:var(--stop)}
+
+/* Struttura */
+main{display:grid;gap:26px;margin-top:14px}
+@media (min-width:900px){
+  main{grid-template-columns:minmax(0,1.08fr) minmax(0,1fr);align-items:start;gap:40px}
+  .dialcol{position:sticky;top:calc(14px + env(safe-area-inset-top,0px))}
+}
+.dial{display:block;width:100%;max-width:540px;margin:0 auto;touch-action:none;cursor:crosshair;user-select:none;-webkit-user-select:none}
+.dial text{font-family:var(--text);fill:var(--muted)}
+.dial .card{font:600 15px var(--display);fill:var(--ink)}
+.hint{text-align:center;color:var(--muted);font-size:.86rem;margin:2px 0 0}
+
+.timebar{display:flex;align-items:center;gap:12px;margin-top:14px}
+.play{width:46px;height:46px;padding:0;border-radius:50%;display:grid;place-items:center;flex:none}
+.play svg{display:block}
+input[type=range]{flex:1;min-width:0;accent-color:var(--sun);height:30px}
+.clock{font:600 2.2rem/1 var(--display);font-variant-numeric:tabular-nums;min-width:3.6ch;text-align:right}
+
+.strip{position:relative;height:28px;border-radius:7px;margin-top:14px;cursor:pointer}
+.strip .win{position:absolute;top:-5px;bottom:-5px;border:2px solid var(--cam);border-radius:7px;pointer-events:none}
+.strip .cursor{position:absolute;top:-9px;bottom:-9px;width:3px;margin-left:-1.5px;border-radius:2px;background:var(--ink);pointer-events:none}
+.ticks{display:flex;justify-content:space-between;font-size:.78rem;color:var(--muted);margin-top:6px;font-variant-numeric:tabular-nums}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:8px;font-size:.84rem;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:14px;height:10px;border-radius:3px;display:inline-block}
+.legend i.w{background:transparent;border:2px solid var(--cam)}
+
+/* Pannello */
+.panel section{padding:20px 0;border-top:1.5px solid var(--line)}
+.panel section:first-child{border-top:0;padding-top:4px}
+h2{font:600 1.3rem/1.2 var(--display);margin:0 0 10px}
+.readouts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.readouts div{border-top:4px solid var(--sun);padding-top:6px}
+.readouts div:last-child{border-top-color:var(--ink)}
+.readouts b{display:block;font:600 2rem/1.05 var(--display);font-variant-numeric:tabular-nums}
+.readouts small{color:var(--muted);font-size:.86rem}
+.events{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:4px 16px;margin:14px 0 0;font-size:.95rem}
+.events div{display:flex;justify-content:space-between;gap:8px;border-bottom:1px dashed var(--line);padding:3px 0}
+.events dt{color:var(--muted)} .events dd{margin:0;font-weight:600;font-variant-numeric:tabular-nums}
+
+.verdict{font-size:1.12rem;line-height:1.45;margin:0 0 6px}
+.best{margin:8px 0 0;padding:10px 12px;border-left:4px solid var(--cam);background:var(--camsoft);border-radius:0 8px 8px 0}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.row label{color:var(--muted);font-size:.92rem}
+.num{width:5.2em;font:inherit;padding:8px 9px;border:1.5px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);font-variant-numeric:tabular-nums}
+input[type=date]{font:inherit;padding:8px 9px;border:1.5px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.chips button{padding:6px 11px;border-radius:999px;font-size:.9rem;background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.chips button[aria-pressed="true"]{background:var(--cam);border-color:var(--cam);color:#fff}
+.shadowline{font-size:1.08rem;margin:8px 0 0}
+
+.wx{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px 18px;margin:10px 0 0}
+.wx div{display:flex;justify-content:space-between;gap:8px;border-bottom:1px dashed var(--line);padding:4px 0;font-size:.95rem}
+.wx span:first-child{color:var(--muted)}
+.wx span:last-child{font-weight:600;text-align:right}
+@media (max-width:440px){.wx{grid-template-columns:1fr}}
+.fly{margin:12px 0 0;padding:12px 14px;border-radius:10px;border:2px solid var(--line)}
+.fly.ok{border-color:var(--go)} .fly.no{border-color:var(--stop)}
+.fly strong{display:block;font:600 1.25rem/1.2 var(--display)}
+.fly.ok strong{color:var(--go)} .fly.no strong{color:var(--stop)}
+.fly p{margin:4px 0 0;font-size:.93rem}
+.note{color:var(--muted);font-size:.88rem;margin:8px 0 0}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+
+footer{margin-top:30px;padding-top:14px;border-top:1.5px solid var(--line);color:var(--muted);font-size:.86rem}
+footer p{margin:4px 0}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true">
+        <circle cx="22" cy="22" r="20" fill="none" stroke="currentColor" stroke-width="2" opacity=".35"/>
+        <path d="M22 22 L36 9 A20 20 0 0 1 41 20 Z" fill="var(--cam)" opacity=".55"/>
+        <circle cx="14" cy="13" r="6" fill="var(--sun)"/>
+      </svg>
+      <div>
+        <h1>SunShot</h1>
+        <p class="tag">Quando e da dove scattare il fotoinserimento: sole, ombre e meteo sul posto.</p>
+      </div>
+    </div>
+    <form class="search" id="searchForm" autocomplete="off">
+      <label class="sr" for="q">Località o coordinate</label>
+      <input id="q" name="q" type="text" placeholder="Località o coordinate" maxlength="100" enterkeyhint="search">
+      <button type="submit" id="goBtn">Cerca</button>
+      <button type="button" class="ghost" id="geoBtn" title="Usa la mia posizione" aria-label="Usa la mia posizione">
+        <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>
+      </button>
+    </form>
+    <p class="place" id="place"></p>
+    <p class="status" id="status" role="status" aria-live="polite"></p>
+  </header>
+
+  <main>
+    <div class="dialcol">
+      <svg class="dial" id="dial" viewBox="-200 -200 400 400" tabindex="0" role="img" aria-label="Diagramma solare: tocca o trascina per orientare la camera, frecce sinistra e destra per ruotarla">
+        <g id="gStatic"></g>
+        <g id="gDyn"></g>
+      </svg>
+      <p class="hint">Tocca o trascina il quadrante per orientare la camera.</p>
+
+      <div class="timebar">
+        <button class="play" id="playBtn" aria-label="Riproduci la giornata">
+          <svg id="playIcon" width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M4 2 L16 9 L4 16 Z" fill="currentColor"/></svg>
+        </button>
+        <label class="sr" for="time">Ora del giorno</label>
+        <input type="range" id="time" min="0" max="1439" step="1" value="720">
+        <output class="clock" id="clock" for="time">12:00</output>
+      </div>
+
+      <div class="strip" id="strip" aria-hidden="true"></div>
+      <div class="ticks" aria-hidden="true"><span>0</span><span>3</span><span>6</span><span>9</span><span>12</span><span>15</span><span>18</span><span>21</span><span>24</span></div>
+      <div class="legend">
+        <span><i style="background:var(--s-night)"></i>Notte</span>
+        <span><i style="background:var(--s-blue)"></i>Ora blu</span>
+        <span><i style="background:var(--s-gold)"></i>Ora d’oro</span>
+        <span><i style="background:var(--s-day)"></i>Giorno</span>
+        <span><i class="w"></i>Luce migliore per la tua inquadratura</span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <section aria-labelledby="hSun">
+        <h2 id="hSun">Il sole alle <span id="clock2">12:00</span></h2>
+        <div class="readouts">
+          <div><b id="rAz">0°</b><small>Azimut <span id="rAzName"></span></small></div>
+          <div><b id="rAlt">0°</b><small>Altezza sull’orizzonte</small></div>
+          <div><b id="rShadow">0 m</b><small>Ombra di <span id="rH">4,5</span> m</small></div>
+        </div>
+        <dl class="events" id="events"></dl>
+        <div class="row" style="margin-top:14px">
+          <label for="date">Data del sopralluogo</label>
+          <input type="date" id="date">
+          <button type="button" class="ghost" id="todayBtn">Oggi</button>
+        </div>
+      </section>
+
+      <section aria-labelledby="hCam">
+        <h2 id="hCam">Direzione di ripresa</h2>
+        <p class="verdict" id="verdict"></p>
+        <div class="row">
+          <label for="cam">Camera verso</label>
+          <input class="num" type="number" id="cam" min="0" max="359" step="1" inputmode="numeric">
+          <span id="camName" style="font-weight:600"></span>
+        </div>
+        <div class="chips" id="camChips"></div>
+        <div class="best" id="best"></div>
+      </section>
+
+      <section aria-labelledby="hShadow">
+        <h2 id="hShadow">Ombre in scena</h2>
+        <div class="row">
+          <label for="height">Altezza dell’oggetto (m)</label>
+          <input class="num" type="number" id="height" min="0.1" max="400" step="0.1" inputmode="decimal">
+        </div>
+        <div class="chips" id="hChips"></div>
+        <p class="shadowline" id="shadowLine"></p>
+        <p class="note">Le altezze dei preset sono esempi indicativi: inserisci quelle del tuo progetto.</p>
+      </section>
+
+      <section aria-labelledby="hWx">
+        <h2 id="hWx">Meteo adesso e volo drone</h2>
+        <div id="wx"></div>
+        <div class="row" style="margin-top:12px">
+          <label for="windMax">Vento massimo per il tuo drone (km/h)</label>
+          <input class="num" type="number" id="windMax" min="5" max="80" step="1" inputmode="numeric">
+        </div>
+        <div class="actions">
+          <button type="button" class="ghost" id="wxBtn">Aggiorna meteo</button>
+          <button type="button" class="ghost" id="shareBtn">Condividi questo piano</button>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    <p>Posizione del sole calcolata nel browser con un modello astronomico semplificato (precisione dell’ordine di pochi minuti e di qualche decimo di grado). Meteo attuale fornito da weatherstack, un servizio apilayer.</p>
+    <p>Uno strumento di <a href="https://cad3d.expert/">CAD3D.Expert</a>, visualizzazione per le energie rinnovabili.</p>
+  </footer>
+</div>
+
+<script>
+(() => {
+'use strict';
+const $ = (s) => document.querySelector(s);
+
+/* ---------- Astronomia (algoritmo tipo SunCalc / Astronomy Answers) ---------- */
+const RAD = Math.PI / 180, DAY = 86400000, J1970 = 2440588, J2000 = 2451545, OBL = RAD * 23.4397;
+function sunPos(ms, lat, lon) {
+  const d = ms / DAY - 0.5 + J1970 - J2000;
+  const M = RAD * (357.5291 + 0.98560028 * d);
+  const C = RAD * (1.9148 * Math.sin(M) + 0.02 * Math.sin(2 * M) + 0.0003 * Math.sin(3 * M));
+  const L = M + C + RAD * 102.9372 + Math.PI;
+  const dec = Math.asin(Math.sin(OBL) * Math.sin(L));
+  const ra = Math.atan2(Math.sin(L) * Math.cos(OBL), Math.cos(L));
+  const H = RAD * (280.16 + 360.9856235 * d) + RAD * lon - ra;
+  const phi = RAD * lat;
+  const alt = Math.asin(Math.sin(phi) * Math.sin(dec) + Math.cos(phi) * Math.cos(dec) * Math.cos(H));
+  const az = Math.atan2(Math.sin(H), Math.cos(H) * Math.sin(phi) - Math.tan(dec) * Math.cos(phi));
+  return { alt: alt / RAD, az: (az / RAD + 540) % 360 };
+}
+
+/* ---------- Fusi orari ---------- */
+const BROWSER_TZ = (() => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; } catch (e) { return 'UTC'; } })();
+const dtfCache = {};
+function partsIn(tz, ms) {
+  if (!dtfCache[tz]) dtfCache[tz] = new Intl.DateTimeFormat('en-US', { timeZone: tz, hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const o = {};
+  for (const p of dtfCache[tz].formatToParts(new Date(ms))) o[p.type] = p.value;
+  return { y: +o.year, m: +o.month, d: +o.day, h: +o.hour % 24, mi: +o.minute, s: +o.second };
+}
+function tzOffsetMin(tz, ms) {
+  const p = partsIn(tz, ms);
+  const asUTC = Date.UTC(p.y, p.m - 1, p.d, p.h, p.mi, p.s);
+  return Math.round((asUTC - Math.floor(ms / 1000) * 1000) / 60000);
+}
+function zonedMidnight(dateStr, tz) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const guess = Date.UTC(y, m - 1, d);
+  let t = guess - tzOffsetMin(tz, guess) * 60000;
+  const off2 = tzOffsetMin(tz, t);
+  t = guess - off2 * 60000;
+  return t;
+}
+function todayIn(tz) {
+  const p = partsIn(tz, Date.now());
+  return `${p.y}-${String(p.m).padStart(2, '0')}-${String(p.d).padStart(2, '0')}`;
+}
+function validTz(tz) { try { new Intl.DateTimeFormat('en-US', { timeZone: tz }); return true; } catch (e) { return false; } }
+
+/* ---------- Formati ---------- */
+const nf0 = new Intl.NumberFormat('it-IT', { maximumFractionDigits: 0 });
+const nf1 = new Intl.NumberFormat('it-IT', { maximumFractionDigits: 1 });
+const WINDS = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSO', 'SO', 'OSO', 'O', 'ONO', 'NO', 'NNO'];
+const windName = (deg) => WINDS[Math.round(((deg % 360) + 360) % 360 / 22.5) % 16];
+const hhmm = (min) => `${String(Math.floor(min / 60) % 24).padStart(2, '0')}:${String(Math.round(min) % 60).padStart(2, '0')}`;
+const angDiff = (a, b) => { const d = Math.abs(((a - b) % 360 + 540) % 360 - 180); return d; };
+const signedDiff = (a, b) => ((a - b) % 360 + 540) % 360 - 180;
+
+/* ---------- Stato ---------- */
+const API = 'https://www.cad3d.expert/ai/sunshot/api.php';
+const STORE = 'sunshot:v1';
+const state = {
+  lat: 45.8206, lon: 8.8251, tz: 'Europe/Rome', name: 'Varese', region: 'Lombardia', country: 'Italia',
+  date: null, minute: 720, cam: 180, fov: 70, height: 4.5, windMax: 30, weather: null, wxQuery: null
+};
+const day = { start: 0, alt: new Float32Array(1440), az: new Float32Array(1440), score: new Float32Array(1440), ev: {}, windows: [], maxScore: 0 };
+
+function loadSaved() {
+  try {
+    const s = JSON.parse(localStorage.getItem(STORE) || 'null');
+    if (s && typeof s === 'object') {
+      for (const k of ['lat', 'lon', 'cam', 'height', 'windMax']) if (Number.isFinite(s[k])) state[k] = s[k];
+      for (const k of ['tz', 'name', 'region', 'country']) if (typeof s[k] === 'string') state[k] = s[k];
+    }
+  } catch (e) { /* storage non disponibile */ }
+  const u = new URLSearchParams(location.search);
+  const lat = parseFloat(u.get('lat')), lon = parseFloat(u.get('lon'));
+  if (Number.isFinite(lat) && Number.isFinite(lon) && Math.abs(lat) <= 90 && Math.abs(lon) <= 180) {
+    state.lat = lat; state.lon = lon;
+    state.name = (u.get('name') || `Punto ${lat.toFixed(4)}, ${lon.toFixed(4)}`).slice(0, 80);
+    state.region = ''; state.country = '';
+    state.tz = BROWSER_TZ;
+  }
+  if (u.get('tz') && validTz(u.get('tz'))) state.tz = u.get('tz');
+  if (/^\d{4}-\d{2}-\d{2}$/.test(u.get('d') || '')) state.date = u.get('d');
+  const cam = parseFloat(u.get('cam')); if (Number.isFinite(cam)) state.cam = ((Math.round(cam) % 360) + 360) % 360;
+  const h = parseFloat(u.get('h')); if (Number.isFinite(h) && h > 0) state.height = h;
+  if (!validTz(state.tz)) state.tz = BROWSER_TZ;
+}
+function save() {
+  try {
+    const { lat, lon, tz, name, region, country, cam, height, windMax } = state;
+    localStorage.setItem(STORE, JSON.stringify({ lat, lon, tz, name, region, country, cam, height, windMax }));
+  } catch (e) { /* ignora */ }
+}
+
+/* ---------- Calcolo della giornata ---------- */
+function lightScore(alt, az, cam) {
+  if (alt <= 1) return 0;
+  let fa;
+  if (alt < 8) fa = 0.6 * alt / 8;
+  else if (alt < 20) fa = 0.6 + 0.4 * (alt - 8) / 12;
+  else if (alt <= 45) fa = 1;
+  else fa = Math.max(0.35, 1 - (alt - 45) / 40);
+  const d = angDiff(az, cam);
+  let fd;
+  if (d < 40) fd = 0.1;
+  else if (d < 80) fd = 0.1 + 0.6 * (d - 40) / 40;
+  else if (d <= 150) fd = 1;
+  else fd = 0.85;
+  return fa * fd;
+}
+function crossings(arr, level) {
+  const up = [], down = [];
+  for (let i = 1; i < arr.length; i++) {
+    if (arr[i - 1] < level && arr[i] >= level) up.push(i - 1 + (level - arr[i - 1]) / (arr[i] - arr[i - 1]));
+    if (arr[i - 1] >= level && arr[i] < level) down.push(i - 1 + (arr[i - 1] - level) / (arr[i - 1] - arr[i]));
+  }
+  return { up, down };
+}
+function computeDay() {
+  day.start = zonedMidnight(state.date, state.tz);
+  for (let i = 0; i < 1440; i++) {
+    const p = sunPos(day.start + i * 60000, state.lat, state.lon);
+    day.alt[i] = p.alt; day.az[i] = p.az;
+  }
+  let noon = 0;
+  for (let i = 1; i < 1440; i++) if (day.alt[i] > day.alt[noon]) noon = i;
+  const rs = crossings(day.alt, -0.833), g6 = crossings(day.alt, 6), b4 = crossings(day.alt, -4), c6 = crossings(day.alt, -6);
+  day.ev = { noon, rise: rs.up[0], set: rs.down[rs.down.length - 1], gUp: g6.up[0], gDown: g6.down[g6.down.length - 1], bUp: b4.up[0], bDown: b4.down[b4.down.length - 1], cUp: c6.up[0], cDown: c6.down[c6.down.length - 1], maxAlt: day.alt[noon] };
+  computeScores();
+}
+function computeScores() {
+  let max = 0;
+  for (let i = 0; i < 1440; i++) { const s = lightScore(day.alt[i], day.az[i], state.cam); day.score[i] = s; if (s > max) max = s; }
+  day.maxScore = max;
+  const thr = Math.max(0.5, max * 0.85);
+  const wins = [];
+  let st = -1;
+  for (let i = 0; i <= 1440; i++) {
+    const on = i < 1440 && day.score[i] >= thr;
+    if (on && st < 0) st = i;
+    if (!on && st >= 0) {
+      if (i - st >= 10) { let sum = 0; for (let k = st; k < i; k++) sum += day.score[k]; wins.push({ a: st, b: i - 1, q: sum / (i - st) }); }
+      st = -1;
+    }
+  }
+  wins.sort((x, y) => y.q - x.q);
+  day.windows = max >= 0.3 ? wins.slice(0, 2).sort((x, y) => x.a - y.a) : [];
+}
+
+/* ---------- Diagramma solare ---------- */
+const R = 168;
+const NS = 'http://www.w3.org/2000/svg';
+function polar(az, alt, r0 = R) {
+  const r = r0 * (90 - Math.max(alt, 0)) / 90, a = az * RAD;
+  return [r * Math.sin(a), -r * Math.cos(a)];
+}
+const f1 = (n) => n.toFixed(1);
+function pathFor(start, step) {
+  let d = '', pen = false;
+  for (let i = 0; i <= 1440; i += step) {
+    const p = sunPos(start + Math.min(i, 1439) * 60000, state.lat, state.lon);
+    if (p.alt > 0) { const [x, y] = polar(p.az, p.alt); d += (pen ? 'L' : 'M') + f1(x) + ' ' + f1(y); pen = true; }
+    else pen = false;
+  }
+  return d;
+}
+function renderStatic() {
+  const g = $('#gStatic');
+  let s = `<circle r="${R + 22}" fill="var(--face)" stroke="var(--line)" stroke-width="1.5"/>`;
+  s += `<circle r="${R}" fill="none" stroke="var(--ink)" stroke-width="1.6"/>`;
+  for (const a of [30, 60]) {
+    const r = R * (90 - a) / 90;
+    s += `<circle r="${f1(r)}" fill="none" stroke="var(--ring)" stroke-width="1"/>`;
+    s += `<text x="4" y="${f1(-r - 3)}" font-size="10">${a}°</text>`;
+  }
+  for (let a = 0; a < 360; a += 5) {
+    const long = a % 30 === 0, mid = a % 10 === 0;
+    const r1 = R, r2 = R + (long ? 10 : mid ? 6 : 3.5);
+    const sn = Math.sin(a * RAD), cs = Math.cos(a * RAD);
+    s += `<line x1="${f1(r1 * sn)}" y1="${f1(-r1 * cs)}" x2="${f1(r2 * sn)}" y2="${f1(-r2 * cs)}" stroke="var(--ink)" stroke-width="${long ? 1.4 : 0.8}" opacity="${long ? 0.9 : 0.5}"/>`;
+  }
+  const cards = [['N', 0], ['E', 90], ['S', 180], ['O', 270]];
+  for (const [t, a] of cards) {
+    const r = R - 14, x = r * Math.sin(a * RAD), y = -r * Math.cos(a * RAD) + 5;
+    s += `<text class="card" x="${f1(x)}" y="${f1(y)}" text-anchor="middle">${t}</text>`;
+  }
+  const y = +state.date.slice(0, 4);
+  for (const md of ['06-21', '12-21']) {
+    const st = zonedMidnight(`${y}-${md}`, state.tz);
+    s += `<path d="${pathFor(st, 10)}" fill="none" stroke="var(--muted)" stroke-width="1" stroke-dasharray="3 4" opacity=".7"/>`;
+  }
+  s += `<path d="${pathFor(day.start, 5)}" fill="none" stroke="var(--sun)" stroke-width="2.6" stroke-linecap="round"/>`;
+  for (let h = 0; h < 24; h++) {
+    const i = h * 60, alt = day.alt[i];
+    if (alt <= 0) continue;
+    const [x, yy] = polar(day.az[i], alt);
+    const len = Math.hypot(x, yy) || 1;
+    const lx = x + (x / len) * 13, ly = yy + (yy / len) * 13 + 3.5;
+    s += `<circle cx="${f1(x)}" cy="${f1(yy)}" r="2.6" fill="var(--sun)"/>`;
+    s += `<text x="${f1(lx)}" y="${f1(ly)}" font-size="10" text-anchor="middle">${h}</text>`;
+  }
+  g.innerHTML = s;
+}
+function renderDyn() {
+  const g = $('#gDyn');
+  const i = state.minute, alt = day.alt[i], az = day.az[i];
+  const half = state.fov / 2, a1 = (state.cam - half) * RAD, a2 = (state.cam + half) * RAD;
+  let s = `<path d="M0 0 L${f1(R * Math.sin(a1))} ${f1(-R * Math.cos(a1))} A${R} ${R} 0 0 1 ${f1(R * Math.sin(a2))} ${f1(-R * Math.cos(a2))} Z" fill="var(--camsoft)" stroke="var(--cam)" stroke-width="1.4"/>`;
+  const ca = state.cam * RAD, ex = (R + 22) * Math.sin(ca), ey = -(R + 22) * Math.cos(ca);
+  s += `<line x1="0" y1="0" x2="${f1(ex)}" y2="${f1(ey)}" stroke="var(--cam)" stroke-width="2"/>`;
+  s += `<circle cx="${f1(ex)}" cy="${f1(ey)}" r="6" fill="var(--cam)"/>`;
+  if (alt > 0.5) {
+    const sh = (az + 180) % 360, L = Math.min(R * 0.95, 26 / Math.tan(alt * RAD));
+    const sx = L * Math.sin(sh * RAD), sy = -L * Math.cos(sh * RAD);
+    s += `<line x1="0" y1="0" x2="${f1(sx)}" y2="${f1(sy)}" stroke="var(--ink)" stroke-width="5" stroke-linecap="round" opacity=".55"/>`;
+  }
+  s += `<rect x="-5" y="-5" width="10" height="10" fill="var(--ink)" transform="rotate(${state.cam})"/>`;
+  if (alt > 0) {
+    const [x, y] = polar(az, alt);
+    s += `<circle cx="${f1(x)}" cy="${f1(y)}" r="24" fill="var(--sunsoft)"/>`;
+    s += `<circle cx="${f1(x)}" cy="${f1(y)}" r="11" fill="var(--sun)" stroke="var(--face)" stroke-width="2"/>`;
+  } else {
+    const [x, y] = polar(az, 0, R);
+    s += `<circle cx="${f1(x)}" cy="${f1(y)}" r="9" fill="var(--face)" stroke="var(--sun)" stroke-width="2" stroke-dasharray="3 3"/>`;
+  }
+  g.innerHTML = s;
+}
+
+/* ---------- Striscia della giornata ---------- */
+function altColor(a) { return a < -6 ? 'var(--s-night)' : a < -4 ? 'var(--s-blue)' : a < 6 ? 'var(--s-gold)' : 'var(--s-day)'; }
+function renderStrip() {
+  const el = $('#strip');
+  const stops = [];
+  let prev = null;
+  for (let i = 0; i < 1440; i += 5) {
+    const c = altColor(day.alt[i]);
+    const pct = (i / 1440 * 100).toFixed(2);
+    if (c !== prev) { if (prev) stops.push(`${prev} ${pct}%`); stops.push(`${c} ${pct}%`); prev = c; }
+  }
+  stops.push(`${prev} 100%`);
+  el.style.background = `linear-gradient(90deg, ${stops.join(', ')})`;
+  let html = '';
+  for (const w of day.windows) html += `<div class="win" style="left:${(w.a / 1440 * 100).toFixed(2)}%;width:${((w.b - w.a + 1) / 1440 * 100).toFixed(2)}%"></div>`;
+  html += `<div class="cursor" id="cursor"></div>`;
+  el.innerHTML = html;
+  placeCursor();
+}
+function placeCursor() { const c = $('#cursor'); if (c) c.style.left = (state.minute / 1440 * 100).toFixed(3) + '%'; }
+
+/* ---------- Testi ---------- */
+const ev = (v) => (v === undefined ? 'nessuna' : hhmm(v));
+function renderEvents() {
+  const e = day.ev;
+  const rows = [
+    ['Alba', ev(e.rise)], ['Tramonto', ev(e.set)],
+    ['Ora d’oro mattino', e.bUp !== undefined && e.gUp !== undefined ? `${hhmm(e.bUp)}–${hhmm(e.gUp)}` : 'nessuna'],
+    ['Ora d’oro sera', e.gDown !== undefined && e.bDown !== undefined ? `${hhmm(e.gDown)}–${hhmm(e.bDown)}` : 'nessuna'],
+    ['Mezzogiorno solare', hhmm(e.noon)], ['Altezza massima', nf1.format(e.maxAlt) + '°']
+  ];
+  $('#events').innerHTML = rows.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('');
+}
+function lightPhrase(alt, az) {
+  if (alt <= 0) return 'Il sole è sotto l’orizzonte: luce di crepuscolo o notte, nessuna ombra netta.';
+  const d = signedDiff(az, state.cam), ad = Math.abs(d), side = d > 0 ? 'destra' : 'sinistra';
+  let t;
+  if (ad < 45) t = 'Controluce: il sole è davanti alla camera, rischio di flare e impianto in silhouette.';
+  else if (ad < 110) t = `Luce laterale da ${side}: buon rilievo su strutture, filari e terreno.`;
+  else t = 'Sole alle spalle: colori pieni e leggibili, ombre poco visibili nell’inquadratura.';
+  if (alt < 8) t += ' Sole radente: ombre molto lunghe e luce calda.';
+  else if (alt > 55) t += ' Sole alto: luce dura, contrasti forti.';
+  const w = state.weather;
+  if (w && isToday() && Number(w.cloudcover) >= 75) t += ` Adesso il cielo è coperto al ${w.cloudcover}%: luce diffusa, la direzione conta poco.`;
+  return t;
+}
+function renderTexts() {
+  const i = state.minute, alt = day.alt[i], az = day.az[i];
+  const clock = hhmm(i);
+  $('#clock').textContent = clock; $('#clock2').textContent = clock;
+  $('#rAz').textContent = nf0.format(az) + '°';
+  $('#rAzName').textContent = windName(az);
+  $('#rAlt').textContent = nf1.format(alt) + '°';
+  $('#rH').textContent = nf1.format(state.height);
+  if (alt > 0.5) {
+    const len = state.height / Math.tan(alt * RAD), dir = (az + 180) % 360;
+    $('#rShadow').textContent = (len > 999 ? '>999' : nf1.format(len)) + ' m';
+    $('#shadowLine').textContent = `Alle ${clock} un oggetto alto ${nf1.format(state.height)} m proietta un’ombra di ${len > 999 ? 'oltre 999' : nf1.format(len)} m verso ${windName(dir)} (${nf0.format(dir)}°), ${nf1.format(len / state.height)} volte la sua altezza.`;
+  } else {
+    $('#rShadow').textContent = '0 m';
+    $('#shadowLine').textContent = alt > 0 ? 'Sole radente all’orizzonte: ombre lunghissime e instabili.' : 'Sole sotto l’orizzonte: nessuna ombra diretta.';
+  }
+  $('#verdict').textContent = lightPhrase(alt, az);
+  $('#cam').value = state.cam;
+  $('#camName').textContent = windName(state.cam);
+  document.querySelectorAll('#camChips button').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.deg === state.cam)));
+  document.querySelectorAll('#hChips button').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.h === state.height)));
+}
+function renderBest() {
+  const el = $('#best');
+  if (!day.windows.length) {
+    el.textContent = day.ev.rise === undefined && day.ev.maxAlt < 0
+      ? 'In questa data il sole non sorge in questo luogo.'
+      : 'Con questa direzione la luce non è mai favorevole in questa data: il sole resta davanti alla camera o troppo basso. Valuta un punto di ripresa sul lato opposto.';
+    return;
+  }
+  const parts = day.windows.map((w) => `dalle ${hhmm(w.a)} alle ${hhmm(w.b + 1)}`);
+  el.innerHTML = `<strong>Luce migliore per questa inquadratura:</strong> ${parts.join(' e ')}. `
+    + `<span style="color:var(--muted)">Tocca la striscia o usa il cursore per vedere la scena in quell’orario.</span>`;
+}
+const PLACE = () => [state.region, state.country].filter(Boolean).join(', ');
+function renderPlace() {
+  const extra = PLACE();
+  $('#place').innerHTML = `<strong></strong>${extra ? ', <span id="pe"></span>' : ''} <span id="pc"></span>`;
+  $('#place strong').textContent = state.name;
+  if (extra) $('#pe').textContent = extra;
+  $('#pc').textContent = `(${state.lat.toFixed(4)}, ${state.lon.toFixed(4)}, fuso ${state.tz})`;
+}
+const isToday = () => state.date === todayIn(state.tz);
+
+const WXIT = [
+  ['patchy light rain with thunder', 'Piovaschi con tuoni'], ['thunder', 'Temporale'], ['heavy rain', 'Pioggia forte'],
+  ['moderate rain', 'Pioggia moderata'], ['light rain shower', 'Rovesci deboli'], ['rain shower', 'Rovesci'],
+  ['patchy rain', 'Piovaschi sparsi'], ['light drizzle', 'Pioviggine'], ['drizzle', 'Pioviggine'], ['light rain', 'Pioggia debole'],
+  ['rain', 'Pioggia'], ['sleet', 'Nevischio'], ['snow', 'Neve'], ['freezing fog', 'Nebbia gelata'], ['fog', 'Nebbia'],
+  ['mist', 'Foschia'], ['haze', 'Foschia'], ['overcast', 'Coperto'], ['partly cloudy', 'Parzialmente nuvoloso'],
+  ['cloudy', 'Nuvoloso'], ['sunny', 'Soleggiato'], ['clear', 'Sereno']
+];
+function wxIt(t) { const s = String(t || '').toLowerCase(); for (const [k, v] of WXIT) if (s.includes(k)) return v; return t || 'n.d.'; }
+
+function renderWx() {
+  const el = $('#wx'), w = state.weather;
+  if (!w) {
+    el.innerHTML = '<p class="note" style="margin-top:0">Cerca una località o premi Aggiorna meteo per vedere le condizioni attuali sul posto e se il vento permette di volare.</p>';
+    return;
+  }
+  const num = (v, u) => (v === null || v === undefined || v === '' ? 'n.d.' : `${nf1.format(+v)} ${u}`);
+  const rows = [
+    ['Cielo', wxIt((w.weather_descriptions || [])[0])],
+    ['Nuvolosità', num(w.cloudcover, '%')],
+    ['Vento', `${num(w.wind_speed, 'km/h')}${w.wind_dir ? ' da ' + String(w.wind_dir).replace(/W/g, 'O') : ''}`],
+    ['Visibilità', num(w.visibility, 'km')],
+    ['Precipitazioni', num(w.precip, 'mm')],
+    ['Temperatura', num(w.temperature, '°C')],
+    ['Umidità', num(w.humidity, '%')],
+    ['Indice UV', num(w.uv_index, '')]
+  ];
+  const reasons = [];
+  if (+w.wind_speed > state.windMax) reasons.push(`vento a ${nf0.format(+w.wind_speed)} km/h, oltre la tua soglia di ${state.windMax}`);
+  if (+w.precip > 0) reasons.push('precipitazioni in corso');
+  if (w.visibility !== undefined && +w.visibility < 3) reasons.push(`visibilità di soli ${nf1.format(+w.visibility)} km`);
+  if (w.is_day === 'no') reasons.push('sul posto è notte');
+  const ok = reasons.length === 0;
+  const when = state.wxLocal ? `Rilevato alle ${state.wxLocal.slice(11, 16)} ora locale.` : '';
+  el.innerHTML = `<div class="wx">${rows.map(([k, v]) => `<div><span>${k}</span><span>${v}</span></div>`).join('')}</div>
+    <div class="fly ${ok ? 'ok' : 'no'}"><strong>${ok ? 'Meteo compatibile con il volo adesso' : 'Meglio non volare adesso'}</strong>
+    <p>${ok ? 'Vento, pioggia e visibilità sono entro i limiti che hai impostato.' : 'Motivo: ' + reasons.join('; ') + '.'}
+    Prima del decollo verifica comunque zone geografiche UAS e NOTAM (in Italia su <a href="https://www.d-flight.it/web-app" target="_blank" rel="noopener">d-flight</a>).</p></div>
+    <p class="note">${when} ${isToday() ? '' : 'Attenzione: è il meteo di adesso, non una previsione per la data scelta.'}</p>`;
+}
+
+function renderAll(full) {
+  if (full) { renderStatic(); renderStrip(); renderEvents(); renderPlace(); renderWx(); }
+  renderDyn(); renderTexts(); renderBest(); placeCursor();
+  $('#time').value = state.minute;
+}
+
+/* ---------- Azioni ---------- */
+function setStatus(msg, err) { const s = $('#status'); s.textContent = msg || ''; s.classList.toggle('err', !!err); }
+function setLocation(lat, lon, tz, name, region, country) {
+  state.lat = lat; state.lon = lon;
+  if (tz && validTz(tz)) state.tz = tz;
+  state.name = name; state.region = region || ''; state.country = country || '';
+  if (!state.date) state.date = todayIn(state.tz);
+  $('#date').value = state.date;
+  computeDay(); save(); renderAll(true);
+}
+const COORD = /^\s*(-?\d{1,2}(?:\.\d+)?)\s*[,;\s]\s*(-?\d{1,3}(?:\.\d+)?)\s*$/;
+async function search(q) {
+  q = (q || '').trim();
+  if (q.length < 2) { setStatus('Scrivi una località o due coordinate, per esempio 41.46, 15.55.', true); return; }
+  const m = q.match(COORD);
+  if (m) {
+    const lat = +m[1], lon = +m[2];
+    if (Math.abs(lat) > 90 || Math.abs(lon) > 180) { setStatus('Coordinate fuori scala: latitudine tra -90 e 90, longitudine tra -180 e 180.', true); return; }
+    state.weather = null;
+    setLocation(lat, lon, state.tz, `Punto ${lat.toFixed(4)}, ${lon.toFixed(4)}`, '', '');
+  }
+  await fetchWeather(m ? `${(+m[1]).toFixed(4)},${(+m[2]).toFixed(4)}` : q, !m);
+}
+let busy = false;
+async function fetchWeather(q, moveTo) {
+  if (busy) return;
+  busy = true; $('#goBtn').disabled = true; $('#wxBtn').disabled = true;
+  setStatus('Cerco il meteo sul posto…');
+  try {
+    const r = await fetch(API + '?q=' + encodeURIComponent(q), { headers: { Accept: 'application/json' }, cache: 'no-store' });
+    let data;
+    try { data = await r.json(); } catch (e) { throw new Error('noapi'); }
+    if (!data.ok) { setStatus(data.error || 'Il servizio meteo ha restituito un errore.', true); return; }
+    const L = data.location || {};
+    state.weather = data.current || null;
+    state.wxLocal = L.localtime || '';
+    state.wxQuery = q;
+    const lat = parseFloat(L.lat), lon = parseFloat(L.lon);
+    if (moveTo && Number.isFinite(lat) && Number.isFinite(lon)) {
+      setLocation(lat, lon, L.timezone_id, L.name || q, L.region, L.country);
+    } else {
+      if (L.timezone_id && validTz(L.timezone_id) && L.timezone_id !== state.tz) { state.tz = L.timezone_id; computeDay(); }
+      if (state.name.startsWith('Punto ') && L.name) { state.name = `Vicino a ${L.name}`; state.region = L.region || ''; state.country = L.country || ''; }
+      save(); renderAll(true);
+    }
+    setStatus(data.cached ? 'Meteo aggiornato (dato recente in memoria, max 30 minuti).' : 'Meteo aggiornato.');
+  } catch (e) {
+    setStatus(location.protocol === 'file:' || e.message === 'noapi'
+      ? 'Meteo non disponibile: la pagina va pubblicata sul sito insieme ad api.php. Il calcolo del sole funziona comunque, anche con le coordinate.'
+      : 'Il servizio meteo non risponde. Controlla la connessione e riprova.', true);
+  } finally {
+    busy = false; $('#goBtn').disabled = false; $('#wxBtn').disabled = false;
+  }
+}
+
+/* ---------- Animazione ---------- */
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+let anim = null;
+function stopAnim() { if (anim) cancelAnimationFrame(anim.raf); anim = null; setPlayIcon(false); }
+function setPlayIcon(playing) {
+  $('#playIcon').innerHTML = playing ? '<rect x="3" y="2" width="4" height="14" fill="currentColor"/><rect x="11" y="2" width="4" height="14" fill="currentColor"/>' : '<path d="M4 2 L16 9 L4 16 Z" fill="currentColor"/>';
+  $('#playBtn').setAttribute('aria-label', playing ? 'Ferma' : 'Riproduci la giornata');
+}
+function animate(from, to, ms) {
+  stopAnim();
+  const t0 = performance.now();
+  anim = { raf: 0 };
+  setPlayIcon(true);
+  const step = (t) => {
+    const k = Math.min(1, (t - t0) / ms), e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+    state.minute = Math.round(from + (to - from) * e);
+    renderDyn(); renderTexts(); placeCursor(); $('#time').value = state.minute;
+    if (k < 1 && anim) anim.raf = requestAnimationFrame(step); else stopAnim();
+  };
+  anim.raf = requestAnimationFrame(step);
+}
+
+/* ---------- Eventi UI ---------- */
+function setCam(deg) {
+  state.cam = ((Math.round(deg) % 360) + 360) % 360;
+  computeScores(); renderStrip(); renderAll(false); save();
+}
+function tap(el, fn) {
+  el.addEventListener('pointerdown', (e) => { if (e.button !== 0) return; e.preventDefault(); e.stopPropagation(); fn(e); });
+  el.addEventListener('keydown', (e) => { if (e.target === el && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); fn(e); } });
+}
+function initUI() {
+  const dial = $('#dial');
+  let drag = false;
+  const fromEvent = (e) => {
+    const pt = dial.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
+    const p = pt.matrixTransform(dial.getScreenCTM().inverse());
+    if (Math.hypot(p.x, p.y) < 8) return;
+    setCam(Math.atan2(p.x, -p.y) / RAD);
+  };
+  dial.addEventListener('pointerdown', (e) => { drag = true; dial.setPointerCapture(e.pointerId); fromEvent(e); });
+  dial.addEventListener('pointermove', (e) => { if (drag) fromEvent(e); });
+  const end = () => { drag = false; };
+  dial.addEventListener('pointerup', end); dial.addEventListener('pointercancel', end);
+  dial.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') { setCam(state.cam - 5); e.preventDefault(); }
+    if (e.key === 'ArrowRight' || e.key === 'ArrowUp') { setCam(state.cam + 5); e.preventDefault(); }
+  });
+
+  $('#time').addEventListener('input', (e) => { stopAnim(); state.minute = +e.target.value; renderDyn(); renderTexts(); placeCursor(); });
+  const strip = $('#strip');
+  strip.addEventListener('pointerdown', (e) => {
+    const r = strip.getBoundingClientRect();
+    stopAnim();
+    state.minute = Math.max(0, Math.min(1439, Math.round((e.clientX - r.left) / r.width * 1440)));
+    renderAll(false);
+  });
+  tap($('#playBtn'), () => {
+    if (anim) { stopAnim(); return; }
+    const a = day.ev.rise !== undefined ? Math.floor(day.ev.rise) - 20 : 0;
+    const b = day.ev.set !== undefined ? Math.ceil(day.ev.set) + 20 : 1439;
+    animate(Math.max(0, a), Math.min(1439, b), reduceMotion ? 1 : 9000);
+  });
+
+  $('#cam').addEventListener('change', (e) => { const v = parseFloat(e.target.value); if (Number.isFinite(v)) setCam(v); });
+  const camChips = [['N', 0], ['NE', 45], ['E', 90], ['SE', 135], ['S', 180], ['SO', 225], ['O', 270], ['NO', 315]];
+  $('#camChips').innerHTML = camChips.map(([t, d]) => `<button type="button" data-deg="${d}" aria-pressed="false">${t}</button>`).join('');
+  $('#camChips').addEventListener('pointerdown', (e) => { const b = e.target.closest('button'); if (b) { e.preventDefault(); setCam(+b.dataset.deg); } });
+  $('#camChips').addEventListener('keydown', (e) => { const b = e.target.closest('button'); if (b && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); setCam(+b.dataset.deg); } });
+
+  const hChips = [['Modulo FV fisso', 2.5], ['Tracker', 4.5], ['Container BESS', 2.9], ['Edificio 3 piani', 10], ['Aerogeneratore', 150]];
+  $('#hChips').innerHTML = hChips.map(([t, h]) => `<button type="button" data-h="${h}" aria-pressed="false">${t} ${nf1.format(h)} m</button>`).join('');
+  const pickH = (e) => { const b = e.target.closest('button'); if (b) { e.preventDefault(); state.height = +b.dataset.h; $('#height').value = state.height; save(); renderTexts(); } };
+  $('#hChips').addEventListener('pointerdown', pickH);
+  $('#hChips').addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') pickH(e); });
+  $('#height').addEventListener('input', (e) => { const v = parseFloat(String(e.target.value).replace(',', '.')); if (Number.isFinite(v) && v > 0) { state.height = v; save(); renderTexts(); } });
+
+  $('#windMax').addEventListener('change', (e) => { const v = parseFloat(e.target.value); if (Number.isFinite(v) && v > 0) { state.windMax = Math.round(v); save(); renderWx(); } });
+
+  $('#date').addEventListener('change', (e) => { if (/^\d{4}-\d{2}-\d{2}$/.test(e.target.value)) { stopAnim(); state.date = e.target.value; computeDay(); renderAll(true); } });
+  tap($('#todayBtn'), () => {
+    stopAnim(); state.date = todayIn(state.tz); $('#date').value = state.date;
+    const p = partsIn(state.tz, Date.now()); state.minute = p.h * 60 + p.mi;
+    computeDay(); renderAll(true);
+  });
+
+  $('#searchForm').addEventListener('submit', (e) => { e.preventDefault(); stopAnim(); search($('#q').value); });
+  tap($('#goBtn'), () => { $('#q').blur(); stopAnim(); search($('#q').value); });
+  tap($('#geoBtn'), () => {
+    if (!navigator.geolocation) { setStatus('Il browser non fornisce la posizione.', true); return; }
+    setStatus('Rilevo la tua posizione…');
+    navigator.geolocation.getCurrentPosition(
+      (p) => { const q = `${p.coords.latitude.toFixed(4)}, ${p.coords.longitude.toFixed(4)}`; $('#q').value = q; search(q); },
+      () => setStatus('Posizione non disponibile: autorizza la localizzazione nel browser oppure scrivi le coordinate.', true),
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 }
+    );
+  });
+  tap($('#wxBtn'), () => {
+    const q = state.wxQuery || `${state.lat.toFixed(4)},${state.lon.toFixed(4)}`;
+    fetchWeather(q, false);
+  });
+  // Condivisione su click: share e appunti richiedono un gesto completato (pointerup), non pointerdown
+  $('#shareBtn').addEventListener('click', async () => {
+    const u = new URL(location.href.split('?')[0]);
+    u.searchParams.set('name', state.name); u.searchParams.set('lat', state.lat.toFixed(5)); u.searchParams.set('lon', state.lon.toFixed(5));
+    u.searchParams.set('tz', state.tz); u.searchParams.set('d', state.date); u.searchParams.set('cam', String(state.cam)); u.searchParams.set('h', String(state.height));
+    const link = u.toString();
+    try {
+      if (navigator.share) { await navigator.share({ title: `SunShot: ${state.name}`, url: link }); setStatus('Piano condiviso.'); }
+      else { await navigator.clipboard.writeText(link); setStatus('Link del piano copiato negli appunti.'); }
+    } catch (e) { if (e && e.name !== 'AbortError') setStatus('Copia questo link: ' + link); }
+  });
+}
+
+/* ---------- Avvio ---------- */
+loadSaved();
+if (!state.date) state.date = todayIn(state.tz);
+$('#date').value = state.date;
+$('#height').value = state.height;
+$('#windMax').value = state.windMax;
+initUI();
+computeDay();
+const nowP = partsIn(state.tz, Date.now());
+const target = isToday() ? nowP.h * 60 + nowP.mi : day.ev.noon;
+state.minute = target;
+renderAll(true);
+if (!reduceMotion && day.ev.rise !== undefined && target > day.ev.rise + 30) {
+  animate(Math.floor(day.ev.rise), target, 2200);
+}
+})();
+</script>
+</body>
+</html>
