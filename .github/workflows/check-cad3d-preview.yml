@@ -1,0 +1,27 @@
+name: Check CAD3D preview
+
+on:
+  pull_request:
+    paths:
+      - 'cad3d-preview/**'
+      - '.github/cad3d-site/**'
+      - '.github/tools/*cad3d*'
+      - '.github/workflows/check-cad3d-preview.yml'
+      - '.github/workflows/deploy.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'cad3d-preview/**'
+      - '.github/cad3d-site/**'
+      - '.github/tools/*cad3d*'
+      - '.github/workflows/check-cad3d-preview.yml'
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 .github/tools/build-cad3d-preview.py --check
+      - run: python3 .github/tools/check-cad3d-preview.py
+      - run: node --check cad3d-preview/assets/navigation.js
+      - run: node --check cad3d-preview/assets/site.js

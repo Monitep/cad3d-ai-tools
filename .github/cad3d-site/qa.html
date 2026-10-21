@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="robots" content="noindex,nofollow">
+    <title>Verifica responsive CAD3D</title>
+    <style>*{box-sizing:border-box}body{margin:0;background:#dfe5e5;font:14px system-ui;color:#203a43}header{display:flex;gap:20px;align-items:center;padding:18px 24px;background:white;flex-wrap:wrap}label{display:flex;gap:10px;align-items:center}select{font:inherit;padding:8px;border:1px solid #8fa4a8;border-radius:4px}main{padding:30px;display:flex;justify-content:center;overflow:auto}iframe{border:0;background:white;box-shadow:0 8px 45px #203a4325;border-radius:9px;flex-shrink:0}p{margin:0}</style>
+  </head>
+  <body>
+    <header>
+      <strong>Verifica responsive</strong>
+      <label>Larghezza<select id="width"><option value="360">360 px</option><option value="412" selected>412 px</option><option value="768">768 px</option><option value="1024">1024 px</option><option value="1025">1025 px</option><option value="1280">1280 px</option></select></label>
+      <label>Pagina<select id="page"><option value="index.html">Home</option><option value="progetti.html">Projects</option><option value="servizi.html">Services</option><option value="architettura.html">Architecture</option><option value="rinnovabili.html">Energy</option><option value="tour-virtuali.html">Tours</option><option value="modellazione-3d.html">Modelling</option><option value="reverse-engineering.html">Reverse</option><option value="panorami-360.html">Panoramas</option><option value="video-animazioni.html">Video</option><option value="referenze.html">References</option><option value="studio.html">Studio</option><option value="contatti.html">Contact</option><option value="en/index.html">EN / Home</option><option value="en/progetti.html">EN / Projects</option><option value="en/servizi.html">EN / Services</option><option value="en/architettura.html">EN / Architecture</option><option value="en/rinnovabili.html">EN / Energy</option><option value="en/tour-virtuali.html">EN / Tours</option><option value="en/modellazione-3d.html">EN / Modelling</option><option value="en/reverse-engineering.html">EN / Reverse</option><option value="en/panorami-360.html">EN / Panoramas</option><option value="en/video-animazioni.html">EN / Video</option><option value="en/referenze.html">EN / References</option><option value="en/studio.html">EN / Studio</option><option value="en/contatti.html">EN / Contact</option></select></label>
+      <p>Vista alla larghezza CSS indicata.</p>
+    </header>
+    <main><iframe title="Anteprima responsive" src="index.html?v={{preview_version}}" width="412" height="892"></iframe></main>
+    <script>const frame=document.querySelector('iframe');const width=document.querySelector('#width');const page=document.querySelector('#page');width.addEventListener('change',()=>frame.width=width.value);page.addEventListener('change',()=>frame.src=page.value+'?v={{preview_version}}');</script>
+  </body>
+</html>
