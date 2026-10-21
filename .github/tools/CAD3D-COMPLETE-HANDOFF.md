@@ -1,4 +1,23 @@
-# CAD3D | HANDOFF attivo | Didascalie e priorità v12
+# CAD3D: riferimento attivo v14, 21 ottobre 2026
+
+I sorgenti modificabili sono ora in [../cad3d-site/](../cad3d-site/README.md).
+Leggere la [guida principale](../../README.md) e le [istruzioni AI](../cad3d-site/AGENTS.md).
+Il comando `build-cad3d-preview.py` assembla questi sorgenti e non usa più il vecchio
+contenuto Python. Menu e footer sono condivisi fra le 26 pagine IT/EN. Stili e
+comportamento del menu sono in `assets/navigation.css` e `assets/navigation.js`.
+
+La v13 ha aggiunto Villa Ciani in primo piano e le immagini degli altri sei tour.
+La v14 corregge l'allineamento della navigazione e rende i sorgenti leggibili e
+ricostruibili senza dipendere dalla chat originale. La pubblicazione resta confinata
+all'anteprima `/ai/cad3d-preview/`; il sito WordPress principale non è stato migrato.
+
+Le note seguenti sono storico, utile per la provenienza dei media e le decisioni
+precedenti. Versioni CSS/JS, conteggi e istruzioni dei vecchi generatori vanno letti
+nel loro contesto storico; per modifiche e pubblicazione usare la guida attiva sopra.
+
+---
+
+## CAD3D | HANDOFF attivo | Didascalie e priorità v12
 
 Aggiornato il 10 ottobre 2026. L’utente ha chiesto di rifare tutte le immagini della modellazione 3D e il BESS in homepage, soprattutto il terreno importato da Google Earth. Ha richiesto esplicitamente l’assenza della filigrana CAD3D.Expert e ha già autorizzato la pubblicazione dell’anteprima nell’area /ai/cad3d-preview/. Il repository è Monitep/cad3d-ai-tools; il sito WordPress principale rimane esterno a questo intervento.
 

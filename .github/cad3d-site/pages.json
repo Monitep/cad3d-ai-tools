@@ -1,0 +1,54 @@
+[
+  {
+    "id": "home",
+    "file": "index.html"
+  },
+  {
+    "id": "projects",
+    "file": "progetti.html"
+  },
+  {
+    "id": "services",
+    "file": "servizi.html"
+  },
+  {
+    "id": "architecture",
+    "file": "architettura.html"
+  },
+  {
+    "id": "energy",
+    "file": "rinnovabili.html"
+  },
+  {
+    "id": "tours",
+    "file": "tour-virtuali.html"
+  },
+  {
+    "id": "modelling",
+    "file": "modellazione-3d.html"
+  },
+  {
+    "id": "reverse",
+    "file": "reverse-engineering.html"
+  },
+  {
+    "id": "panoramas",
+    "file": "panorami-360.html"
+  },
+  {
+    "id": "video",
+    "file": "video-animazioni.html"
+  },
+  {
+    "id": "references",
+    "file": "referenze.html"
+  },
+  {
+    "id": "studio",
+    "file": "studio.html"
+  },
+  {
+    "id": "contact",
+    "file": "contatti.html"
+  }
+]

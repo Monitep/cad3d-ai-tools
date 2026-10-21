@@ -10,6 +10,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Verify CAD3D source and generated pages
+        run: |
+          python3 .github/tools/build-cad3d-preview.py --check
+          python3 .github/tools/check-cad3d-preview.py
+          node --check cad3d-preview/assets/navigation.js
+          node --check cad3d-preview/assets/site.js
       - name: Upload via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
@@ -22,4 +28,7 @@ jobs:
             **/.git*
             **/.git*/**
             README.md
+            AGENTS.md
+            CLAUDE.md
+            .openai/**
             .github/**

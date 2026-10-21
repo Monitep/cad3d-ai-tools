@@ -1,0 +1,181 @@
+{
+  "links": {
+    "architecture": {
+      "href": "architettura.html",
+      "label": {
+        "it": "Architettura e interni",
+        "en": "Architecture and interiors"
+      }
+    },
+    "energy": {
+      "href": "rinnovabili.html",
+      "label": {
+        "it": "Energie rinnovabili",
+        "en": "Renewable energy"
+      }
+    },
+    "tours": {
+      "href": "tour-virtuali.html",
+      "label": {
+        "it": "Tour virtuali e VR",
+        "en": "Virtual tours and VR"
+      },
+      "labels": {
+        "primary": {
+          "it": "Tour",
+          "en": "Tours"
+        }
+      }
+    },
+    "modelling": {
+      "href": "modellazione-3d.html",
+      "label": {
+        "it": "Modellazione 3D",
+        "en": "3D modelling"
+      }
+    },
+    "reverse": {
+      "href": "reverse-engineering.html",
+      "label": {
+        "it": "Reverse engineering",
+        "en": "Reverse engineering"
+      }
+    },
+    "panoramas": {
+      "href": "panorami-360.html",
+      "label": {
+        "it": "Panorami fotografici 360°",
+        "en": "360° photographic panoramas"
+      }
+    },
+    "video": {
+      "href": "video-animazioni.html",
+      "label": {
+        "it": "Video e animazioni",
+        "en": "Video and animation"
+      }
+    },
+    "formazione": {
+      "href": "servizi.html#formazione",
+      "label": {
+        "it": "Formazione e consulenza AI",
+        "en": "Training and AI consultancy"
+      },
+      "labels": {
+        "footer_studio": {
+          "it": "Formazione e AI",
+          "en": "Training and AI"
+        }
+      }
+    },
+    "fiere": {
+      "href": "servizi.html#fiere",
+      "label": {
+        "it": "Fiere e showroom",
+        "en": "Exhibitions and showrooms"
+      }
+    },
+    "projects": {
+      "href": "progetti.html",
+      "label": {
+        "it": "Progetti",
+        "en": "Projects"
+      }
+    },
+    "services": {
+      "href": "servizi.html",
+      "label": {
+        "it": "Servizi",
+        "en": "Services"
+      },
+      "labels": {
+        "mobile_primary": {
+          "it": "Tutti i servizi",
+          "en": "All services"
+        }
+      }
+    },
+    "studio": {
+      "href": "studio.html",
+      "label": {
+        "it": "Studio",
+        "en": "Studio"
+      }
+    },
+    "contact": {
+      "href": "contatti.html",
+      "label": {
+        "it": "Contatti",
+        "en": "Contact"
+      }
+    },
+    "home": {
+      "href": "index.html",
+      "label": {
+        "it": "Home",
+        "en": "Home"
+      }
+    },
+    "references": {
+      "href": "referenze.html",
+      "label": {
+        "it": "Referenze",
+        "en": "References"
+      }
+    }
+  },
+  "groups": {
+    "services": [
+      "architecture",
+      "energy",
+      "tours",
+      "modelling",
+      "reverse",
+      "panoramas",
+      "video",
+      "formazione",
+      "fiere"
+    ],
+    "primary": [
+      "projects",
+      "services",
+      "tours",
+      "studio",
+      "contact"
+    ],
+    "mobile_primary": [
+      "home",
+      "projects",
+      "services",
+      "references",
+      "studio",
+      "contact"
+    ],
+    "mobile_services": [
+      "architecture",
+      "energy",
+      "tours",
+      "modelling",
+      "reverse",
+      "panoramas",
+      "video",
+      "formazione"
+    ],
+    "footer_services": [
+      "architecture",
+      "energy",
+      "tours",
+      "modelling",
+      "reverse",
+      "panoramas",
+      "video"
+    ],
+    "footer_studio": [
+      "projects",
+      "references",
+      "studio",
+      "contact",
+      "formazione"
+    ]
+  }
+}
