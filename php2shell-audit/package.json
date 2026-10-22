@@ -1,0 +1,5 @@
+{
+  "name": "php2shell-audit",
+  "private": true,
+  "type": "module"
+}
