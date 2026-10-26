@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "files": [
+    "pages/it/index.html",
+    "pages/en/index.html",
+    "assets/site.js",
+    "assets/media-v5.js",
+    "assets/style.css",
+    "assets/bess-ai-v11.webp",
+    "assets/villa-ai-v4-small.webp",
+    "assets/bath-blue-ai-v4-small.webp",
+    "assets/film-interior-poster-v5.webp",
+    "assets/film-detail-poster-v5.webp"
+  ]
+}
