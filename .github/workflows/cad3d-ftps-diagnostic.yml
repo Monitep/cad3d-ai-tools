@@ -1,0 +1,53 @@
+name: CAD3D - diagnosi certificato FTPS
+
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/cad3d-ftps-diagnostic.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certificate:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Read public TLS certificate and DNS without logging in
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+        run: |
+          python3 - <<'PY'
+          import os, re, socket, subprocess
+          host = os.environ['FTP_SERVER']
+          addresses = sorted({x[4][0] for x in socket.getaddrinfo(host, 21, type=socket.SOCK_STREAM)})
+          print('DNS addresses:', ', '.join(addresses))
+          for address in addresses:
+              try:
+                  print('Reverse DNS:', socket.gethostbyaddr(address)[0])
+              except OSError:
+                  print('Reverse DNS: unavailable')
+          # This is an unauthenticated certificate inspection, not a login.
+          # OpenSSL verifies the CA chain. No USER, PASS or file command is sent.
+          # The deployment client retains full certificate AND hostname verification.
+          result = subprocess.run(
+              ['openssl', 's_client', '-starttls', 'ftp', '-connect', host + ':21',
+               '-servername', host, '-verify_return_error', '-showcerts'],
+              input=b'', capture_output=True, timeout=25)
+          match = re.search(b'-----BEGIN CERTIFICATE-----.*?-----END CERTIFICATE-----',
+                            result.stdout, re.DOTALL)
+          if not match:
+              raise SystemExit('No public certificate returned; no login attempted.')
+          details = subprocess.run(
+              ['openssl', 'x509', '-noout', '-subject', '-issuer', '-dates',
+               '-ext', 'subjectAltName', '-fingerprint', '-sha256'],
+              input=match.group(), capture_output=True, check=True)
+          print(details.stdout.decode())
+          # Report chain verification only, never treat it as hostname approval.
+          text = (result.stdout + result.stderr).decode(errors='replace')
+          for line in text.splitlines():
+              if 'Verification:' in line or 'Verify return code:' in line:
+                  print(line)
+          print('Diagnostic only: credentials were not read and no files were changed.')
+          PY
