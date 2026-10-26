@@ -1,0 +1,28 @@
+[
+  {
+    "file": "cad3d-preview/assets/villa-mobile-ai-v4.webp",
+    "original": ".github/cad3d-live/originals/villa-mobile-ai-v4.webp",
+    "before_sha256": "26e0d1fc6600efdc0b91b8e3d1564e50b694972b1f0420dfcb9175547276ea5b",
+    "after_sha256": "b5609610df251223fbe3968363fd27c56e8f290dbf5adfc5a22c9738dd2ccf09",
+    "operation": "WebP recompression; same dimensions and framing; no generative editing",
+    "encoder": "Pillow 12.3.0 / libwebp",
+    "quality": 86,
+    "method": 6,
+    "before_bytes": 463648,
+    "after_bytes": 266022,
+    "live_baseline_checked": "2026-10-26"
+  },
+  {
+    "file": "cad3d-preview/assets/villa-ai-v4.webp",
+    "original": ".github/cad3d-live/originals/villa-ai-v4.webp",
+    "before_sha256": "2221941bfc21347819ec8b2f2a00aa4a182602ac28b981f8ac93c26daae4ba3b",
+    "after_sha256": "193f86860df898ad8297c6af47d57bb3ca2dbc19d959e9c85cc330df5ffcecbe",
+    "operation": "WebP recompression; same dimensions and framing; no generative editing",
+    "encoder": "Pillow 12.3.0 / libwebp",
+    "quality": 86,
+    "method": 6,
+    "before_bytes": 541074,
+    "after_bytes": 328180,
+    "live_baseline_checked": "2026-10-26"
+  }
+]

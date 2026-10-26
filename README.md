@@ -1,6 +1,17 @@
 # CAD3D.Expert: guida alle modifiche del sito
 
-Il nuovo sito è nell'anteprima `https://www.cad3d.expert/ai/cad3d-preview/`.
+Il nuovo sito pubblico è online in `https://www.cad3d.expert/`.
+Il sistema per aggiornarlo è descritto nella
+[guida di pubblicazione](.github/cad3d-live/README.md), con istruzioni per gli
+assistenti in [.github/cad3d-live/AGENTS.md](.github/cad3d-live/AGENTS.md).
+Il workflow dedicato pubblica soltanto i file esplicitamente elencati dopo
+l'approvazione e il merge della PR; riutilizza i Secrets Aruba esistenti.
+La connessione FTPS alla nuova destinazione va verificata dalla prima run.
+
+**Le istruzioni seguenti riguardano la vecchia anteprima**, ancora in
+`https://www.cad3d.expert/ai/cad3d-preview/`. I suoi sorgenti non contengono tutte
+le modifiche pubblicate successivamente. Non caricarla integralmente sul sito
+pubblico: per le modifiche recuperare prima i sorgenti correnti.
 Questo repository ospita anche altre applicazioni: la home CAD3D è
 `cad3d-preview/index.html`, non l'`index.html` della cartella principale.
 
@@ -53,9 +64,9 @@ avvia il workflow esistente di pubblicazione FTP su Aruba nell'area `/ai/`.
 Il workflow verifica i file CAD3D prima del caricamento. La cronologia Git conserva
 le versioni precedenti; il ripristino si fa ripristinando un commit e ripubblicando.
 
-Il sito WordPress/Divi principale è ancora attivo e l'anteprima rimane `noindex`.
-La sostituzione del sito principale richiederà un lavoro distinto: backup, censimento
-degli URL e delle pagine non presenti nel menu, redirect, verifiche SEO, privacy e cookie.
-Questa riorganizzazione dei sorgenti non esegue la migrazione.
+L'anteprima rimane `noindex`. Il nuovo sito pubblico usa il namespace
+`/_cad3d-site/`; WordPress gestisce ancora pagine residue. I tour esistenti
+restano sui loro URL. Il workflow selettivo non modifica instradamento,
+database, informativa, tracciatori o cartelle dei tour.
 
 Istruzioni tecniche: [.github/cad3d-site/README.md](.github/cad3d-site/README.md).
