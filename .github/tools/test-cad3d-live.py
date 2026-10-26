@@ -199,15 +199,32 @@ class ReleaseTests(unittest.TestCase):
     def test_connection_requires_verified_tls_and_private_data_channel(self):
         from unittest.mock import MagicMock
         ftp = MagicMock()
+        ftp.sock.getpeername.return_value = ('192.0.2.10', 21)
+        addresses = [(deploy.socket.AF_INET, deploy.socket.SOCK_STREAM, 6, '', ('192.0.2.10', 21))]
         with patch.object(deploy.ftplib, 'FTP_TLS', return_value=ftp) as factory:
-            with patch.dict(deploy.os.environ, {'FTP_SERVER': 'host.example',
-                                               'FTP_USERNAME': 'user', 'FTP_PASSWORD': 'test-only'}):
-                self.assertIs(deploy.connect(), ftp)
+            with patch.object(deploy.socket, 'getaddrinfo', return_value=addresses):
+                with patch.dict(deploy.os.environ, {'FTP_SERVER': 'host.example',
+                                                   'FTP_USERNAME': 'user', 'FTP_PASSWORD': 'test-only'}):
+                    self.assertIs(deploy.connect(), ftp)
         ctx = factory.call_args.kwargs['context']
         self.assertTrue(ctx.check_hostname)
         self.assertEqual(ctx.verify_mode, deploy.ssl.CERT_REQUIRED)
+        ftp.connect.assert_called_once_with(deploy.FTPS_HOST, 21)
         ftp.prot_p.assert_called_once()
         ftp.cwd.assert_called_once_with(deploy.REMOTE)
+
+    def test_different_certified_endpoint_is_rejected_before_login(self):
+        from unittest.mock import MagicMock
+        ftp = MagicMock()
+        ftp.sock.getpeername.return_value = ('192.0.2.99', 21)
+        addresses = [(deploy.socket.AF_INET, deploy.socket.SOCK_STREAM, 6, '', ('192.0.2.10', 21))]
+        with patch.object(deploy.ftplib, 'FTP_TLS', return_value=ftp):
+            with patch.object(deploy.socket, 'getaddrinfo', return_value=addresses):
+                with patch.dict(deploy.os.environ, {'FTP_SERVER': 'host.example'}):
+                    with self.assertRaisesRegex(ValueError, 'does not match'):
+                        deploy.connect()
+        ftp.login.assert_not_called()
+        ftp.close.assert_called_once()
 
     def test_https_checks_resources_and_public_home(self):
         class Response:
