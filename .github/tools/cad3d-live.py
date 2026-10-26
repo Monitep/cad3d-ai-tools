@@ -12,6 +12,7 @@ import json
 import os
 from pathlib import Path, PurePosixPath
 import re
+import socket
 import ssl
 import sys
 import uuid
@@ -23,6 +24,9 @@ ROOT = Path(__file__).resolve().parents[2]
 MANIFEST = ROOT / '.github/cad3d-live/release.json'
 REMOTE = '/www.cad3d.expert/_cad3d-site/'
 ORIGIN = 'https://www.cad3d.expert/'
+# Observed on the current Aruba service's CA-verified public certificate.
+# The old FTP_SERVER alias is not a certificate identity. Bind both to the same IP.
+FTPS_HOST = 'ftplnx02.aruba.it'
 SHA = re.compile(r'[a-f0-9]{64}')
 
 
@@ -87,8 +91,14 @@ def load_release(path=MANIFEST, root=ROOT):
 
 def connect():
     # Secrets remain in environment/memory. TLS and certificate verification are required.
+    configured_addresses = {item[4][0] for item in socket.getaddrinfo(
+        os.environ['FTP_SERVER'], 21, type=socket.SOCK_STREAM)}
     ftp = ftplib.FTP_TLS(context=ssl.create_default_context(), timeout=60)
-    ftp.connect(os.environ['FTP_SERVER'], 21)
+    ftp.connect(FTPS_HOST, 21)
+    # Check the real connected peer before sending USER/PASS. Fail closed on drift.
+    if ftp.sock.getpeername()[0] not in configured_addresses:
+        ftp.close()
+        raise ValueError('Certified FTPS endpoint does not match the configured FTP server')
     ftp.login(os.environ['FTP_USERNAME'], os.environ['FTP_PASSWORD'])
     ftp.prot_p()
     ftp.cwd(REMOTE)

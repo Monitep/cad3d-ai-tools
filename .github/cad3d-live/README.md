@@ -5,6 +5,15 @@ Workflow dedicato alla nuova vetrina in `_cad3d-site/`. Riutilizza `FTP_SERVER`,
 e certificato verificato**. Il collegamento e i permessi su questa cartella
 vanno confermati dalla prima esecuzione: i Secrets non sono leggibili dalla chat.
 
+Il primo collegamento del 26 ottobre ha rilevato un alias FTP non incluso nel
+certificato. La diagnosi senza autenticazione ha verificato catena CA e SAN
+`ftplnx02.aruba.it`. Il client usa questo nome certificato e, prima di inviare
+le credenziali, controlla che l'IP del peer appartenga agli indirizzi del server
+FTP configurato. Se Aruba cambia infrastruttura senza corrispondenza il rilascio
+si ferma. Restano attivi i controlli CA, hostname e cifratura del canale dati.
+La diagnosi è ripetibile con `CAD3D - diagnosi certificato FTPS`; non usa username
+o password e non modifica file.
+
 Il precedente `Deploy FTP su Aruba` continua a gestire l'area `/ai/`.
 Il nuovo workflow non cambia la configurazione della root e non cerca di
 sincronizzare l'intero hosting.
