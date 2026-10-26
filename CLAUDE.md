@@ -2,6 +2,7 @@
 
 For work on the CAD3D website, read `AGENTS.md`, then
 `.github/cad3d-site/AGENTS.md` and `.github/cad3d-site/README.md`.
+For the public site, also read `.github/cad3d-live/AGENTS.md` and its README.
 
 The editable source is `.github/cad3d-site/`. `cad3d-preview/*.html` and
 `cad3d-preview/en/*.html` are generated files. Change the source and rebuild them.
