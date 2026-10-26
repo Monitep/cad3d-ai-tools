@@ -255,6 +255,18 @@ class ReleaseTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.validate(bad)
 
+    def test_html_verification_accepts_cloudflare_email_rewriting(self):
+        page = '<html lang="it"><head><title>CAD3D.Expert</title><script src="/_cad3d-site/assets/new.js"></script></head><body><h1>Home</h1><a href="mailto:public@example.test">Scrivimi</a></body></html>'
+        served = page.replace('mailto:public@example.test', '/cdn-cgi/l/email-protection#1234').replace('</body>', '<script src="/cdn-cgi/scripts/email-decode.min.js"></script></body>')
+        deploy.verify_page(page, served)
+
+    def test_html_verification_rejects_old_runtime_and_changed_copy(self):
+        page = '<html><head><script src="/_cad3d-site/assets/new.js"></script></head><body><h1>Home CAD3D.Expert</h1></body></html>'
+        with self.assertRaises(ValueError):
+            deploy.verify_page(page, page.replace('new.js', 'old.js'))
+        with self.assertRaises(ValueError):
+            deploy.verify_page(page, page.replace('Home CAD3D.Expert', 'Old page'))
+
 
 if __name__ == '__main__':
     unittest.main()
