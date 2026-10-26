@@ -1,0 +1,52 @@
+[
+  {
+    "path": "pages/it/index.html",
+    "sha256": "e82a5855470180588271cdcf0e2b06c7d26dec43114b5afaa6d14fb76515cf51",
+    "bytes": 25294
+  },
+  {
+    "path": "pages/en/index.html",
+    "sha256": "d2a87ff06eecb5f125b816b02d87f00c118eeacd21b11fbad308112c89151403",
+    "bytes": 25328
+  },
+  {
+    "path": "assets/site.js",
+    "sha256": "6209ee7e76cea629e43548c4655b1334940872c373dfafe543ed06f8926c336a",
+    "bytes": 10089
+  },
+  {
+    "path": "assets/media-v5.js",
+    "sha256": "65fb576fb89e690d19b8e76aee454f25e9059bc71bc957b55d5cb47a2d080abf",
+    "bytes": 7705
+  },
+  {
+    "path": "assets/style.css",
+    "sha256": "5b978150fd6d368167547d4922bdd67b8aa21be502577083d85e4ed7e9e7c234",
+    "bytes": 62033
+  },
+  {
+    "path": "assets/bess-ai-v11.webp",
+    "sha256": "5b7acc5d3677cef64071547a480be23b3588ea1411cfe8da021da0baf1c1fd5d",
+    "bytes": 888290
+  },
+  {
+    "path": "assets/villa-ai-v4-small.webp",
+    "sha256": "3c27adc05146de878f056331f69b13424bd4f216bb58c780ac2b9fd3f0187a45",
+    "bytes": 151232
+  },
+  {
+    "path": "assets/bath-blue-ai-v4-small.webp",
+    "sha256": "3a581bad7b25e44436baab4adf3c5ea638cc875e167e3412fe16f998fb4632d6",
+    "bytes": 133384
+  },
+  {
+    "path": "assets/film-interior-poster-v5.webp",
+    "sha256": "dd74d610591f526f8bc394c1cd1a7300d226f771510017b6ab0423e442b8b5f0",
+    "bytes": 252594
+  },
+  {
+    "path": "assets/film-detail-poster-v5.webp",
+    "sha256": "9cb5fa391beb0b3559ddd9e9a6c03318e246586dfbfd2e7d0c653cfc0a8e3bde",
+    "bytes": 354830
+  }
+]
