@@ -1,0 +1,32 @@
+name: Build Bit Lab Watch
+on:
+  push:
+    branches: [codex/bitlab-watch]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: Compila e verifica
+        working-directory: bitlab-watch
+        run: |
+          mkdir -p /tmp/bitlab-tests
+          javac -d /tmp/bitlab-tests app/src/main/java/expert/cad3d/bitlab/MathCore.java test/MathCoreTest.java
+          java -cp /tmp/bitlab-tests MathCoreTest
+          gradle --no-daemon assembleDebug testDebugUnitTest
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Bit-Lab-Watch-APK
+          path: bitlab-watch/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 30

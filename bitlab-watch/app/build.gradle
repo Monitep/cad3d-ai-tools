@@ -1,0 +1,13 @@
+plugins { id 'com.android.application' }
+
+android {
+    namespace 'expert.cad3d.bitlab'
+    compileSdk 35
+    defaultConfig {
+        applicationId 'expert.cad3d.bitlab'
+        minSdk 30
+        targetSdk 35
+        versionCode 1
+        versionName '1.0'
+    }
+}
