@@ -1,20 +1,80 @@
 {
   "schema": 1,
-  "release_id": "20261026-home-images-1-ftps",
+  "release_id": "20261026-home-performance-p1",
   "origin": "https://www.cad3d.expert/",
   "remote_directory": "/www.cad3d.expert/_cad3d-site/",
   "files": [
     {
-      "source": "cad3d-preview/assets/villa-mobile-ai-v4.webp",
-      "target": "assets/villa-mobile-ai-v4.webp",
-      "before_sha256": "26e0d1fc6600efdc0b91b8e3d1564e50b694972b1f0420dfcb9175547276ea5b",
-      "sha256": "b5609610df251223fbe3968363fd27c56e8f290dbf5adfc5a22c9738dd2ccf09"
+      "source": ".github/cad3d-live/payload/assets/bath-preview-880-p1.webp",
+      "target": "assets/bath-preview-880-p1.webp",
+      "before_sha256": null,
+      "sha256": "aeb788140993bf1cecdc715823a70ded86cb8e7779bda5ad81989198c7718ddc"
     },
     {
-      "source": "cad3d-preview/assets/villa-ai-v4.webp",
-      "target": "assets/villa-ai-v4.webp",
-      "before_sha256": "2221941bfc21347819ec8b2f2a00aa4a182602ac28b981f8ac93c26daae4ba3b",
-      "sha256": "193f86860df898ad8297c6af47d57bb3ca2dbc19d959e9c85cc330df5ffcecbe"
+      "source": ".github/cad3d-live/payload/assets/bess-preview-1539-p1.webp",
+      "target": "assets/bess-preview-1539-p1.webp",
+      "before_sha256": null,
+      "sha256": "ee4b910a4c77dd93aae0a6b4318692784cd18ee89c686888015e03fc0fcb3598"
+    },
+    {
+      "source": ".github/cad3d-live/payload/assets/bess-preview-480-p1.webp",
+      "target": "assets/bess-preview-480-p1.webp",
+      "before_sha256": null,
+      "sha256": "076268075a7bd1787887a8e57c26ba430a0c5ded938a83b6d43f10ef14a518d8"
+    },
+    {
+      "source": ".github/cad3d-live/payload/assets/bess-preview-880-p1.webp",
+      "target": "assets/bess-preview-880-p1.webp",
+      "before_sha256": null,
+      "sha256": "4f2d05f369dad81ae7842f0e4885bdb6e06f02f2f49bd732e01e869a6dede6ff"
+    },
+    {
+      "source": ".github/cad3d-live/payload/assets/film-detail-poster-p1.webp",
+      "target": "assets/film-detail-poster-p1.webp",
+      "before_sha256": null,
+      "sha256": "096ce8a572d129f3cb74e06671ae35a033acf2d92fcaa22ebcfa9818fe720f83"
+    },
+    {
+      "source": ".github/cad3d-live/payload/assets/film-interior-poster-p1.webp",
+      "target": "assets/film-interior-poster-p1.webp",
+      "before_sha256": null,
+      "sha256": "75022ca017bb60217de8691301a88858405f310b8e723b2c983f7e179644216b"
+    },
+    {
+      "source": ".github/cad3d-live/payload/assets/interior-scene7-thumb-p1.webp",
+      "target": "assets/interior-scene7-thumb-p1.webp",
+      "before_sha256": null,
+      "sha256": "7fbc586b54b0bf69cad7a913821cc27cb66815236b3967315b42f57b712216df"
+    },
+    {
+      "source": ".github/cad3d-live/payload/assets/media-performance-v1.js",
+      "target": "assets/media-performance-v1.js",
+      "before_sha256": null,
+      "sha256": "49d0fc0082ebb38192ebde29a4dabb7448b774e319da5fa71e3d331bca3a1b8c"
+    },
+    {
+      "source": ".github/cad3d-live/payload/assets/site-performance-v1.js",
+      "target": "assets/site-performance-v1.js",
+      "before_sha256": null,
+      "sha256": "6056557bd83d775b5a64d1ac776dff4c535f739c45230f9b95d7faad1562fd36"
+    },
+    {
+      "source": ".github/cad3d-live/payload/assets/villa-preview-880-p1.webp",
+      "target": "assets/villa-preview-880-p1.webp",
+      "before_sha256": null,
+      "sha256": "bbb113683e50fb2adc7cbe7557b65dd181bffcccde8862d2e86ec49f89022163"
+    },
+    {
+      "source": ".github/cad3d-live/payload/pages/it/index.html",
+      "target": "pages/it/index.html",
+      "before_sha256": "e82a5855470180588271cdcf0e2b06c7d26dec43114b5afaa6d14fb76515cf51",
+      "sha256": "740fcdf618f6aadd7faf8234e6d7a3c7565a10ff49b6ef6f2cc463b32b89a1b9"
+    },
+    {
+      "source": ".github/cad3d-live/payload/pages/en/index.html",
+      "target": "pages/en/index.html",
+      "before_sha256": "d2a87ff06eecb5f125b816b02d87f00c118eeacd21b11fbad308112c89151403",
+      "sha256": "4d4ad51ca84e774f6f6025e1c439ad75487cc3690f2199fa0eb18afeba13796f"
     }
   ]
 }

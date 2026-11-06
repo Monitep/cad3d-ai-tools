@@ -6,6 +6,8 @@ on:
       - .github/cad3d-live/**
       - .github/tools/cad3d-live.py
       - .github/tools/test-cad3d-live.py
+      - .github/tools/build-cad3d-home-performance.py
+      - .github/tools/test-cad3d-home-performance.mjs
       - .github/workflows/cad3d-live.yml
       - cad3d-preview/assets/villa-ai-v4.webp
       - cad3d-preview/assets/villa-mobile-ai-v4.webp
@@ -41,6 +43,10 @@ jobs:
         run: |
           python3 .github/tools/cad3d-live.py validate
           python3 .github/tools/test-cad3d-live.py
+          python3 .github/tools/build-cad3d-home-performance.py --check
+          node .github/tools/test-cad3d-home-performance.mjs
+          node --check .github/cad3d-live/payload/assets/site-performance-v1.js
+          node --check .github/cad3d-live/payload/assets/media-performance-v1.js
           git diff --check
 
   publish:
