@@ -1,11 +1,15 @@
 {
   "id": "./",
-  "name": "Radio K1 · Collegamento USB",
+  "name": "Radio K1",
   "short_name": "Radio K1",
   "lang": "it",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
+  "shortcuts": [
+    { "name": "Esplora canali", "url": "./?vista=canali" },
+    { "name": "Ricevi immagini SSTV", "url": "./?vista=immagini" }
+  ],
   "background_color": "#0e1619",
   "theme_color": "#0e1619",
   "icons": [
