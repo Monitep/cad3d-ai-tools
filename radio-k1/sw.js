@@ -1,5 +1,5 @@
 const PREFIX = "radio-k1-usb:" + self.registration.scope + ":";
-const CACHE = PREFIX + "93ba6b127969aca5";
+const CACHE = PREFIX + "0929a9b7b9ae3fd4";
 const files = ["./index.html", "./app.webmanifest", "./icon-192.png", "./icon-512.png"];
 const absolute = path => new URL(path, self.registration.scope).href;
 const allowed = new Set(files.map(absolute));
@@ -16,6 +16,14 @@ self.addEventListener("activate", event => {
 });
 self.addEventListener("fetch", event => {
   if (event.request.method !== "GET") return;
+  if (event.request.mode === "navigate" && event.request.url === absolute("./?verifica=usb")) {
+    // Il link di assistenza carica la versione pubblicata anche se il Galaxy ha già la precedente.
+    event.respondWith(fetch(event.request, { cache: "no-cache" }).catch(async () => {
+      const cache = await caches.open(CACHE);
+      return await cache.match(absolute("./index.html")) || Response.error();
+    }));
+    return;
+  }
   const page = event.request.url === self.registration.scope;
   const url = page ? absolute("./index.html") : event.request.url;
   if (!allowed.has(url)) return;
