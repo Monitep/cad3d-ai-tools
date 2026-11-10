@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0e1619">
   <meta name="referrer" content="no-referrer">
   <meta name="robots" content="noindex, nofollow">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-WgIDR3pGj72XSo/tt4coSG8t54R+f+YDVfx1GR5qBMI=' 'wasm-unsafe-eval'; style-src 'sha256-MEqZpCipX6EsDKxdrMxy5RVyfsrUW/7HnR/OlDcUfmI='; img-src 'self' data:; worker-src 'self'; manifest-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-6hzdrzSjDUE9CN9Y8M6R+SP3T3mbawKiaGoFrum9Kuk=' 'wasm-unsafe-eval'; style-src 'sha256-fy2YSC3Aoka1g0/KdDs2hfBIDiawx4z6PxNCdKcGlwg='; img-src 'self' data:; worker-src 'self'; manifest-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
   <title>Radio K1 · Console di ricezione</title>
   <link rel="icon" href="./icon-192.png">
   <link rel="manifest" href="./app.webmanifest">
@@ -170,7 +170,7 @@ body.wide-layout main, body.wide-layout .bar-inner { max-width:1180px; }
 .draft-row { display:grid; grid-template-columns:40px minmax(110px,1.3fr) minmax(110px,1.2fr) 65px minmax(70px,1fr) 110px; align-items:center; gap:10px; padding:12px 10px; border-bottom:1px solid var(--line); font-size:13px; background:var(--surface); }
 .draft-row:first-child { border-radius:10px 10px 0 0; }.draft-row:last-child { border-radius:0 0 10px 10px; }.draft-row .row-name { display:block; font-weight:600; }.draft-row small { display:block; font-size:11px; color:var(--muted); margin-top:3px; }
 .draft-row .row-controls { display:flex; gap:4px; }.draft-row button { padding:6px 9px; min-height:36px; }.draft-row[draggable=true] { cursor:grab; }.draft-row.drag-target { outline:2px solid var(--accent); }.draft-row.invalid { border-left:3px solid #c88c4d; }
-.form-grid { display:grid; grid-template-columns:1fr 1fr; gap:15px; margin:22px 0 16px; }.check-field { display:flex!important; flex-direction:row; align-items:center; padding:10px 0; }.check-field input { width:18px!important; min-height:18px!important; accent-color:var(--accent); }
+.form-grid { display:grid; grid-template-columns:1fr 1fr; gap:15px; margin:22px 0 16px; }.check-field:not([hidden]) { display:flex!important; flex-direction:row; align-items:center; padding:10px 0; }.check-field input { width:18px!important; min-height:18px!important; accent-color:var(--accent); }
 .diff-row { border-bottom:1px solid var(--line); padding:13px 0; font-size:13px; }.diff-row p { margin:5px 0; }.empty-state { padding:28px; border:1px dashed var(--line); border-radius:10px; color:var(--muted); font-size:14px; }
 .image-hero { background-size:cover; background-position:center; color:#f1f7f4; border:1px solid #42545e; border-radius:14px; padding:34px 28px; }.image-hero p { max-width:45ch; color:#bfcfd2; margin:6px 0; }.image-hero h1 { max-width:12ch; }
 .sstv-grid { display:grid; grid-template-columns:.9fr 1.1fr; gap:28px; margin-top:27px; }.image-guide h2 { font-size:21px; }.image-guide p,.image-guide li { font-size:13px; line-height:1.65; }.image-guide ol { padding-left:20px; }.image-guide li { margin-bottom:9px; }
@@ -307,9 +307,10 @@ body.wide-layout main, body.wide-layout .bar-inner { max-width:1180px; }
   <p id="tune-guide">Accendi la UV-K1 normalmente e collegala al Galaxy con il cavo USB-C dati. L’audio si ascolta dalla radio.</p>
   <p id="tune-state" role="status" aria-live="polite"></p>
   <progress id="tune-progress" max="100" value="0" hidden aria-label="Backup della sessione"></progress>
+  <label id="tune-continuity-label" class="check-field" hidden><input type="checkbox" id="tune-continuity">Sto proseguendo la stessa sessione, con la stessa UV-K1 rimasta collegata da quel backup.</label>
   <label id="tune-ready-label" class="check-field" hidden><input type="checkbox" id="tune-ready">La radio è sulla schermata principale, con tastiera sbloccata e scansione ferma.</label>
   <div class="dialog-actions"><button type="button" id="tune-connect" class="primary">Collega radio e crea backup</button><button type="button" id="tune-confirm" class="primary" hidden>Conferma canale</button><button type="button" id="tune-go" class="primary" hidden>Sintonizza adesso</button><button type="button" id="tune-done" hidden>Scegli un altro canale</button></div>
-  <div class="tune-secondary"><button type="button" id="tune-save" hidden>Scarica backup</button><button type="button" id="tune-disconnect" hidden>Scollega radio</button></div>
+  <div class="tune-secondary"><button type="button" id="tune-new" hidden>Nuova sessione e backup</button><button type="button" id="tune-save" hidden>Scarica backup</button><button type="button" id="tune-disconnect" hidden>Termina sessione</button></div>
 </dialog>
 <dialog id="location-dialog" class="app-dialog">
   <form method="dialog"><button class="close-dialog" aria-label="Chiudi">×</button></form>
@@ -761,7 +762,7 @@ if (!window.isSecureContext || !methods.length) {
     "Apri l’indirizzo HTTPS direttamente in Chrome aggiornato. La finestra interna delle app può nascondere l’USB.");
 }
 if (!window.__TAURI__ && (location.protocol === "https:" || location.hostname === "127.0.0.1" || location.hostname === "localhost")) {
-  navigator.serviceWorker?.register("./sw.js?v=9ec59384e9c16f9c", { scope: "./", updateViaCache: "none" }).catch(() => {});
+  navigator.serviceWorker?.register("./sw.js?v=2a62c48dd482307a", { scope: "./", updateViaCache: "none" }).catch(() => {});
 }
 
 // Frequenze ed eventi dimostrativi. Non rappresentano canali assegnati o traffico ricevuto.
@@ -1602,9 +1603,26 @@ const FusionTuning = (() => {
       await this.identify();
       const cal=memory.slice(calStart,calStart+512);
       if(cal.every(b=>b===0)||cal.every(b=>b===255))throw Error("Calibrazione non valida.");
-      const backup={when:new Date().toISOString(),version:release,memory,cal,hash:await digest(memory),calHash:await digest(cal)};
+      const backup={sessionFormat:1,when:new Date().toISOString(),version:release,memory,cal,hash:await digest(memory),calHash:await digest(cal)};
       await persist(backup);
       if(this.closed)throw Error("La radio è stata scollegata durante il backup.");
+      this.backup=backup;return backup;
+    }
+    async resume(backup){
+      // Si rilegge dal telefono la copia integrale originaria e si confrontano
+      // con la radio la calibrazione ed alcuni blocchi MR che la sintonia VFO
+      // non modifica. Nessuna nuova scansione dell'intera EEPROM sul cavo.
+      if(!backup||backup.version!==release||backup.memory?.length!==size||backup.cal?.length!==512||
+        !equal(backup.memory.subarray(calStart,calStart+512),backup.cal)||await digest(backup.memory)!==backup.hash||
+        await digest(backup.cal)!==backup.calHash||backup.cal.every(b=>b===0)||backup.cal.every(b=>b===255))
+        throw Error("La copia locale non supera la verifica di integrità. Avvia una nuova sessione con backup.");
+      await this.identify();await this.firmware();
+      for(const offset of [calStart,calStart+64,calStart+128,calStart+192,calStart+256,calStart+320,calStart+384,calStart+448,0,0x1000,0x4000,0x7040]){
+        const physical=await this.stable(offset,64);
+        if(!equal(physical,backup.memory.subarray(offset,offset+64)))
+          throw Error("Calibrazione o memorie diverse dal backup della sessione. Scegli Nuova sessione e backup per questa radio.");
+      }
+      if(this.closed)throw Error("Radio scollegata durante la verifica rapida.");
       this.backup=backup;return backup;
     }
     async keys(keys){
@@ -2058,7 +2076,12 @@ async function bootAtlas() {
     const wanted=new URLSearchParams(location.search).get("canale");
     if(wanted){
       const choice=catalog.channels.find(c=>c.id===wanted);
-      if(choice)openTuning(choice);
+      if(choice){
+        if(choice.site.includes("Malpensa")&&allMatches.some(({c})=>c.id===choice.id)){
+          selectedCategory="air";searchTerm="malpensa";element("channel-search").value="Malpensa";renderChannels();
+        }
+        openTuning(choice);
+      }
       else element("atlas-feedback").textContent="Questo canale non compare più nel catalogo.";
     }
   }
@@ -2067,16 +2090,33 @@ if(atlasView)bootAtlas().catch(error=>{element(atlasView==="canali"?"atlas-feedb
 
 const openTuning = (() => {
   const dialog=element("tune-dialog"),go=element("tune-go");
-  let radio=null,target,phase="idle",generation=0,latest=null;
+  let radio=null,target,phase="idle",generation=0,latest=null,candidate=null,leaseId=null,needsContinuity=false,forcePicker=false;
+  const leaseKey="radio-k1-sessione-ascolto-v1", tabKey="radio-k1-sessione-nella-scheda";
+  const bus=typeof BroadcastChannel==="function"?new BroadcastChannel(leaseKey):null;
+  function lease(){try{return JSON.parse(localStorage.getItem(leaseKey)||"null");}catch{return null;}}
+  function tabLease(){try{return sessionStorage.getItem(tabKey);}catch{return null;}}
+  const when=b=>{const date=new Date(b.when),sameDay=date.toDateString()===new Date().toDateString();
+    return new Intl.DateTimeFormat("it-IT",{...(!sameDay?{day:"numeric",month:"short"}:{}),hour:"2-digit",minute:"2-digit"}).format(date);};
+  function bind(b,id){
+    leaseId=id||crypto.randomUUID();
+    const value={id:leaseId,hash:b.hash,when:b.when,ended:false};
+    localStorage.setItem(leaseKey,JSON.stringify(value));sessionStorage.setItem(tabKey,leaseId);
+    candidate=b;needsContinuity=false;
+  }
   const state=text=>{element("tune-state").textContent=text;};
-  const phaseBusy=()=>["backup","tuning"].includes(phase);
+  const phaseBusy=()=>["lookup","resume","backup","tuning"].includes(phase);
   function render(){
     const ready=Boolean(radio?.backup);
-    element("tune-connect").hidden=ready||phaseBusy();element("tune-ready-label").hidden=phase!=="ready";
+    const connect=element("tune-connect");
+    connect.hidden=ready||phaseBusy();connect.textContent=forcePicker?"Scegli la radio USB":candidate?"Riprendi · verifica rapida":"Collega radio e crea backup";
+    connect.disabled=Boolean(candidate&&needsContinuity&&!element("tune-continuity").checked);
+    element("tune-continuity-label").hidden=ready||phaseBusy()||!candidate||!needsContinuity;
+    element("tune-new").hidden=ready||phaseBusy()||!candidate;
+    element("tune-ready-label").hidden=phase!=="ready";
     element("tune-confirm").hidden=phase!=="ready";element("tune-confirm").disabled=!element("tune-ready").checked;
     go.hidden=phase!=="confirmed";element("tune-done").hidden=phase!=="done";
     element("tune-progress").hidden=phase!=="backup";element("tune-close").disabled=phaseBusy();
-    element("tune-save").hidden=!latest||phaseBusy();element("tune-disconnect").hidden=!radio||phase==="tuning";
+    element("tune-save").hidden=!latest||phaseBusy();element("tune-disconnect").hidden=(!radio&&!candidate)||phase==="tuning"||phase==="lookup";
   }
   function dbOpen(){
     return new Promise((resolve,reject)=>{
@@ -2102,11 +2142,12 @@ const openTuning = (() => {
       latest=saved;
     }finally{db.close();}
   }
-  async function lastBackup(){
+  async function lastBackup(hash){
     const db=await dbOpen();
     try{return await new Promise((resolve,reject)=>{
-      const q=db.transaction("copie").objectStore("copie").index("quando").openCursor(null,"prev");
-      q.onsuccess=()=>resolve(q.result?.value||null);q.onerror=()=>reject(q.error);
+      const store=db.transaction("copie").objectStore("copie");
+      const q=hash?store.get(hash):store.index("quando").openCursor(null,"prev");
+      q.onsuccess=()=>resolve((hash?q.result:q.result?.value)||null);q.onerror=()=>reject(q.error);
     });}finally{db.close();}
   }
   // ZIP senza compressione: header locale, directory centrale, fine directory.
@@ -2137,14 +2178,78 @@ const openTuning = (() => {
     d.setUint32(12,centralSize,true);d.setUint32(16,offset,true);
     return new Blob([...parts,...central,end],{type:"application/zip"});
   }
-  async function disconnect(){
+  async function disconnect(endSession=false){
     generation++;const current=radio;radio=null;phase="idle";render();
+    if(endSession){
+      const l=lease();
+      if(!l||l.id===leaseId)localStorage.setItem(leaseKey,JSON.stringify({id:leaseId,ended:true}));
+      sessionStorage.removeItem(tabKey);candidate=null;leaseId=null;needsContinuity=false;forcePicker=false;
+    }
     if(current)await current.stop();
+    render();
   }
-  element("tune-close").onclick=element("tune-done").onclick=()=>{if(!phaseBusy())dialog.close();};
+  // Un'altra pagina della stessa origine può acquisire il cavo dopo il rilascio
+  // della precedente. Una sintonia o un backup in corso conserva la porta.
+  if(bus)bus.onmessage=async e=>{
+    const msg=e.data;
+    if(msg?.type==="session"&&msg.lease===leaseId&&radio?.backup){bus.postMessage({type:"present",id:msg.id,lease:leaseId});return;}
+    if(msg?.type!=="claim")return;
+    if(!radio){
+      if(typeof live!=="undefined"&&live?.link){await stopViewer(live);bus.postMessage({type:"released",id:msg.id});}
+      return;
+    }
+    if(phaseBusy()){bus.postMessage({type:"busy",id:msg.id});return;}
+    const oldLease=leaseId;
+    await disconnect();state("Il collegamento è passato a un’altra scheda. Puoi riprendere questa sessione.");
+    bus.postMessage({type:"released",id:msg.id,lease:oldLease});
+  };
+  async function livingSession(id){
+    if(!bus||!id)return false;
+    const request=crypto.randomUUID();
+    return new Promise(resolve=>{
+      const finish=yes=>{clearTimeout(timer);bus.removeEventListener("message",listener);resolve(yes);};
+      const listener=e=>{if(e.data?.type==="present"&&e.data.id===request&&e.data.lease===id)finish(true);};
+      const timer=setTimeout(()=>finish(false),350);
+      bus.addEventListener("message",listener);bus.postMessage({type:"session",id:request,lease:id});
+    });
+  }
+  async function takePort(){
+    if(!bus)return;
+    const id=crypto.randomUUID();
+    await new Promise((resolve,reject)=>{
+      const cleanup=()=>{clearTimeout(timer);bus.removeEventListener("message",onmessage);};
+      const onmessage=e=>{
+        if(e.data?.id!==id||!["released","busy"].includes(e.data.type))return;
+        cleanup();
+        if(e.data.type==="busy")reject(Error("La radio sta completando un comando in un’altra scheda."));else resolve();
+      };
+      const timer=setTimeout(()=>{cleanup();resolve();},450);
+      bus.addEventListener("message",onmessage);bus.postMessage({type:"claim",id});
+    });
+  }
+  async function previouslyGranted(){
+    if(preferred==="usb"&&navigator.usb?.getDevices){
+      const devices=(await navigator.usb.getDevices()).filter(d=>isRadio(d.vendorId,d.productId));
+      return devices.length===1?new UsbLink(devices[0]):null;
+    }
+    if(preferred==="serial"&&navigator.serial?.getPorts){
+      const ports=(await navigator.serial.getPorts()).filter(p=>{const i=p.getInfo();return isRadio(i.usbVendorId,i.usbProductId);});
+      return ports.length===1?new SerialLink(ports[0]):null;
+    }
+    return null;
+  }
+  function closeCard(){
+    if(phaseBusy())return;
+    dialog.close();
+    const url=new URL(location.href);
+    if(url.searchParams.has("canale")){url.searchParams.delete("canale");history.replaceState(history.state,"",url);}
+  }
+  element("tune-close").onclick=closeCard;
+  element("tune-done").onclick=()=>{closeCard();element("channel-groups").scrollIntoView({block:"start"});};
   dialog.addEventListener("cancel",e=>{if(phaseBusy())e.preventDefault();});
-  element("tune-ready").onchange=render;
-  element("tune-disconnect").onclick=async()=>{await disconnect();state("Radio scollegata.");};
+  element("tune-ready").onchange=element("tune-continuity").onchange=render;
+  element("tune-disconnect").onclick=async()=>{await disconnect(true);state("Sessione terminata. Il backup resta salvato sul telefono.");};
+  element("tune-new").onclick=()=>{candidate=null;needsContinuity=false;forcePicker=false;state("Nuova sessione selezionata. Collega la radio per creare un nuovo backup.");render();};
   element("tune-save").onclick=async()=>{
     try{if(latest)await fileDownload(zipBackup(latest),"application/zip","Radio-K1-backup-"+latest.when.slice(0,19).replaceAll(":","-")+".zip");}
     catch(e){state("Salvataggio interrotto. "+String(e));}
@@ -2152,23 +2257,42 @@ const openTuning = (() => {
   element("tune-connect").onclick=async()=>{
     if(phaseBusy()||radio?.backup)return;
     if(!preferred){state("Apri il collegamento in Chrome sul Galaxy e collega la presa dati della UV-K1.");return;}
-    const id=++generation;phase="backup";render();state("Scegli la UV-K1 nella finestra USB.");
+    if(candidate&&needsContinuity&&!element("tune-continuity").checked)return;
+    const reference=candidate,prior=lease();
+    const id=++generation;phase=reference?"resume":"backup";render();
+    state(reference?"Verifica rapida del backup delle "+when(reference)+" e della radio…":"Scegli la UV-K1 nella finestra USB.");
     let link,wake;
     try{
-      link=await chooseRadio(preferred);
+      if(reference&&!forcePicker){
+        link=await previouslyGranted();
+        if(!link){forcePicker=true;phase="idle";state("Tocca Scegli la radio USB. Il backup resta quello delle "+when(reference)+".");render();return;}
+      }else{link=await chooseRadio(preferred);}
+      if(id!==generation){await link.close();return;}
+      await takePort();
       if(id!==generation){await link.close();return;}
       const rust=await consoleCore;radio=new FusionTuning.Radio(link,rust);render();
       await deadline(link.open(),30000,"Apertura USB scaduta.");
       try{wake=await navigator.wakeLock?.request("screen");}catch{}
-      state("Verifica di Fusion e lettura del backup…");
-      await radio.prepare((pass,fraction)=>{
-        if(id!==generation)return;const full=Math.round(((pass-1)+fraction)*50);
-        element("tune-progress").value=full;state("Backup della sessione · lettura "+pass+"/2 · "+full+"%");
-      },persist);
+      if(reference){
+        await radio.resume(reference);
+        const current=lease();
+        if(prior?.id&&(!current||current.ended||current.id!==prior.id))throw Error("La sessione è stata terminata o sostituita in un’altra scheda.");
+      }else{
+        state("Verifica di Fusion e lettura del backup…");
+        await radio.prepare((pass,fraction)=>{
+          if(id!==generation)return;const full=Math.round(((pass-1)+fraction)*50);
+          element("tune-progress").value=full;state("Backup della sessione · lettura "+pass+"/2 · "+full+"%");
+        },persist);
+      }
       if(id!==generation)return;
-      phase="ready";state("Backup verificato sul telefono. Puoi scegliere il canale.");
+      bind(radio.backup,reference&&prior&&!prior.ended?prior.id:null);forcePicker=false;
+      phase="ready";state((reference?"Stesso backup delle ":"Backup verificato delle ")+when(radio.backup)+". Puoi scegliere il canale.");
     }catch(e){
-      if(id===generation){await disconnect();state(e.name==="NotFoundError"?"Selezione USB annullata.":"Collegamento interrotto. "+(e.message||e)+" Se il display è aperto in un’altra scheda, scollegalo lì e riprova.");}
+      if(id===generation){
+        await disconnect();
+        const occupied=["NetworkError","InvalidStateError"].includes(e.name)?" Chiudi la vecchia scheda che usa la radio, lascia il cavo collegato e scegli Riprendi.":"";
+        state(e.name==="NotFoundError"?"Selezione USB annullata.":"Collegamento interrotto. "+(e.message||e)+occupied);
+      }
       else if(link)await link.close().catch(()=>{});
     }finally{await wake?.release().catch(()=>{});render();}
   };
@@ -2191,18 +2315,37 @@ const openTuning = (() => {
   window.addEventListener("pagehide",()=>{void disconnect();});
   document.addEventListener("visibilitychange",()=>{if(document.hidden&&phase==="tuning"){void disconnect();state("Comando interrotto perché la pagina è passata in secondo piano. Controlla la frequenza sul display.");}});
   for(const deviceApi of [navigator.usb,navigator.serial])deviceApi?.addEventListener?.("disconnect",e=>{
-    if(radio && ((e.device&&e.device===radio.link.device)||(radio.link.port&&(e.target===radio.link.port||e.port===radio.link.port)))){
-      void disconnect();state("Cavo scollegato. Ricollega la radio per iniziare una nuova sessione.");
+    const p=e.port||e.target,info=p?.getInfo?.();
+    const releasedWhileAway=!radio&&leaseId&&((e.device&&isRadio(e.device.vendorId,e.device.productId))||(info&&isRadio(info.usbVendorId,info.usbProductId)));
+    if(releasedWhileAway||(radio && ((e.device&&e.device===radio.link.device)||(radio.link.port&&(e.target===radio.link.port||e.port===radio.link.port))))){
+      void disconnect(true);state("Cavo scollegato. Ricollega la radio per iniziare una nuova sessione.");
     }
+  });
+  window.addEventListener("storage",e=>{
+    if(e.key!==leaseKey||!leaseId)return;
+    const current=lease();
+    if(!current||current.ended||current.id!==leaseId){void disconnect();leaseId=null;candidate=null;state("La sessione è cambiata in un’altra scheda. Riapri il canale.");render();}
   });
   return c=>{
     if(phaseBusy())return;target=c;phase=radio?.backup?"ready":"idle";
     element("tune-name").textContent=c.title+" · "+c.site;
     element("tune-target").textContent=AtlasModel.frequency(c.hz3/3)+" MHz · "+c.mode;
-    element("tune-progress").value=0;element("tune-ready").checked=false;
-    state(radio?.backup?"Backup della sessione già verificato.":"Al primo collegamento l’app salva sul telefono EEPROM e calibrazione. Poi potrai passare ad altri canali.");
-    render();dialog.showModal();
-    if(!latest)lastBackup().then(b=>{if(!latest)latest=b;render();}).catch(()=>{});
+    element("tune-progress").value=0;element("tune-ready").checked=false;element("tune-continuity").checked=false;
+    if(radio?.backup){state("Radio collegata · stesso backup delle "+when(radio.backup)+".");render();dialog.showModal();return;}
+    candidate=null;phase="lookup";state("Controllo del backup della sessione sul telefono…");render();dialog.showModal();
+    const id=generation,active=lease();
+    lastBackup(active&&!active.ended?active.hash:null).then(async b=>{
+      if(id!==generation)return;
+      latest=b;
+      // Migrazione: la versione precedente salvava la copia ma non la sessione.
+      // Si offre solo su conferma esplicita che radio e sessione sono ancora le stesse.
+      if(b&&((!active&&!b.sessionFormat)||(active&&!active.ended&&active.hash===b.hash&&active.when===b.when))){
+        candidate=b;leaseId=active?.id||null;needsContinuity=!leaseId||(tabLease()!==leaseId&&!await livingSession(leaseId));
+        state("Backup disponibile delle "+when(b)+". Per cambiare canale basta la verifica rapida.");
+      }else{leaseId=null;needsContinuity=false;state("Prima connessione di questa sessione. Il backup si crea una sola volta.");}
+    }).catch(e=>{state("Archivio locale non disponibile. "+String(e));}).finally(()=>{
+      if(id===generation){phase="idle";render();if(candidate&&!needsContinuity)void element("tune-connect").onclick();}
+    });
   };
 })();
 
