@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0e1619">
   <meta name="referrer" content="no-referrer">
   <meta name="robots" content="noindex, nofollow">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-hV8DsoA+erq8yA1heAdJebMF2oRWl7NeydgSbb5gX+I=' 'wasm-unsafe-eval'; style-src 'sha256-nU8qSOP1/CtZhJ491/MisHr19j5hKnOd9fBiKsZNd6A='; img-src 'self' data:; worker-src 'self'; manifest-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-x8zQKltu1tjIifvwMvtv16vStcd+URh/6GsdlVpi7dU=' 'wasm-unsafe-eval'; style-src 'sha256-nU8qSOP1/CtZhJ491/MisHr19j5hKnOd9fBiKsZNd6A='; img-src 'self' data:; worker-src 'self'; manifest-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
   <title>Radio K1 · Console di ricezione</title>
   <link rel="icon" href="./icon-192.png">
   <link rel="manifest" href="./app.webmanifest">
@@ -565,7 +565,7 @@ if (!window.isSecureContext || !methods.length) {
     "Apri l’indirizzo HTTPS direttamente in Chrome aggiornato. La finestra interna delle app può nascondere l’USB.");
 }
 if (!window.__TAURI__ && (location.protocol === "https:" || location.hostname === "127.0.0.1" || location.hostname === "localhost")) {
-  navigator.serviceWorker?.register("./sw.js?v=fa8ff2e54e19fb7c", { scope: "./", updateViaCache: "none" }).catch(() => {});
+  navigator.serviceWorker?.register("./sw.js?v=f58c82b0ce68a178", { scope: "./", updateViaCache: "none" }).catch(() => {});
 }
 
 // Frequenze ed eventi dimostrativi. Non rappresentano canali assegnati o traffico ricevuto.
@@ -598,7 +598,7 @@ class DemoReceiver {
       const noise = 9 + 7 * Math.sin(i * 4.23 + this.tick * .85) ** 2;
       const peak = (62 + 14 * Math.sin(this.tick * .16)) * Math.exp(-((i - center) ** 2) / 10);
       const second = 34 * Math.exp(-((i - 91) ** 2) / 22);
-      bins[i] = Math.round(noise + peak + second);
+      bins[i] = Math.min(100, Math.round(noise + peak + second));
     }
     return bins;
   }
@@ -676,6 +676,8 @@ class SpectrumPlot {
     this.pause.textContent = "Pausa spettro";
     this.pause.setAttribute("aria-pressed", "false");
     this.zoom.value = "1";
+    this.marker.min = "0";
+    this.marker.max = "127";
     this.marker.value = "64";
     this.anchor = 64;
   }

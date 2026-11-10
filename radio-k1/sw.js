@@ -1,5 +1,5 @@
 const PREFIX = "radio-k1-usb:" + self.registration.scope + ":";
-const CACHE = PREFIX + "fa8ff2e54e19fb7c";
+const CACHE = PREFIX + "f58c82b0ce68a178";
 const files = ["./index.html", "./app.webmanifest", "./icon-192.png", "./icon-512.png"];
 const absolute = path => new URL(path, self.registration.scope).href;
 const allowed = new Set(files.map(absolute));
