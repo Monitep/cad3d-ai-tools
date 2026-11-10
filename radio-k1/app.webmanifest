@@ -3,7 +3,7 @@
   "name": "Radio K1",
   "short_name": "Radio K1",
   "lang": "it",
-  "start_url": "./index.html",
+  "start_url": "./?vista=canali",
   "scope": "./",
   "display": "standalone",
   "shortcuts": [

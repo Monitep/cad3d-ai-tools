@@ -1,5 +1,5 @@
 const PREFIX = "radio-k1-usb:" + self.registration.scope + ":";
-const CACHE = PREFIX + "6cffa72b4d861920";
+const CACHE = PREFIX + "9ec59384e9c16f9c";
 const files = ["./index.html", "./app.webmanifest", "./icon-192.png", "./icon-512.png"];
 const absolute = path => new URL(path, self.registration.scope).href;
 const allowed = new Set(files.map(absolute));
@@ -16,17 +16,22 @@ self.addEventListener("activate", event => {
 });
 self.addEventListener("fetch", event => {
   if (event.request.method !== "GET") return;
-  const views = ["?verifica=usb","?vista=schermo","?vista=canali","?vista=bozza","?vista=immagini"];
-  if (event.request.mode === "navigate" && views.some(view => absolute("./"+view) === event.request.url)) {
-    // Il link di assistenza carica la versione pubblicata anche se il Galaxy ha già la precedente.
-    event.respondWith(fetch(event.request, { cache: "no-cache" }).catch(async () => {
-      const cache = await caches.open(CACHE);
-      return await cache.match(absolute("./index.html")) || Response.error();
-    }));
+  const url = new URL(event.request.url);
+  url.search = ""; url.hash = "";
+  if (event.request.mode === "navigate" && [absolute("./"), absolute("./index.html")].includes(url.href)) {
+    // Anche le icone installate con il vecchio start_url aggiornano la pagina
+    // online. Tutte le viste e i link di assistenza condividono la copia offline.
+    event.respondWith((async()=>{
+      try {
+        const live=await fetch(event.request,{cache:"no-store"});
+        if(live.ok) return live;
+        return await caches.match(absolute("./index.html"),{cacheName:CACHE}) || live;
+      } catch {
+        return await caches.match(absolute("./index.html"),{cacheName:CACHE}) || Response.error();
+      }
+    })());
     return;
   }
-  const page = event.request.url === self.registration.scope;
-  const url = page ? absolute("./index.html") : event.request.url;
-  if (!allowed.has(url)) return;
-  event.respondWith(caches.open(CACHE).then(async cache => (await cache.match(url)) || fetch(event.request)));
+  if (!allowed.has(event.request.url)) return;
+  event.respondWith(caches.open(CACHE).then(async cache => (await cache.match(event.request)) || fetch(event.request)));
 });
