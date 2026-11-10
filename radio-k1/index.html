@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0e1619">
   <meta name="referrer" content="no-referrer">
   <meta name="robots" content="noindex, nofollow">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-CdH5cjkK0z3MgEsmosscvNjSLNL74Qmwv/bBUkdxl5g=' 'wasm-unsafe-eval'; style-src 'sha256-eF9qjlI7CpvKBaK6tStAjyC76gkqbnv4CY2QoJHx0VE='; img-src 'self' data:; worker-src 'self'; manifest-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-JMZELuVQ9rgN+S0Xau5FryV2v3+804TTMc4d/Ww/o9c=' 'wasm-unsafe-eval'; style-src 'sha256-eF9qjlI7CpvKBaK6tStAjyC76gkqbnv4CY2QoJHx0VE='; img-src 'self' data:; worker-src 'self'; manifest-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
   <title>Radio K1 · Collegamento USB</title>
   <link rel="icon" href="./icon-192.png">
   <link rel="manifest" href="./app.webmanifest">
@@ -454,7 +454,7 @@ if (!window.isSecureContext || !methods.length) {
   });
 }
 if (location.protocol === "https:" || location.hostname === "127.0.0.1" || location.hostname === "localhost") {
-  navigator.serviceWorker?.register("./sw.js", { scope: "./" }).catch(() => {});
+  navigator.serviceWorker?.register("./sw.js?v=db8893ffdd790d62", { scope: "./", updateViaCache: "none" }).catch(() => {});
 }
 </script>
 </body>
