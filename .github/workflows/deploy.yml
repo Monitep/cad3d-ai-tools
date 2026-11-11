@@ -32,3 +32,5 @@ jobs:
             CLAUDE.md
             .openai/**
             .github/**
+            nas-services/**
+            videopocket/tests/**
