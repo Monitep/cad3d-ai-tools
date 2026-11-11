@@ -1,5 +1,9 @@
 # Aggiornamenti del sito pubblico CAD3D.Expert
 
+Proposta corrente: [home, caricamento iniziale e anteprime](HOME-PERFORMANCE-20261026.md).
+Contiene le misure prima della correzione, la build riproducibile e i controlli.
+I dettagli del rilascio iniziale delle sole due immagini restano sotto come storico.
+
 Workflow dedicato alla nuova vetrina in `_cad3d-site/`. Riutilizza `FTP_SERVER`,
 `FTP_USERNAME` e `FTP_PASSWORD` già configurati per Aruba, con **FTPS esplicito
 e certificato verificato**. Il collegamento e i permessi su questa cartella

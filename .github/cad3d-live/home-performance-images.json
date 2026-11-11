@@ -1,0 +1,154 @@
+[
+  {
+    "source": "https://www.cad3d.expert/_cad3d-site/assets/bess-ai-v11.webp",
+    "file": "bess-preview-480-p1.webp",
+    "source_dimensions": [
+      1539,
+      1022
+    ],
+    "dimensions": [
+      480,
+      319
+    ],
+    "bytes": 65688,
+    "quality": 86,
+    "method": 6,
+    "operation": "resize preserving aspect ratio and WebP encoding; no generation",
+    "source_sha256": "5b7acc5d3677cef64071547a480be23b3588ea1411cfe8da021da0baf1c1fd5d",
+    "sha256": "076268075a7bd1787887a8e57c26ba430a0c5ded938a83b6d43f10ef14a518d8",
+    "encoder": "Pillow 12.3.0 / WebP; source colours and composition retained"
+  },
+  {
+    "source": "https://www.cad3d.expert/_cad3d-site/assets/bess-ai-v11.webp",
+    "file": "bess-preview-880-p1.webp",
+    "source_dimensions": [
+      1539,
+      1022
+    ],
+    "dimensions": [
+      880,
+      584
+    ],
+    "bytes": 220694,
+    "quality": 86,
+    "method": 6,
+    "operation": "resize preserving aspect ratio and WebP encoding; no generation",
+    "source_sha256": "5b7acc5d3677cef64071547a480be23b3588ea1411cfe8da021da0baf1c1fd5d",
+    "sha256": "4f2d05f369dad81ae7842f0e4885bdb6e06f02f2f49bd732e01e869a6dede6ff",
+    "encoder": "Pillow 12.3.0 / WebP; source colours and composition retained"
+  },
+  {
+    "source": "https://www.cad3d.expert/_cad3d-site/assets/bess-ai-v11.webp",
+    "file": "bess-preview-1539-p1.webp",
+    "source_dimensions": [
+      1539,
+      1022
+    ],
+    "dimensions": [
+      1539,
+      1022
+    ],
+    "bytes": 576990,
+    "quality": 86,
+    "method": 6,
+    "operation": "resize preserving aspect ratio and WebP encoding; no generation",
+    "source_sha256": "5b7acc5d3677cef64071547a480be23b3588ea1411cfe8da021da0baf1c1fd5d",
+    "sha256": "ee4b910a4c77dd93aae0a6b4318692784cd18ee89c686888015e03fc0fcb3598",
+    "encoder": "Pillow 12.3.0 / WebP; source colours and composition retained"
+  },
+  {
+    "source": "https://www.cad3d.expert/_cad3d-site/assets/villa-ai-v4-small.webp",
+    "file": "villa-preview-880-p1.webp",
+    "source_dimensions": [
+      880,
+      495
+    ],
+    "dimensions": [
+      880,
+      495
+    ],
+    "bytes": 118254,
+    "quality": 86,
+    "method": 6,
+    "operation": "resize preserving aspect ratio and WebP encoding; no generation",
+    "source_sha256": "3c27adc05146de878f056331f69b13424bd4f216bb58c780ac2b9fd3f0187a45",
+    "sha256": "bbb113683e50fb2adc7cbe7557b65dd181bffcccde8862d2e86ec49f89022163",
+    "encoder": "Pillow 12.3.0 / WebP; source colours and composition retained"
+  },
+  {
+    "source": "https://www.cad3d.expert/_cad3d-site/assets/bath-blue-ai-v4-small.webp",
+    "file": "bath-preview-880-p1.webp",
+    "source_dimensions": [
+      880,
+      495
+    ],
+    "dimensions": [
+      880,
+      495
+    ],
+    "bytes": 108010,
+    "quality": 86,
+    "method": 6,
+    "operation": "resize preserving aspect ratio and WebP encoding; no generation",
+    "source_sha256": "3a581bad7b25e44436baab4adf3c5ea638cc875e167e3412fe16f998fb4632d6",
+    "sha256": "aeb788140993bf1cecdc715823a70ded86cb8e7779bda5ad81989198c7718ddc",
+    "encoder": "Pillow 12.3.0 / WebP; source colours and composition retained"
+  },
+  {
+    "source": "https://www.cad3d.expert/_cad3d-site/assets/film-interior-poster-v5.webp",
+    "file": "film-interior-poster-p1.webp",
+    "source_dimensions": [
+      1920,
+      1080
+    ],
+    "dimensions": [
+      1280,
+      720
+    ],
+    "bytes": 64474,
+    "quality": 86,
+    "method": 6,
+    "operation": "resize preserving aspect ratio and WebP encoding; no generation",
+    "source_sha256": "dd74d610591f526f8bc394c1cd1a7300d226f771510017b6ab0423e442b8b5f0",
+    "sha256": "75022ca017bb60217de8691301a88858405f310b8e723b2c983f7e179644216b",
+    "encoder": "Pillow 12.3.0 / WebP; source colours and composition retained"
+  },
+  {
+    "source": "https://www.cad3d.expert/_cad3d-site/assets/film-detail-poster-v5.webp",
+    "file": "film-detail-poster-p1.webp",
+    "source_dimensions": [
+      1920,
+      1080
+    ],
+    "dimensions": [
+      1280,
+      720
+    ],
+    "bytes": 96978,
+    "quality": 86,
+    "method": 6,
+    "operation": "resize preserving aspect ratio and WebP encoding; no generation",
+    "source_sha256": "9cb5fa391beb0b3559ddd9e9a6c03318e246586dfbfd2e7d0c653cfc0a8e3bde",
+    "sha256": "096ce8a572d129f3cb74e06671ae35a033acf2d92fcaa22ebcfa9818fe720f83",
+    "encoder": "Pillow 12.3.0 / WebP; source colours and composition retained"
+  },
+  {
+    "source": "https://www.cad3d.expert/_cad3d-site/assets/interior-scene7-20261023.png",
+    "file": "interior-scene7-thumb-p1.webp",
+    "source_dimensions": [
+      2048,
+      1347
+    ],
+    "dimensions": [
+      480,
+      316
+    ],
+    "bytes": 20006,
+    "quality": 86,
+    "method": 6,
+    "operation": "resize preserving aspect ratio and WebP encoding; no generation",
+    "source_sha256": "2ddd4fa40ae8dfd7b22d07cb42d947fa1cf4404683457b95db456b2ce7aec7a8",
+    "sha256": "7fbc586b54b0bf69cad7a913821cc27cb66815236b3967315b42f57b712216df",
+    "encoder": "Pillow 12.3.0 / WebP; source colours and composition retained"
+  }
+]

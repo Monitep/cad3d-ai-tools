@@ -7,6 +7,7 @@ Uses the Python standard library. A plan must be backed up before apply.
 import argparse
 import ftplib
 import hashlib
+from html.parser import HTMLParser
 import io
 import json
 import os
@@ -229,20 +230,68 @@ def apply(ftp, release, out, root=ROOT):
                 print('Temporary upload remains: ' + temp, file=sys.stderr)
 
 
-def verify_http(release):
+class PublicPage(HTMLParser):
+    """Verify visible copy and owned references despite Cloudflare email rewriting."""
+    def __init__(self):
+        super().__init__()
+        self.signature, self.text, self.skip = [], [], 0
+
+    def handle_starttag(self, tag, attrs):
+        a = dict(attrs)
+        if tag in ('script', 'style'):
+            self.skip += 1
+        if tag == 'script' and a.get('src', '').startswith('/_cad3d-site/'):
+            self.signature.append((tag, a['src']))
+        elif tag == 'link' and (a.get('href', '').startswith('/_cad3d-site/') or a.get('rel') in ('canonical', 'alternate')):
+            self.signature.append((tag, a.get('rel'), a.get('href'), a.get('media')))
+        elif tag == 'a' and not a.get('href', '').startswith(('mailto:', '/cdn-cgi/l/email-protection')):
+            self.signature.append((tag, a.get('href')))
+        elif tag in ('img', 'source', 'video'):
+            self.signature.append((tag, *(a.get(k) for k in ('src', 'srcset', 'sizes', 'poster', 'alt', 'width', 'height'))))
+        elif tag == 'meta':
+            self.signature.append((tag, a.get('name'), a.get('property'), a.get('content')))
+        elif tag in ('html', 'body'):
+            self.signature.append((tag, a.get('lang'), a.get('class'), a.get('data-assets')))
+
+    def handle_endtag(self, tag):
+        if tag in ('script', 'style') and self.skip:
+            self.skip -= 1
+
+    def handle_data(self, data):
+        if not self.skip and data.strip():
+            self.text.append(' '.join(data.split()))
+
+
+def verify_page(expected, observed):
+    a, b = PublicPage(), PublicPage()
+    a.feed(expected)
+    b.feed(observed)
+    if a.signature != b.signature or a.text != b.text:
+        raise ValueError('HTTP HTML copy or resource references do not match the release')
+
+
+def verify_http(release, root=ROOT):
     # A release-specific cache key checks public delivery without CDN credentials.
     for e in release['files']:
         url = ORIGIN + '_cad3d-site/' + e['target'] + '?cad3d_release=' + release['release_id']
         with urlopen(Request(url, headers={'User-Agent': 'CAD3D-Deploy/1.0'}), timeout=60) as response:
             if urlsplit(response.url).hostname not in ('cad3d.expert', 'www.cad3d.expert'):
                 raise ValueError('Unexpected HTTP redirect')
-            if response.status != 200 or digest(response.read()) != e['sha256']:
+            data = response.read()
+            if response.status != 200:
                 raise ValueError('HTTP delivery does not match release: ' + e['target'])
-        print('HTTP bytes verified: ' + e['target'])
+            if e['target'].endswith('.html'):
+                verify_page((root / e['source']).read_text(), data.decode('utf-8'))
+            elif digest(data) != e['sha256']:
+                raise ValueError('HTTP delivery does not match release: ' + e['target'])
+        print(('HTTP page verified: ' if e['target'].endswith('.html') else 'HTTP bytes verified: ') + e['target'])
     with urlopen(Request(ORIGIN, headers={'User-Agent': 'CAD3D-Deploy/1.0'}), timeout=60) as response:
         document = response.read().decode('utf-8')
         if response.status != 200 or 'CAD3D.Expert' not in document or '<h1' not in document:
             raise ValueError('Public home smoke check failed')
+        home = next((e for e in release['files'] if e['target'] == 'pages/it/index.html'), None)
+        if home:
+            verify_page((root / home['source']).read_text(), document)
     print('Public HTTPS home responded with the CAD3D page.')
 
 

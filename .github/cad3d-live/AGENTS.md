@@ -19,6 +19,12 @@ una sessione FTP o accesso alle credenziali.
   risultato con la versione live. Conservare le correzioni successive al
   pacchetto del 24 ottobre. Un eventuale payload mirato va in `payload/`, senza
   credenziali, dati personali o materiale della memoria professionale.
+- Le due home correnti hanno ora un adattamento riproducibile:
+  `baseline/20261026/` conserva i byte letti via FTPS, `home-performance-source/`
+  contiene i moduli modificabili e `build-cad3d-home-performance.py` genera
+  `payload/`. Modificare la ricetta o i moduli, ricostruire e controllare il
+  risultato; non correggere soltanto gli HTML generati. Se la produzione cambia,
+  ricatturare e confrontare la baseline prima di una nuova modifica.
 - Non cambiare root `.htaccess`, WordPress, database, tour, `/ai/` o altri
   progetti attraverso questo workflow. I file eseguibili e le configurazioni
   nascoste sono esclusi dal validatore.
