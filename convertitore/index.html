@@ -1,0 +1,1097 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Convertitore immagini AVIF, WebP, JPG, PNG | CAD3D.Expert</title>
+<meta name="description" content="Converti immagini tra AVIF, WebP, JPG e PNG direttamente nel browser. Qualità regolabile, stima del peso, peso massimo, ridimensionamento. Nessun caricamento su server.">
+<meta name="theme-color" content="#303030">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preload" href="archivo.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+@font-face{font-family:"Archivo";src:url(archivo.woff2) format("woff2");font-weight:100 900;font-stretch:62% 125%;font-display:swap}
+:root{
+  --bg:#303030; --surface:#393939; --surface-2:#434343; --line:#4f4f4f; --line-2:#5c5c5c;
+  --text:#f1f1f1; --muted:#b0b0b0; --faint:#858585;
+  --amber:#f4b740; --amber-ink:#251a00; --amber-dim:rgba(244,183,64,.16);
+  --bad:#ff8a7a;
+  --f-avif:#8cb6dd; --f-webp:#9ccc8c; --f-jpg:#e3a67c; --f-png:#c2a7df;
+  --fmt:var(--f-avif);
+  --r-s:6px; --r-m:10px;
+  --pad:16px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:400 15px/1.45 "Archivo",system-ui,sans-serif;font-stretch:100%;-webkit-font-smoothing:antialiased;min-height:100dvh}
+button,input,select{font:inherit;color:inherit}
+button{touch-action:manipulation;cursor:pointer}
+:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+[hidden]{display:none!important}
+
+/* ---------- struttura ---------- */
+.app{max-width:1280px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 14px) var(--pad) 120px}
+header.top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:14px}
+h1{margin:0;font-size:21px;line-height:1.15;font-weight:680;font-stretch:115%;letter-spacing:-.01em}
+.top p{margin:3px 0 0;color:var(--muted);font-size:13.5px}
+.add-btn{flex:none;border:1px solid var(--line-2);background:transparent;border-radius:999px;padding:7px 14px;font-weight:560;font-size:14px}
+.add-btn:hover{border-color:var(--muted)}
+
+.layout{display:grid;gap:18px;grid-template-columns:minmax(0,1fr);grid-template-areas:"pv" "side" "files"}
+.pv{grid-area:pv;min-width:0}.side{grid-area:side;min-width:0}.files{grid-area:files;min-width:0}
+@media (min-width:960px){
+  .layout{grid-template-columns:minmax(0,1fr) 380px;grid-template-rows:auto 1fr;grid-template-areas:"pv side" "files side";align-items:start;row-gap:6px}
+  .side{position:sticky;top:14px;max-height:calc(100dvh - 28px);overflow:auto;scrollbar-width:thin}
+  .app{padding-bottom:40px}
+}
+
+/* ---------- area vuota ---------- */
+.drop{position:relative;display:flex;flex-direction:column;justify-content:flex-end;min-height:min(62dvh,520px);border-radius:var(--r-m);padding:22px;overflow:hidden;
+  background:
+    linear-gradient(180deg,rgba(48,48,48,0) 30%,rgba(48,48,48,.92) 100%),
+    conic-gradient(#3b3b3b 25%,#353535 0 50%,#3b3b3b 0 75%,#353535 0) 0 0/28px 28px;
+  border:1px dashed var(--line-2)}
+.drop h2{margin:0 0 6px;font-size:clamp(30px,8vw,54px);line-height:1;font-weight:760;font-stretch:122%;letter-spacing:-.025em;max-width:12ch}
+.drop p{margin:0 0 18px;color:var(--muted);max-width:46ch}
+.drop .pick{align-self:flex-start;background:var(--amber);color:var(--amber-ink);border:0;border-radius:999px;padding:13px 22px;font-weight:680;font-size:16px}
+.drop .formats{margin-top:14px;color:var(--faint);font-size:13px}
+body.dragging .drop,body.dragging .preview{border-color:var(--amber);box-shadow:inset 0 0 0 2px var(--amber)}
+
+/* ---------- confronto ---------- */
+.preview{position:relative;border-radius:var(--r-m);overflow:hidden;border:1px solid var(--line);
+  background:conic-gradient(#3e3e3e 25%,#363636 0 50%,#3e3e3e 0 75%,#363636 0) 0 0/20px 20px;
+  height:min(56dvh,560px);user-select:none;-webkit-user-select:none}
+@media (min-width:960px){.preview{height:min(64dvh,640px)}}
+.preview canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:pan-y;cursor:ew-resize}
+.preview.zoomed canvas{touch-action:none;cursor:grab}
+.preview.zoomed canvas:active{cursor:grabbing}
+.tag{position:absolute;top:10px;padding:4px 9px;border-radius:var(--r-s);background:rgba(28,28,28,.78);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);font-size:12.5px;font-weight:560;pointer-events:none;white-space:nowrap}
+.tag.l{left:10px}.tag.r{right:10px}
+.tag.r::before{content:"";display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--fmt);margin-right:6px;vertical-align:1px}
+.zoombar{position:absolute;right:10px;bottom:10px;display:flex;border-radius:var(--r-s);overflow:hidden;background:rgba(28,28,28,.8);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.zoombar button{border:0;background:transparent;padding:7px 11px;font-size:13px;font-weight:560;color:var(--muted)}
+.zoombar button[aria-pressed=true]{color:var(--text);background:rgba(255,255,255,.1)}
+.pstatus{position:absolute;left:10px;bottom:10px;max-width:calc(100% - 150px);padding:6px 10px;border-radius:var(--r-s);background:rgba(28,28,28,.8);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:8px}
+.spin{width:12px;height:12px;border-radius:50%;border:2px solid var(--line-2);border-top-color:var(--amber);animation:spin .8s linear infinite;flex:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.pmeta{display:flex;flex-wrap:wrap;gap:4px 14px;margin:8px 2px 0;color:var(--muted);font-size:13px}
+.pmeta b{color:var(--text);font-weight:600}
+
+/* ---------- lista file ---------- */
+.files{margin-top:0}
+.files-head{display:flex;align-items:baseline;justify-content:space-between;margin:0 2px 8px}
+.files-head h3{margin:0;font-size:15px;font-weight:620}
+.linkish{border:0;background:none;color:var(--muted);font-size:13.5px;padding:4px 0;text-decoration:underline;text-underline-offset:3px}
+.linkish:hover{color:var(--text)}
+.list{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.row{display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 4px;border-bottom:1px solid var(--line);position:relative}
+.row.sel{background:linear-gradient(90deg,var(--amber-dim),transparent 70%)}
+.row.sel::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:3px;border-radius:2px;background:var(--amber)}
+.row .th{width:52px;height:52px;border-radius:var(--r-s);object-fit:cover;background:var(--surface-2);display:block}
+.row .main{min-width:0;border:0;background:none;text-align:left;padding:0}
+.row .name{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:560}
+.row .det{display:block;color:var(--muted);font-size:13px;margin-top:2px}
+.row .det .gain{color:var(--text);font-weight:600}
+.row .det .worse{color:var(--bad);font-weight:600}
+.row .det .err{color:var(--bad)}
+.row .acts{display:flex;gap:4px}
+.icon-btn{width:38px;height:38px;border-radius:var(--r-s);border:1px solid transparent;background:transparent;display:grid;place-items:center;color:var(--muted)}
+.icon-btn:hover{border-color:var(--line-2);color:var(--text)}
+.icon-btn svg{width:19px;height:19px}
+.icon-btn.dl{color:var(--amber)}
+.rowbar{position:absolute;left:68px;right:4px;bottom:-1px;height:2px;background:transparent;overflow:hidden}
+.rowbar i{display:block;height:100%;width:40%;background:var(--amber);animation:slide 1.1s ease-in-out infinite}
+@keyframes slide{from{transform:translateX(-100%)}to{transform:translateX(250%)}}
+
+/* ---------- pannello impostazioni ---------- */
+.side{display:flex;flex-direction:column;gap:14px}
+.panel{background:var(--surface);border-radius:var(--r-m);padding:16px}
+fieldset{border:0;margin:0;padding:0;min-width:0}
+fieldset:disabled{opacity:.55}
+.field+.field{margin-top:18px}
+.flabel{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;font-size:13.5px;font-weight:600;color:var(--muted)}
+.flabel .val{color:var(--text);font-size:15px}
+.hint{margin:7px 0 0;font-size:12.5px;color:var(--faint);line-height:1.4}
+.hint.warn{color:#e9c27a}
+
+/* meter */
+.meter{background:var(--surface);border-radius:var(--r-m);padding:16px 16px 14px}
+.m-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.m-label{font-size:13px;color:var(--muted)}
+.m-out{display:flex;align-items:baseline;gap:10px;margin:2px 0 10px}
+.m-big{font-size:40px;line-height:1;font-weight:740;font-stretch:125%;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.m-big.pending{color:var(--faint)}
+.m-delta{font-size:17px;font-weight:650;font-stretch:110%;font-variant-numeric:tabular-nums}
+.m-delta.worse{color:var(--bad)}
+.bars{display:grid;gap:5px}
+.bar{height:8px;border-radius:4px;background:var(--surface-2);overflow:hidden;position:relative}
+.bar i{position:absolute;left:0;top:0;bottom:0;border-radius:4px;transition:width .35s cubic-bezier(.2,.8,.2,1)}
+.bar.orig i{background:#8a8a8a;width:100%}
+.bar.outb i{background:var(--fmt)}
+.m-foot{display:flex;justify-content:space-between;margin-top:9px;font-size:12.5px;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){.bar i{transition:none}.spin,.rowbar i{animation-duration:3s}}
+
+/* formato */
+.fmts{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.fmt{border:1px solid var(--line-2);background:transparent;border-radius:var(--r-s);padding:9px 4px 8px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:2px}
+.fmt b{font-size:16px;font-weight:700;font-stretch:112%;letter-spacing:.01em}
+.fmt span{font-size:11.5px;color:var(--faint);line-height:1.15}
+.fmt[aria-pressed=true]{border-color:var(--c);background:color-mix(in srgb,var(--c) 14%,transparent);box-shadow:inset 0 0 0 1px var(--c)}
+.fmt[aria-pressed=true] span{color:var(--muted)}
+.fmt[data-f=avif]{--c:var(--f-avif)}.fmt[data-f=webp]{--c:var(--f-webp)}.fmt[data-f=jpg]{--c:var(--f-jpg)}.fmt[data-f=png]{--c:var(--f-png)}
+
+/* segmenti */
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{border:1px solid var(--line-2);background:transparent;border-radius:999px;padding:7px 12px;font-size:13.5px;font-weight:540;color:var(--muted)}
+.seg button[aria-pressed=true]{background:var(--text);border-color:var(--text);color:#222;font-weight:620}
+
+/* slider */
+.range{position:relative;height:34px}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:34px;background:transparent;margin:0;touch-action:pan-y}
+input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:linear-gradient(90deg,var(--amber) var(--p,50%),var(--surface-2) var(--p,50%))}
+input[type=range]::-moz-range-track{height:6px;border-radius:3px;background:var(--surface-2)}
+input[type=range]::-moz-range-progress{height:6px;border-radius:3px;background:var(--amber)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:var(--text);border:0;margin-top:-10px;box-shadow:0 0 0 4px rgba(0,0,0,.18)}
+input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:var(--text);border:0}
+.ticks{display:flex;justify-content:space-between;font-size:11.5px;color:var(--faint);margin-top:-2px}
+
+.switch{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 0;cursor:pointer}
+.switch span{font-size:14px}
+.switch small{display:block;color:var(--faint);font-size:12.5px}
+.switch input{appearance:none;-webkit-appearance:none;flex:none;width:44px;height:26px;border-radius:13px;background:var(--surface-2);border:1px solid var(--line-2);position:relative;margin:0;cursor:pointer;transition:background .15s}
+.switch input::after{content:"";position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:var(--muted);transition:transform .15s,background .15s}
+.switch input:checked{background:var(--amber);border-color:var(--amber)}
+.switch input:checked::after{transform:translateX(18px);background:var(--amber-ink)}
+
+.inline{display:flex;gap:8px;align-items:center;margin-top:8px}
+.inp{background:var(--bg);border:1px solid var(--line-2);border-radius:var(--r-s);padding:8px 10px;width:100%;min-width:0}
+.inp:focus{border-color:var(--amber);outline:0}
+select.inp{width:auto;min-width:78px;flex:none}
+input[type=color].inp{padding:2px;width:46px;height:38px;flex:none}
+
+details.adv summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:14.5px}
+details.adv summary::-webkit-details-marker{display:none}
+details.adv summary::after{content:"";width:9px;height:9px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg) translateY(-3px);transition:transform .15s}
+details.adv[open] summary::after{transform:rotate(-135deg) translateY(-1px)}
+details.adv .body{margin-top:12px}
+
+.privacy{font-size:12.5px;color:var(--faint);line-height:1.45;padding:0 4px}
+.privacy a{color:var(--muted)}
+
+/* ---------- barra azioni ---------- */
+.actions{position:fixed;left:0;right:0;bottom:0;z-index:20;padding:10px var(--pad) calc(10px + env(safe-area-inset-bottom));background:rgba(40,40,40,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line)}
+.actions .in{max-width:1280px;margin:0 auto;display:flex;gap:8px;align-items:center}
+.meter{order:0}.actions{order:1}#settings{order:2}.privacy{order:3}
+@media (min-width:960px){.actions{position:static;background:none;border:0;padding:0;backdrop-filter:none;-webkit-backdrop-filter:none}.actions .in{max-width:none}}
+.btn{border:0;border-radius:999px;padding:13px 18px;font-weight:660;font-size:15.5px;display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap}
+.btn.primary{background:var(--amber);color:var(--amber-ink);flex:1}
+.btn.ghost{background:var(--surface-2);color:var(--text)}
+.btn:disabled{opacity:.5;cursor:default}
+.btn svg{width:18px;height:18px}
+.prog{flex:1;min-width:0}
+.prog .t{display:flex;justify-content:space-between;font-size:13.5px;margin-bottom:6px}
+.prog .b{height:6px;border-radius:3px;background:var(--surface-2);overflow:hidden}
+.prog .b i{display:block;height:100%;background:var(--amber);width:0;transition:width .3s}
+
+.toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#1f1f1f;color:var(--text);padding:10px 16px;border-radius:var(--r-s);font-size:14px;z-index:30;max-width:calc(100% - 32px);box-shadow:0 6px 24px rgba(0,0,0,.35)}
+footer.foot{margin-top:28px;color:var(--faint);font-size:12.5px;text-align:left}
+footer.foot a{color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div>
+      <h1>Convertitore immagini</h1>
+      <p>AVIF, WebP, JPG e PNG. Le immagini restano sul tuo dispositivo.</p>
+    </div>
+    <button class="add-btn" id="addBtn" type="button" hidden>Aggiungi</button>
+  </header>
+
+  <div class="layout">
+    <main class="pv">
+      <section class="drop" id="drop">
+        <h2>Più leggere, stessa immagine.</h2>
+        <p>Scegli una o più immagini: vedi subito quanto pesano nel nuovo formato e confronti la qualità prima di salvarle.</p>
+        <button class="pick" id="pickBtn" type="button">Scegli immagini</button>
+        <div class="formats">Legge JPG, PNG, WebP, AVIF, HEIC, GIF e BMP. Puoi anche trascinarle qui o incollarle.</div>
+      </section>
+
+      <section id="work" hidden>
+        <div class="preview" id="preview">
+          <canvas id="cv" tabindex="0" aria-label="Confronto: originale a sinistra, risultato a destra. Trascina per spostare il divisore."></canvas>
+          <div class="tag l">Originale</div>
+          <div class="tag r" id="tagR">AVIF</div>
+          <div class="pstatus" id="pstatus" hidden><span class="spin"></span><span id="pstatusT">Codifica</span></div>
+          <div class="zoombar" role="group" aria-label="Zoom">
+            <button type="button" data-z="fit" aria-pressed="true">Adatta</button>
+            <button type="button" data-z="1">100%</button>
+            <button type="button" data-z="2">200%</button>
+          </div>
+        </div>
+        <div class="pmeta" id="pmeta"></div>
+      </section>
+    </main>
+
+    <section class="files" id="filesArea" hidden>
+      <div class="files-head">
+        <h3 id="filesTitle">Immagini</h3>
+        <button class="linkish" id="clearBtn" type="button">Rimuovi tutte</button>
+      </div>
+      <ul class="list" id="list"></ul>
+    </section>
+
+    <aside class="side">
+      <section class="meter" id="meter" aria-live="polite">
+        <div class="m-top"><span class="m-label" id="mLabel">Peso stimato in AVIF</span><span class="m-label num" id="mCount"></span></div>
+        <div class="m-out"><span class="m-big pending num" id="mBig">0 kB</span><span class="m-delta" id="mDelta"></span></div>
+        <div class="bars">
+          <div class="bar orig" title="Originale"><i></i></div>
+          <div class="bar outb" title="Risultato"><i id="mBar" style="width:0"></i></div>
+        </div>
+        <div class="m-foot"><span id="mOrig">Originale 0 kB</span><span id="mState"></span></div>
+        <p class="hint warn" id="mWarn" hidden></p>
+      </section>
+
+      <fieldset id="settings" class="panel">
+        <div class="field">
+          <div class="flabel">Formato di uscita</div>
+          <div class="fmts" id="fmts">
+            <button type="button" class="fmt" data-f="avif"><b>AVIF</b><span>il più leggero</span></button>
+            <button type="button" class="fmt" data-f="webp"><b>WebP</b><span>leggero e rapido</span></button>
+            <button type="button" class="fmt" data-f="jpg"><b>JPG</b><span>apribile ovunque</span></button>
+            <button type="button" class="fmt" data-f="png"><b>PNG</b><span>grafica e loghi</span></button>
+          </div>
+        </div>
+
+        <div class="field" id="fLossless">
+          <label class="switch"><span id="losslessLabel">Senza perdita<small id="losslessHint">Nessuna alterazione dei pixel, file più pesanti</small></span><input type="checkbox" id="lossless"></label>
+        </div>
+
+        <div class="field" id="fQuality">
+          <div class="flabel"><label for="quality" id="qLabel">Qualità</label><span class="val num" id="qVal">60</span></div>
+          <div class="range"><input type="range" id="quality" min="1" max="100" step="1" value="60"></div>
+          <div class="ticks"><span>file minimo</span><span>dettaglio massimo</span></div>
+          <p class="hint" id="qHint"></p>
+        </div>
+
+        <div class="field">
+          <div class="flabel">Compressione</div>
+          <div class="seg" id="effort">
+            <button type="button" data-v="0">Rapida</button>
+            <button type="button" data-v="1">Bilanciata</button>
+            <button type="button" data-v="2">Massima</button>
+          </div>
+          <p class="hint" id="effortHint"></p>
+        </div>
+
+        <div class="field">
+          <div class="flabel">Lato lungo</div>
+          <div class="seg" id="resize">
+            <button type="button" data-v="0">Originale</button>
+            <button type="button" data-v="3840">3840</button>
+            <button type="button" data-v="2560">2560</button>
+            <button type="button" data-v="1920">1920</button>
+            <button type="button" data-v="1280">1280</button>
+            <button type="button" data-v="800">800</button>
+            <button type="button" data-v="custom">Altro</button>
+          </div>
+          <div class="inline" id="customWrap" hidden>
+            <input class="inp num" id="customPx" type="number" inputmode="numeric" min="16" max="20000" placeholder="es. 1600">
+            <span class="m-label">pixel</span>
+          </div>
+          <p class="hint">Le immagini più piccole non vengono mai ingrandite.</p>
+        </div>
+
+        <div class="field">
+          <label class="switch"><span>Peso massimo per file<small>Trova la qualità più alta che rientra nel limite</small></span><input type="checkbox" id="targetOn"></label>
+          <div id="targetWrap" hidden>
+            <div class="inline">
+              <input class="inp num" id="targetVal" type="number" inputmode="decimal" min="1" step="any" value="500">
+              <select class="inp" id="targetUnit"><option value="1">kB</option><option value="1000">MB</option></select>
+            </div>
+            <div class="seg" id="targetChips" style="margin-top:8px">
+              <button type="button" data-kb="200">200 kB</button>
+              <button type="button" data-kb="500">500 kB</button>
+              <button type="button" data-kb="1000">1 MB</button>
+              <button type="button" data-kb="2000">2 MB</button>
+              <button type="button" data-kb="5000">5 MB</button>
+            </div>
+            <label class="switch" style="margin-top:6px"><span>Riduci la risoluzione se serve<small>Meglio un'immagine più piccola che una piena di difetti</small></span><input type="checkbox" id="allowDown" checked></label>
+            <p class="hint">Il cursore Qualità fa da tetto massimo. 1 MB = 1.000.000 byte, il criterio più prudente per portali e PEC.</p>
+          </div>
+        </div>
+
+        <div class="field">
+          <details class="adv" id="adv">
+            <summary>Opzioni avanzate</summary>
+            <div class="body">
+              <label class="switch" id="optChroma"><span>Colore a piena risoluzione<small>Crominanza 4:4:4: bordi colorati e testi più puliti, file più pesante</small></span><input type="checkbox" id="chroma444"></label>
+              <label class="switch" id="optSharp"><span>Sharp YUV<small>Riduce gli aloni sui contorni colorati</small></span><input type="checkbox" id="sharpYuv"></label>
+              <label class="switch" id="optProg"><span>JPG progressivo<small>Si carica per passaggi sul web, di solito pesa meno</small></span><input type="checkbox" id="progressive" checked></label>
+              <div class="field" id="optBg" style="margin-top:10px">
+                <div class="flabel">Sfondo al posto della trasparenza</div>
+                <div class="inline" style="margin-top:0"><input class="inp" type="color" id="bg" value="#ffffff"><span class="hint" style="margin:0">Il JPG non supporta la trasparenza</span></div>
+              </div>
+              <div class="field" style="margin-top:14px">
+                <div class="flabel"><label for="suffix">Aggiunta al nome file</label></div>
+                <input class="inp" id="suffix" type="text" placeholder="es. -web" maxlength="40" autocomplete="off" spellcheck="false">
+              </div>
+            </div>
+          </details>
+        </div>
+      </fieldset>
+
+      <div class="actions" id="actions">
+        <div class="in" id="actionsIn"></div>
+      </div>
+
+      <p class="privacy">La conversione avviene nel browser con codec WebAssembly (libavif, libwebp, MozJPEG, OxiPNG, libimagequant). Nessuna immagine viene inviata a un server. I metadati EXIF, comprese le coordinate GPS, vengono rimossi; l'orientamento viene applicato ai pixel.</p>
+    </aside>
+  </div>
+
+  <footer class="foot">Uno strumento di <a href="https://cad3d.expert" rel="noopener">CAD3D.Expert</a></footer>
+</div>
+
+<input type="file" id="fileIn" multiple accept="image/*,.heic,.heif,.avif,.webp" hidden>
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script>
+(() => {
+'use strict';
+const V = '1';
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+
+// ---------- impostazioni ----------
+const FMT = {
+  avif: { label: 'AVIF', mime: 'image/avif', ext: 'avif' },
+  webp: { label: 'WebP', mime: 'image/webp', ext: 'webp' },
+  jpg:  { label: 'JPG',  mime: 'image/jpeg', ext: 'jpg' },
+  png:  { label: 'PNG',  mime: 'image/png',  ext: 'png' },
+};
+const DEFAULTS = {
+  format: 'avif',
+  quality: { avif: 60, webp: 80, jpg: 82, png: 80 },
+  lossless: { avif: false, webp: false, png: true },
+  effort: 1, resize: 0, customPx: 1600, resizeCustom: false,
+  targetOn: false, targetKB: 500, allowDown: true,
+  chroma444: false, sharpYuv: false, progressive: true, bg: '#ffffff', suffix: '',
+};
+let S = structuredClone(DEFAULTS);
+try {
+  const saved = JSON.parse(localStorage.getItem('imgconv.v1') || 'null');
+  if (saved) S = { ...S, ...saved, quality: { ...S.quality, ...saved.quality }, lossless: { ...S.lossless, ...saved.lossless } };
+} catch (e) {}
+const save = () => { try { localStorage.setItem('imgconv.v1', JSON.stringify(S)); } catch (e) {} };
+
+function workerSettings() {
+  const f = S.format;
+  const lossless = f === 'jpg' ? false : !!S.lossless[f];
+  const px = S.resizeCustom ? (+S.customPx || 0) : +S.resize;
+  return {
+    format: f, quality: S.quality[f], lossless, effort: S.effort,
+    resize: px > 0 ? { mode: 'long', value: px } : { mode: 'none' },
+    bg: S.bg, targetKB: S.targetOn ? Math.max(1, +S.targetKB || 0) : 0, allowDownscale: S.allowDown,
+    chroma444: S.chroma444, sharpYuv: S.sharpYuv, progressive: S.progressive,
+  };
+}
+const hashOf = (ws) => JSON.stringify({ ...ws, bg: ws.format === 'jpg' ? ws.bg : '' });
+
+// ---------- formattazione ----------
+const nf1 = new Intl.NumberFormat('it-IT', { maximumFractionDigits: 1 });
+const nf2 = new Intl.NumberFormat('it-IT', { maximumFractionDigits: 2 });
+const nf0 = new Intl.NumberFormat('it-IT', { maximumFractionDigits: 0 });
+function fmtBytes(n) {
+  if (n == null || isNaN(n)) return '';
+  if (n < 1000) return nf0.format(n) + ' B';
+  if (n < 1e6) return (n < 1e4 ? nf1 : nf0).format(n / 1000) + ' kB';
+  return (n < 1e8 ? nf2 : nf1).format(n / 1e6) + ' MB';
+}
+const pct = (out, orig) => Math.round((out / orig - 1) * 100);
+const fmtPct = (p) => (p > 0 ? '+' : p < 0 ? '−' : '') + Math.abs(p) + '%';
+const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+let toastT;
+function toast(msg) {
+  const t = $('#toast'); t.textContent = msg; t.hidden = false;
+  clearTimeout(toastT); toastT = setTimeout(() => (t.hidden = true), 3200);
+}
+
+// ---------- worker ----------
+const workerUrl = 'worker.js?v=' + V;
+class Cancelled extends Error {}
+
+class Pool {
+  constructor(n) { this.n = n; this.slots = []; this.queue = []; this.seq = 0; for (let i = 0; i < n; i++) this.slots.push(this.spawn()); }
+  spawn() {
+    const slot = { w: new Worker(workerUrl, { type: 'module' }), job: null };
+    slot.w.onmessage = (e) => this.onmsg(slot, e.data);
+    slot.w.onerror = (e) => { e.preventDefault(); this.crash(slot, 'Memoria insufficiente o errore del codec'); };
+    return slot;
+  }
+  crash(slot, msg) {
+    const job = slot.job; slot.w.terminate();
+    const i = this.slots.indexOf(slot); this.slots[i] = this.spawn();
+    if (job) job.reject(new Error(msg));
+    this.pump();
+  }
+  run(msg, opt = {}) {
+    return new Promise((resolve, reject) => {
+      this.queue.push({ msg, resolve, reject, prio: opt.prio || 0, onProgress: opt.onProgress, tag: opt.tag, transfer: opt.transfer || [], seq: ++this.seq });
+      this.queue.sort((a, b) => b.prio - a.prio || a.seq - b.seq);
+      this.pump();
+    });
+  }
+  pump() {
+    for (const slot of this.slots) {
+      if (slot.job || !this.queue.length) continue;
+      const job = this.queue.shift();
+      slot.job = job; job.id = job.seq;
+      slot.w.postMessage({ ...job.msg, id: job.id }, job.transfer);
+    }
+  }
+  onmsg(slot, m) {
+    const job = slot.job; if (!job || m.id !== job.id) return;
+    if (m.type === 'progress') { job.onProgress && job.onProgress(m.stage); return; }
+    slot.job = null;
+    if (m.type === 'error') job.reject(new Error(m.message)); else job.resolve(m);
+    this.pump();
+  }
+  cancel(pred) {
+    this.queue = this.queue.filter((j) => { if (pred(j)) { j.reject(new Cancelled()); return false; } return true; });
+  }
+  get busy() { return this.slots.some((s) => s.job) || this.queue.length > 0; }
+}
+
+// Worker dedicato all'anteprima: viene sostituito se le impostazioni cambiano durante una codifica lunga
+class Solo {
+  constructor() { this.make(); this.seq = 0; this.ticket = 0; }
+  make() {
+    this.w = new Worker(workerUrl, { type: 'module' }); this.job = null;
+    this.w.onmessage = (e) => {
+      const m = e.data, job = this.job; if (!job || m.id !== job.id) return;
+      if (m.type === 'progress') { job.onProgress && job.onProgress(m.stage); return; }
+      this.job = null;
+      m.type === 'error' ? job.reject(new Error(m.message)) : job.resolve(m);
+    };
+    this.w.onerror = (e) => { e.preventDefault(); const j = this.job; this.reset(); j && j.reject(new Error('Memoria insufficiente per l\'anteprima')); };
+  }
+  reset() { this.w.terminate(); const j = this.job; this.make(); if (j) j.reject(new Cancelled()); }
+  async run(msg, onProgress) {
+    const tk = ++this.ticket;
+    while (this.job) {
+      if (this.job.op === 'preview') this.reset();
+      else await this.job.p.catch(() => {});
+    }
+    if (tk !== this.ticket) throw new Cancelled();
+    let job;
+    const p = new Promise((resolve, reject) => { job = { id: ++this.seq, resolve, reject, onProgress, op: msg.op }; });
+    job.p = p; this.job = job;
+    this.w.postMessage({ ...msg, id: job.id });
+    return p;
+  }
+}
+
+const cores = navigator.hardwareConcurrency || 4;
+const mobile = matchMedia('(pointer:coarse)').matches;
+const mem = navigator.deviceMemory || 4;
+const N = Math.max(1, Math.min(mobile || mem <= 4 ? 2 : 4, cores - 1));
+let pool = null, solo = null;
+const ensureWorkers = () => { if (!pool) { pool = new Pool(N); solo = new Solo(); } };
+
+// ---------- stato ----------
+let files = [];      // {id,file,name,size,thumb,w,h,srcW,srcH,est,estHash,exact,status,stage,res,error}
+let selId = null;
+let fseq = 0;
+let converting = false, stopReq = false;
+let curHash = hashOf(workerSettings());
+
+const sel = () => files.find((f) => f.id === selId);
+
+// ---------- aggiunta file ----------
+const isImage = (f) => /^image\//.test(f.type) || /\.(heic|heif|avif|webp|jpe?g|png|gif|bmp)$/i.test(f.name);
+function addFiles(list) {
+  const arr = [...list].filter(isImage);
+  if (!arr.length) { toast('Nessuna immagine riconosciuta tra i file scelti'); return; }
+  ensureWorkers();
+  for (const file of arr) {
+    const id = ++fseq;
+    files.push({ id, file, name: file.name || `immagine-${id}.png`, size: file.size, status: 'idle', thumb: null, est: null, estHash: null });
+  }
+  if (!selId || !sel()) selId = files[files.length - arr.length].id;
+  showWork();
+  renderList();
+  queueEstimates();
+  schedulePreview(true);
+  renderMeter(); renderActions(); fitPreviewHeight();
+}
+
+function removeFile(id) {
+  const i = files.findIndex((f) => f.id === id); if (i < 0) return;
+  const f = files[i];
+  if (f.thumb) URL.revokeObjectURL(f.thumb);
+  files.splice(i, 1);
+  if (selId === id) { selId = files[Math.min(i, files.length - 1)]?.id ?? null; schedulePreview(true); }
+  if (!files.length) { clearAll(); return; }
+  renderList(); renderMeter(); renderActions();
+}
+
+function clearAll() {
+  if (converting) stopReq = true;
+  files.forEach((f) => f.thumb && URL.revokeObjectURL(f.thumb));
+  files = []; selId = null;
+  if (pool) pool.cancel(() => true);
+  if (solo && solo.job) solo.reset();
+  view.ref = view.out = null; view.fileId = null;
+  showWork(); renderMeter(); renderActions();
+}
+
+function showWork() {
+  const has = files.length > 0;
+  $('#drop').hidden = has; $('#work').hidden = !has; $('#addBtn').hidden = !has; $('#filesArea').hidden = !has; $('#meter').hidden = !has;
+  if (has) requestAnimationFrame(sizeCanvas);
+}
+
+// ---------- stime ----------
+let estTimer;
+function queueEstimates(delay = 0) {
+  clearTimeout(estTimer);
+  estTimer = setTimeout(() => {
+    if (!pool || converting) return;
+    pool.cancel((j) => j.tag === 'est');
+    const ws = workerSettings(), h = hashOf(ws);
+    for (const f of files) {
+      if (f.status === 'error') continue;
+      const needThumb = !f.thumb;
+      if (f.estHash === h && !needThumb) continue;
+      if (f.id === selId && f.thumb && f.srcW) continue; // ci pensa l'anteprima
+      pool.run({ op: 'estimate', key: 'f' + f.id, blob: f.file, settings: ws, wantThumb: needThumb }, { tag: 'est', prio: f.id === selId ? 2 : 0 })
+        .then((m) => { applyInfo(f, m); if (hashOf(workerSettings()) === h) { f.est = m.est; f.estHash = h; } renderRow(f); renderMeter(); })
+        .catch((e) => { if (!(e instanceof Cancelled)) { f.status = 'error'; f.error = e.message; renderRow(f); renderMeter(); renderActions(); if (f.id === selId) renderPreviewMeta(); } });
+    }
+  }, delay);
+}
+
+function applyInfo(f, m) {
+  if (m.thumb && !f.thumb) f.thumb = URL.createObjectURL(m.thumb);
+  if (m.srcW) { const first = !f.srcW; f.srcW = m.srcW; f.srcH = m.srcH; f.alpha = m.alpha; if (first && f.id === selId) fitPreviewHeight(); }
+  if (m.w) { f.w = m.w; f.h = m.h; }
+}
+
+// ---------- anteprima / confronto ----------
+let pvTimer, pvToken = 0;
+function schedulePreview(now) {
+  clearTimeout(pvTimer);
+  pvTimer = setTimeout(runPreview, now ? 0 : 260);
+}
+async function runPreview() {
+  const f = sel(); if (!f || !solo) { setPStatus(null); return; }
+  const tok = ++pvToken;
+  const ws = workerSettings(), h = hashOf(ws);
+  const onP = (stage) => tok === pvToken && setPStatus(stage);
+  try {
+    if (view.fileId === f.id && view.hash === h && view.out) { setPStatus(null); return; }
+    if (!f.srcW || !f.thumb || (f.estHash !== h && !ws.targetKB)) {
+      setPStatus('Stima del peso');
+      const m = await solo.run({ op: 'estimate', key: 'p' + f.id, blob: f.file, settings: ws, wantThumb: !f.thumb }, onP);
+      if (tok !== pvToken) return;
+      applyInfo(f, m); f.est = m.est; f.estHash = h; renderRow(f); renderMeter(); renderPreviewMeta();
+    }
+    setPStatus('Codifica');
+    const m = await solo.run({ op: 'preview', key: 'p' + f.id, blob: f.file, settings: ws }, onP);
+    if (tok !== pvToken) { m.ref && m.ref.close(); m.out && m.out.close(); return; }
+    applyInfo(f, m);
+    f.exact = { hash: h, bytes: m.bytes, size: m.bytes.length, w: m.w, h: m.h, q: m.q, over: m.over, ms: m.ms };
+    setBitmaps(m.ref, m.out, ws.format); view.fileId = f.id; view.hash = h;
+    setPStatus(null);
+    renderRow(f); renderMeter(); renderPreviewMeta();
+  } catch (e) {
+    if (e instanceof Cancelled || tok !== pvToken) return;
+    setPStatus(null);
+    f.status = 'error'; f.error = e.message; renderRow(f); renderMeter(); renderPreviewMeta(); renderActions();
+  }
+}
+function setPStatus(t) {
+  $('#pstatus').hidden = !t; if (t) $('#pstatusT').textContent = t;
+}
+
+const cv = $('#cv'), ctx = cv.getContext('2d');
+const view = { ref: null, out: null, fmt: 'avif', mode: 'fit', s: 1, ox: 0, oy: 0, split: 0.5, cw: 0, ch: 0, dpr: 1 };
+function setBitmaps(ref, out, fmt) {
+  const sameDims = view.ref && view.ref.width === ref.width && view.ref.height === ref.height;
+  if (view.ref) view.ref.close(); if (view.out) view.out.close();
+  view.ref = ref; view.out = out; view.fmt = fmt; fitPreviewHeight();
+  if (!sameDims) setZoom(view.mode === 'fit' ? 'fit' : view.mode, true);
+  draw();
+}
+// su schermi stretti l'altezza del confronto segue le proporzioni dell'immagine
+function fitPreviewHeight() {
+  const f = sel(), el = $('#preview'); if (!el) return;
+  if (!f || !f.srcW || matchMedia('(min-width:960px)').matches) { el.style.height = ''; return; }
+  const w = el.clientWidth || window.innerWidth - 32;
+  const ar = (view.out ? view.out.width / view.out.height : f.srcW / f.srcH);
+  const h = Math.round(Math.max(240, Math.min(window.innerHeight * 0.62, w / ar)));
+  if (Math.abs(el.clientHeight - h) > 2) el.style.height = h + 'px';
+}
+function sizeCanvas() {
+  const r = cv.getBoundingClientRect();
+  view.dpr = Math.min(3, window.devicePixelRatio || 1);
+  view.cw = r.width; view.ch = r.height;
+  cv.width = Math.round(r.width * view.dpr); cv.height = Math.round(r.height * view.dpr);
+  if (view.mode === 'fit') fitView(); else clampView();
+  draw();
+}
+function fitView() {
+  const b = view.out || view.ref; if (!b) return;
+  view.s = Math.min(view.cw / b.width, view.ch / b.height);
+  view.ox = (view.cw - b.width * view.s) / 2; view.oy = (view.ch - b.height * view.s) / 2;
+}
+function clampView() {
+  const b = view.out || view.ref; if (!b) return;
+  const w = b.width * view.s, h = b.height * view.s;
+  view.ox = w <= view.cw ? (view.cw - w) / 2 : Math.min(0, Math.max(view.cw - w, view.ox));
+  view.oy = h <= view.ch ? (view.ch - h) / 2 : Math.min(0, Math.max(view.ch - h, view.oy));
+}
+function setZoom(z, keepCenter, cx, cy) {
+  const b = view.out || view.ref;
+  $$('.zoombar button').forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.z === String(z))));
+  if (!b) { view.mode = z; return; }
+  if (z === 'fit') { view.mode = 'fit'; fitView(); }
+  else {
+    const ns = (+z) / view.dpr;
+    zoomAt(ns, cx ?? view.cw / 2, cy ?? view.ch / 2);
+    view.mode = String(z);
+  }
+  $('#preview').classList.toggle('zoomed', view.mode !== 'fit');
+  draw();
+}
+function zoomAt(ns, cx, cy) {
+  const b = view.out || view.ref; if (!b) return;
+  const fit = Math.min(view.cw / b.width, view.ch / b.height);
+  ns = Math.max(fit, Math.min(8, ns));
+  const ix = (cx - view.ox) / view.s, iy = (cy - view.oy) / view.s;
+  view.s = ns; view.ox = cx - ix * ns; view.oy = cy - iy * ns;
+  clampView();
+  const isFit = Math.abs(ns - fit) < 1e-4;
+  view.mode = isFit ? 'fit' : 'free';
+  $('#preview').classList.toggle('zoomed', !isFit);
+  if (isFit || view.mode === 'free') $$('.zoombar button').forEach((x) => x.setAttribute('aria-pressed', String(isFit && x.dataset.z === 'fit')));
+}
+let drawQ = false;
+function draw() {
+  if (drawQ) return; drawQ = true;
+  requestAnimationFrame(() => {
+    drawQ = false;
+    const { dpr, cw, ch } = view;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    if (!view.ref && !view.out) return;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const b = view.out || view.ref;
+    const w = b.width * view.s, h = b.height * view.s;
+    const smooth = view.s * dpr < 1;
+    ctx.imageSmoothingEnabled = smooth; ctx.imageSmoothingQuality = 'high';
+    const sx = Math.round(view.split * cw);
+    if (view.ref) { ctx.save(); ctx.beginPath(); ctx.rect(0, 0, sx, ch); ctx.clip(); ctx.drawImage(view.ref, view.ox, view.oy, w, h); ctx.restore(); }
+    if (view.out) { ctx.save(); ctx.beginPath(); ctx.rect(sx, 0, cw - sx, ch); ctx.clip(); ctx.drawImage(view.out, view.ox, view.oy, w, h); ctx.restore(); }
+    // divisore
+    ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(sx - 2, 0, 4, ch);
+    ctx.fillStyle = '#f1f1f1'; ctx.fillRect(sx - 1, 0, 2, ch);
+    const ky = ch / 2;
+    ctx.beginPath(); ctx.arc(sx, ky, 17, 0, Math.PI * 2); ctx.fillStyle = '#f1f1f1'; ctx.fill();
+    ctx.fillStyle = '#303030';
+    ctx.beginPath(); ctx.moveTo(sx - 4, ky - 6); ctx.lineTo(sx - 10, ky); ctx.lineTo(sx - 4, ky + 6); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(sx + 4, ky - 6); ctx.lineTo(sx + 10, ky); ctx.lineTo(sx + 4, ky + 6); ctx.fill();
+  });
+}
+
+// gesti sul canvas (solo sul canvas, non sul documento)
+const ptrs = new Map();
+let gesture = null;
+cv.addEventListener('pointerdown', (e) => {
+  cv.setPointerCapture(e.pointerId);
+  const r = cv.getBoundingClientRect();
+  const p = { x: e.clientX - r.left, y: e.clientY - r.top };
+  ptrs.set(e.pointerId, p);
+  if (ptrs.size === 2) {
+    const [a, b] = [...ptrs.values()];
+    gesture = { type: 'pinch', d: Math.hypot(a.x - b.x, a.y - b.y), s: view.s };
+  } else {
+    const nearDiv = Math.abs(p.x - view.split * view.cw) < 30;
+    gesture = (nearDiv || view.mode === 'fit') ? { type: 'split' } : { type: 'pan', x: p.x, y: p.y, ox: view.ox, oy: view.oy };
+    if (gesture.type === 'split') { view.split = Math.max(0, Math.min(1, p.x / view.cw)); draw(); }
+  }
+});
+cv.addEventListener('pointermove', (e) => {
+  if (!ptrs.has(e.pointerId)) return;
+  const r = cv.getBoundingClientRect();
+  const p = { x: e.clientX - r.left, y: e.clientY - r.top };
+  ptrs.set(e.pointerId, p);
+  if (!gesture) return;
+  if (gesture.type === 'pinch' && ptrs.size >= 2) {
+    const [a, b] = [...ptrs.values()];
+    const d = Math.hypot(a.x - b.x, a.y - b.y);
+    zoomAt(gesture.s * d / gesture.d, (a.x + b.x) / 2, (a.y + b.y) / 2); draw();
+  } else if (gesture.type === 'split') {
+    view.split = Math.max(0, Math.min(1, p.x / view.cw)); draw();
+  } else if (gesture.type === 'pan') {
+    view.ox = gesture.ox + p.x - gesture.x; view.oy = gesture.oy + p.y - gesture.y; clampView(); draw();
+  }
+});
+const endPtr = (e) => { ptrs.delete(e.pointerId); if (ptrs.size === 0) gesture = null; else if (gesture && gesture.type === 'pinch') gesture = null; };
+cv.addEventListener('pointerup', endPtr); cv.addEventListener('pointercancel', endPtr);
+cv.addEventListener('dblclick', (e) => {
+  const r = cv.getBoundingClientRect();
+  if (view.mode === 'fit') setZoom(1, false, e.clientX - r.left, e.clientY - r.top); else setZoom('fit');
+});
+cv.addEventListener('wheel', (e) => {
+  if (!view.out) return; e.preventDefault();
+  const r = cv.getBoundingClientRect();
+  zoomAt(view.s * Math.exp(-e.deltaY * 0.0015), e.clientX - r.left, e.clientY - r.top); draw();
+}, { passive: false });
+cv.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { view.split = Math.max(0, Math.min(1, view.split + (e.key === 'ArrowLeft' ? -0.05 : 0.05))); draw(); e.preventDefault(); }
+});
+$$('.zoombar button').forEach((b) => b.addEventListener('click', () => setZoom(b.dataset.z === 'fit' ? 'fit' : +b.dataset.z)));
+new ResizeObserver(() => { if (!$('#work').hidden) sizeCanvas(); }).observe($('#preview'));
+
+function renderPreviewMeta() {
+  const f = sel(); const el = $('#pmeta');
+  if (!f) { el.innerHTML = ''; return; }
+  const ws = workerSettings(); const h = hashOf(ws);
+  $('#tagR').textContent = FMT[ws.format].label + (f.exact && f.exact.hash === h && !ws.lossless ? ' ' + f.exact.q : '');
+  const parts = [];
+  parts.push(`<span><b>${esc(f.name)}</b></span>`);
+  if (f.status === 'error') { parts.push(`<span style="color:var(--bad)">${esc(f.error || 'Errore')}</span>`); el.innerHTML = parts.join(''); return; }
+  if (f.srcW) parts.push(`<span class="num">${f.srcW}×${f.srcH} px, ${fmtBytes(f.size)}</span>`);
+  if (f.exact && f.exact.hash === h) {
+    const p = pct(f.exact.size, f.size);
+    parts.push(`<span class="num">Risultato <b>${fmtBytes(f.exact.size)}</b> (${fmtPct(p)})${f.exact.w !== f.srcW ? `, ${f.exact.w}×${f.exact.h} px` : ''}</span>`);
+    if (ws.targetKB && f.exact.over) parts.push('<span style="color:var(--bad)">Limite non raggiunto</span>');
+  } else if (f.estHash === h && f.est != null) parts.push(`<span class="num">Stima ${fmtBytes(f.est)}</span>`);
+  el.innerHTML = parts.join('');
+}
+
+// ---------- lista ----------
+const ICON = {
+  dl: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></svg>',
+  x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>',
+  share: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.8 7.6-4.4M8.2 13.2l7.6 4.4"/></svg>',
+};
+function renderList() {
+  const ul = $('#list'); ul.innerHTML = '';
+  for (const f of files) {
+    const li = document.createElement('li'); li.className = 'row'; li.dataset.id = f.id;
+    ul.appendChild(li); renderRow(f);
+  }
+  $('#filesTitle').textContent = files.length === 1 ? '1 immagine' : `${files.length} immagini`;
+}
+function renderRow(f) {
+  const li = $(`#list li[data-id="${f.id}"]`); if (!li) return;
+  const h = curHash;
+  li.classList.toggle('sel', f.id === selId);
+  let det = '';
+  const dims = f.srcW ? `${f.srcW}×${f.srcH}` : '';
+  if (f.status === 'error') det = `<span class="err">${esc(f.error || 'Errore')}</span>`;
+  else if (f.status === 'working') det = `${esc(f.stage || 'In coda')}`;
+  else if (f.status === 'queued') det = `${dims ? dims + ', ' : ''}${fmtBytes(f.size)}, in coda`;
+  else if (f.status === 'done' && f.res) {
+    const p = pct(f.res.size, f.size);
+    det = `${fmtBytes(f.size)} &rarr; <span class="${p > 0 ? 'worse' : 'gain'}">${fmtBytes(f.res.size)}</span> (${fmtPct(p)})${f.res.w !== f.srcW ? `, ${f.res.w}×${f.res.h}` : ''}${f.res.over ? ', <span class="err">oltre il limite</span>' : ''}`;
+  } else {
+    const ex = f.exact && f.exact.hash === h ? f.exact.size : null;
+    const est = ex ?? (f.estHash === h ? f.est : null);
+    det = `${dims ? dims + ', ' : ''}${fmtBytes(f.size)}${est != null ? ` &rarr; ${ex != null ? '' : '≈ '}${fmtBytes(est)}` : ''}`;
+  }
+  const done = f.status === 'done' && f.res;
+  li.innerHTML = `
+    ${f.thumb ? `<img class="th" src="${f.thumb}" alt="">` : '<div class="th"></div>'}
+    <button type="button" class="main" data-act="sel"><span class="name">${esc(outName(f))}</span><span class="det num">${det}</span></button>
+    <div class="acts">
+      ${done ? `<button type="button" class="icon-btn dl" data-act="dl" aria-label="Scarica ${esc(outName(f))}">${ICON.dl}</button>` : ''}
+      <button type="button" class="icon-btn" data-act="rm" aria-label="Rimuovi ${esc(f.name)}">${ICON.x}</button>
+    </div>
+    ${f.status === 'working' ? '<div class="rowbar"><i></i></div>' : ''}`;
+}
+$('#list').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-act]'); if (!b) return;
+  const id = +b.closest('li').dataset.id; const f = files.find((x) => x.id === id); if (!f) return;
+  if (b.dataset.act === 'rm') removeFile(id);
+  else if (b.dataset.act === 'dl') downloadOne(f);
+  else if (b.dataset.act === 'sel') {
+    if (selId === id) return;
+    const prev = sel(); selId = id; if (prev) renderRow(prev); renderRow(f);
+    if (view.ref) { view.ref.close(); view.ref = null; } if (view.out) { view.out.close(); view.out = null; } view.fileId = null;
+    draw();
+    schedulePreview(true); renderPreviewMeta();
+    if (matchMedia('(max-width:959px)').matches) $('#preview').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+});
+
+function baseName(n) { return n.replace(/\.[^.]+$/, '') || 'immagine'; }
+function outName(f) { return baseName(f.name) + (S.suffix || '') + '.' + FMT[S.format].ext; }
+
+// ---------- misuratore ----------
+function renderMeter() {
+  const ws = workerSettings(), h = hashOf(ws), F = FMT[ws.format];
+  document.documentElement.style.setProperty('--fmt', `var(--f-${ws.format})`);
+  const ok = files.filter((f) => f.status !== 'error');
+  const orig = ok.reduce((a, f) => a + f.size, 0);
+  let out = 0, known = 0, knownOrig = 0, exactAll = true, doneAll = ok.length > 0;
+  for (const f of ok) {
+    let v = null;
+    if (f.status === 'done' && f.res && f.res.hash === h) v = f.res.size;
+    else { doneAll = false; if (f.exact && f.exact.hash === h) v = f.exact.size; else { exactAll = false; if (f.estHash === h && f.est != null) v = f.est; } }
+    if (v != null) { out += v; known++; knownOrig += f.size; }
+  }
+  const allKnown = known === ok.length && ok.length > 0;
+  $('#mLabel').textContent = doneAll ? `Peso in ${F.label}` : (exactAll && allKnown ? `Peso in ${F.label}` : `Peso stimato in ${F.label}`);
+  $('#mCount').textContent = ok.length > 1 ? `${ok.length} immagini` : '';
+  const big = $('#mBig');
+  if (!ok.length) { big.textContent = '0 kB'; big.classList.add('pending'); $('#mDelta').textContent = ''; $('#mBar').style.width = '0'; $('#mOrig').textContent = 'Originale 0 kB'; $('#mState').textContent = ''; $('#mWarn').hidden = true; return; }
+  if (ws.targetKB && !allKnown) {
+    big.textContent = '≤ ' + fmtBytes(ws.targetKB * 1000 * Math.max(1, ok.length));
+  } else if (allKnown) big.textContent = (exactAll || doneAll ? '' : '≈ ') + fmtBytes(out);
+  else big.textContent = known ? '≈ ' + fmtBytes(out / knownOrig * orig) : '…';
+  big.classList.toggle('pending', !allKnown);
+  const tot = allKnown ? out : null;
+  const p = tot != null && orig ? pct(tot, orig) : null;
+  const d = $('#mDelta');
+  d.textContent = p != null ? fmtPct(p) : ''; d.classList.toggle('worse', p != null && p > 0);
+  $('#mBar').style.width = (tot != null && orig ? Math.min(100, tot / orig * 100) : 0) + '%';
+  $('#mOrig').textContent = 'Originale ' + fmtBytes(orig);
+  $('#mState').textContent = doneAll ? 'convertite' : (allKnown ? (exactAll ? 'calcolo esatto' : 'stima su campioni') : (known ? `stima ${known} di ${ok.length}` : 'calcolo…'));
+  const w = $('#mWarn');
+  if (p != null && p > 0) {
+    w.hidden = false;
+    w.textContent = ws.lossless ? 'Il risultato pesa più dell\'originale: è normale quando una foto già compressa viene salvata senza perdita. Disattiva "Senza perdita" o scegli AVIF o WebP.'
+      : 'Il risultato pesa più dell\'originale: abbassa la qualità o scegli un formato più efficiente.';
+  } else w.hidden = true;
+}
+
+// ---------- pannello ----------
+function syncUI() {
+  const f = S.format;
+  $$('#fmts .fmt').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.f === f)));
+  const canLossless = f !== 'jpg';
+  $('#fLossless').hidden = !canLossless;
+  const lossless = canLossless && !!S.lossless[f];
+  $('#lossless').checked = lossless;
+  $('#losslessHint').textContent = f === 'png'
+    ? (lossless ? 'Ottimizzazione OxiPNG: pixel identici, file più compatto' : 'Spento: riduce i colori a una tavolozza, file molto più leggeri')
+    : 'Nessuna alterazione dei pixel, file più pesanti';
+  $('#fQuality').hidden = lossless;
+  $('#qLabel').textContent = f === 'png' ? 'Qualità della tavolozza' : 'Qualità';
+  const q = S.quality[f]; $('#quality').value = q; $('#qVal').textContent = q;
+  $('#quality').style.setProperty('--p', ((q - 1) / 99 * 100) + '%');
+  $('#qHint').textContent = {
+    avif: 'Tra 50 e 65 di solito non si notano differenze a schermo.',
+    webp: 'Tra 75 e 85 è un buon equilibrio per foto sul web.',
+    jpg: 'Tra 78 e 88 per foto; sopra 92 il peso cresce molto.',
+    png: 'Valori bassi usano meno colori. Adatto a grafica, schermate e loghi.',
+  }[f];
+  $$('#effort button').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.v === S.effort)));
+  const eh = $('#effortHint');
+  eh.classList.toggle('warn', f === 'avif' && S.effort === 2);
+  eh.textContent = f === 'avif'
+    ? (S.effort === 2 ? 'AVIF alla compressione massima è molto lento: può servire più di un minuto per foto. Risparmio tipico 10%.' : S.effort === 0 ? 'Circa il doppio più veloce, file un po\' più grande.' : 'Equilibrio consigliato tra tempo e peso.')
+    : f === 'jpg' ? 'MozJPEG usa sempre la codifica ottimizzata.' : 'Più compressione richiede più tempo, a parità di qualità.';
+  const rv = S.resizeCustom ? 'custom' : String(S.resize);
+  $$('#resize button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === rv)));
+  $('#customWrap').hidden = !S.resizeCustom; $('#customPx').value = S.customPx || '';
+  $('#targetOn').checked = S.targetOn; $('#targetWrap').hidden = !S.targetOn;
+  const kb = +S.targetKB;
+  if (document.activeElement !== $('#targetVal')) {
+    if (kb >= 1000 && kb % 100 === 0) { $('#targetUnit').value = '1000'; $('#targetVal').value = kb / 1000; }
+    else { $('#targetUnit').value = '1'; $('#targetVal').value = kb; }
+  }
+  $$('#targetChips button').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.kb === kb)));
+  $('#allowDown').checked = S.allowDown;
+  $('#optChroma').hidden = !(f === 'avif' || f === 'jpg') || lossless;
+  $('#optSharp').hidden = !(f === 'avif' || f === 'webp') || lossless;
+  $('#optProg').hidden = f !== 'jpg';
+  $('#optBg').hidden = f !== 'jpg';
+  $('#chroma444').checked = S.chroma444; $('#sharpYuv').checked = S.sharpYuv; $('#progressive').checked = S.progressive;
+  $('#bg').value = S.bg; if (document.activeElement !== $('#suffix')) $('#suffix').value = S.suffix;
+}
+
+function changed(opts = {}) {
+  save(); syncUI();
+  const nh = hashOf(workerSettings());
+  if (nh !== curHash) {
+    curHash = nh;
+    for (const f of files) if (f.status === 'done' || f.status === 'queued') { f.status = 'idle'; f.res = null; }
+    queueEstimates(opts.slow ? 450 : 120);
+    schedulePreview(false);
+  }
+  files.forEach(renderRow); renderMeter(); renderPreviewMeta(); renderActions();
+}
+
+$('#fmts').addEventListener('click', (e) => { const b = e.target.closest('.fmt'); if (!b) return; S.format = b.dataset.f; changed(); });
+$('#lossless').addEventListener('change', (e) => { S.lossless[S.format] = e.target.checked; changed(); });
+$('#quality').addEventListener('input', (e) => {
+  S.quality[S.format] = +e.target.value; $('#qVal').textContent = e.target.value;
+  e.target.style.setProperty('--p', ((+e.target.value - 1) / 99 * 100) + '%');
+  clearTimeout(e.target._t); e.target._t = setTimeout(() => changed({ slow: true }), 140);
+});
+$('#effort').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; S.effort = +b.dataset.v; changed(); });
+$('#resize').addEventListener('click', (e) => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.v === 'custom') { S.resizeCustom = true; changed(); setTimeout(() => $('#customPx').focus(), 0); }
+  else { S.resizeCustom = false; S.resize = +b.dataset.v; changed(); }
+});
+$('#customPx').addEventListener('input', (e) => { clearTimeout(e.target._t); e.target._t = setTimeout(() => { S.customPx = Math.max(0, Math.round(+e.target.value || 0)); changed({ slow: true }); }, 400); });
+$('#targetOn').addEventListener('change', (e) => { S.targetOn = e.target.checked; changed(); });
+const readTarget = () => { const v = parseFloat(String($('#targetVal').value).replace(',', '.')); if (v > 0) { S.targetKB = Math.round(v * +$('#targetUnit').value * 100) / 100; changed({ slow: true }); } };
+$('#targetVal').addEventListener('input', () => { clearTimeout(readTarget._t); readTarget._t = setTimeout(readTarget, 450); });
+$('#targetUnit').addEventListener('change', readTarget);
+$('#targetChips').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; S.targetKB = +b.dataset.kb; changed(); });
+$('#allowDown').addEventListener('change', (e) => { S.allowDown = e.target.checked; changed(); });
+$('#chroma444').addEventListener('change', (e) => { S.chroma444 = e.target.checked; changed(); });
+$('#sharpYuv').addEventListener('change', (e) => { S.sharpYuv = e.target.checked; changed(); });
+$('#progressive').addEventListener('change', (e) => { S.progressive = e.target.checked; changed(); });
+$('#bg').addEventListener('change', (e) => { S.bg = e.target.value; changed(); });
+$('#suffix').addEventListener('input', (e) => { S.suffix = e.target.value.replace(/[\\/:*?"<>|]/g, ''); save(); files.forEach(renderRow); renderActions(); });
+
+// ---------- conversione ----------
+async function convertAll() {
+  if (converting || !files.length) return;
+  ensureWorkers();
+  converting = true; stopReq = false;
+  $('#settings').disabled = true;
+  pool.cancel((j) => j.tag === 'est');
+  const ws = workerSettings(), h = hashOf(ws);
+  const todo = files.filter((f) => f.status !== 'error' && !(f.status === 'done' && f.res && f.res.hash === h));
+  let finished = 0;
+  const total = todo.length;
+  const t0 = performance.now();
+  renderActions({ finished, total });
+  const tasks = todo.map((f) => {
+    if (f.exact && f.exact.hash === h) {
+      f.status = 'done'; f.res = { ...f.exact, blob: new Blob([f.exact.bytes], { type: FMT[ws.format].mime }), name: outName(f) };
+      finished++; renderRow(f); return Promise.resolve();
+    }
+    f.status = 'queued'; f.stage = ''; renderRow(f);
+    return pool.run({ op: 'convert', key: 'f' + f.id, blob: f.file, settings: ws }, {
+      prio: 5, tag: 'conv',
+      onProgress: (st) => { f.status = 'working'; f.stage = st; renderRow(f); },
+    }).then((m) => {
+      applyInfo(f, m);
+      f.status = 'done';
+      f.res = { hash: h, size: m.bytes.length, w: m.w, h: m.h, q: m.q, over: m.over, ms: m.ms, blob: new Blob([m.bytes], { type: FMT[ws.format].mime }), name: outName(f) };
+    }).catch((e) => {
+      if (e instanceof Cancelled) { f.status = 'idle'; return; }
+      f.status = 'error'; f.error = e.message;
+    }).finally(() => {
+      finished++; renderRow(f); renderMeter(); renderActions({ finished, total });
+    });
+  });
+  await Promise.all(tasks);
+  converting = false;
+  $('#settings').disabled = false;
+  const okN = files.filter((f) => f.status === 'done').length;
+  const sec = (performance.now() - t0) / 1000;
+  if (!stopReq && okN) toast(sec < 0.3 ? (okN === 1 ? 'Pronta da scaricare' : `${okN} immagini pronte`) : okN === 1 ? `Convertita in ${nf1.format(sec)} s` : `${okN} immagini convertite in ${nf1.format(sec)} s`);
+  renderMeter(); renderActions();
+  if (okN === 1 && files.length === 1 && !mobile) { /* il pulsante Scarica è già in evidenza */ }
+}
+function stopAll() {
+  stopReq = true;
+  pool.cancel((j) => j.tag === 'conv');
+  toast('Conversione interrotta: le immagini già pronte restano scaricabili');
+}
+
+function triggerDownload(blob, name) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = name; a.rel = 'noopener';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 30000);
+}
+function downloadOne(f) { if (f.res) triggerDownload(f.res.blob, f.res.name); }
+
+function uniqueNames(list) {
+  const seen = new Map();
+  return list.map((f) => {
+    let n = f.res.name, k = n.toLowerCase(), i = 1;
+    while (seen.has(k)) { n = f.res.name.replace(/(\.[^.]+)$/, `-${++i}$1`); k = n.toLowerCase(); }
+    seen.set(k, 1); return n;
+  });
+}
+async function downloadZip() {
+  const done = files.filter((f) => f.status === 'done' && f.res);
+  if (!done.length) return;
+  if (done.length === 1) return downloadOne(done[0]);
+  const names = uniqueNames(done);
+  const btn = $('#zipBtn'); if (btn) { btn.disabled = true; btn.textContent = 'Preparo lo ZIP…'; }
+  try {
+    const arr = await Promise.all(done.map(async (f, i) => ({ name: names[i], bytes: new Uint8Array(await f.res.blob.arrayBuffer()) })));
+    const m = await pool.run({ op: 'zip', files: arr }, { prio: 9, transfer: arr.map((x) => x.bytes.buffer) });
+    triggerDownload(new Blob([m.bytes], { type: 'application/zip' }), `immagini-${FMT[S.format].ext}.zip`);
+  } catch (e) { toast('Impossibile creare lo ZIP: ' + e.message); }
+  renderActions();
+}
+function shareFiles() {
+  const done = files.filter((f) => f.status === 'done' && f.res);
+  const names = uniqueNames(done);
+  const list = done.map((f, i) => new File([f.res.blob], names[i], { type: f.res.blob.type }));
+  navigator.share({ files: list }).catch((e) => { if (e.name !== 'AbortError') toast('Condivisione non riuscita: ' + e.message); });
+}
+const canShare = (() => { try { return !!(navigator.canShare && navigator.canShare({ files: [new File([new Uint8Array(1)], 'a.webp', { type: 'image/webp' })] })); } catch (e) { return false; } })();
+
+function renderActions(p) {
+  const el = $('#actionsIn');
+  $('#actions').hidden = !files.length;
+  if (!files.length) { el.innerHTML = ''; return; }
+  if (converting) {
+    const { finished = 0, total = 1 } = p || renderActions._p || {}; renderActions._p = { finished, total };
+    el.innerHTML = `<div class="prog"><div class="t num"><span>Conversione ${Math.min(finished + 1, total)} di ${total}</span><span>${Math.round(finished / total * 100)}%</span></div><div class="b"><i style="width:${finished / total * 100}%"></i></div></div>
+      <button type="button" class="btn ghost" id="stopBtn">Interrompi</button>`;
+    $('#stopBtn').onclick = stopAll;
+    return;
+  }
+  const ok = files.filter((f) => f.status !== 'error');
+  const done = ok.filter((f) => f.status === 'done' && f.res && f.res.hash === curHash);
+  if (ok.length && done.length === ok.length) {
+    const one = done.length === 1;
+    el.innerHTML = `<button type="button" class="btn primary" id="zipBtn">${ICON.dl}${one ? 'Scarica ' + esc(done[0].res.name) : `Scarica tutte (ZIP)`}</button>
+      ${canShare ? `<button type="button" class="btn ghost" id="shareBtn" aria-label="Condividi">${ICON.share}<span>Condividi</span></button>` : ''}`;
+    $('#zipBtn').onclick = downloadZip;
+    if (canShare) $('#shareBtn').onclick = shareFiles;
+    const sp = $('#zipBtn span'); if (sp) sp.style.cssText = 'overflow:hidden;text-overflow:ellipsis';
+    return;
+  }
+  const n = ok.length - done.length;
+  el.innerHTML = `<button type="button" class="btn primary" id="convBtn" ${n ? '' : 'disabled'}>${n === 1 && ok.length === 1 ? `Converti in ${FMT[S.format].label}` : `Converti ${n} ${n === 1 ? 'immagine' : 'immagini'} in ${FMT[S.format].label}`}</button>`;
+  $('#convBtn').onclick = convertAll;
+}
+
+// ---------- input ----------
+$('#pickBtn').addEventListener('click', () => $('#fileIn').click());
+$('#addBtn').addEventListener('click', () => $('#fileIn').click());
+$('#fileIn').addEventListener('change', (e) => { if (e.target.files.length) addFiles(e.target.files); e.target.value = ''; });
+$('#clearBtn').addEventListener('click', clearAll);
+let dragDepth = 0;
+window.addEventListener('dragenter', (e) => { if ([...(e.dataTransfer?.types || [])].includes('Files')) { dragDepth++; document.body.classList.add('dragging'); e.preventDefault(); } });
+window.addEventListener('dragover', (e) => { if ([...(e.dataTransfer?.types || [])].includes('Files')) e.preventDefault(); });
+window.addEventListener('dragleave', () => { if (--dragDepth <= 0) { dragDepth = 0; document.body.classList.remove('dragging'); } });
+window.addEventListener('drop', (e) => {
+  dragDepth = 0; document.body.classList.remove('dragging');
+  if (e.dataTransfer?.files?.length) { e.preventDefault(); if (!converting) addFiles(e.dataTransfer.files); }
+});
+window.addEventListener('paste', (e) => {
+  if (e.target.closest && e.target.closest('input')) return;
+  const items = [...(e.clipboardData?.items || [])].filter((i) => i.kind === 'file');
+  const fl = items.map((i) => i.getAsFile()).filter(Boolean)
+    .map((f, i) => f.name && f.name !== 'image.png' ? f : new File([f], `incollata-${Date.now()}-${i}.${(f.type.split('/')[1] || 'png').replace('jpeg', 'jpg')}`, { type: f.type }));
+  if (fl.length && !converting) { e.preventDefault(); addFiles(fl); }
+});
+window.addEventListener('beforeunload', (e) => { if (converting) { e.preventDefault(); e.returnValue = ''; } });
+
+syncUI(); renderMeter(); renderActions(); showWork();
+})();
+</script>
+</body>
+</html>
